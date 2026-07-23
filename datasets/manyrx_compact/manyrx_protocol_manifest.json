@@ -1,0 +1,332 @@
+{
+  "source": "C:\\Users\\123\\Downloads\\ManyRx.pkl\\ManyRx.pkl",
+  "tx_count": 10,
+  "rx_count": 32,
+  "day_count": 4,
+  "tx_names": [
+    "1-10",
+    "11-1",
+    "14-10",
+    "14-7",
+    "17-11",
+    "20-15",
+    "20-19",
+    "7-11",
+    "7-14",
+    "8-20"
+  ],
+  "rx_names": [
+    "1-1",
+    "1-19",
+    "1-20",
+    "13-14",
+    "13-7",
+    "14-7",
+    "18-19",
+    "18-2",
+    "19-1",
+    "19-19",
+    "19-2",
+    "19-20",
+    "2-1",
+    "2-19",
+    "20-1",
+    "20-19",
+    "20-20",
+    "23-1",
+    "23-3",
+    "23-5",
+    "23-6",
+    "23-7",
+    "24-13",
+    "24-16",
+    "24-5",
+    "24-6",
+    "3-19",
+    "7-14",
+    "7-7",
+    "8-14",
+    "8-7",
+    "8-8"
+  ],
+  "day_names": [
+    "2021_03_01",
+    "2021_03_08",
+    "2021_03_15",
+    "2021_03_23"
+  ],
+  "equalized_index": 1,
+  "discovery_rx_index": 0,
+  "evaluation_rx_index": 1,
+  "fixed_train_ratio": 0.7,
+  "stages": [
+    {
+      "protocol": "fixedrx",
+      "stage": "day1_known_train",
+      "day_index": 0,
+      "day": "2021_03_01",
+      "tx_indices": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "rx_index": 0,
+      "rx": "1-1",
+      "sample_split": "first 70%",
+      "samples": 560
+    },
+    {
+      "protocol": "fixedrx",
+      "stage": "day1_initial_eval",
+      "day_index": 0,
+      "day": "2021_03_01",
+      "tx_indices": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "rx_index": 0,
+      "rx": "1-1",
+      "sample_split": "last 30%",
+      "samples": 240
+    },
+    {
+      "protocol": "fixedrx",
+      "stage": "day2_unknown_round1",
+      "day_index": 1,
+      "day": "2021_03_08",
+      "tx_indices": [
+        4,
+        5
+      ],
+      "rx_index": 0,
+      "rx": "1-1",
+      "sample_split": "first 70%",
+      "samples": 280
+    },
+    {
+      "protocol": "fixedrx",
+      "stage": "day2_eval_after_r1",
+      "day_index": 1,
+      "day": "2021_03_08",
+      "tx_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "rx_index": 0,
+      "rx": "1-1",
+      "sample_split": "last 30%",
+      "samples": 360
+    },
+    {
+      "protocol": "fixedrx",
+      "stage": "day3_unknown_round2",
+      "day_index": 2,
+      "day": "2021_03_15",
+      "tx_indices": [
+        6,
+        7
+      ],
+      "rx_index": 0,
+      "rx": "1-1",
+      "sample_split": "first 70%",
+      "samples": 280
+    },
+    {
+      "protocol": "fixedrx",
+      "stage": "day3_eval_after_r2",
+      "day_index": 2,
+      "day": "2021_03_15",
+      "tx_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "rx_index": 0,
+      "rx": "1-1",
+      "sample_split": "last 30%",
+      "samples": 480
+    },
+    {
+      "protocol": "fixedrx",
+      "stage": "day4_unknown_round3",
+      "day_index": 3,
+      "day": "2021_03_23",
+      "tx_indices": [
+        8,
+        9
+      ],
+      "rx_index": 0,
+      "rx": "1-1",
+      "sample_split": "first 70%",
+      "samples": 280
+    },
+    {
+      "protocol": "fixedrx",
+      "stage": "day4_eval_after_r3",
+      "day_index": 3,
+      "day": "2021_03_23",
+      "tx_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "rx_index": 0,
+      "rx": "1-1",
+      "sample_split": "last 30%",
+      "samples": 600
+    },
+    {
+      "protocol": "crossrx",
+      "stage": "day1_known_train",
+      "day_index": 0,
+      "day": "2021_03_01",
+      "tx_indices": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "rx_index": 0,
+      "rx": "1-1",
+      "sample_split": "all samples; disjoint receiver",
+      "samples": 800
+    },
+    {
+      "protocol": "crossrx",
+      "stage": "day1_initial_eval",
+      "day_index": 0,
+      "day": "2021_03_01",
+      "tx_indices": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "rx_index": 1,
+      "rx": "1-19",
+      "sample_split": "all samples; disjoint receiver",
+      "samples": 800
+    },
+    {
+      "protocol": "crossrx",
+      "stage": "day2_unknown_round1",
+      "day_index": 1,
+      "day": "2021_03_08",
+      "tx_indices": [
+        4,
+        5
+      ],
+      "rx_index": 0,
+      "rx": "1-1",
+      "sample_split": "all samples; disjoint receiver",
+      "samples": 400
+    },
+    {
+      "protocol": "crossrx",
+      "stage": "day2_eval_after_r1",
+      "day_index": 1,
+      "day": "2021_03_08",
+      "tx_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "rx_index": 1,
+      "rx": "1-19",
+      "sample_split": "all samples; disjoint receiver",
+      "samples": 1200
+    },
+    {
+      "protocol": "crossrx",
+      "stage": "day3_unknown_round2",
+      "day_index": 2,
+      "day": "2021_03_15",
+      "tx_indices": [
+        6,
+        7
+      ],
+      "rx_index": 0,
+      "rx": "1-1",
+      "sample_split": "all samples; disjoint receiver",
+      "samples": 400
+    },
+    {
+      "protocol": "crossrx",
+      "stage": "day3_eval_after_r2",
+      "day_index": 2,
+      "day": "2021_03_15",
+      "tx_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "rx_index": 1,
+      "rx": "1-19",
+      "sample_split": "all samples; disjoint receiver",
+      "samples": 1600
+    },
+    {
+      "protocol": "crossrx",
+      "stage": "day4_unknown_round3",
+      "day_index": 3,
+      "day": "2021_03_23",
+      "tx_indices": [
+        8,
+        9
+      ],
+      "rx_index": 0,
+      "rx": "1-1",
+      "sample_split": "all samples; disjoint receiver",
+      "samples": 400
+    },
+    {
+      "protocol": "crossrx",
+      "stage": "day4_eval_after_r3",
+      "day_index": 3,
+      "day": "2021_03_23",
+      "tx_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "rx_index": 1,
+      "rx": "1-19",
+      "sample_split": "all samples; disjoint receiver",
+      "samples": 2000
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+# Python 本地环境与解释器缓存
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+
+# 测试、类型检查与代码质量工具缓存
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# 本地环境变量、密钥和开发者专属配置
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# IDE、编辑器与操作系统生成文件
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# 已确认超过普通 Git 托管平台单文件限制的本地原始数据（约 590 MB）
+/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl

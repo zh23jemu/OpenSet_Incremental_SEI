@@ -1,0 +1,13 @@
+{
+  "split_level": "recording-disjoint when recording identifiers are available",
+  "protocol": "fixedrx",
+  "seed": 7,
+  "day1_backbone_train_samples": 480,
+  "day1_validation_samples": 80,
+  "day1_heldout_evaluation_samples": 240,
+  "frozen_before_unknown_rounds": [
+    "checkpoint",
+    "CF-LCG",
+    "MV-ACC parameters"
+  ]
+}

@@ -1,0 +1,655 @@
+{
+  "best_validation_accuracy": 0.6539961013645225,
+  "best_validation_loss": 1.5836788394994903,
+  "best_epoch": 38,
+  "train_samples": 12304,
+  "validation_samples": 2052,
+  "reserved_samples_loaded": false,
+  "test_files_opened": false,
+  "split_audit": [
+    {
+      "class": 0,
+      "total": 271,
+      "train": 162,
+      "validation": 27,
+      "reserved_untouched": 82
+    },
+    {
+      "class": 1,
+      "total": 290,
+      "train": 174,
+      "validation": 29,
+      "reserved_untouched": 87
+    },
+    {
+      "class": 2,
+      "total": 155,
+      "train": 93,
+      "validation": 15,
+      "reserved_untouched": 47
+    },
+    {
+      "class": 3,
+      "total": 189,
+      "train": 113,
+      "validation": 19,
+      "reserved_untouched": 57
+    },
+    {
+      "class": 4,
+      "total": 375,
+      "train": 225,
+      "validation": 37,
+      "reserved_untouched": 113
+    },
+    {
+      "class": 5,
+      "total": 212,
+      "train": 127,
+      "validation": 21,
+      "reserved_untouched": 64
+    },
+    {
+      "class": 6,
+      "total": 216,
+      "train": 129,
+      "validation": 22,
+      "reserved_untouched": 65
+    },
+    {
+      "class": 7,
+      "total": 184,
+      "train": 110,
+      "validation": 18,
+      "reserved_untouched": 56
+    },
+    {
+      "class": 8,
+      "total": 175,
+      "train": 105,
+      "validation": 17,
+      "reserved_untouched": 53
+    },
+    {
+      "class": 9,
+      "total": 375,
+      "train": 225,
+      "validation": 37,
+      "reserved_untouched": 113
+    },
+    {
+      "class": 10,
+      "total": 265,
+      "train": 159,
+      "validation": 26,
+      "reserved_untouched": 80
+    },
+    {
+      "class": 11,
+      "total": 271,
+      "train": 162,
+      "validation": 27,
+      "reserved_untouched": 82
+    },
+    {
+      "class": 12,
+      "total": 167,
+      "train": 100,
+      "validation": 16,
+      "reserved_untouched": 51
+    },
+    {
+      "class": 13,
+      "total": 320,
+      "train": 192,
+      "validation": 32,
+      "reserved_untouched": 96
+    },
+    {
+      "class": 14,
+      "total": 163,
+      "train": 97,
+      "validation": 17,
+      "reserved_untouched": 49
+    },
+    {
+      "class": 15,
+      "total": 149,
+      "train": 89,
+      "validation": 15,
+      "reserved_untouched": 45
+    },
+    {
+      "class": 16,
+      "total": 112,
+      "train": 67,
+      "validation": 11,
+      "reserved_untouched": 34
+    },
+    {
+      "class": 17,
+      "total": 124,
+      "train": 74,
+      "validation": 12,
+      "reserved_untouched": 38
+    },
+    {
+      "class": 18,
+      "total": 156,
+      "train": 93,
+      "validation": 16,
+      "reserved_untouched": 47
+    },
+    {
+      "class": 19,
+      "total": 113,
+      "train": 67,
+      "validation": 12,
+      "reserved_untouched": 34
+    },
+    {
+      "class": 20,
+      "total": 116,
+      "train": 69,
+      "validation": 12,
+      "reserved_untouched": 35
+    },
+    {
+      "class": 21,
+      "total": 170,
+      "train": 102,
+      "validation": 16,
+      "reserved_untouched": 52
+    },
+    {
+      "class": 22,
+      "total": 176,
+      "train": 105,
+      "validation": 18,
+      "reserved_untouched": 53
+    },
+    {
+      "class": 23,
+      "total": 109,
+      "train": 65,
+      "validation": 11,
+      "reserved_untouched": 33
+    },
+    {
+      "class": 24,
+      "total": 426,
+      "train": 255,
+      "validation": 43,
+      "reserved_untouched": 128
+    },
+    {
+      "class": 25,
+      "total": 120,
+      "train": 72,
+      "validation": 12,
+      "reserved_untouched": 36
+    },
+    {
+      "class": 26,
+      "total": 266,
+      "train": 159,
+      "validation": 27,
+      "reserved_untouched": 80
+    },
+    {
+      "class": 27,
+      "total": 396,
+      "train": 237,
+      "validation": 40,
+      "reserved_untouched": 119
+    },
+    {
+      "class": 28,
+      "total": 213,
+      "train": 127,
+      "validation": 22,
+      "reserved_untouched": 64
+    },
+    {
+      "class": 29,
+      "total": 462,
+      "train": 277,
+      "validation": 46,
+      "reserved_untouched": 139
+    },
+    {
+      "class": 30,
+      "total": 173,
+      "train": 103,
+      "validation": 18,
+      "reserved_untouched": 52
+    },
+    {
+      "class": 31,
+      "total": 172,
+      "train": 103,
+      "validation": 17,
+      "reserved_untouched": 52
+    },
+    {
+      "class": 32,
+      "total": 152,
+      "train": 91,
+      "validation": 15,
+      "reserved_untouched": 46
+    },
+    {
+      "class": 33,
+      "total": 458,
+      "train": 274,
+      "validation": 46,
+      "reserved_untouched": 138
+    },
+    {
+      "class": 34,
+      "total": 441,
+      "train": 264,
+      "validation": 44,
+      "reserved_untouched": 133
+    },
+    {
+      "class": 35,
+      "total": 124,
+      "train": 74,
+      "validation": 12,
+      "reserved_untouched": 38
+    },
+    {
+      "class": 36,
+      "total": 154,
+      "train": 92,
+      "validation": 15,
+      "reserved_untouched": 47
+    },
+    {
+      "class": 37,
+      "total": 229,
+      "train": 137,
+      "validation": 23,
+      "reserved_untouched": 69
+    },
+    {
+      "class": 38,
+      "total": 121,
+      "train": 72,
+      "validation": 12,
+      "reserved_untouched": 37
+    },
+    {
+      "class": 39,
+      "total": 187,
+      "train": 112,
+      "validation": 18,
+      "reserved_untouched": 57
+    },
+    {
+      "class": 40,
+      "total": 111,
+      "train": 66,
+      "validation": 11,
+      "reserved_untouched": 34
+    },
+    {
+      "class": 41,
+      "total": 104,
+      "train": 62,
+      "validation": 10,
+      "reserved_untouched": 32
+    },
+    {
+      "class": 42,
+      "total": 294,
+      "train": 176,
+      "validation": 29,
+      "reserved_untouched": 89
+    },
+    {
+      "class": 43,
+      "total": 303,
+      "train": 181,
+      "validation": 31,
+      "reserved_untouched": 91
+    },
+    {
+      "class": 44,
+      "total": 180,
+      "train": 108,
+      "validation": 17,
+      "reserved_untouched": 55
+    },
+    {
+      "class": 45,
+      "total": 315,
+      "train": 189,
+      "validation": 31,
+      "reserved_untouched": 95
+    },
+    {
+      "class": 46,
+      "total": 151,
+      "train": 90,
+      "validation": 15,
+      "reserved_untouched": 46
+    },
+    {
+      "class": 47,
+      "total": 129,
+      "train": 77,
+      "validation": 13,
+      "reserved_untouched": 39
+    },
+    {
+      "class": 48,
+      "total": 362,
+      "train": 217,
+      "validation": 36,
+      "reserved_untouched": 109
+    },
+    {
+      "class": 49,
+      "total": 133,
+      "train": 79,
+      "validation": 14,
+      "reserved_untouched": 40
+    },
+    {
+      "class": 50,
+      "total": 182,
+      "train": 109,
+      "validation": 18,
+      "reserved_untouched": 55
+    },
+    {
+      "class": 51,
+      "total": 133,
+      "train": 79,
+      "validation": 14,
+      "reserved_untouched": 40
+    },
+    {
+      "class": 52,
+      "total": 162,
+      "train": 97,
+      "validation": 16,
+      "reserved_untouched": 49
+    },
+    {
+      "class": 53,
+      "total": 149,
+      "train": 89,
+      "validation": 15,
+      "reserved_untouched": 45
+    },
+    {
+      "class": 54,
+      "total": 203,
+      "train": 121,
+      "validation": 21,
+      "reserved_untouched": 61
+    },
+    {
+      "class": 55,
+      "total": 194,
+      "train": 116,
+      "validation": 19,
+      "reserved_untouched": 59
+    },
+    {
+      "class": 56,
+      "total": 173,
+      "train": 103,
+      "validation": 18,
+      "reserved_untouched": 52
+    },
+    {
+      "class": 57,
+      "total": 139,
+      "train": 83,
+      "validation": 14,
+      "reserved_untouched": 42
+    },
+    {
+      "class": 58,
+      "total": 196,
+      "train": 117,
+      "validation": 20,
+      "reserved_untouched": 59
+    },
+    {
+      "class": 59,
+      "total": 267,
+      "train": 160,
+      "validation": 26,
+      "reserved_untouched": 81
+    },
+    {
+      "class": 60,
+      "total": 170,
+      "train": 102,
+      "validation": 16,
+      "reserved_untouched": 52
+    },
+    {
+      "class": 61,
+      "total": 466,
+      "train": 279,
+      "validation": 47,
+      "reserved_untouched": 140
+    },
+    {
+      "class": 62,
+      "total": 383,
+      "train": 229,
+      "validation": 39,
+      "reserved_untouched": 115
+    },
+    {
+      "class": 63,
+      "total": 226,
+      "train": 135,
+      "validation": 23,
+      "reserved_untouched": 68
+    },
+    {
+      "class": 64,
+      "total": 273,
+      "train": 163,
+      "validation": 28,
+      "reserved_untouched": 82
+    },
+    {
+      "class": 65,
+      "total": 235,
+      "train": 141,
+      "validation": 23,
+      "reserved_untouched": 71
+    },
+    {
+      "class": 66,
+      "total": 146,
+      "train": 87,
+      "validation": 15,
+      "reserved_untouched": 44
+    },
+    {
+      "class": 67,
+      "total": 414,
+      "train": 248,
+      "validation": 41,
+      "reserved_untouched": 125
+    },
+    {
+      "class": 68,
+      "total": 177,
+      "train": 106,
+      "validation": 17,
+      "reserved_untouched": 54
+    },
+    {
+      "class": 69,
+      "total": 163,
+      "train": 97,
+      "validation": 17,
+      "reserved_untouched": 49
+    },
+    {
+      "class": 70,
+      "total": 237,
+      "train": 142,
+      "validation": 23,
+      "reserved_untouched": 72
+    },
+    {
+      "class": 71,
+      "total": 107,
+      "train": 64,
+      "validation": 10,
+      "reserved_untouched": 33
+    },
+    {
+      "class": 72,
+      "total": 141,
+      "train": 84,
+      "validation": 14,
+      "reserved_untouched": 43
+    },
+    {
+      "class": 73,
+      "total": 126,
+      "train": 75,
+      "validation": 13,
+      "reserved_untouched": 38
+    },
+    {
+      "class": 74,
+      "total": 296,
+      "train": 177,
+      "validation": 30,
+      "reserved_untouched": 89
+    },
+    {
+      "class": 75,
+      "total": 214,
+      "train": 128,
+      "validation": 21,
+      "reserved_untouched": 65
+    },
+    {
+      "class": 76,
+      "total": 352,
+      "train": 211,
+      "validation": 35,
+      "reserved_untouched": 106
+    },
+    {
+      "class": 77,
+      "total": 173,
+      "train": 103,
+      "validation": 18,
+      "reserved_untouched": 52
+    },
+    {
+      "class": 78,
+      "total": 279,
+      "train": 167,
+      "validation": 28,
+      "reserved_untouched": 84
+    },
+    {
+      "class": 79,
+      "total": 152,
+      "train": 91,
+      "validation": 15,
+      "reserved_untouched": 46
+    },
+    {
+      "class": 80,
+      "total": 330,
+      "train": 198,
+      "validation": 32,
+      "reserved_untouched": 100
+    },
+    {
+      "class": 81,
+      "total": 373,
+      "train": 223,
+      "validation": 38,
+      "reserved_untouched": 112
+    },
+    {
+      "class": 82,
+      "total": 235,
+      "train": 141,
+      "validation": 23,
+      "reserved_untouched": 71
+    },
+    {
+      "class": 83,
+      "total": 194,
+      "train": 116,
+      "validation": 19,
+      "reserved_untouched": 59
+    },
+    {
+      "class": 84,
+      "total": 260,
+      "train": 156,
+      "validation": 26,
+      "reserved_untouched": 78
+    },
+    {
+      "class": 85,
+      "total": 180,
+      "train": 108,
+      "validation": 17,
+      "reserved_untouched": 55
+    },
+    {
+      "class": 86,
+      "total": 154,
+      "train": 92,
+      "validation": 15,
+      "reserved_untouched": 47
+    },
+    {
+      "class": 87,
+      "total": 449,
+      "train": 269,
+      "validation": 45,
+      "reserved_untouched": 135
+    },
+    {
+      "class": 88,
+      "total": 450,
+      "train": 270,
+      "validation": 45,
+      "reserved_untouched": 135
+    },
+    {
+      "class": 89,
+      "total": 384,
+      "train": 230,
+      "validation": 38,
+      "reserved_untouched": 116
+    }
+  ],
+  "configuration": {
+    "data_root": "C:\\Users\\123\\Downloads\\Dataset\\Dataset",
+    "save_dir": ".\\results\\adsb_closedset_long_dev_seed41",
+    "epochs": 60,
+    "batch_size": 32,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "warmup_epochs": 5,
+    "patience": 10,
+    "feat_dim": 128,
+    "seed": 41,
+    "model": "adsb_long",
+    "use_adsb_augmentation": true
+  }
+}

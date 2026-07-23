@@ -1,0 +1,3183 @@
+"""
+Clean WiSig cross-day open-set incremental SEI experiment.
+
+10-known / 3-round protocol:
+    Day 1: Tx 0-9 known training
+    Day 2: Tx 10-19 unknown discovery round 1
+    Day 3: Tx 20-29 unknown discovery round 2
+    Day 4: Tx 30-39 unknown discovery round 3
+
+Evaluation:
+    Each day is split into 70% discovery/enrollment and 30% evaluation samples.
+    Day 1: Tx 0-9 70% -> closed-set training; Tx 0-9 30% -> initial evaluation.
+    Day 2: Tx 10-19 70% -> R1 discovery; Tx 0-19 30% -> After R1 evaluation.
+    Day 3: Tx 20-29 70% -> R2 discovery; Tx 0-29 30% -> After R2 evaluation.
+    Day 4: Tx 30-39 70% -> R3 discovery; Tx 0-39 30% -> After R3 evaluation.
+
+Outputs:
+    1) clustering_results.csv
+    2) incremental_results.csv
+    3) per_round_summary_results.csv
+    4) shared_discovery_comparison_results.csv
+    5) end_to_end_comparison_results.csv
+    6) end_to_end_system_comparison.csv
+
+Methods:
+    1. Deep only, no reliability
+    2. RF only, no reliability
+    3. Graph fusion (raw), no consolidation
+    4. No-drop consolidation (ablation)
+    5. MV-ACC (final method)
+
+Notes:
+    This is the clean final experiment script with only the five core methods.
+"""
+
+
+import os
+import sys
+import argparse
+import json
+import random
+import copy
+import pickle
+import itertools
+import numpy as np
+import pandas as pd
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+import torch
+import torch.nn.functional as F
+from torch.utils.data import DataLoader, TensorDataset
+
+from sklearn.preprocessing import StandardScaler, normalize
+from sklearn.manifold import SpectralEmbedding, TSNE
+
+try:
+    import umap.umap_ as umap
+except ImportError:
+    umap = None
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+from sklearn.metrics import normalized_mutual_info_score, adjusted_rand_score, f1_score, silhouette_score
+from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
+from scipy.optimize import linear_sum_assignment
+
+try:
+    import hdbscan
+except ImportError as e:
+    raise ImportError("Please install hdbscan first: pip install hdbscan") from e
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(CURRENT_DIR)
+if PROJECT_ROOT not in sys.path:
+    sys.path.append(PROJECT_ROOT)
+
+from features.rf_features import extract_rf_features_batch
+from utils.classic_feature_gating import select_classic_feature_view, save_selection, local_cross_view_consistency
+from utils.incremental_visualization import save_seen_class_visualizations, save_paper_method_visualizations
+from models.vup_model import ClosedSetSEI
+from utils.improved_closedset_training import (
+    TRAINING_RECIPE_VERSION,
+    stratified_train_validation_split,
+    train_closedset_with_validation,
+)
+
+
+# ============================================================
+# Basic utilities
+# ============================================================
+
+def set_seed(seed: int = 7):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
+
+def ensure_dir(path: str):
+    os.makedirs(path, exist_ok=True)
+
+
+def save_csv(rows, path):
+    ensure_dir(os.path.dirname(path))
+    df = pd.DataFrame(rows)
+    df.to_csv(path, index=False, encoding="utf-8-sig")
+    return df
+
+
+def to_dataset(X, y):
+    X = torch.as_tensor(X, dtype=torch.float32)
+    y = torch.as_tensor(y, dtype=torch.long)
+    return TensorDataset(X, y)
+
+
+def load_wisig_crossday_10known_3round(
+    dataset_path,
+    transpose_to_model=True,
+    train_ratio=0.70,
+    eq_index=0,
+    selected_rx_list=None,
+    seed=7,
+):
+    """
+    Load the custom WiSig cross-day dataset and create a leakage-free
+    10-known + 3-round 7:3 split.
+
+    Expected dataset structure:
+        data[tx_i][rx_i][day_i][eq_i] -> (N, 256, 2)
+
+    Protocol:
+        Day 1: Tx 0-9    70% -> known training;      30% -> initial eval on Tx 0-9
+        Day 2: Tx 10-19  70% -> R1 discovery;       30% -> After R1 eval on Tx 0-19
+        Day 3: Tx 20-29  70% -> R2 discovery;       30% -> After R2 eval on Tx 0-29
+        Day 4: Tx 30-39  70% -> R3 discovery;       30% -> After R3 eval on Tx 0-39
+
+    Labels are kept as Tx indices in the custom 40-Tx subset:
+        Tx0-9 -> labels 0-9, Tx10-19 -> labels 10-19, etc.
+    """
+    with open(dataset_path, "rb") as f:
+        obj = pickle.load(f)
+
+    data = obj["data"]
+    tx_list = obj.get("tx_list", list(range(len(data))))
+    rx_list = obj.get("rx_list", list(range(len(data[0]))))
+    day_list = obj.get("capture_date_list", ["Day1", "Day2", "Day3", "Day4"])
+
+    n_tx = len(tx_list)
+    n_rx = len(rx_list)
+    n_day = len(day_list)
+    if n_tx < 40 or n_day < 4:
+        raise ValueError(f"Expected at least 40 Tx and 4 days, got n_tx={n_tx}, n_day={n_day}")
+    if not (0.0 < train_ratio < 1.0):
+        raise ValueError("train_ratio must be between 0 and 1")
+
+    # Receiver selection:
+    #   selected_rx_list=[0]     -> fixed single-receiver protocol
+    #   selected_rx_list=[0,1,2] -> original multi-receiver mixed protocol
+    if selected_rx_list is None:
+        selected_rx_list = list(range(n_rx))
+    else:
+        selected_rx_list = [int(x) for x in selected_rx_list]
+        for rx_i in selected_rx_list:
+            if rx_i < 0 or rx_i >= n_rx:
+                raise ValueError(f"Invalid rx index {rx_i}; available rx range is 0-{n_rx - 1}")
+
+    def collect(tx_indices, day_i, part):
+        """Order-block 70/30 proxy split; does not shuffle adjacent stored samples."""
+        xs, ys = [], []
+        for tx_i in tx_indices:
+            for rx_i in selected_rx_list:
+                arr = np.asarray(data[tx_i][rx_i][day_i][eq_index])  # (N, 256, 2)
+                split_idx = int(arr.shape[0] * train_ratio)
+                if part == "train":
+                    arr = arr[:split_idx]
+                elif part == "eval":
+                    arr = arr[split_idx:]
+                else:
+                    raise ValueError("part must be 'train' or 'eval'")
+
+                if arr.size == 0:
+                    continue
+                if transpose_to_model:
+                    arr = np.transpose(arr, (0, 2, 1))  # (N, 256, 2) -> (N, 2, 256)
+                xs.append(arr.astype(np.float32))
+                ys.append(np.full(arr.shape[0], tx_i, dtype=np.int64))
+
+        if len(xs) == 0:
+            raise ValueError(f"No samples collected for tx_indices={list(tx_indices)}, day_i={day_i}, part={part}")
+        return np.concatenate(xs, axis=0), np.concatenate(ys, axis=0)
+
+    known_tx = list(range(0, 10))
+    r1_tx = list(range(10, 20))
+    r2_tx = list(range(20, 30))
+    r3_tx = list(range(30, 40))
+
+    # Day 1: initial known training and held-out initial evaluation.
+    X_train, y_train = collect(known_tx, day_i=0, part="train")
+    X_eval_initial, y_eval_initial = collect(known_tx, day_i=0, part="eval")
+
+    # Day 2: R1 discovery and After-R1 held-out evaluation.
+    X_r1, y_r1 = collect(r1_tx, day_i=1, part="train")
+    X_eval_r1, y_eval_r1 = collect(known_tx + r1_tx, day_i=1, part="eval")
+
+    # Day 3: R2 discovery and After-R2 held-out evaluation.
+    X_r2, y_r2 = collect(r2_tx, day_i=2, part="train")
+    X_eval_r2, y_eval_r2 = collect(known_tx + r1_tx + r2_tx, day_i=2, part="eval")
+
+    # Day 4: R3 discovery and After-R3 held-out evaluation.
+    X_r3, y_r3 = collect(r3_tx, day_i=3, part="train")
+    X_eval_r3, y_eval_r3 = collect(known_tx + r1_tx + r2_tx + r3_tx, day_i=3, part="eval")
+
+    return {
+        "day1_known_train": {"X": X_train, "y": y_train, "day": day_list[0], "tx_range": "0-9", "split": "70%"},
+        "day1_initial_eval": {"X": X_eval_initial, "y": y_eval_initial, "day": day_list[0], "tx_range": "0-9", "split": "30%"},
+        "day2_unknown_round1": {"X": X_r1, "y": y_r1, "day": day_list[1], "tx_range": "10-19", "split": "70%"},
+        "day2_eval_after_r1": {"X": X_eval_r1, "y": y_eval_r1, "day": day_list[1], "tx_range": "0-19", "split": "30%"},
+        "day3_unknown_round2": {"X": X_r2, "y": y_r2, "day": day_list[2], "tx_range": "20-29", "split": "70%"},
+        "day3_eval_after_r2": {"X": X_eval_r2, "y": y_eval_r2, "day": day_list[2], "tx_range": "0-29", "split": "30%"},
+        "day4_unknown_round3": {"X": X_r3, "y": y_r3, "day": day_list[3], "tx_range": "30-39", "split": "70%"},
+        "day4_eval_after_r3": {"X": X_eval_r3, "y": y_eval_r3, "day": day_list[3], "tx_range": "0-39", "split": "30%"},
+        "train_ratio": train_ratio,
+        "selected_rx_list": selected_rx_list,
+    }
+
+
+# ============================================================
+# Model training and feature extraction
+# ============================================================
+
+
+def supervised_contrastive_loss(features, labels, temperature=0.2):
+    """
+    Supervised Contrastive Loss for closed-set backbone training.
+
+    This is only used in the initial known-class training stage. It encourages
+    samples from the same known Tx to be closer in the embedding space and
+    different known Tx classes to be more separated.
+    """
+    if features is None or labels is None:
+        return torch.tensor(0.0, device=features.device if features is not None else "cpu")
+
+    features = F.normalize(features, dim=1)
+    labels = labels.contiguous().view(-1, 1)
+    batch_size = features.shape[0]
+
+    if batch_size <= 1:
+        return features.sum() * 0.0
+
+    mask = torch.eq(labels, labels.T).float().to(features.device)
+    logits = torch.div(torch.matmul(features, features.T), float(temperature))
+
+    # Numerical stability.
+    logits = logits - torch.max(logits, dim=1, keepdim=True)[0].detach()
+
+    # Remove self-comparisons.
+    logits_mask = torch.ones_like(mask) - torch.eye(batch_size, device=features.device)
+    mask = mask * logits_mask
+
+    exp_logits = torch.exp(logits) * logits_mask
+    log_prob = logits - torch.log(exp_logits.sum(dim=1, keepdim=True) + 1e-8)
+
+    pos_count = mask.sum(dim=1)
+    valid = pos_count > 0
+    if valid.sum() == 0:
+        return features.sum() * 0.0
+
+    mean_log_prob_pos = (mask * log_prob).sum(dim=1) / (pos_count + 1e-8)
+    loss = -mean_log_prob_pos[valid].mean()
+    return loss
+
+def train_closedset_model(train_set, num_classes, feat_dim, epochs, batch_size, lr, device, save_path, use_supcon=False, supcon_weight=0.1, supcon_temperature=0.2, checkpoint_metadata=None, seed=7, validation_fraction=1.0 / 7.0, use_rf_augmentation=True, projection_hidden_dim=128, projection_dim=64):
+    ensure_dir(os.path.dirname(save_path))
+    train_closedset_with_validation(
+        train_set=train_set,
+        model_factory=lambda: ClosedSetSEI(num_known_classes=num_classes, feat_dim=feat_dim),
+        num_classes=num_classes, feat_dim=feat_dim, epochs=epochs, batch_size=batch_size,
+        lr=lr, device=device, save_path=save_path, seed=seed, use_supcon=use_supcon,
+        supcon_weight=supcon_weight, supcon_temperature=supcon_temperature,
+        checkpoint_metadata=checkpoint_metadata, validation_fraction=validation_fraction,
+        use_rf_augmentation=use_rf_augmentation, projection_hidden_dim=projection_hidden_dim,
+        projection_dim=projection_dim,
+    )
+    return load_closedset_model(save_path, num_classes, feat_dim, device, expected_metadata=checkpoint_metadata)
+
+
+def load_closedset_model(checkpoint_path, num_classes, feat_dim, device, expected_metadata=None):
+    model = ClosedSetSEI(num_known_classes=num_classes, feat_dim=feat_dim).to(device)
+    ckpt = torch.load(checkpoint_path, map_location=device)
+    if expected_metadata is not None:
+        stored = ckpt.get("metadata") if isinstance(ckpt, dict) else None
+        if not stored:
+            raise RuntimeError(
+                "Checkpoint has no protocol metadata. Re-run with --train_closedset "
+                "to create an Rx2/Day1/SupCon-specific checkpoint."
+            )
+        mismatches = {
+            key: {"expected": value, "stored": stored.get(key)}
+            for key, value in expected_metadata.items()
+            if stored.get(key) != value
+        }
+        if mismatches:
+            raise RuntimeError(
+                f"Checkpoint protocol mismatch: {mismatches}. "
+                "Use a new checkpoint or re-run with --train_closedset."
+            )
+    state = ckpt["model_state"] if isinstance(ckpt, dict) and "model_state" in ckpt else ckpt
+    model.load_state_dict(state, strict=True)
+    model.eval()
+    print(f"[Load] checkpoint={checkpoint_path}")
+    return model
+
+
+@torch.no_grad()
+def extract_deep_features(model, X, y, batch_size, device):
+    loader = DataLoader(to_dataset(X, y), batch_size=batch_size, shuffle=False, num_workers=0)
+    feats, ys = [], []
+    model.eval()
+
+    for xb, yb in loader:
+        xb = xb.to(device)
+        feat, _ = model(xb)
+        feats.append(feat.detach().cpu().numpy())
+        ys.append(yb.detach().cpu().numpy())
+
+    return np.concatenate(feats, axis=0).astype(np.float32), np.concatenate(ys, axis=0).astype(np.int64)
+
+
+# ============================================================
+# Clustering metrics and HDBSCAN
+# ============================================================
+
+def purity_score(y_true, labels):
+    total, correct = 0, 0
+    for c in np.unique(labels):
+        if c == -1:
+            continue
+        idx = np.where(labels == c)[0]
+        if len(idx) == 0:
+            continue
+        _, counts = np.unique(y_true[idx], return_counts=True)
+        correct += int(counts.max())
+        total += int(len(idx))
+    return float(correct / total) if total > 0 else 0.0
+
+
+def hungarian_cluster_accuracy(y_true, labels):
+    """One-to-one cluster accuracy; noise samples count as incorrect."""
+    y_true = np.asarray(y_true, dtype=np.int64)
+    labels = np.asarray(labels, dtype=np.int64)
+    valid = labels != -1
+    if len(y_true) == 0 or not np.any(valid):
+        return 0.0
+    true_ids = np.unique(y_true[valid])
+    cluster_ids = np.unique(labels[valid])
+    contingency = np.zeros((len(true_ids), len(cluster_ids)), dtype=np.int64)
+    true_pos = {int(v): i for i, v in enumerate(true_ids)}
+    cluster_pos = {int(v): i for i, v in enumerate(cluster_ids)}
+    for yt, yc in zip(y_true[valid], labels[valid]):
+        contingency[true_pos[int(yt)], cluster_pos[int(yc)]] += 1
+    row_ind, col_ind = linear_sum_assignment(-contingency)
+    return float(contingency[row_ind, col_ind].sum() / len(y_true))
+
+
+def clustering_metrics(y_true, labels):
+    clusters = [c for c in np.unique(labels) if c != -1]
+    return {
+        "Clusters": int(len(clusters)),
+        "Noise": float(np.mean(labels == -1)),
+        "NMI": float(normalized_mutual_info_score(y_true, labels)),
+        "ARI": float(adjusted_rand_score(y_true, labels)),
+        "Purity": float(purity_score(y_true, labels)),
+        "Hungarian Acc": hungarian_cluster_accuracy(y_true, labels),
+    }
+
+
+def run_hdbscan(features, min_cluster_size, min_samples):
+    clusterer = hdbscan.HDBSCAN(
+        min_cluster_size=min_cluster_size,
+        min_samples=min_samples,
+        metric="euclidean",
+        cluster_selection_method="eom",
+    )
+    labels = clusterer.fit_predict(features)
+    probs = getattr(clusterer, "probabilities_", None)
+    return labels.astype(np.int64), probs
+
+
+# ============================================================
+# Feature spaces and graph fusion
+# ============================================================
+
+def clean_scale(features):
+    z = StandardScaler().fit_transform(np.asarray(features, dtype=np.float32))
+    return np.nan_to_num(z, nan=0.0, posinf=0.0, neginf=0.0).astype(np.float32)
+
+
+def topk_graph(S, top_k):
+    n = S.shape[0]
+    k = min(top_k, n)
+    out = np.zeros_like(S, dtype=np.float32)
+    for i in range(n):
+        idx = np.argsort(S[i])[-k:]
+        out[i, idx] = S[i, idx]
+    out = np.maximum(out, out.T)
+    np.fill_diagonal(out, 1.0)
+    return out.astype(np.float32)
+
+
+def cosine_graph(features, top_k):
+    z = normalize(features, norm="l2", axis=1)
+    S = cosine_similarity(z)
+    S = np.clip((S + 1.0) / 2.0, 0.0, 1.0)
+    return topk_graph(S, top_k)
+
+
+def rbf_graph(features, top_k):
+    D = euclidean_distances(features, features)
+    nz = D[D > 0]
+    sigma = float(np.median(nz)) if len(nz) > 0 else 1.0
+    S = np.exp(-(D ** 2) / (2.0 * sigma ** 2 + 1e-8))
+    return topk_graph(np.clip(S, 0.0, 1.0), top_k)
+
+
+def build_bounded_edge_adaptive_fusion(G_deep, G_rf, alpha_min=0.65, alpha_max=0.95, eps=1e-8, rf_reliability=None):
+    """
+    Bounded edge-wise adaptive graph fusion.
+
+    Each sample-pair edge receives its own deep/RF fusion weight.
+    The deep-view weight is constrained to [alpha_min, alpha_max],
+    so RF can provide complementary evidence without dominating the graph.
+
+    Formula:
+        rf_support_ij = G_rf_ij / (G_deep_ij + G_rf_ij + eps)
+        alpha_ij = alpha_max - (alpha_max - alpha_min) * rf_support_ij
+        G_fused_ij = alpha_ij * G_deep_ij + (1 - alpha_ij) * G_rf_ij
+    """
+    if not (0.0 <= alpha_min <= alpha_max <= 1.0):
+        raise ValueError("alpha_min and alpha_max must satisfy 0 <= alpha_min <= alpha_max <= 1")
+
+    G_deep = np.asarray(G_deep, dtype=np.float32)
+    G_rf = np.asarray(G_rf, dtype=np.float32)
+
+    G_deep = np.clip(G_deep, 0.0, 1.0).astype(np.float32, copy=False)
+    G_rf = np.clip(G_rf, 0.0, 1.0).astype(np.float32, copy=False)
+
+    # tmp is first rf_support, then alpha_ij, then RF weight.
+    tmp = G_deep + G_rf
+    tmp += eps
+    np.divide(G_rf, tmp, out=tmp)
+
+    # alpha_ij: deep-view weight for every edge.
+    tmp *= -(alpha_max - alpha_min)
+    tmp += alpha_max
+    np.clip(tmp, alpha_min, alpha_max, out=tmp)
+
+    if rf_reliability is not None:
+        reliability = np.clip(np.asarray(rf_reliability, dtype=np.float32), 0.0, 1.0)
+        edge_reliability = np.sqrt(np.outer(reliability, reliability))
+        # Local CF-LCG: unreliable RF neighborhoods transfer their weight to
+        # the deep view edge-by-edge, without rejecting any sample.
+        tmp += (1.0 - tmp) * (1.0 - edge_reliability)
+
+    # Useful lightweight diagnostics without saving the full NxN weight matrix.
+    edge_mask = ((G_deep > 0.0) | (G_rf > 0.0))
+    if edge_mask.shape[0] == edge_mask.shape[1]:
+        np.fill_diagonal(edge_mask, False)
+    if np.any(edge_mask):
+        vals = tmp[edge_mask]
+        weight_stats = {
+            "Adaptive Weight Mean": float(np.mean(vals)),
+            "Adaptive Weight Min": float(np.min(vals)),
+            "Adaptive Weight Max": float(np.max(vals)),
+        }
+    else:
+        weight_stats = {
+            "Adaptive Weight Mean": float(np.mean(tmp)),
+            "Adaptive Weight Min": float(np.min(tmp)),
+            "Adaptive Weight Max": float(np.max(tmp)),
+        }
+    if rf_reliability is not None:
+        weight_stats["Local RF Consistency Mean"] = float(np.mean(rf_reliability))
+        weight_stats["Local RF Consistency Min"] = float(np.min(rf_reliability))
+
+    # G_fused = alpha_ij * G_deep + (1 - alpha_ij) * G_rf
+    G_fused = G_deep.copy()
+    G_fused *= tmp
+    tmp *= -1.0
+    tmp += 1.0
+    G_fused += tmp * G_rf
+
+    G_fused = np.maximum(G_fused, G_fused.T)
+    np.fill_diagonal(G_fused, 1.0)
+    return G_fused.astype(np.float32), weight_stats
+
+
+def graph_embedding(z_deep, z_rf, alpha, top_k, graph_dim, seed, adaptive_fusion=False, alpha_min=0.65, alpha_max=0.95, rf_reliability=None):
+    Gd = cosine_graph(z_deep, top_k)
+    Gr = rbf_graph(z_rf, top_k)
+
+    if adaptive_fusion:
+        G, fusion_stats = build_bounded_edge_adaptive_fusion(
+            Gd, Gr, alpha_min=alpha_min, alpha_max=alpha_max, rf_reliability=rf_reliability
+        )
+    else:
+        G = np.maximum(alpha * Gd + (1.0 - alpha) * Gr, 0.0)
+        G = np.maximum(G, G.T)
+        np.fill_diagonal(G, 1.0)
+        fusion_stats = {
+            "Adaptive Weight Mean": np.nan,
+            "Adaptive Weight Min": np.nan,
+            "Adaptive Weight Max": np.nan,
+        }
+
+    n_comp = min(graph_dim, G.shape[0] - 2)
+    emb = SpectralEmbedding(n_components=n_comp, affinity="precomputed", random_state=seed).fit_transform(G)
+    return clean_scale(emb), fusion_stats
+
+
+def cflcg_mode_for_method(method):
+    if method == "No CF-LCG (MV-ACC)":
+        return "none"
+    if method == "Global CF-LCG (MV-ACC)":
+        return "global"
+    if method == "MV-ACC":
+        return "local"
+    return "none"
+
+
+def extract_rf_view(X, args, cflcg_mode="none"):
+    if cflcg_mode == "global" and not getattr(args, "cflcg_gate_open", True):
+        # The global ablation is a true binary gate: a failed Day-1 criterion
+        # removes the RF view instead of silently falling back to raw RF.
+        return np.zeros((len(X), 24), dtype=np.float32)
+    if cflcg_mode in {"global", "local"} and getattr(args, "cflcg_extractor", None) is not None:
+        return args.cflcg_extractor(X)
+    return extract_rf_features_batch(X)
+
+
+def build_round_features(X_round, Z_round, args, cflcg_mode="none"):
+    rf = extract_rf_view(X_round, args, cflcg_mode)
+    z_deep = clean_scale(Z_round)
+    z_rf = clean_scale(rf)
+    local_consistency = local_cross_view_consistency(z_deep, z_rf, args.cflcg_local_k) if cflcg_mode == "local" else None
+    z_graph, fusion_stats = graph_embedding(
+        z_deep,
+        z_rf,
+        args.alpha,
+        args.top_k,
+        args.graph_dim,
+        args.seed,
+        adaptive_fusion=args.adaptive_fusion,
+        alpha_min=args.alpha_min,
+        alpha_max=args.alpha_max,
+        rf_reliability=local_consistency,
+    )
+    return {
+        "deep": z_deep,
+        "rf": z_rf,
+        "graph": z_graph,
+        "hybrid": np.concatenate([z_deep, z_rf], axis=1).astype(np.float32),
+        "fusion_stats": fusion_stats,
+        "local_rf_consistency": local_consistency,
+    }
+
+
+# ============================================================
+# Reliability and merge
+# ============================================================
+
+def reliability_filter(features, labels, probs, min_cluster_size, min_prob, threshold):
+    details = []
+    cluster_ids = [c for c in np.unique(labels) if c != -1]
+    if not cluster_ids:
+        return [], details
+
+    stats = []
+    for cid in cluster_ids:
+        idx = np.where(labels == cid)[0]
+        z = features[idx]
+        center = z.mean(axis=0)
+        dist = np.linalg.norm(z - center, axis=1)
+        stats.append({
+            "cluster_id": int(cid),
+            "indices": idx,
+            "size": int(len(idx)),
+            "center": center,
+            "radius": float(np.mean(dist)),
+            "prob": float(np.mean(probs[idx])) if probs is not None else 1.0,
+        })
+
+    centers = np.stack([s["center"] for s in stats], axis=0)
+    if len(stats) > 1:
+        D = euclidean_distances(centers, centers)
+        np.fill_diagonal(D, np.inf)
+        for i, s in enumerate(stats):
+            s["sep"] = float(np.min(D[i]))
+    else:
+        stats[0]["sep"] = 1.0
+
+    radius_ref = float(np.median([s["radius"] for s in stats]) + 1e-8)
+    sep_ref = float(np.median([s["sep"] for s in stats]) + 1e-8)
+
+    accepted = []
+    for s in stats:
+        if s["size"] < min_cluster_size or s["prob"] < min_prob:
+            score, ok = 0.0, False
+        else:
+            compact = np.exp(-s["radius"] / radius_ref)
+            sep = 1.0 - np.exp(-s["sep"] / sep_ref)
+            score = float(np.exp(np.mean(np.log(np.clip([compact, sep, s["prob"]], 1e-8, 1.0)))))
+            ok = score >= threshold
+
+        item = {"cluster_id": int(s["cluster_id"]), "size": int(s["size"]), "reliability_score": float(score), "accepted": bool(ok)}
+        details.append(item)
+        if ok:
+            accepted.append(int(s["cluster_id"]))
+
+    return accepted, details
+
+
+def all_non_noise_as_accepted(labels):
+    return [int(c) for c in np.unique(labels) if c != -1], [
+        {"cluster_id": int(c), "accepted": True, "reliability_score": 1.0, "size": int(np.sum(labels == c))}
+        for c in np.unique(labels) if c != -1
+    ]
+
+
+def merge_accepted_clusters(labels, accepted_ids, graph_feat, rf_feat, threshold, mutual_nearest=True):
+    accepted_ids = list(accepted_ids)
+    if len(accepted_ids) <= 1:
+        return labels.copy(), []
+
+    protos_g, protos_r, valid = [], [], []
+    for cid in accepted_ids:
+        idx = np.where(labels == cid)[0]
+        if len(idx) == 0:
+            continue
+        protos_g.append(graph_feat[idx].mean(axis=0))
+        protos_r.append(rf_feat[idx].mean(axis=0))
+        valid.append(int(cid))
+
+    if len(valid) <= 1:
+        return labels.copy(), []
+
+    Pg = normalize(np.stack(protos_g, axis=0), axis=1)
+    Sg = np.clip((Pg @ Pg.T + 1.0) / 2.0, 0.0, 1.0)
+
+    Dr = euclidean_distances(np.stack(protos_r, axis=0), np.stack(protos_r, axis=0))
+    nz = Dr[Dr > 0]
+    sigma = float(np.median(nz)) if len(nz) > 0 else 1.0
+    Sr = np.exp(-(Dr ** 2) / (2.0 * sigma ** 2 + 1e-8))
+
+    S = np.sqrt(np.clip(Sg, 1e-8, 1.0) * np.clip(Sr, 1e-8, 1.0))
+    np.fill_diagonal(S, 0.0)
+    nearest = np.argmax(S, axis=1)
+
+    parent = {cid: cid for cid in valid}
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(a, b):
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[max(ra, rb)] = min(ra, rb)
+            return True
+        return False
+
+    merge_rows = []
+    for i, j in enumerate(nearest):
+        if i == j or S[i, j] < threshold:
+            continue
+        if mutual_nearest and nearest[j] != i:
+            continue
+        ci, cj = valid[i], valid[j]
+        if union(ci, cj):
+            merge_rows.append({"cluster_i": int(ci), "cluster_j": int(cj), "merge_score": float(S[i, j])})
+
+    merged = labels.copy()
+    for cid in valid:
+        merged[labels == cid] = find(cid)
+
+    non_noise = merged != -1
+    unique = sorted(np.unique(merged[non_noise]).tolist())
+    remap = {old: new for new, old in enumerate(unique)}
+    final = np.full_like(merged, -1)
+    for old, new in remap.items():
+        final[merged == old] = new
+
+    return final.astype(np.int64), merge_rows
+
+
+
+
+# ============================================================
+# No-drop iterative cluster merging
+# ============================================================
+
+def _merge_labels_by_pairs_no_drop(labels, pairs):
+    """
+    Merge cluster IDs according to pairs. This never deletes samples.
+    Noise labels (-1) stay as noise. Non-noise samples remain assigned.
+    """
+    labels = np.asarray(labels, dtype=np.int64)
+    valid = [int(c) for c in np.unique(labels) if c != -1]
+    parent = {c: c for c in valid}
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(a, b):
+        if a not in parent or b not in parent:
+            return False
+        ra, rb = find(a), find(b)
+        if ra == rb:
+            return False
+        parent[max(ra, rb)] = min(ra, rb)
+        return True
+
+    merge_count = 0
+    for a, b in pairs:
+        if union(int(a), int(b)):
+            merge_count += 1
+
+    merged = labels.copy()
+    for c in valid:
+        merged[labels == c] = find(c)
+
+    # Remap non-noise clusters to consecutive IDs for clean downstream enrollment.
+    final = np.full_like(merged, -1)
+    non_noise_ids = sorted(np.unique(merged[merged != -1]).tolist())
+    remap = {old: new for new, old in enumerate(non_noise_ids)}
+    for old, new in remap.items():
+        final[merged == old] = new
+
+    return final.astype(np.int64), merge_count
+
+
+def iterative_merge_clusters_no_drop(labels, feats, args, max_rounds=2, threshold=None):
+    """
+    Pure iterative cluster merging without reliability filtering or sample deletion.
+
+    Goal:
+        reduce over-clustering while preserving all non-noise samples.
+
+    Difference from Full method / MV-IARC:
+        - no reliability filtering
+        - no rejected clusters
+        - no uncertain-sample deletion
+        - no secondary sample-level HDBSCAN
+        - only merges existing HDBSCAN clusters based on multi-view prototype similarity
+
+    Similarity:
+        deep prototype cosine + RF prototype RBF + graph prototype cosine
+    """
+    working = np.asarray(labels, dtype=np.int64).copy()
+    merge_threshold = float(args.iter_merge_threshold if threshold is None else threshold)
+    total_merges = 0
+
+    for merge_round in range(int(max_rounds)):
+        cluster_ids = [int(c) for c in np.unique(working) if c != -1]
+        if len(cluster_ids) <= 1:
+            break
+
+        protos_deep, protos_rf, protos_graph = [], [], []
+        valid = []
+        for cid in cluster_ids:
+            idx = np.where(working == cid)[0]
+            if len(idx) == 0:
+                continue
+            protos_deep.append(feats["deep"][idx].mean(axis=0))
+            protos_rf.append(feats["rf"][idx].mean(axis=0))
+            protos_graph.append(feats["graph"][idx].mean(axis=0))
+            valid.append(cid)
+
+        if len(valid) <= 1:
+            break
+
+        Pd = normalize(np.stack(protos_deep, axis=0), axis=1)
+        Pg = normalize(np.stack(protos_graph, axis=0), axis=1)
+        S_deep = np.clip((Pd @ Pd.T + 1.0) / 2.0, 0.0, 1.0)
+        S_graph = np.clip((Pg @ Pg.T + 1.0) / 2.0, 0.0, 1.0)
+
+        Pr = np.stack(protos_rf, axis=0)
+        Dr = euclidean_distances(Pr, Pr)
+        nz = Dr[Dr > 0]
+        sigma = float(np.median(nz)) if len(nz) > 0 else 1.0
+        S_rf = np.exp(-(Dr ** 2) / (2.0 * sigma ** 2 + 1e-8))
+
+        w_deep = float(args.iter_merge_lambda_deep)
+        w_rf = float(args.iter_merge_lambda_rf)
+        w_graph = float(args.iter_merge_lambda_graph)
+        w_sum = max(w_deep + w_rf + w_graph, 1e-8)
+        S = (w_deep * S_deep + w_rf * S_rf + w_graph * S_graph) / w_sum
+        np.fill_diagonal(S, 0.0)
+
+        nearest = np.argmax(S, axis=1)
+        pairs = []
+        for i, j in enumerate(nearest):
+            if i == j:
+                continue
+            if S[i, j] < merge_threshold:
+                continue
+            if (not args.no_mutual_nearest) and nearest[j] != i:
+                continue
+            pairs.append((valid[i], valid[j]))
+
+        if not pairs:
+            break
+
+        working, merge_count = _merge_labels_by_pairs_no_drop(working, pairs)
+        total_merges += int(merge_count)
+        if merge_count == 0:
+            break
+
+    stats = {
+        "Iter Merge Rounds": int(max_rounds),
+        "Iter Merge Total Merges": int(total_merges),
+        "Iter Merge Threshold": float(merge_threshold),
+    }
+    return working.astype(np.int64), stats
+
+
+def assign_noise_samples_no_drop(labels, feats, args):
+    """Assign every HDBSCAN noise sample without using ground-truth labels."""
+    working = np.asarray(labels, dtype=np.int64).copy()
+    noise_idx = np.where(working == -1)[0]
+    stats = {
+        "Noise Before Reassignment": int(len(noise_idx)),
+        "Noise Reassigned": 0,
+        "Assignment Coverage": 1.0 if len(working) == 0 else float(np.mean(working != -1)),
+        "Assignment Score Mean": np.nan,
+        "Assignment Score Min": np.nan,
+        "No-cluster Fallback": False,
+    }
+    if len(noise_idx) == 0:
+        stats["Assignment Coverage"] = 1.0
+        return working, stats
+
+    cluster_ids = [int(c) for c in np.unique(working) if c != -1]
+    if not cluster_ids:
+        working[:] = 0
+        stats.update({"Noise Reassigned": int(len(noise_idx)), "Assignment Coverage": 1.0, "No-cluster Fallback": True})
+        return working, stats
+
+    protos_deep, protos_rf, protos_graph = [], [], []
+    for cid in cluster_ids:
+        idx = np.where(working == cid)[0]
+        protos_deep.append(feats["deep"][idx].mean(axis=0))
+        protos_rf.append(feats["rf"][idx].mean(axis=0))
+        protos_graph.append(feats["graph"][idx].mean(axis=0))
+
+    Pd = normalize(np.stack(protos_deep, axis=0), axis=1)
+    Pg = normalize(np.stack(protos_graph, axis=0), axis=1)
+    Xd = normalize(feats["deep"][noise_idx], axis=1)
+    Xg = normalize(feats["graph"][noise_idx], axis=1)
+    S_deep = np.clip((Xd @ Pd.T + 1.0) / 2.0, 0.0, 1.0)
+    S_graph = np.clip((Xg @ Pg.T + 1.0) / 2.0, 0.0, 1.0)
+
+    Pr = np.stack(protos_rf, axis=0)
+    Dr = euclidean_distances(feats["rf"][noise_idx], Pr)
+    positive = Dr[Dr > 0]
+    sigma = float(np.median(positive)) if len(positive) > 0 else 1.0
+    S_rf = np.exp(-(Dr ** 2) / (2.0 * sigma ** 2 + 1e-8))
+
+    w_deep = float(args.nodrop_assign_lambda_deep)
+    w_rf = float(args.nodrop_assign_lambda_rf)
+    w_graph = float(args.nodrop_assign_lambda_graph)
+    w_sum = max(w_deep + w_rf + w_graph, 1e-8)
+    scores = (w_deep * S_deep + w_rf * S_rf + w_graph * S_graph) / w_sum
+    best_pos = np.argmax(scores, axis=1)
+    best_scores = scores[np.arange(len(noise_idx)), best_pos]
+    working[noise_idx] = np.asarray(cluster_ids, dtype=np.int64)[best_pos]
+    stats.update({
+        "Noise Reassigned": int(len(noise_idx)),
+        "Assignment Coverage": float(np.mean(working != -1)),
+        "Assignment Score Mean": float(np.mean(best_scores)),
+        "Assignment Score Min": float(np.min(best_scores)),
+    })
+    if np.any(working == -1):
+        raise RuntimeError("No-drop assignment failed: some samples still have label -1")
+    return working.astype(np.int64), stats
+
+
+def adaptive_split_large_clusters_no_drop(labels, feats, args):
+    """Split statistically oversized clusters without using labels or a target K.
+
+    Density clustering can occasionally merge two transmitters when a backbone
+    seed changes local geometry.  After no-drop consolidation, clusters much
+    larger than the median are tested with a two-way K-means split in a joint
+    deep/RF/graph space.  A split is retained only when both parts are large
+    enough and their within-cluster silhouette exceeds a fixed threshold.
+    """
+    working = np.asarray(labels, dtype=np.int64).copy()
+    z = np.concatenate([
+        0.75 * normalize(feats["deep"], axis=1),
+        0.25 * normalize(feats["rf"], axis=1),
+        normalize(feats["graph"], axis=1),
+    ], axis=1).astype(np.float32)
+    next_id = int(working.max()) + 1 if len(working) else 0
+    total_splits = 0
+    accepted_silhouettes = []
+
+    for _ in range(int(args.mvacc_split_rounds)):
+        cluster_ids = sorted(np.unique(working).tolist())
+        sizes = np.asarray([np.sum(working == c) for c in cluster_ids], dtype=np.int64)
+        if len(sizes) <= 1:
+            break
+        median_size = float(np.median(sizes))
+        changed = False
+
+        for cid, size in sorted(zip(cluster_ids, sizes), key=lambda item: item[1], reverse=True):
+            if size <= float(args.mvacc_split_size_factor) * median_size:
+                continue
+            idx = np.where(working == cid)[0]
+            sub = KMeans(n_clusters=2, n_init=10, random_state=args.seed).fit_predict(z[idx])
+            counts = np.bincount(sub, minlength=2)
+            min_part = max(20, int(round(float(args.mvacc_split_min_part_ratio) * median_size)))
+            if int(counts.min()) < min_part:
+                continue
+            score = float(silhouette_score(z[idx], sub, metric="euclidean"))
+            if score < float(args.mvacc_split_silhouette):
+                continue
+
+            working[idx[sub == 1]] = next_id
+            next_id += 1
+            total_splits += 1
+            accepted_silhouettes.append(score)
+            changed = True
+
+        if not changed:
+            break
+
+    final = np.empty_like(working)
+    for new_id, old_id in enumerate(sorted(np.unique(working).tolist())):
+        final[working == old_id] = new_id
+    return final.astype(np.int64), {
+        "Adaptive Split Count": int(total_splits),
+        "Adaptive Split Size Factor": float(args.mvacc_split_size_factor),
+        "Adaptive Split Silhouette Threshold": float(args.mvacc_split_silhouette),
+        "Adaptive Split Silhouette Mean": (
+            float(np.mean(accepted_silhouettes)) if accepted_silhouettes else np.nan
+        ),
+    }
+
+
+# ============================================================
+# MV-IARC: Multi-view Intra-round Adaptive Re-Clustering
+# ============================================================
+
+def _safe_cosine_proto(a, b):
+    a = np.asarray(a, dtype=np.float32).reshape(1, -1)
+    b = np.asarray(b, dtype=np.float32).reshape(1, -1)
+    sim = float((l2norm(a) @ l2norm(b).T)[0, 0])
+    # Map cosine similarity from [-1, 1] to [0, 1] for stable fusion with RBF similarity.
+    return float(np.clip((sim + 1.0) / 2.0, 0.0, 1.0))
+
+
+def _rf_rbf_similarity(p_s, p_r, sigma):
+    d = float(np.linalg.norm(np.asarray(p_s, dtype=np.float32) - np.asarray(p_r, dtype=np.float32)))
+    return float(np.exp(-(d ** 2) / (2.0 * sigma ** 2 + 1e-8)))
+
+
+def _cluster_indices(labels, cid):
+    return np.where(np.asarray(labels) == cid)[0]
+
+
+def _cluster_proto(feat, idx):
+    return np.asarray(feat[idx], dtype=np.float32).mean(axis=0)
+
+
+def _estimate_rf_sigma(rf_feat, label_source, reliable_ids, secondary_indices=None):
+    protos = []
+    for cid in reliable_ids:
+        idx = _cluster_indices(label_source, cid)
+        if len(idx) > 0:
+            protos.append(_cluster_proto(rf_feat, idx))
+    if secondary_indices is not None and len(secondary_indices) > 0:
+        protos.append(_cluster_proto(rf_feat, secondary_indices))
+    if len(protos) <= 1:
+        return 1.0
+    D = euclidean_distances(np.stack(protos, axis=0), np.stack(protos, axis=0))
+    nz = D[D > 0]
+    return float(np.median(nz)) if len(nz) > 0 else 1.0
+
+
+def multi_view_cluster_similarity(sec_idx, ref_idx, feats, args, rf_sigma):
+    """
+    Similarity between a secondary cluster and an existing reliable cluster.
+    Uses deep prototype cosine, RF prototype RBF similarity and graph-embedding cosine.
+    """
+    pds = _cluster_proto(feats["deep"], sec_idx)
+    pdr = _cluster_proto(feats["deep"], ref_idx)
+    prs = _cluster_proto(feats["rf"], sec_idx)
+    prr = _cluster_proto(feats["rf"], ref_idx)
+    pgs = _cluster_proto(feats["graph"], sec_idx)
+    pgr = _cluster_proto(feats["graph"], ref_idx)
+
+    s_deep = _safe_cosine_proto(pds, pdr)
+    s_rf = _rf_rbf_similarity(prs, prr, rf_sigma)
+    s_graph = _safe_cosine_proto(pgs, pgr)
+
+    w_deep = float(args.iarc_lambda_deep)
+    w_rf = float(args.iarc_lambda_rf)
+    w_graph = float(args.iarc_lambda_graph)
+    w_sum = max(w_deep + w_rf + w_graph, 1e-8)
+    score = (w_deep * s_deep + w_rf * s_rf + w_graph * s_graph) / w_sum
+    return float(score), {"s_deep": s_deep, "s_rf": s_rf, "s_graph": s_graph}
+
+
+def intra_round_adaptive_reclustering(labels, accepted_ids, discovery_feat, feats, args):
+    """
+    MV-IARC: Multi-view Intra-round Adaptive Re-Clustering.
+
+    After the first HDBSCAN + reliability + merge stage, uncertain samples
+    (noise + rejected clusters) are re-clustered inside the same incremental round.
+    Each secondary cluster is then assigned by a merge / new pseudo-class / reject rule:
+        1) if similar to an existing reliable cluster -> merge into it;
+        2) else if internally reliable -> create a new pseudo-class cluster;
+        3) otherwise -> keep rejected as noise.
+
+    This reduces dependence on the one-shot HDBSCAN result before prototype enrollment.
+    """
+    labels = np.asarray(labels, dtype=np.int64)
+    working = labels.copy()
+    accepted_ids = [int(c) for c in accepted_ids if c != -1]
+
+    # Uncertain set = initial noise + clusters not accepted by reliability filtering.
+    accepted_set = set(accepted_ids)
+    uncertain_mask = (working == -1)
+    for cid in np.unique(working):
+        if cid == -1:
+            continue
+        if int(cid) not in accepted_set:
+            uncertain_mask |= (working == cid)
+
+    uncertain_idx = np.where(uncertain_mask)[0]
+
+    # Reject uncertain samples by default. IARC only restores samples through merge/new decisions.
+    working[uncertain_idx] = -1
+
+    stats = {
+        "IARC Uncertain Samples": int(len(uncertain_idx)),
+        "IARC Secondary Clusters": 0,
+        "IARC Merged Secondary": 0,
+        "IARC New Secondary": 0,
+        "IARC Rejected Secondary": 0,
+    }
+
+    if len(uncertain_idx) < int(args.iarc_min_secondary_size):
+        return working.astype(np.int64), accepted_ids, stats
+
+    secondary_labels, secondary_probs = run_hdbscan(
+        discovery_feat[uncertain_idx],
+        args.iarc_secondary_min_cluster_size,
+        args.iarc_secondary_min_samples,
+    )
+    secondary_cluster_ids = [int(c) for c in np.unique(secondary_labels) if c != -1]
+    stats["IARC Secondary Clusters"] = int(len(secondary_cluster_ids))
+
+    if len(secondary_cluster_ids) == 0:
+        return working.astype(np.int64), accepted_ids, stats
+
+    # Reliability of secondary clusters in the local uncertain set.
+    secondary_accepted, secondary_details = reliability_filter(
+        discovery_feat[uncertain_idx],
+        secondary_labels,
+        secondary_probs,
+        args.iarc_min_secondary_size,
+        args.reliability_min_prob,
+        args.iarc_new_threshold,
+    )
+    secondary_detail_map = {int(d["cluster_id"]): d for d in secondary_details}
+    secondary_accepted = set(int(x) for x in secondary_accepted)
+
+    next_cluster_id = int(np.max(working[working != -1]) + 1) if np.any(working != -1) else 0
+    current_accepted = list(accepted_ids)
+
+    for scid in secondary_cluster_ids:
+        local_idx = np.where(secondary_labels == scid)[0]
+        global_idx = uncertain_idx[local_idx]
+        if len(global_idx) < int(args.iarc_min_secondary_size):
+            stats["IARC Rejected Secondary"] += 1
+            continue
+
+        # Compare secondary cluster with current reliable clusters.
+        best_cid, best_score = None, -1.0
+        if len(current_accepted) > 0:
+            rf_sigma = _estimate_rf_sigma(feats["rf"], working, current_accepted, secondary_indices=global_idx)
+            for rcid in current_accepted:
+                ref_idx = _cluster_indices(working, rcid)
+                if len(ref_idx) == 0:
+                    continue
+                score, _ = multi_view_cluster_similarity(global_idx, ref_idx, feats, args, rf_sigma)
+                if score > best_score:
+                    best_score = score
+                    best_cid = int(rcid)
+
+        # Decision 1: merge into an existing reliable cluster.
+        if best_cid is not None and best_score >= float(args.iarc_merge_threshold):
+            working[global_idx] = best_cid
+            stats["IARC Merged Secondary"] += 1
+            continue
+
+        # Decision 2: create a new pseudo-class if the secondary cluster is reliable itself.
+        detail = secondary_detail_map.get(scid, {})
+        sec_score = float(detail.get("reliability_score", 0.0))
+        if scid in secondary_accepted and sec_score >= float(args.iarc_new_threshold):
+            new_id = int(next_cluster_id)
+            next_cluster_id += 1
+            working[global_idx] = new_id
+            current_accepted.append(new_id)
+            stats["IARC New Secondary"] += 1
+            continue
+
+        # Decision 3: reject as unreliable/noise.
+        working[global_idx] = -1
+        stats["IARC Rejected Secondary"] += 1
+
+    # Keep only accepted clusters plus IARC-created clusters for enrollment.
+    final_accepted = [int(c) for c in current_accepted if np.any(working == c)]
+    return working.astype(np.int64), final_accepted, stats
+
+
+# ============================================================
+# Prototype-based incremental evaluation
+# ============================================================
+
+def l2norm(z):
+    z = np.asarray(z, dtype=np.float32)
+    z = np.nan_to_num(z, nan=0.0, posinf=0.0, neginf=0.0)
+    return (z / (np.linalg.norm(z, axis=1, keepdims=True) + 1e-8)).astype(np.float32)
+
+
+def make_prototypes(features, labels, prototypes_per_class=1, seed=7):
+    protos, proto_labels = [], []
+    for c in sorted(np.unique(labels).tolist()):
+        idx = np.where(labels == c)[0]
+        z = features[idx]
+        n_proto = min(max(int(prototypes_per_class), 1), len(z))
+        if n_proto == 1:
+            centers = z.mean(axis=0, keepdims=True)
+        else:
+            centers = KMeans(n_clusters=n_proto, n_init=10, random_state=seed).fit(z).cluster_centers_
+        protos.extend(list(centers))
+        proto_labels.extend([int(c)] * len(centers))
+    return l2norm(np.stack(protos, axis=0)), np.asarray(proto_labels, dtype=np.int64)
+
+
+def predict_proto(
+    features,
+    prototypes,
+    proto_labels,
+    old_class_count=10,
+    old_class_bonus=0.0,
+):
+    """
+    Nearest-prototype classification with optional old-class score calibration.
+
+    Motivation:
+        In prototype-based incremental recognition, newly enrolled pseudo-prototypes
+        can sometimes attract old-class samples and increase forgetting. A small
+        bonus added only to initial known-class prototypes can reduce this bias
+        without changing clustering, enrollment, or the feature extractor.
+
+    Args:
+        old_class_count:
+            Number of initial known classes. In this protocol, Tx0-Tx9 are old classes.
+        old_class_bonus:
+            Small score bonus beta for initial known-class prototypes.
+            Recommended grid: 0.00, 0.02, 0.04, 0.06.
+    """
+    if prototypes is None or len(prototypes) == 0:
+        return np.zeros(len(features), dtype=np.int64)
+
+    sim = l2norm(features) @ l2norm(prototypes).T
+
+    if old_class_bonus > 0:
+        old_mask = np.asarray(proto_labels) < int(old_class_count)
+        if np.any(old_mask):
+            sim[:, old_mask] += float(old_class_bonus)
+
+    return proto_labels[np.argmax(sim, axis=1)]
+
+
+def acc_on_range(y_true, y_pred, start, end):
+    mask = (y_true >= start) & (y_true < end)
+    if np.sum(mask) == 0:
+        return np.nan
+    return float(np.mean(y_true[mask] == y_pred[mask]))
+
+
+def build_proto_feature_bank(Z_train, X_train, round_Z_list, round_X_list, eval_Z_dict, eval_X_dict, args, cflcg_mode="none"):
+    """
+    Build normalized feature banks for prototype classification.
+
+    The scalers are fit only on training/discovery data, not evaluation data.
+    Multiple held-out evaluation splits are supported:
+        eval_initial, eval_r1, eval_r2, eval_r3.
+    """
+    rf_train = extract_rf_view(X_train, args, cflcg_mode)
+    round_rf_list = [extract_rf_view(x, args, cflcg_mode) for x in round_X_list]
+    eval_rf_dict = {k: extract_rf_view(x, args, cflcg_mode) for k, x in eval_X_dict.items()}
+
+    # Strict incremental protocol: preprocessing statistics are learned from
+    # Day1 known training data only. Future discovery rounds must not influence
+    # R1 preprocessing through a jointly fitted scaler.
+    deep_scaler = StandardScaler().fit(Z_train)
+    rf_scaler = StandardScaler().fit(rf_train)
+
+    def pack(Z, RF):
+        d = np.nan_to_num(deep_scaler.transform(Z), nan=0.0, posinf=0.0, neginf=0.0).astype(np.float32)
+        r = np.nan_to_num(rf_scaler.transform(RF), nan=0.0, posinf=0.0, neginf=0.0).astype(np.float32)
+        return {
+            "deep": l2norm(d),
+            "rf": l2norm(r),
+            "hybrid": l2norm(np.concatenate([d, r], axis=1)),
+        }
+
+    bank = {
+        "train": pack(Z_train, rf_train),
+    }
+    for i, (Z, RF) in enumerate(zip(round_Z_list, round_rf_list), start=1):
+        bank[f"r{i}"] = pack(Z, RF)
+    for key in eval_Z_dict:
+        bank[key] = pack(eval_Z_dict[key], eval_rf_dict[key])
+
+    return bank
+
+
+def enroll_new_prototypes(
+    round_features,
+    labels,
+    accepted_ids,
+    next_label,
+    reliability_map=None,
+    default_reliability=1.0,
+    prototypes_per_cluster=1,
+    seed=7,
+):
+    protos, pseudo_labels, proto_reliabilities = [], [], []
+    cluster_pseudo_pairs = []
+    reliability_map = reliability_map or {}
+
+    for cid in accepted_ids:
+        idx = np.where(labels == cid)[0]
+        if len(idx) == 0:
+            continue
+        pseudo = int(next_label)
+        next_label += 1
+
+        rel = float(reliability_map.get(int(cid), default_reliability))
+        rel = float(np.clip(np.nan_to_num(rel, nan=default_reliability, posinf=1.0, neginf=0.0), 0.0, 1.0))
+
+        z = round_features[idx]
+        n_proto = min(max(int(prototypes_per_cluster), 1), len(z))
+        if n_proto == 1:
+            centers = z.mean(axis=0, keepdims=True)
+        else:
+            centers = KMeans(n_clusters=n_proto, n_init=10, random_state=seed).fit(z).cluster_centers_
+
+        protos.extend(list(centers))
+        pseudo_labels.extend([pseudo] * len(centers))
+        proto_reliabilities.extend([rel] * len(centers))
+        cluster_pseudo_pairs.append((int(cid), pseudo))
+
+    if len(protos) == 0:
+        return None, np.asarray([], dtype=np.int64), np.asarray([], dtype=np.float32), cluster_pseudo_pairs, next_label
+
+    return (
+        l2norm(np.stack(protos, axis=0)),
+        np.asarray(pseudo_labels, dtype=np.int64),
+        np.asarray(proto_reliabilities, dtype=np.float32),
+        cluster_pseudo_pairs,
+        next_label,
+    )
+
+
+
+def evaluate_stage(
+    method,
+    stage,
+    eval_day,
+    seen_classes,
+    eval_X_name,
+    eval_features,
+    y_eval,
+    prototypes,
+    proto_labels,
+    pseudo_to_true,
+    true_new,
+    discovered,
+    enrolled,
+    initial_known=10,
+    round_size=10,
+    initial_reference_acc=None,
+    old_class_bonus=0.0,
+):
+    seen_mask = y_eval < seen_classes
+    y_true = y_eval[seen_mask]
+    pred_raw = predict_proto(
+        eval_features[seen_mask],
+        prototypes,
+        proto_labels,
+        old_class_count=initial_known,
+        old_class_bonus=old_class_bonus,
+    )
+    y_pred = np.asarray([pseudo_to_true.get(int(p), int(p)) for p in pred_raw], dtype=np.int64)
+
+    if stage == "Initial":
+        old_start, old_end = 0, initial_known
+        new_start, new_end = None, None
+    else:
+        # For After Rk, old classes are all classes seen before the kth round,
+        # and new classes are the classes introduced in the kth round.
+        try:
+            k = int(stage.replace("After R", ""))
+        except Exception:
+            k = 1
+        old_start, old_end = 0, initial_known + (k - 1) * round_size
+        new_start = initial_known + (k - 1) * round_size
+        new_end = initial_known + k * round_size
+
+    old_acc = acc_on_range(y_true, y_pred, old_start, old_end)
+    new_acc = np.nan if new_start is None else acc_on_range(y_true, y_pred, new_start, new_end)
+    initial_known_acc = acc_on_range(y_true, y_pred, 0, initial_known)
+
+    if initial_reference_acc is None or np.isnan(initial_known_acc):
+        forgetting_rate = 0.0 if stage == "Initial" else np.nan
+    else:
+        forgetting_rate = float(initial_reference_acc - initial_known_acc)
+
+    return {
+        "Method": method,
+        "Stage": stage,
+        "Eval Day": eval_day,
+        "Eval Split": eval_X_name,
+        "Seen Classes": int(seen_classes),
+        "True New Classes": true_new,
+        "Discovered Clusters": discovered,
+        "Enrolled Clusters": enrolled,
+        "Eval Samples": int(len(y_true)),
+        "Overall Acc": float(np.mean(y_true == y_pred)),
+        "Old Acc": old_acc,
+        "New Acc": new_acc,
+        "Initial Known Acc": initial_known_acc,
+        "Forgetting Rate": forgetting_rate,
+        "Old Class Bonus": float(old_class_bonus),
+        "Macro F1": float(f1_score(y_true, y_pred, labels=list(range(seen_classes)), average="macro", zero_division=0)),
+    }
+
+
+def build_per_round_summary(clustering_df, incremental_df):
+    """
+    Create Table 3: compact per-round summary.
+
+    Compact discovery + incremental summary.  ARI and one-to-one Hungarian
+    accuracy are included because Purity alone is inflated by over-clustering.
+    """
+    # Keep only incremental rounds. Exclude the Initial model row.
+    inc = incremental_df[incremental_df["Stage"].astype(str).str.startswith("After R")].copy()
+    if inc.empty:
+        return pd.DataFrame(columns=[
+            "Method", "Round", "Cluster Count", "Incremental Pseudo-label Classes",
+            "Cluster Count Error", "Sample Coverage", "Purity", "NMI", "ARI",
+            "Hungarian Acc", "Overall Acc", "New Acc", "Forgetting Rate"
+        ])
+
+    inc["Round"] = inc["Stage"].astype(str).str.replace("After ", "", regex=False)
+
+    # Cluster Count = raw HDBSCAN discovered clusters before enrollment.
+    # Incremental Pseudo-label Classes = final enrolled pseudo-label classes.
+    inc = inc[[
+        "Method", "Round", "Discovered Clusters", "Enrolled Clusters",
+        "Overall Acc", "New Acc", "Forgetting Rate"
+    ]].rename(columns={
+        "Discovered Clusters": "Cluster Count",
+        "Enrolled Clusters": "Incremental Pseudo-label Classes",
+    })
+
+    # Discovery metrics come from the same method and round.  Noise-free methods
+    # have coverage 1.0; otherwise coverage is 1 - Noise.
+    clu = clustering_df[[
+        "Method", "Round", "Cluster Count Error", "Noise", "Purity", "NMI", "ARI", "Hungarian Acc"
+    ]].copy()
+    clu["Sample Coverage"] = 1.0 - pd.to_numeric(clu["Noise"], errors="coerce")
+    clu = clu.drop(columns=["Noise"])
+    summary = inc.merge(clu, on=["Method", "Round"], how="left")
+
+    summary = summary[[
+        "Method", "Round",
+        "Cluster Count",
+        "Incremental Pseudo-label Classes",
+        "Cluster Count Error",
+        "Sample Coverage",
+        "Purity",
+        "NMI",
+        "ARI",
+        "Hungarian Acc",
+        "Overall Acc",
+        "New Acc",
+        "Forgetting Rate",
+    ]]
+
+    method_order = {
+        "Deep only": 0,
+        "RF only": 1,
+        "Graph fusion (raw)": 2,
+        "No-drop consolidation (ablation)": 3,
+        "MV-ACC": 4,
+    }
+    round_order = {"R1": 1, "R2": 2, "R3": 3}
+    summary["_m"] = summary["Method"].map(method_order).fillna(99)
+    summary["_r"] = summary["Round"].map(round_order).fillna(99)
+    summary = summary.sort_values(["_m", "_r"]).drop(columns=["_m", "_r"])
+
+    numeric_cols = [
+        "Cluster Count",
+        "Incremental Pseudo-label Classes",
+        "Cluster Count Error",
+        "Sample Coverage",
+        "Purity",
+        "NMI",
+        "ARI",
+        "Hungarian Acc",
+        "Overall Acc",
+        "New Acc",
+        "Forgetting Rate",
+    ]
+    for col in numeric_cols:
+        summary[col] = pd.to_numeric(summary[col], errors="coerce")
+
+    return summary
+
+
+
+
+
+
+# ============================================================
+# Representative class-incremental baselines for SOTA comparison
+# ============================================================
+
+def _select_exemplars(features, labels, per_class=20):
+    """
+    Herding-style compact exemplar selection in a fixed feature space.
+    For each class, keep samples closest to the class mean.
+    """
+    features = np.asarray(features, dtype=np.float32)
+    labels = np.asarray(labels, dtype=np.int64)
+    xs, ys = [], []
+    for c in sorted(np.unique(labels).tolist()):
+        idx = np.where(labels == c)[0]
+        if len(idx) == 0:
+            continue
+        z = features[idx]
+        center = z.mean(axis=0, keepdims=True)
+        dist = np.linalg.norm(z - center, axis=1)
+        keep = idx[np.argsort(dist)[:min(int(per_class), len(idx))]]
+        xs.append(features[keep])
+        ys.append(np.full(len(keep), int(c), dtype=np.int64))
+    if len(xs) == 0:
+        return np.empty((0, features.shape[1]), dtype=np.float32), np.empty((0,), dtype=np.int64)
+    return np.concatenate(xs, axis=0).astype(np.float32), np.concatenate(ys, axis=0).astype(np.int64)
+
+
+def _update_exemplar_memory(memory_X, memory_y, new_X, new_y, per_class=20):
+    if memory_X is None or len(memory_X) == 0:
+        all_X, all_y = new_X, new_y
+    elif new_X is None or len(new_X) == 0:
+        all_X, all_y = memory_X, memory_y
+    else:
+        all_X = np.concatenate([memory_X, new_X], axis=0)
+        all_y = np.concatenate([memory_y, new_y], axis=0)
+    return _select_exemplars(all_X, all_y, per_class=per_class)
+
+
+def _make_linear(in_dim, num_outputs, device):
+    model = torch.nn.Linear(int(in_dim), int(num_outputs)).to(device)
+    return model
+
+
+def _expand_linear(old_model, in_dim, old_class_ids, new_class_ids, device):
+    old_class_ids = list(old_class_ids)
+    class_ids = list(old_class_ids)
+    for c in new_class_ids:
+        if int(c) not in class_ids:
+            class_ids.append(int(c))
+    new_model = _make_linear(in_dim, len(class_ids), device)
+    if old_model is not None and len(old_class_ids) > 0:
+        with torch.no_grad():
+            old_out = len(old_class_ids)
+            new_model.weight[:old_out].copy_(old_model.weight[:old_out])
+            new_model.bias[:old_out].copy_(old_model.bias[:old_out])
+    return new_model, class_ids
+
+
+def _train_linear_classifier(
+    model,
+    train_X,
+    train_y,
+    class_ids,
+    args,
+    device,
+    teacher_model=None,
+    old_output_dim=0,
+):
+    """
+    Train an expandable linear classifier on frozen features.
+    Used to implement Ft-CNN/LwF/EEIL-style baselines under the same protocol.
+    """
+    if train_X is None or len(train_X) == 0:
+        return model
+
+    class_to_idx = {int(c): i for i, c in enumerate(class_ids)}
+    y_idx = np.asarray([class_to_idx[int(y)] for y in train_y], dtype=np.int64)
+
+    X_t = torch.as_tensor(train_X, dtype=torch.float32)
+    y_t = torch.as_tensor(y_idx, dtype=torch.long)
+    loader = DataLoader(TensorDataset(X_t, y_t), batch_size=args.cil_batch_size, shuffle=True, drop_last=False, num_workers=0)
+
+    opt = torch.optim.AdamW(model.parameters(), lr=args.cil_lr, weight_decay=args.cil_weight_decay)
+    T = float(args.cil_distill_temperature)
+    kd_weight = float(args.cil_distill_weight)
+
+    if teacher_model is not None:
+        teacher_model.eval()
+
+    for _ in range(int(args.cil_epochs)):
+        model.train()
+        for xb, yb in loader:
+            xb, yb = xb.to(device), yb.to(device)
+            opt.zero_grad()
+            logits = model(xb)
+            ce = F.cross_entropy(logits, yb)
+            loss = ce
+            if teacher_model is not None and int(old_output_dim) > 0 and kd_weight > 0:
+                with torch.no_grad():
+                    old_logits = teacher_model(xb)[:, :old_output_dim]
+                new_old_logits = logits[:, :old_output_dim]
+                kd = F.kl_div(
+                    F.log_softmax(new_old_logits / T, dim=1),
+                    F.softmax(old_logits / T, dim=1),
+                    reduction="batchmean",
+                ) * (T * T)
+                loss = ce + kd_weight * kd
+            loss.backward()
+            opt.step()
+    model.eval()
+    return model
+
+
+@torch.no_grad()
+def _predict_linear_classifier(model, features, class_ids, device):
+    if model is None or features is None or len(features) == 0:
+        return np.zeros(0, dtype=np.int64)
+    model.eval()
+    X = torch.as_tensor(features, dtype=torch.float32, device=device)
+    logits = model(X).detach().cpu().numpy()
+    idx = np.argmax(logits, axis=1)
+    class_ids = np.asarray(class_ids, dtype=np.int64)
+    return class_ids[idx]
+
+
+def build_posthoc_pseudo_to_true(y_true, cluster_labels, cluster_pseudo_pairs):
+    """Build a strict one-to-one label alignment for reporting only.
+
+    Cluster identifiers are arbitrary, so a post-hoc alignment is required to
+    report identification accuracy.  A many-to-one majority mapping makes
+    severe over-clustering look artificially good because several pseudo
+    classes can all be credited as the same transmitter.  This implementation
+    instead uses a Hungarian one-to-one assignment.  Extra pseudo classes are
+    mapped to negative sentinel labels and therefore count as errors.
+
+    Ground truth is never used to create prototypes, train a classifier,
+    choose clustering parameters, merge clusters, or reassign samples.
+    """
+    y_true = np.asarray(y_true, dtype=np.int64)
+    cluster_labels = np.asarray(cluster_labels, dtype=np.int64)
+    pairs = [(int(cid), int(pseudo)) for cid, pseudo in cluster_pseudo_pairs]
+    mapping = {pseudo: -(1_000_000 + pseudo) for _, pseudo in pairs}
+    if not pairs or len(y_true) == 0:
+        return mapping
+
+    true_ids = np.unique(y_true)
+    contingency = np.zeros((len(true_ids), len(pairs)), dtype=np.int64)
+    true_pos = {int(v): i for i, v in enumerate(true_ids)}
+    for j, (cid, _) in enumerate(pairs):
+        idx = np.where(cluster_labels == cid)[0]
+        for value, count in zip(*np.unique(y_true[idx], return_counts=True)):
+            contingency[true_pos[int(value)], j] = int(count)
+
+    row_ind, col_ind = linear_sum_assignment(-contingency)
+    for i, j in zip(row_ind, col_ind):
+        _, pseudo = pairs[int(j)]
+        mapping[pseudo] = int(true_ids[int(i)])
+    return mapping
+
+
+def _make_pseudo_labeled_round(round_features, labels, enrolled_ids, next_label):
+    xs, ys = [], []
+    cluster_pseudo_pairs = []
+    for cid in enrolled_ids:
+        idx = np.where(labels == cid)[0]
+        if len(idx) == 0:
+            continue
+        pseudo = int(next_label)
+        next_label += 1
+        cluster_pseudo_pairs.append((int(cid), pseudo))
+        xs.append(round_features[idx])
+        ys.append(np.full(len(idx), pseudo, dtype=np.int64))
+    if len(xs) == 0:
+        return np.empty((0, round_features.shape[1]), dtype=np.float32), np.empty((0,), dtype=np.int64), cluster_pseudo_pairs, next_label
+    return np.concatenate(xs, axis=0).astype(np.float32), np.concatenate(ys, axis=0).astype(np.int64), cluster_pseudo_pairs, next_label
+
+
+def _evaluate_raw_predictions(
+    method,
+    stage,
+    eval_day,
+    seen_classes,
+    eval_X_name,
+    y_eval,
+    pred_raw,
+    pseudo_to_true,
+    true_new,
+    discovered,
+    enrolled,
+    initial_known=10,
+    round_size=10,
+    initial_reference_acc=None,
+):
+    seen_mask = y_eval < seen_classes
+    y_true = y_eval[seen_mask]
+    pred_raw = np.asarray(pred_raw, dtype=np.int64)
+    y_pred = np.asarray([pseudo_to_true.get(int(p), int(p)) for p in pred_raw], dtype=np.int64)
+
+    if stage == "Initial":
+        old_start, old_end = 0, initial_known
+        new_start, new_end = None, None
+    else:
+        try:
+            k = int(stage.replace("After R", ""))
+        except Exception:
+            k = 1
+        old_start, old_end = 0, initial_known + (k - 1) * round_size
+        new_start = initial_known + (k - 1) * round_size
+        new_end = initial_known + k * round_size
+
+    old_acc = acc_on_range(y_true, y_pred, old_start, old_end)
+    new_acc = np.nan if new_start is None else acc_on_range(y_true, y_pred, new_start, new_end)
+    initial_known_acc = acc_on_range(y_true, y_pred, 0, initial_known)
+    if initial_reference_acc is None or np.isnan(initial_known_acc):
+        forgetting_rate = 0.0 if stage == "Initial" else np.nan
+    else:
+        forgetting_rate = float(initial_reference_acc - initial_known_acc)
+
+    return {
+        "Method": method,
+        "Stage": stage,
+        "Eval Day": eval_day,
+        "Eval Split": eval_X_name,
+        "Seen Classes": int(seen_classes),
+        "True New Classes": true_new,
+        "Discovered Clusters": discovered,
+        "Enrolled Clusters": enrolled,
+        "Eval Samples": int(len(y_true)),
+        "Overall Acc": float(np.mean(y_true == y_pred)),
+        "Old Acc": old_acc,
+        "New Acc": new_acc,
+        "Initial Known Acc": initial_known_acc,
+        "Forgetting Rate": forgetting_rate,
+        "Macro F1": float(f1_score(y_true, y_pred, labels=list(range(seen_classes)), average="macro", zero_division=0)),
+    }
+
+
+# ============================================================
+# End-to-end pseudo-label class-incremental learning (MV-ACC-CIL)
+# ============================================================
+
+def _expand_closedset_classifier(old_model, new_out_dim, device, new_class_feature_means=None):
+    """Expand the neural classifier while copying every old output weight."""
+    old_out = int(old_model.classifier.out_features)
+    if int(new_out_dim) < old_out:
+        raise ValueError("The incremental classifier cannot shrink.")
+    student = copy.deepcopy(old_model).to(device)
+    if int(new_out_dim) == old_out:
+        return student
+    new_head = torch.nn.Linear(int(old_model.feat_dim), int(new_out_dim)).to(device)
+    with torch.no_grad():
+        new_head.weight[:old_out].copy_(old_model.classifier.weight)
+        new_head.bias[:old_out].copy_(old_model.classifier.bias)
+        # Classifier-weight imprinting is initialization only: final recognition
+        # still uses the neural classifier, never prototype matching.
+        if new_class_feature_means is not None:
+            means = torch.as_tensor(new_class_feature_means, dtype=new_head.weight.dtype, device=device)
+            n = min(len(means), int(new_out_dim) - old_out)
+            old_scale = old_model.classifier.weight.norm(dim=1).mean().clamp_min(1e-8)
+            means = F.normalize(means[:n], dim=1) * old_scale
+            new_head.weight[old_out:old_out + n].copy_(means)
+            new_head.bias[old_out:old_out + n].zero_()
+    student.classifier = new_head
+    student.num_known_classes = int(new_out_dim)
+    return student
+
+
+def _update_iq_memory(memory_x, memory_y, new_x, new_y, per_class, seed):
+    """Balanced raw-IQ replay memory; no frozen features or prototype classifier."""
+    if memory_x is None or len(memory_x) == 0:
+        all_x, all_y = np.asarray(new_x), np.asarray(new_y)
+    else:
+        all_x = np.concatenate([memory_x, new_x], axis=0)
+        all_y = np.concatenate([memory_y, new_y], axis=0)
+    rng = np.random.default_rng(int(seed))
+    keep = []
+    for c in sorted(np.unique(all_y).tolist()):
+        idx = np.where(all_y == c)[0]
+        take = min(int(per_class), len(idx))
+        keep.extend(rng.choice(idx, size=take, replace=False).tolist())
+    keep = np.asarray(sorted(keep), dtype=np.int64)
+    return all_x[keep].astype(np.float32), all_y[keep].astype(np.int64)
+
+
+def _supcon_incremental(features, labels, temperature=0.2):
+    """Supervised contrastive loss on a selected, label-reliable mini-batch."""
+    if len(labels) < 2:
+        return features.new_tensor(0.0)
+    z = F.normalize(features, dim=1)
+    logits = (z @ z.T) / float(temperature)
+    logits = logits - logits.max(dim=1, keepdim=True).values.detach()
+    eye = torch.eye(len(labels), device=features.device, dtype=torch.bool)
+    same = labels[:, None].eq(labels[None, :]) & (~eye)
+    denom_mask = ~eye
+    log_prob = logits - torch.log((torch.exp(logits) * denom_mask).sum(dim=1, keepdim=True) + 1e-12)
+    positives = same.sum(dim=1)
+    valid = positives > 0
+    if not torch.any(valid):
+        return features.new_tensor(0.0)
+    return -(log_prob * same.float()).sum(dim=1)[valid].div(positives[valid].float()).mean()
+
+
+def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, memory_x, memory_y, old_out_dim, args, device):
+    """Head warm-up followed by last-block backbone adaptation on raw IQ samples."""
+    current_x = np.asarray(current_x, dtype=np.float32)
+    current_y = np.asarray(current_y, dtype=np.int64)
+    current_w = np.asarray(current_w, dtype=np.float32)
+    memory_x = np.asarray(memory_x, dtype=np.float32)
+    memory_y = np.asarray(memory_y, dtype=np.int64)
+    cur_loader = DataLoader(
+        TensorDataset(torch.as_tensor(current_x), torch.as_tensor(current_y), torch.as_tensor(current_w)),
+        batch_size=int(args.incremental_batch_size), shuffle=True, drop_last=False, num_workers=0,
+    )
+    mem_loader = DataLoader(
+        TensorDataset(torch.as_tensor(memory_x), torch.as_tensor(memory_y)),
+        batch_size=int(args.incremental_batch_size), shuffle=True, drop_last=False, num_workers=0,
+    )
+    teacher = copy.deepcopy(teacher).to(device).eval()
+    for p in teacher.parameters():
+        p.requires_grad_(False)
+
+    def configure(stage):
+        for p in student.backbone.parameters():
+            p.requires_grad_(False)
+        for p in student.classifier.parameters():
+            p.requires_grad_(True)
+        if stage == "joint":
+            for p in student.backbone.layer3.parameters():
+                p.requires_grad_(True)
+            for p in student.backbone.fc.parameters():
+                p.requires_grad_(True)
+        groups = [{"params": student.classifier.parameters(), "lr": float(args.cil_classifier_lr)}]
+        if stage == "joint":
+            groups.append({"params": itertools.chain(student.backbone.layer3.parameters(), student.backbone.fc.parameters()), "lr": float(args.cil_backbone_lr)})
+        return torch.optim.AdamW(groups, weight_decay=float(args.cil_weight_decay))
+
+    for stage, epochs in (("head", int(args.cil_head_warmup_epochs)), ("joint", int(args.cil_joint_epochs))):
+        if epochs <= 0:
+            continue
+        opt = configure(stage)
+        for _ in range(epochs):
+            student.train()
+            mem_iter = itertools.cycle(mem_loader)
+            for xc, yc, wc in cur_loader:
+                xm, ym = next(mem_iter)
+                xc, yc, wc = xc.to(device), yc.to(device), wc.to(device)
+                xm, ym = xm.to(device), ym.to(device)
+                x = torch.cat([xc, xm], dim=0)
+                feat, logits = student(x)
+                logits_c, logits_m = logits[:len(xc)], logits[len(xc):]
+                ce_current = (F.cross_entropy(logits_c, yc, reduction="none") * wc).sum() / (wc.sum() + 1e-8)
+                ce_memory = F.cross_entropy(logits_m, ym)
+                with torch.no_grad():
+                    _, teacher_logits = teacher(xm)
+                kd = F.kl_div(
+                    F.log_softmax(logits_m[:, :old_out_dim] / float(args.cil_temperature), dim=1),
+                    F.softmax(teacher_logits[:, :old_out_dim] / float(args.cil_temperature), dim=1),
+                    reduction="batchmean",
+                ) * (float(args.cil_temperature) ** 2)
+                high = wc >= float(args.cil_supcon_threshold)
+                feat_con = torch.cat([feat[:len(xc)][high], feat[len(xc):]], dim=0)
+                y_con = torch.cat([yc[high], ym], dim=0)
+                con = _supcon_incremental(feat_con, y_con, args.supcon_temperature)
+                loss = ce_current + float(args.cil_replay_weight) * ce_memory + float(args.cil_kd_weight) * kd + float(args.cil_supcon_weight) * con
+                opt.zero_grad()
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(student.parameters(), max_norm=5.0)
+                opt.step()
+    student.eval()
+    return student
+
+
+@torch.no_grad()
+def _predict_end_to_end(model, X, batch_size, device):
+    loader = DataLoader(TensorDataset(torch.as_tensor(X, dtype=torch.float32)), batch_size=int(batch_size), shuffle=False)
+    out = []
+    model.eval()
+    for (xb,) in loader:
+        _, logits = model(xb.to(device))
+        out.append(torch.argmax(logits, dim=1).cpu().numpy())
+    return np.concatenate(out).astype(np.int64) if out else np.empty(0, dtype=np.int64)
+
+
+def _prototype_predict_from_memory(memory_X, memory_y, eval_X, old_class_bonus=0.0, old_class_count=10):
+    if memory_X is None or len(memory_X) == 0:
+        return np.zeros(len(eval_X), dtype=np.int64)
+    protos, proto_labels = make_prototypes(memory_X, memory_y)
+    return predict_proto(eval_X, protos, proto_labels, old_class_count=old_class_count, old_class_bonus=old_class_bonus)
+
+
+def _smooth_prototypes_by_graph(prototypes, smooth_lambda=0.2):
+    """TPCIL-style topology smoothing over class prototypes."""
+    P = l2norm(prototypes)
+    if len(P) <= 1 or smooth_lambda <= 0:
+        return P
+    S = np.clip((P @ P.T + 1.0) / 2.0, 0.0, 1.0)
+    np.fill_diagonal(S, 0.0)
+    row_sum = S.sum(axis=1, keepdims=True) + 1e-8
+    A = S / row_sum
+    P_smooth = (1.0 - float(smooth_lambda)) * P + float(smooth_lambda) * (A @ P)
+    return l2norm(P_smooth)
+
+
+def _tpcil_style_predict(memory_X, memory_y, eval_X, smooth_lambda=0.2):
+    if memory_X is None or len(memory_X) == 0:
+        return np.zeros(len(eval_X), dtype=np.int64)
+    protos, proto_labels = make_prototypes(memory_X, memory_y)
+    protos = _smooth_prototypes_by_graph(protos, smooth_lambda=smooth_lambda)
+    sim = l2norm(eval_X) @ l2norm(protos).T
+    return proto_labels[np.argmax(sim, axis=1)]
+
+
+
+
+def _doi_style_predict(memory_X, memory_y, eval_X, old_proto_memory=None, align_lambda=0.30):
+    """
+    DOI-style SEI incremental baseline.
+
+    This is an adapted SEI-oriented prototype baseline rather than an exact
+    reproduction of DOI. It follows the main DOI ideas:
+        1) prototype memory preservation
+        2) old/new prototype alignment
+        3) incremental prototype update
+
+    All evaluations use the same WiSig Cross-Day protocol and feature space.
+    """
+    if memory_X is None or len(memory_X) == 0:
+        return np.zeros(len(eval_X), dtype=np.int64)
+
+    protos, proto_labels = make_prototypes(memory_X, memory_y)
+
+    # Prototype alignment: preserve historical knowledge while adapting to new data.
+    if old_proto_memory is not None:
+        old_protos, old_labels = old_proto_memory
+        label_to_idx = {int(c): i for i, c in enumerate(proto_labels)}
+        for i, c in enumerate(old_labels):
+            c = int(c)
+            if c in label_to_idx:
+                j = label_to_idx[c]
+                protos[j] = (
+                    (1.0 - float(align_lambda)) * old_protos[i]
+                    + float(align_lambda) * protos[j]
+                )
+        protos = l2norm(protos)
+
+    sim = l2norm(eval_X) @ l2norm(protos).T
+    return proto_labels[np.argmax(sim, axis=1)]
+
+
+def _update_doi_prototype_memory(memory_X, memory_y, new_X, new_y):
+    """DOI-style memory update: concatenate old/new samples."""
+    if memory_X is None or len(memory_X) == 0:
+        return new_X.copy(), new_y.copy()
+    if new_X is None or len(new_X) == 0:
+        return memory_X, memory_y
+    return (
+        np.concatenate([memory_X, new_X], axis=0),
+        np.concatenate([memory_y, new_y], axis=0),
+    )
+
+
+def build_comparison_summary(baseline_df, incremental_df, proposed_source_method="MV-ACC", proposed_name="Ours (MV-ACC)"):
+    rows = []
+    if baseline_df is not None and not baseline_df.empty:
+        df = baseline_df.copy()
+        df = df[df["Stage"].astype(str).str.startswith("After R")]
+        for method in df["Method"].unique().tolist():
+            sub = df[df["Method"] == method]
+            item = {"Method": method}
+            for r in [1, 2, 3]:
+                rr = sub[sub["Stage"] == f"After R{r}"]
+                if len(rr) > 0:
+                    item[f"R{r} Acc"] = float(rr.iloc[0]["Overall Acc"])
+                    item[f"R{r} Forgetting"] = float(rr.iloc[0]["Forgetting Rate"])
+                else:
+                    item[f"R{r} Acc"] = np.nan
+                    item[f"R{r} Forgetting"] = np.nan
+            item["Avg Acc"] = float(np.nanmean([item.get("R1 Acc"), item.get("R2 Acc"), item.get("R3 Acc")]))
+            item["Avg Forgetting"] = float(np.nanmean([item.get("R1 Forgetting"), item.get("R2 Forgetting"), item.get("R3 Forgetting")]))
+            rows.append(item)
+
+    # Add the proposed method from MV-ACC rows in the main incremental table.
+    if incremental_df is not None and not incremental_df.empty:
+        ours = incremental_df[(incremental_df["Method"] == proposed_source_method) & (incremental_df["Stage"].astype(str).str.startswith("After R"))]
+        if len(ours) > 0:
+            item = {"Method": proposed_name}
+            for r in [1, 2, 3]:
+                rr = ours[ours["Stage"] == f"After R{r}"]
+                if len(rr) > 0:
+                    item[f"R{r} Acc"] = float(rr.iloc[0]["Overall Acc"])
+                    item[f"R{r} Forgetting"] = float(rr.iloc[0]["Forgetting Rate"])
+                else:
+                    item[f"R{r} Acc"] = np.nan
+                    item[f"R{r} Forgetting"] = np.nan
+            item["Avg Acc"] = float(np.nanmean([item.get("R1 Acc"), item.get("R2 Acc"), item.get("R3 Acc")]))
+            item["Avg Forgetting"] = float(np.nanmean([item.get("R1 Forgetting"), item.get("R2 Forgetting"), item.get("R3 Forgetting")]))
+            rows.append(item)
+
+    return pd.DataFrame(rows)
+
+
+
+
+def build_full_end_to_end_system_comparison(end_to_end_baseline_df, incremental_df):
+    """
+    Build the paper-facing end-to-end system table.
+
+    This table combines each discovery front-end with its downstream incremental
+    learner and therefore measures discovery quality and incremental retention
+    jointly. Classical CIL methods do not contain an unknown-discovery module,
+    so they are coupled with the neutral Deep-HDBSCAN front-end.
+
+    Important: TPCIL-style and DOI-style remain adapted back-end implementations;
+    they are not claimed as exact reproductions of the original complete systems.
+    """
+    rows = []
+
+    def add_from_incremental(source_method, display_name, discovery, learner):
+        sub = incremental_df[(incremental_df["Method"] == source_method) &
+                             (incremental_df["Stage"].astype(str).str.startswith("After R"))]
+        if sub.empty:
+            return
+        item = {
+            "Method": display_name,
+            "Discovery Module": discovery,
+            "Incremental Module": learner,
+        }
+        for r in [1, 2, 3]:
+            rr = sub[sub["Stage"] == f"After R{r}"]
+            item[f"R{r} Acc"] = float(rr.iloc[0]["Overall Acc"]) if len(rr) else np.nan
+            item[f"R{r} Forgetting"] = float(rr.iloc[0]["Forgetting Rate"]) if len(rr) else np.nan
+        item["Avg Acc"] = float(np.nanmean([item[f"R{r} Acc"] for r in [1,2,3]]))
+        item["Avg Forgetting"] = float(np.nanmean([item[f"R{r} Forgetting"] for r in [1,2,3]]))
+        rows.append(item)
+
+    def add_from_baseline(source_method, display_name, discovery, learner):
+        if end_to_end_baseline_df is None or end_to_end_baseline_df.empty:
+            return
+        sub = end_to_end_baseline_df[(end_to_end_baseline_df["Method"] == source_method) &
+                                     (end_to_end_baseline_df["Stage"].astype(str).str.startswith("After R"))]
+        if sub.empty:
+            return
+        item = {
+            "Method": display_name,
+            "Discovery Module": discovery,
+            "Incremental Module": learner,
+        }
+        for r in [1, 2, 3]:
+            rr = sub[sub["Stage"] == f"After R{r}"]
+            item[f"R{r} Acc"] = float(rr.iloc[0]["Overall Acc"]) if len(rr) else np.nan
+            item[f"R{r} Forgetting"] = float(rr.iloc[0]["Forgetting Rate"]) if len(rr) else np.nan
+        item["Avg Acc"] = float(np.nanmean([item[f"R{r} Acc"] for r in [1,2,3]]))
+        item["Avg Forgetting"] = float(np.nanmean([item[f"R{r} Forgetting"] for r in [1,2,3]]))
+        rows.append(item)
+
+    # Single-view end-to-end systems using their own clustering outputs.
+    add_from_incremental(
+        "Deep only", "Deep-only pipeline",
+        "SupCon deep embedding + HDBSCAN",
+        "Prototype enrollment + calibration",
+    )
+    add_from_incremental(
+        "RF only", "RF-only pipeline",
+        "Handcrafted RF features + HDBSCAN",
+        "Prototype enrollment + calibration",
+    )
+
+    # Conventional CIL learners connected to a neutral discovery front-end.
+    add_from_baseline("Deep-HDBSCAN + Ft-CNN", "Deep-HDBSCAN + Ft-CNN",
+                      "Deep embedding + HDBSCAN", "Fine-tuning")
+    add_from_baseline("Deep-HDBSCAN + LwF", "Deep-HDBSCAN + LwF",
+                      "Deep embedding + HDBSCAN", "Knowledge distillation")
+    add_from_baseline("Deep-HDBSCAN + iCaRL", "Deep-HDBSCAN + iCaRL",
+                      "Deep embedding + HDBSCAN", "Exemplar replay + prototype classifier")
+    add_from_baseline("Deep-HDBSCAN + EEIL", "Deep-HDBSCAN + EEIL",
+                      "Deep embedding + HDBSCAN", "Replay + distillation")
+    add_from_baseline("Deep-HDBSCAN + TPCIL-style", "Deep-HDBSCAN + TPCIL-style",
+                      "Deep embedding + HDBSCAN", "Topology-aware prototype smoothing")
+    add_from_baseline("Deep-HDBSCAN + DOI-style", "Deep-HDBSCAN + DOI-style",
+                      "Deep embedding + HDBSCAN", "DOI-inspired prototype preservation/alignment")
+
+    # Proposed complete pipeline.
+    add_from_incremental(
+        "MV-ACC",
+        "Ours (MV-ACC)",
+        "SupCon deep/RF graphs + adaptive fusion + HDBSCAN",
+        "Prototype enrollment + old-class calibration",
+    )
+
+    columns = [
+        "Method", "Discovery Module", "Incremental Module",
+        "R1 Acc", "R1 Forgetting", "R2 Acc", "R2 Forgetting",
+        "R3 Acc", "R3 Forgetting", "Avg Acc", "Avg Forgetting",
+    ]
+    return pd.DataFrame(rows, columns=columns)
+
+def run_incremental_learning_baselines(discovery_round_infos, proto_bank, y_train, round_data, eval_data, eval_y_dict, args, device, method_prefix="", comparison_label="Shared discovery", feat_type="hybrid"):
+    """
+    Run representative class-incremental learners using a supplied discovery front-end.
+
+    Parameters
+    ----------
+    discovery_round_infos:
+        Per-round labels and enrolled cluster IDs produced by the selected unknown-discovery
+        front-end. Passing Graph-fusion results gives the shared-discovery control experiment;
+        passing Deep-only HDBSCAN results gives the end-to-end conventional-CIL pipelines.
+    method_prefix:
+        Prefix added to method names so the table states the complete pipeline explicitly,
+        e.g. ``Deep-HDBSCAN + iCaRL``.
+    comparison_label:
+        Human-readable label printed in the console.
+    feat_type:
+        Feature bank used by the incremental learner. The shared-discovery control keeps
+        the original hybrid feature setting, while the neutral Deep-HDBSCAN end-to-end
+        pipelines use deep features only.
+    """
+    print(f"\n========== Representative Class-Incremental Baselines: {comparison_label} ==========")
+
+    def mname(base):
+        return f"{method_prefix}{base}" if method_prefix else base
+    if feat_type not in {"deep", "rf", "hybrid"}:
+        raise ValueError(f"Unsupported feat_type={feat_type}")
+    train_X = proto_bank["train"][feat_type]
+    eval_initial_X = proto_bank["eval_initial"][feat_type]
+    in_dim = int(train_X.shape[1])
+    init_class_ids = list(range(args.initial_known_classes))
+
+    # Prepare pseudo-labeled data chunks from the supplied discovery front-end.
+    pseudo_chunks = []
+    pseudo_to_true_global = {}
+    next_label = int(args.initial_known_classes)
+    for i, info in enumerate(discovery_round_infos, start=1):
+        Xp, yp, cluster_pseudo_pairs, next_label = _make_pseudo_labeled_round(
+            proto_bank[f"r{i}"][feat_type],
+            info["labels"],
+            info["enrolled_ids"],
+            next_label,
+        )
+        mapping = build_posthoc_pseudo_to_true(
+            round_data[i - 1]["y"], info["labels"], cluster_pseudo_pairs
+        )
+        pseudo_to_true_global.update(mapping)
+        pseudo_chunks.append({
+            "X": Xp,
+            "y": yp,
+            "mapping": mapping,
+            "discovered": info["discovered_clusters"],
+            "enrolled": info["enrolled_clusters"],
+        })
+
+    rows = []
+
+    # Shared initial linear classifier for Ft-CNN/LwF/EEIL.
+    base_linear = _make_linear(in_dim, len(init_class_ids), device)
+    base_linear = _train_linear_classifier(base_linear, train_X, y_train, init_class_ids, args, device)
+
+    def eval_initial_linear(method, model, class_ids):
+        pred = _predict_linear_classifier(model, eval_initial_X, class_ids, device)
+        row = _evaluate_raw_predictions(
+            method=method,
+            stage="Initial",
+            eval_day=eval_data["eval_initial"]["day"],
+            seen_classes=args.initial_known_classes,
+            eval_X_name="day1_eval_initial_30pct",
+            y_eval=eval_y_dict["eval_initial"],
+            pred_raw=pred,
+            pseudo_to_true={},
+            true_new="-",
+            discovered="-",
+            enrolled="-",
+            initial_known=args.initial_known_classes,
+            round_size=args.round_size,
+            initial_reference_acc=None,
+        )
+        return row, float(row["Initial Known Acc"])
+
+    # Ft-CNN: fine-tune on current pseudo-labeled new data only, no replay, no distillation.
+    ft_model = copy.deepcopy(base_linear)
+    ft_classes = init_class_ids.copy()
+    ft_pseudo_to_true = {}
+    init_row, ft_ref = eval_initial_linear(mname("Ft-CNN"), ft_model, ft_classes)
+    rows.append(init_row)
+
+    # LwF: fine-tune on current pseudo-labeled data with KD from previous model.
+    lwf_model = copy.deepcopy(base_linear)
+    lwf_classes = init_class_ids.copy()
+    lwf_pseudo_to_true = {}
+    init_row, lwf_ref = eval_initial_linear(mname("LwF"), lwf_model, lwf_classes)
+    rows.append(init_row)
+
+    # EEIL: exemplar replay + distillation.
+    eeil_model = copy.deepcopy(base_linear)
+    eeil_classes = init_class_ids.copy()
+    eeil_memory_X, eeil_memory_y = _select_exemplars(train_X, y_train, per_class=args.memory_per_class)
+    eeil_pseudo_to_true = {}
+    init_row, eeil_ref = eval_initial_linear(mname("EEIL"), eeil_model, eeil_classes)
+    rows.append(init_row)
+
+    # iCaRL and TPCIL-style use exemplar/prototype classifiers in the frozen feature space.
+    icarl_memory_X, icarl_memory_y = _select_exemplars(train_X, y_train, per_class=args.memory_per_class)
+    tpcil_memory_X, tpcil_memory_y = icarl_memory_X.copy(), icarl_memory_y.copy()
+    icarl_pseudo_to_true = {}
+    tpcil_pseudo_to_true = {}
+    doi_pseudo_to_true = {}
+    doi_memory_X, doi_memory_y = icarl_memory_X.copy(), icarl_memory_y.copy()
+    doi_old_proto = make_prototypes(doi_memory_X, doi_memory_y)
+
+    pred_icarl_init = _prototype_predict_from_memory(icarl_memory_X, icarl_memory_y, eval_initial_X, old_class_bonus=0.0, old_class_count=args.initial_known_classes)
+    row_icarl_init = _evaluate_raw_predictions(mname("iCaRL"), "Initial", eval_data["eval_initial"]["day"], args.initial_known_classes, "day1_eval_initial_30pct", eval_y_dict["eval_initial"], pred_icarl_init, {}, "-", "-", "-", args.initial_known_classes, args.round_size, None)
+    rows.append(row_icarl_init)
+    icarl_ref = float(row_icarl_init["Initial Known Acc"])
+
+    pred_tpcil_init = _tpcil_style_predict(tpcil_memory_X, tpcil_memory_y, eval_initial_X, smooth_lambda=args.tpcil_smoothing)
+    row_tpcil_init = _evaluate_raw_predictions(mname("TPCIL-style"), "Initial", eval_data["eval_initial"]["day"], args.initial_known_classes, "day1_eval_initial_30pct", eval_y_dict["eval_initial"], pred_tpcil_init, {}, "-", "-", "-", args.initial_known_classes, args.round_size, None)
+    rows.append(row_tpcil_init)
+    tpcil_ref = float(row_tpcil_init["Initial Known Acc"])
+
+    pred_doi_init = _doi_style_predict(doi_memory_X, doi_memory_y, eval_initial_X, old_proto_memory=None)
+    row_doi_init = _evaluate_raw_predictions(mname("DOI-style"), "Initial", eval_data["eval_initial"]["day"], args.initial_known_classes, "day1_eval_initial_30pct", eval_y_dict["eval_initial"], pred_doi_init, {}, "-", "-", "-", args.initial_known_classes, args.round_size, None)
+    rows.append(row_doi_init)
+    doi_ref = float(row_doi_init["Initial Known Acc"])
+
+    for i, chunk in enumerate(pseudo_chunks, start=1):
+        eval_key = f"eval_r{i}"
+        eval_X = proto_bank[eval_key][feat_type]
+        seen_classes = args.initial_known_classes + i * args.round_size
+        stage = f"After R{i}"
+        eval_name = f"{eval_key}_30pct_{seen_classes}_seen"
+
+        # Ft-CNN
+        new_ids = sorted(np.unique(chunk["y"]).astype(int).tolist())
+        old_model = copy.deepcopy(ft_model)
+        old_dim = len(ft_classes)
+        ft_model, ft_classes = _expand_linear(ft_model, in_dim, ft_classes, new_ids, device)
+        ft_model = _train_linear_classifier(ft_model, chunk["X"], chunk["y"], ft_classes, args, device, teacher_model=None, old_output_dim=0)
+        ft_pseudo_to_true.update(chunk["mapping"])
+        pred = _predict_linear_classifier(ft_model, eval_X, ft_classes, device)
+        rows.append(_evaluate_raw_predictions(mname("Ft-CNN"), stage, eval_data[eval_key]["day"], seen_classes, eval_name, eval_y_dict[eval_key], pred, ft_pseudo_to_true, args.round_size, chunk["discovered"], chunk["enrolled"], args.initial_known_classes, args.round_size, ft_ref))
+
+        # LwF
+        new_ids = sorted(np.unique(chunk["y"]).astype(int).tolist())
+        teacher = copy.deepcopy(lwf_model)
+        old_dim = len(lwf_classes)
+        lwf_model, lwf_classes = _expand_linear(lwf_model, in_dim, lwf_classes, new_ids, device)
+        lwf_model = _train_linear_classifier(lwf_model, chunk["X"], chunk["y"], lwf_classes, args, device, teacher_model=teacher, old_output_dim=old_dim)
+        lwf_pseudo_to_true.update(chunk["mapping"])
+        pred = _predict_linear_classifier(lwf_model, eval_X, lwf_classes, device)
+        rows.append(_evaluate_raw_predictions(mname("LwF"), stage, eval_data[eval_key]["day"], seen_classes, eval_name, eval_y_dict[eval_key], pred, lwf_pseudo_to_true, args.round_size, chunk["discovered"], chunk["enrolled"], args.initial_known_classes, args.round_size, lwf_ref))
+
+        # iCaRL
+        icarl_memory_X, icarl_memory_y = _update_exemplar_memory(icarl_memory_X, icarl_memory_y, chunk["X"], chunk["y"], per_class=args.memory_per_class)
+        icarl_pseudo_to_true.update(chunk["mapping"])
+        pred = _prototype_predict_from_memory(icarl_memory_X, icarl_memory_y, eval_X, old_class_bonus=0.0, old_class_count=args.initial_known_classes)
+        rows.append(_evaluate_raw_predictions(mname("iCaRL"), stage, eval_data[eval_key]["day"], seen_classes, eval_name, eval_y_dict[eval_key], pred, icarl_pseudo_to_true, args.round_size, chunk["discovered"], chunk["enrolled"], args.initial_known_classes, args.round_size, icarl_ref))
+
+        # EEIL
+        eeil_memory_X, eeil_memory_y = _update_exemplar_memory(eeil_memory_X, eeil_memory_y, chunk["X"], chunk["y"], per_class=args.memory_per_class)
+        replay_X = np.concatenate([chunk["X"], eeil_memory_X], axis=0)
+        replay_y = np.concatenate([chunk["y"], eeil_memory_y], axis=0)
+        new_ids = sorted(np.unique(chunk["y"]).astype(int).tolist())
+        teacher = copy.deepcopy(eeil_model)
+        old_dim = len(eeil_classes)
+        eeil_model, eeil_classes = _expand_linear(eeil_model, in_dim, eeil_classes, new_ids, device)
+        eeil_model = _train_linear_classifier(eeil_model, replay_X, replay_y, eeil_classes, args, device, teacher_model=teacher, old_output_dim=old_dim)
+        eeil_pseudo_to_true.update(chunk["mapping"])
+        pred = _predict_linear_classifier(eeil_model, eval_X, eeil_classes, device)
+        rows.append(_evaluate_raw_predictions(mname("EEIL"), stage, eval_data[eval_key]["day"], seen_classes, eval_name, eval_y_dict[eval_key], pred, eeil_pseudo_to_true, args.round_size, chunk["discovered"], chunk["enrolled"], args.initial_known_classes, args.round_size, eeil_ref))
+
+        # TPCIL-style
+        tpcil_memory_X, tpcil_memory_y = _update_exemplar_memory(tpcil_memory_X, tpcil_memory_y, chunk["X"], chunk["y"], per_class=args.memory_per_class)
+        tpcil_pseudo_to_true.update(chunk["mapping"])
+        pred = _tpcil_style_predict(tpcil_memory_X, tpcil_memory_y, eval_X, smooth_lambda=args.tpcil_smoothing)
+        rows.append(_evaluate_raw_predictions(mname("TPCIL-style"), stage, eval_data[eval_key]["day"], seen_classes, eval_name, eval_y_dict[eval_key], pred, tpcil_pseudo_to_true, args.round_size, chunk["discovered"], chunk["enrolled"], args.initial_known_classes, args.round_size, tpcil_ref))
+
+        # DOI-style: SEI-specific prototype preservation and alignment baseline.
+        doi_memory_X, doi_memory_y = _update_doi_prototype_memory(doi_memory_X, doi_memory_y, chunk["X"], chunk["y"])
+        doi_pseudo_to_true.update(chunk["mapping"])
+        pred = _doi_style_predict(doi_memory_X, doi_memory_y, eval_X, old_proto_memory=doi_old_proto, align_lambda=0.30)
+        rows.append(_evaluate_raw_predictions(mname("DOI-style"), stage, eval_data[eval_key]["day"], seen_classes, eval_name, eval_y_dict[eval_key], pred, doi_pseudo_to_true, args.round_size, chunk["discovered"], chunk["enrolled"], args.initial_known_classes, args.round_size, doi_ref))
+
+    return pd.DataFrame(rows)
+
+
+def plot_core_method_visualization_panels(args):
+    """Create paper-friendly side-by-side panels for the three basic discovery views."""
+    if not args.enable_visualization:
+        return
+    method_dirs = [
+        ("Deep only", "deep_only"),
+        ("RF only", "rf_only"),
+        ("Graph fusion (raw)", "graph_fusion_raw"),
+    ]
+    out_dir = os.path.join(args.save_dir, "visualizations", "core_comparison")
+    ensure_dir(out_dir)
+
+    for r in ["r1", "r2", "r3"]:
+        csv_paths = []
+        ok = True
+        for _, d in method_dirs:
+            path = os.path.join(args.save_dir, "visualizations", d, r, "embedding_2d.csv")
+            csv_paths.append(path)
+            if not os.path.exists(path):
+                ok = False
+        if not ok:
+            continue
+
+        for label_col, suffix, title_suffix in [
+            ("true_label", "true_labels", "True Tx labels"),
+            ("cluster_label", "clusters", "Discovered clusters"),
+        ]:
+            fig, axes = plt.subplots(1, 3, figsize=(15, 4.5))
+            for ax, (method_name, _), path in zip(axes, method_dirs, csv_paths):
+                df = pd.read_csv(path)
+                labels = df[label_col].to_numpy()
+                xs = df["x"].to_numpy()
+                ys = df["y"].to_numpy()
+                unique = sorted(np.unique(labels).tolist())
+                non_noise = [u for u in unique if int(u) != -1]
+                cmap = plt.get_cmap("tab20", max(len(non_noise), 1))
+                if -1 in unique:
+                    idx = labels == -1
+                    ax.scatter(xs[idx], ys[idx], s=6, c="lightgray", alpha=0.5, edgecolors="none")
+                for j, lab in enumerate(non_noise):
+                    idx = labels == lab
+                    ax.scatter(xs[idx], ys[idx], s=6, color=cmap(j), alpha=0.85, edgecolors="none")
+                ax.set_title(method_name)
+                ax.set_xticks([])
+                ax.set_yticks([])
+            fig.suptitle(f"{r.upper()} core method comparison: {title_suffix}")
+            plt.tight_layout()
+            save_path = os.path.join(out_dir, f"{r}_{suffix}_deep_rf_graph.png")
+            plt.savefig(save_path, dpi=300)
+            plt.close(fig)
+
+# ============================================================
+# Visualization utilities
+# ============================================================
+# Visualization utilities
+# ============================================================
+
+def safe_name(name):
+    name = str(name).lower()
+    for a, b in [("+", "plus"), (" ", "_"), ("/", "_"), ("\\", "_"), ("-", "_"), ("(", ""), (")", "")]:
+        name = name.replace(a, b)
+    while "__" in name:
+        name = name.replace("__", "_")
+    return name.strip("_")
+
+
+def project_2d(features, method="umap", seed=7):
+    """
+    Visualization projection.
+
+    Default: UMAP with fixed parameters for fair comparison among
+    Deep-only, RF-only and Graph fusion.
+    """
+    features = np.asarray(features, dtype=np.float32)
+    features = np.nan_to_num(features, nan=0.0, posinf=0.0, neginf=0.0)
+
+    method = method.lower()
+
+    if method == "pca":
+        return PCA(n_components=2, random_state=seed).fit_transform(features).astype(np.float32)
+
+    if method == "umap":
+        if umap is None:
+            raise ImportError("Please install UMAP first: pip install umap-learn")
+
+        # PCA pre-reduction before UMAP:
+        # 1) remove noisy high-dimensional directions
+        # 2) make local manifold structure easier for UMAP to visualize
+        # This transformation is applied identically to all compared methods.
+        pca_dim = min(50, features.shape[0] - 1, features.shape[1])
+        if pca_dim >= 2:
+            features = PCA(
+                n_components=pca_dim,
+                random_state=seed,
+            ).fit_transform(features).astype(np.float32)
+
+        reducer = umap.UMAP(
+            n_components=2,
+            n_neighbors=15,
+            min_dist=0.05,
+            metric="cosine",
+            random_state=seed,
+        )
+        return reducer.fit_transform(features).astype(np.float32)
+
+    if method == "tsne":
+        n = features.shape[0]
+        perplexity = min(30, max(5, n // 200))
+        perplexity = min(perplexity, n - 1)
+        return TSNE(
+            n_components=2,
+            random_state=seed,
+            init="pca",
+            learning_rate="auto",
+            perplexity=perplexity,
+        ).fit_transform(features).astype(np.float32)
+
+    raise ValueError(f"Unsupported visualization method: {method}")
+
+
+def plot_labeled_embedding(points, labels, title, save_path, noise_label=-1):
+    ensure_dir(os.path.dirname(save_path))
+    points = np.asarray(points)
+    labels = np.asarray(labels)
+    unique = sorted(np.unique(labels).tolist())
+    non_noise = [x for x in unique if x != noise_label]
+    cmap = plt.get_cmap("tab20", max(len(non_noise), 1))
+
+    plt.figure(figsize=(8, 6))
+
+    if noise_label in unique:
+        idx = labels == noise_label
+        plt.scatter(points[idx, 0], points[idx, 1], s=8, c="lightgray", alpha=0.6, label="noise", edgecolors="none")
+
+    for i, lab in enumerate(non_noise):
+        idx = labels == lab
+        plt.scatter(points[idx, 0], points[idx, 1], s=8, color=cmap(i), alpha=0.85, label=str(lab), edgecolors="none")
+
+    plt.title(title)
+    plt.xlabel("Dim 1")
+    plt.ylabel("Dim 2")
+    if len(unique) <= 20:
+        plt.legend(fontsize=7, markerscale=1.8, loc="best", frameon=True)
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300)
+    plt.close()
+
+
+def plot_reliability_embedding(points, cluster_labels, accepted_ids, title, save_path):
+    ensure_dir(os.path.dirname(save_path))
+    points = np.asarray(points)
+    cluster_labels = np.asarray(cluster_labels)
+    accepted_ids = set(int(x) for x in accepted_ids)
+
+    status = np.full(len(cluster_labels), "rejected", dtype=object)
+    status[cluster_labels == -1] = "noise"
+    for cid in accepted_ids:
+        status[cluster_labels == cid] = "accepted"
+
+    plt.figure(figsize=(8, 6))
+    for name, color, alpha in [("noise", "lightgray", 0.6), ("rejected", "orange", 0.75), ("accepted", "green", 0.85)]:
+        idx = status == name
+        if np.sum(idx) > 0:
+            plt.scatter(points[idx, 0], points[idx, 1], s=8, c=color, alpha=alpha, label=name, edgecolors="none")
+
+    plt.title(title)
+    plt.xlabel("Dim 1")
+    plt.ylabel("Dim 2")
+    plt.legend(fontsize=8, markerscale=1.8, loc="best", frameon=True)
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300)
+    plt.close()
+
+
+def save_discovery_visualizations(method, round_name, day_name, features, y_true, cluster_labels, accepted_ids, args, full_method=False):
+    if not args.enable_visualization:
+        return
+
+    out_dir = os.path.join(args.save_dir, "visualizations", safe_name(method), round_name.lower())
+    ensure_dir(out_dir)
+
+    projection_methods = ["umap", "tsne"] if args.visualization_method == "both" else [args.visualization_method]
+    for projection_method in projection_methods:
+        print(f"[Visualize] {method} {round_name}: {projection_method}")
+        points = project_2d(features, method=projection_method, seed=args.seed)
+        suffix = f"_{projection_method}" if args.visualization_method == "both" else ""
+        plot_labeled_embedding(points, y_true,
+            title=f"{method} {round_name} {day_name}: true Tx labels ({projection_method.upper()})",
+            save_path=os.path.join(out_dir, f"true_labels{suffix}.png"), noise_label=-999999)
+        plot_labeled_embedding(points, cluster_labels,
+            title=f"{method} {round_name} {day_name}: HDBSCAN clusters ({projection_method.upper()})",
+            save_path=os.path.join(out_dir, f"clusters{suffix}.png"), noise_label=-1)
+        if full_method:
+            plot_reliability_embedding(points, cluster_labels, accepted_ids,
+                title=f"{method} {round_name} {day_name}: reliability status ({projection_method.upper()})",
+                save_path=os.path.join(out_dir, f"reliability_status{suffix}.png"))
+        embedding = pd.DataFrame({"x": points[:, 0], "y": points[:, 1],
+                                  "true_label": y_true, "cluster_label": cluster_labels})
+        embedding.to_csv(os.path.join(out_dir, f"embedding_2d{suffix}.csv"), index=False, encoding="utf-8-sig")
+
+# ============================================================
+# Main experiment
+# ============================================================
+
+def calibrate_mvacc_on_known_day1(X_cal, y_cal, Z_cal, args):
+    """Freeze density and consolidation settings using Day1 validation only."""
+    rows = []
+    for ratio in [float(x) for x in args.mvacc_calibration_ratios.split(",") if x.strip()]:
+        for threshold in [float(x) for x in args.mvacc_calibration_thresholds.split(",") if x.strip()]:
+            candidate = copy.copy(args)
+            features = build_round_features(X_cal, Z_cal, candidate, cflcg_mode="local")
+            minimum = max(2, int(round(ratio * len(y_cal))))
+            labels, _ = run_hdbscan(features["graph"], minimum, candidate.mvacc_min_samples)
+            labels, _ = iterative_merge_clusters_no_drop(labels, features, candidate,
+                                                         max_rounds=candidate.mvacc_merge_rounds,
+                                                         threshold=threshold)
+            labels, _ = assign_noise_samples_no_drop(labels, features, candidate)
+            metrics = clustering_metrics(y_cal, labels)
+            rows.append({"Candidate Min Cluster Ratio": ratio, "Candidate Merge Threshold": threshold,
+                         "Cluster Count Error": abs(int(metrics["Clusters"]) - len(np.unique(y_cal))),
+                         "NMI": metrics["NMI"], "Hungarian Acc": metrics["Hungarian Acc"]})
+    table = pd.DataFrame(rows).sort_values(["Cluster Count Error", "Hungarian Acc", "NMI"],
+                                           ascending=[True, False, False])
+    best = table.iloc[0]
+    args.mvacc_min_cluster_ratio = float(best["Candidate Min Cluster Ratio"])
+    args.mvacc_merge_threshold = float(best["Candidate Merge Threshold"])
+    table.to_csv(os.path.join(args.save_dir, "mvacc_day1_validation_calibration.csv"), index=False)
+    print(f"[MV-ACC calibration] Day1 validation only: ratio={args.mvacc_min_cluster_ratio}, "
+          f"merge_threshold={args.mvacc_merge_threshold}")
+
+def get_split(splits, name, fallback=None):
+    if name in splits:
+        return splits[name]["X"], splits[name]["y"], splits[name].get("day", "")
+    if fallback is not None:
+        return fallback
+    raise KeyError(f"Missing split: {name}")
+
+
+def run_discovery(method, round_name, day_name, true_new_classes, X_round, y_round, Z_round, args, full_method=False, iarc_method=False):
+    cflcg_mode = cflcg_mode_for_method(method)
+    feats = build_round_features(X_round, Z_round, args, cflcg_mode=cflcg_mode)
+
+    base_method = method
+
+    if base_method == "Deep only":
+        discovery_feat = feats["deep"]
+        proto_feat_type = "deep"
+    elif base_method == "RF only":
+        discovery_feat = feats["rf"]
+        proto_feat_type = "rf"
+    else:
+        discovery_feat = feats["graph"]
+        proto_feat_type = "hybrid"
+
+    mv_acc_method = base_method in {"No CF-LCG (MV-ACC)", "Global CF-LCG (MV-ACC)", "MV-ACC"}
+    if mv_acc_method:
+        # Scale the density prior with batch size.  The ratio and the remaining
+        # hyperparameters are calibrated on Day1 known-class validation data,
+        # then frozen before any unknown-round labels are evaluated.
+        discovery_min_cluster_size = max(
+            10, int(round(float(args.mvacc_min_cluster_ratio) * len(discovery_feat)))
+        )
+        discovery_min_samples = int(args.mvacc_min_samples)
+    else:
+        discovery_min_cluster_size = int(args.min_cluster_size)
+        discovery_min_samples = int(args.min_samples)
+
+    raw_labels, probs = run_hdbscan(
+        discovery_feat, discovery_min_cluster_size, discovery_min_samples
+    )
+    raw_metrics = clustering_metrics(y_round, raw_labels)
+    raw_cluster_count = raw_metrics["Clusters"]
+    initial_cluster_count = int(raw_cluster_count)
+    iarc_stats = {}
+
+    iter_merge_method = base_method.startswith("IterMerge")
+    nodrop_full_method = base_method == "No-drop consolidation (ablation)"
+
+    if mv_acc_method:
+        # Multi-view Adaptive Cluster Consolidation (MV-ACC):
+        #   1) graph-view HDBSCAN produces density micro-clusters;
+        #   2) every noise sample is assigned by deep/RF/graph consensus;
+        #   3) mutually-nearest micro-clusters are iteratively consolidated.
+        # No sample or cluster is rejected.
+        mvacc_args = copy.copy(args)
+        mvacc_args.iter_merge_lambda_deep = float(args.mvacc_lambda_deep)
+        mvacc_args.iter_merge_lambda_rf = float(args.mvacc_lambda_rf)
+        mvacc_args.iter_merge_lambda_graph = float(args.mvacc_lambda_graph)
+        mvacc_args.nodrop_assign_lambda_deep = float(args.mvacc_lambda_deep)
+        mvacc_args.nodrop_assign_lambda_rf = float(args.mvacc_lambda_rf)
+        mvacc_args.nodrop_assign_lambda_graph = float(args.mvacc_lambda_graph)
+        mvacc_args.no_mutual_nearest = False
+
+        labels_for_metrics, assignment_stats = assign_noise_samples_no_drop(
+            raw_labels, feats, mvacc_args
+        )
+        labels_for_metrics, merge_stats = iterative_merge_clusters_no_drop(
+            labels_for_metrics,
+            feats,
+            mvacc_args,
+            max_rounds=args.mvacc_merge_rounds,
+            threshold=args.mvacc_merge_threshold,
+        )
+        labels_for_metrics, split_stats = adaptive_split_large_clusters_no_drop(
+            labels_for_metrics, feats, mvacc_args
+        )
+        iarc_stats = {
+            **merge_stats,
+            **assignment_stats,
+            **split_stats,
+            "MVACC Min Cluster Size": int(discovery_min_cluster_size),
+            "MVACC Min Cluster Ratio": float(args.mvacc_min_cluster_ratio),
+            "MVACC Min Samples": int(discovery_min_samples),
+        }
+        enrolled_ids, details_final = all_non_noise_as_accepted(labels_for_metrics)
+        merge_rows = []
+    elif full_method:
+        accepted_raw, _ = reliability_filter(
+            discovery_feat, raw_labels, probs,
+            args.reliability_min_cluster_size,
+            args.reliability_min_prob,
+            args.reliability_threshold,
+        )
+        final_labels, merge_rows = merge_accepted_clusters(
+            raw_labels, accepted_raw, feats["graph"], feats["rf"],
+            args.merge_threshold, mutual_nearest=not args.no_mutual_nearest,
+        )
+        accepted_final, details_final = reliability_filter(
+            discovery_feat, final_labels, probs,
+            args.reliability_min_cluster_size,
+            args.reliability_min_prob,
+            args.reliability_threshold,
+        )
+
+        iarc_stats = {}
+        if iarc_method:
+            final_labels, accepted_final, iarc_stats = intra_round_adaptive_reclustering(
+                final_labels,
+                accepted_final,
+                discovery_feat,
+                feats,
+                args,
+            )
+
+        # Recompute final cluster reliability after merge / MV-IARC for optional diagnostics.
+        _, details_final = reliability_filter(
+            discovery_feat,
+            final_labels,
+            probs,
+            args.reliability_min_cluster_size,
+            args.reliability_min_prob,
+            threshold=0.0,
+        )
+
+        enrolled_ids = accepted_final
+        labels_for_metrics = final_labels
+    elif nodrop_full_method:
+        # Consolidate over-clustered sub-clusters and then reassign every noise
+        # sample. No reliability filtering and no sample rejection are used.
+        merge_rows = []
+        labels_for_metrics, merge_stats = iterative_merge_clusters_no_drop(
+            raw_labels, feats, args,
+            max_rounds=args.nodrop_merge_rounds,
+            threshold=args.nodrop_merge_threshold,
+        )
+        labels_for_metrics, assignment_stats = assign_noise_samples_no_drop(labels_for_metrics, feats, args)
+        iarc_stats = {**merge_stats, **assignment_stats}
+        enrolled_ids, details_final = all_non_noise_as_accepted(labels_for_metrics)
+    else:
+        merge_rows = []
+        if iter_merge_method:
+            merge_rounds = int(base_method.replace("IterMerge-", ""))
+            labels_for_metrics, iter_stats = iterative_merge_clusters_no_drop(
+                raw_labels, feats, args, max_rounds=merge_rounds
+            )
+            enrolled_ids, details_final = all_non_noise_as_accepted(labels_for_metrics)
+            iarc_stats.update(iter_stats)
+            raw_cluster_count = clustering_metrics(y_round, labels_for_metrics)["Clusters"]
+        else:
+            enrolled_ids, details_final = all_non_noise_as_accepted(raw_labels)
+            labels_for_metrics = raw_labels
+
+    reliability_map = {int(d["cluster_id"]): float(d.get("reliability_score", 1.0)) for d in details_final}
+    final_metrics = clustering_metrics(y_round, labels_for_metrics)
+
+    cluster_row = {
+        "Method": method,
+        "Round": round_name,
+        "Discovery Day": day_name,
+        "True New Classes": int(true_new_classes),
+        "Samples": int(len(y_round)),
+        "Initial Cluster Count": int(initial_cluster_count),
+        "Final Cluster Count": int(final_metrics["Clusters"]),
+        "Cluster Count Error": int(abs(int(final_metrics["Clusters"]) - int(true_new_classes))),
+        "Over-clustering Ratio": float(final_metrics["Clusters"] / max(int(true_new_classes), 1)),
+        **final_metrics,
+    }
+
+    graph_based = base_method in [
+        "Graph fusion (raw)",
+        "No-drop consolidation (ablation)",
+        "No CF-LCG (MV-ACC)",
+        "Global CF-LCG (MV-ACC)",
+        "MV-ACC",
+        "Full method",
+        "MV-IARC",
+    ]
+    if graph_based and args.adaptive_fusion:
+        cluster_row.update({
+            "Fusion": "bounded_adaptive",
+            "Alpha Min": float(args.alpha_min),
+            "Alpha Max": float(args.alpha_max),
+            **feats.get("fusion_stats", {}),
+        })
+    elif graph_based:
+        cluster_row.update({
+            "Fusion": "fixed_alpha",
+            "Alpha": float(args.alpha),
+        })
+
+    if (iarc_method or iter_merge_method or nodrop_full_method or mv_acc_method) and iarc_stats:
+        cluster_row.update(iarc_stats)
+
+    # Paper-facing diagnostics: save every method and every discovery round,
+    # not only the final method.
+    if args.enable_visualization and args.save_detailed_visualizations:
+        save_discovery_visualizations(
+        method=method,
+        round_name=round_name,
+        day_name=day_name,
+        features=discovery_feat,
+        y_true=y_round,
+        cluster_labels=labels_for_metrics,
+        accepted_ids=enrolled_ids,
+        args=args,
+            full_method=(full_method or iarc_method or nodrop_full_method or mv_acc_method),
+        )
+
+    info = {
+        "method": method,
+        "round": round_name,
+        "proto_feat_type": proto_feat_type,
+        "labels": labels_for_metrics,
+        "raw_hdbscan_probabilities": np.asarray(probs if probs is not None else np.ones(len(labels_for_metrics)), dtype=np.float32),
+        "raw_noise_mask": np.asarray(raw_labels == -1, dtype=bool),
+        "enrolled_ids": enrolled_ids,
+        "discovered_clusters": int(final_metrics["Clusters"] if (nodrop_full_method or mv_acc_method) else raw_cluster_count),
+        "enrolled_clusters": int(len(enrolled_ids)),
+        "merge_count": int(iarc_stats.get("Iter Merge Total Merges", len(merge_rows))),
+        "iarc_stats": iarc_stats,
+        "reliability_map": reliability_map,
+    }
+
+    info["discovery_features"] = discovery_feat
+    return cluster_row, info
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset_path", type=str, default=r"D:\WiSigCustom\WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl")
+    parser.add_argument("--save_dir", type=str, default="./results/wisig_rx2_10known_3round_nodrop")
+    parser.add_argument("--checkpoint", type=str, default=None)
+    parser.add_argument("--train_closedset", action="store_true")
+    parser.add_argument("--epochs", type=int, default=20)
+    parser.add_argument("--batch_size", type=int, default=128)
+    parser.add_argument("--test_batch_size", type=int, default=256)
+    parser.add_argument("--lr", type=float, default=1e-3)
+    parser.add_argument("--feat_dim", type=int, default=128)
+    parser.add_argument("--use_supcon", action="store_true", help="Use CE + supervised contrastive loss when training the initial closed-set backbone.")
+    parser.add_argument("--supcon_weight", type=float, default=0.1, help="Weight lambda for supervised contrastive loss. Recommended: 0.05 or 0.1.")
+    parser.add_argument("--supcon_temperature", type=float, default=0.2, help="Temperature for supervised contrastive loss. Recommended: 0.2.")
+    parser.add_argument("--closedset_val_ratio", type=float, default=1.0 / 7.0, help="Validation fraction inside the Day1 70%% training portion; 1/7 yields an overall 60/10/30 split.")
+    parser.add_argument("--projection_hidden_dim", type=int, default=128)
+    parser.add_argument("--projection_dim", type=int, default=64)
+    parser.add_argument("--disable_rf_augmentation", action="store_true")
+    parser.add_argument("--disable_cflcg", action="store_true", help="Disable Day1-validation CF-LCG classical-feature selection.")
+    parser.add_argument("--cflcg_gate_threshold", type=float, default=0.80)
+    parser.add_argument("--cflcg_local_k", type=int, default=12, help="kNN size for label-free Local CF-LCG cross-view consistency.")
+    parser.add_argument("--seed", type=int, default=7)
+
+    parser.add_argument("--initial_known_classes", type=int, default=10)
+    parser.add_argument("--round_size", type=int, default=10)
+    parser.add_argument("--num_rounds", type=int, default=3)
+    parser.add_argument("--development_ratio", type=float, default=0.70, help="Per-day development ratio: Day1 becomes 60%% backbone training + 10%% validation; remaining 30%% is held-out evaluation.")
+    parser.add_argument(
+        "--selected_rx_list",
+        type=str,
+        default="2",
+        help="Fixed receiver index. This RX2 experiment only accepts 2 (the third receiver).",
+    )
+    parser.add_argument("--old_class_bonus", type=float, default=0.0, help="Old-class prototype score bonus beta for reducing forgetting. Recommended: 0.00, 0.02, 0.04, 0.06.")
+    parser.add_argument("--disable_cil_baselines", action="store_true", help="Disable representative class-incremental baselines (Ft-CNN/LwF/iCaRL/EEIL/TPCIL-style/DOI-style).")
+    parser.add_argument("--cil_epochs", type=int, default=12, help="Epochs for lightweight frozen-feature CIL baselines.")
+    parser.add_argument("--cil_batch_size", type=int, default=256, help="Batch size for frozen-feature CIL baselines.")
+    parser.add_argument("--cil_lr", type=float, default=1e-3, help="Learning rate for frozen-feature CIL baselines.")
+    parser.add_argument("--cil_weight_decay", type=float, default=1e-4, help="Weight decay for frozen-feature CIL baselines.")
+    parser.add_argument("--cil_distill_weight", type=float, default=1.0, help="Knowledge distillation weight for LwF/EEIL baselines.")
+    parser.add_argument("--cil_distill_temperature", type=float, default=2.0, help="Knowledge distillation temperature for LwF/EEIL baselines.")
+    parser.add_argument("--memory_per_class", type=int, default=20, help="Number of exemplars per class for iCaRL/EEIL/TPCIL-style/DOI-style baselines.")
+    parser.add_argument("--tpcil_smoothing", type=float, default=0.20, help="Prototype graph smoothing strength for TPCIL-style baseline.")
+    parser.add_argument("--cil_head_warmup_epochs", type=int, default=2, help="End-to-end MV-ACC-CIL head-only warm-up epochs.")
+    parser.add_argument("--cil_joint_epochs", type=int, default=8, help="End-to-end MV-ACC-CIL last-block joint fine-tuning epochs.")
+    parser.add_argument("--incremental_batch_size", type=int, default=128)
+    parser.add_argument("--cil_classifier_lr", type=float, default=1e-4)
+    parser.add_argument("--cil_backbone_lr", type=float, default=1e-5)
+    parser.add_argument("--cil_replay_weight", type=float, default=1.0)
+    parser.add_argument("--cil_kd_weight", type=float, default=1.0)
+    parser.add_argument("--cil_temperature", type=float, default=2.0)
+    parser.add_argument("--cil_supcon_weight", type=float, default=0.05)
+    parser.add_argument("--cil_supcon_threshold", type=float, default=0.60)
+    parser.add_argument("--pseudo_weight_floor", type=float, default=0.20)
+
+
+    parser.add_argument("--min_cluster_size", type=int, default=10)
+    parser.add_argument("--min_samples", type=int, default=5)
+    parser.add_argument("--alpha", type=float, default=0.7)
+    parser.add_argument("--top_k", type=int, default=20)
+    parser.add_argument("--graph_dim", type=int, default=16)
+    parser.add_argument("--adaptive_fusion", action="store_true", help="Use bounded edge-wise adaptive graph fusion for graph-based methods.")
+    parser.add_argument("--alpha_min", type=float, default=0.65, help="Minimum deep-view edge weight for bounded adaptive fusion.")
+    parser.add_argument("--alpha_max", type=float, default=0.95, help="Maximum deep-view edge weight for bounded adaptive fusion.")
+
+    parser.add_argument("--reliability_min_cluster_size", type=int, default=10)
+    parser.add_argument("--reliability_min_prob", type=float, default=0.30)
+    parser.add_argument("--reliability_threshold", type=float, default=0.50)
+    parser.add_argument("--merge_threshold", type=float, default=0.70)
+    parser.add_argument("--no_mutual_nearest", action="store_true")
+
+    # MV-IARC: intra-round adaptive re-clustering parameters.
+    parser.add_argument("--iarc_secondary_min_cluster_size", type=int, default=50, help="HDBSCAN min_cluster_size for re-clustering uncertain samples in MV-IARC.")
+    parser.add_argument("--iarc_secondary_min_samples", type=int, default=5, help="HDBSCAN min_samples for re-clustering uncertain samples in MV-IARC.")
+    parser.add_argument("--iarc_min_secondary_size", type=int, default=30, help="Minimum secondary cluster size allowed for MV-IARC merge/new decisions.")
+    parser.add_argument("--iarc_merge_threshold", type=float, default=0.78, help="Similarity threshold for merging a secondary cluster into an existing reliable cluster.")
+    parser.add_argument("--iarc_new_threshold", type=float, default=0.35, help="Reliability threshold for accepting a secondary cluster as a new pseudo-class.")
+    parser.add_argument("--iarc_lambda_deep", type=float, default=0.4, help="Deep-prototype weight in MV-IARC cluster similarity.")
+    parser.add_argument("--iarc_lambda_rf", type=float, default=0.2, help="RF-prototype weight in MV-IARC cluster similarity.")
+    parser.add_argument("--iarc_lambda_graph", type=float, default=0.4, help="Graph-prototype weight in MV-IARC cluster similarity.")
+
+    # Pure no-drop iterative cluster merging parameters.
+    parser.add_argument("--iter_merge_threshold", type=float, default=0.86, help="Prototype similarity threshold for no-drop iterative cluster merging.")
+    parser.add_argument("--iter_merge_lambda_deep", type=float, default=0.4, help="Deep-prototype weight in no-drop iterative merging.")
+    parser.add_argument("--iter_merge_lambda_rf", type=float, default=0.2, help="RF-prototype weight in no-drop iterative merging.")
+    parser.add_argument("--iter_merge_lambda_graph", type=float, default=0.4, help="Graph-prototype weight in no-drop iterative merging.")
+    parser.add_argument("--nodrop_merge_rounds", type=int, default=5, help="Maximum rounds for the no-drop consolidation ablation.")
+    parser.add_argument("--nodrop_merge_threshold", type=float, default=0.78, help="Multi-view merge threshold for the no-drop consolidation ablation.")
+    parser.add_argument("--nodrop_assign_lambda_deep", type=float, default=0.4, help="Deep weight for no-drop noise reassignment.")
+    parser.add_argument("--nodrop_assign_lambda_rf", type=float, default=0.2, help="RF weight for no-drop noise reassignment.")
+    parser.add_argument("--nodrop_assign_lambda_graph", type=float, default=0.4, help="Graph weight for no-drop noise reassignment.")
+
+    # MV-ACC: calibration-frozen, no-drop multi-view consolidation.
+    parser.add_argument("--mvacc_min_cluster_ratio", type=float, default=0.045, help="HDBSCAN minimum-cluster-size ratio, calibrated on Day1 known validation data.")
+    parser.add_argument("--mvacc_min_samples", type=int, default=5, help="HDBSCAN min_samples for MV-ACC.")
+    parser.add_argument("--mvacc_merge_rounds", type=int, default=12, help="Maximum mutually-nearest consolidation rounds for MV-ACC.")
+    parser.add_argument("--mvacc_merge_threshold", type=float, default=0.74, help="Frozen multi-view prototype merge threshold for MV-ACC.")
+    parser.add_argument("--disable_mvacc_calibration", action="store_true", help="Use supplied MV-ACC parameters without Day1 validation calibration.")
+    parser.add_argument("--mvacc_calibration_ratios", type=str, default="0.03,0.045,0.06,0.08", help="Day1-validation density-ratio candidates.")
+    parser.add_argument("--mvacc_calibration_thresholds", type=str, default="0.74,0.78,0.82,0.86", help="Day1-validation merge-threshold candidates.")
+    parser.add_argument("--mvacc_lambda_deep", type=float, default=0.5, help="Deep-view weight in MV-ACC reassignment and consolidation.")
+    parser.add_argument("--mvacc_lambda_rf", type=float, default=0.1, help="RF-view weight in MV-ACC reassignment and consolidation.")
+    parser.add_argument("--mvacc_lambda_graph", type=float, default=0.4, help="Graph-view weight in MV-ACC reassignment and consolidation.")
+    parser.add_argument("--mvacc_prototypes_per_class", type=int, default=5, help="Number of K-means sub-prototypes per enrolled class for MV-ACC.")
+    parser.add_argument("--mvacc_split_rounds", type=int, default=6, help="Maximum adaptive oversized-cluster splitting rounds.")
+    parser.add_argument("--mvacc_split_size_factor", type=float, default=1.75, help="Split-test clusters larger than this multiple of the median cluster size.")
+    parser.add_argument("--mvacc_split_min_part_ratio", type=float, default=0.30, help="Minimum child size relative to the median cluster size.")
+    parser.add_argument("--mvacc_split_silhouette", type=float, default=0.30, help="Minimum internal silhouette required to retain an adaptive split.")
+
+    parser.add_argument("--enable_visualization", action="store_true", default=True, help="Save 2D discovery visualizations. Default: enabled.")
+    parser.add_argument("--disable_visualization", action="store_true", help="Disable visualization output.")
+    parser.add_argument("--visualization_method", type=str, default="both", choices=["tsne", "pca", "umap", "both"], help="Legacy diagnostic projection method.")
+    parser.add_argument("--save_detailed_visualizations", action="store_true", help="Also save legacy per-method unknown-only plots.")
+
+    args = parser.parse_args()
+    if args.disable_visualization:
+        args.enable_visualization = False
+    set_seed(args.seed)
+    ensure_dir(args.save_dir)
+
+    if args.initial_known_classes != 10 or args.round_size != 10 or args.num_rounds != 3:
+        raise ValueError("This script is specialized for 10 known + 3 rounds of 10 classes each.")
+
+    selected_rx_list = [int(x.strip()) for x in args.selected_rx_list.split(",") if x.strip() != ""]
+    if selected_rx_list != [2]:
+        raise ValueError(
+            "This RX2-only script requires --selected_rx_list 2 "
+            "(Python index 2 is the third receiver)."
+        )
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    if args.checkpoint is None:
+        args.checkpoint = os.path.join(args.save_dir, "closedset_rx2_day1_10known.pth")
+
+    print("\n========== WiSig Cross-Day 10-Known 3-Round Incremental Experiment ==========")
+    print(f"Dataset: {args.dataset_path}")
+    print(f"Save dir: {args.save_dir}")
+    print(f"Device: {device}")
+    print("Protocol: 10 known + 10 unknown R1 + 10 unknown R2 + 10 unknown R3")
+    print("Receiver setting: selected_rx_list=[2] | mode=single-Rx | physical receiver=third")
+    print(f"Old-class prototype bonus beta: {args.old_class_bonus}")
+    if args.use_supcon:
+        print(f"Closed-set training loss: CE + {args.supcon_weight} * SupCon(T={args.supcon_temperature})")
+    else:
+        print("Closed-set training loss: CE only")
+    print(f"Sample-level protocol: {args.development_ratio * 6 / 7:.0%} backbone train + {args.development_ratio / 7:.0%} validation + {1.0 - args.development_ratio:.0%} held-out evaluation")
+    if args.adaptive_fusion:
+        print(f"Fusion: bounded edge-wise adaptive | alpha_min={args.alpha_min}, alpha_max={args.alpha_max}")
+    else:
+        print(f"Fusion: fixed alpha | alpha={args.alpha}")
+    print(
+        f"No-drop consolidation (ablation): rounds={args.nodrop_merge_rounds}, "
+        f"threshold={args.nodrop_merge_threshold}, coverage=100%"
+    )
+    print(
+        f"MV-ACC: mcs_ratio={args.mvacc_min_cluster_ratio}, min_samples={args.mvacc_min_samples}, "
+        f"merge_th={args.mvacc_merge_threshold}, sub_prototypes={args.mvacc_prototypes_per_class}, "
+        f"split_factor={args.mvacc_split_size_factor}, split_sil={args.mvacc_split_silhouette}, "
+        f"coverage=100%, strict_alignment=Hungarian"
+    )
+
+    splits = load_wisig_crossday_10known_3round(
+        dataset_path=args.dataset_path,
+        transpose_to_model=True,
+        train_ratio=args.development_ratio,
+        selected_rx_list=selected_rx_list,
+        seed=args.seed,
+    )
+
+    X_train = splits["day1_known_train"]["X"]
+    y_train = splits["day1_known_train"]["y"]
+
+    round_keys = [
+        "day2_unknown_round1",
+        "day3_unknown_round2",
+        "day4_unknown_round3",
+    ]
+    round_data = []
+    for rk in round_keys:
+        round_data.append({
+            "key": rk,
+            "X": splits[rk]["X"],
+            "y": splits[rk]["y"],
+            "day": splits[rk].get("day", ""),
+        })
+
+    eval_keys = {
+        "eval_initial": "day1_initial_eval",
+        "eval_r1": "day2_eval_after_r1",
+        "eval_r2": "day3_eval_after_r2",
+        "eval_r3": "day4_eval_after_r3",
+    }
+    eval_data = {}
+    for bank_key, split_key in eval_keys.items():
+        eval_data[bank_key] = {
+            "X": splits[split_key]["X"],
+            "y": splits[split_key]["y"],
+            "day": splits[split_key].get("day", ""),
+            "split_key": split_key,
+        }
+
+    print("\n[Splits]")
+    print(f"Day1 known train 70%: {X_train.shape}, classes={np.unique(y_train).size}, labels={np.min(y_train)}-{np.max(y_train)}")
+    print(f"Initial eval 30%:     {eval_data['eval_initial']['X'].shape}, classes={np.unique(eval_data['eval_initial']['y']).size}, labels={np.min(eval_data['eval_initial']['y'])}-{np.max(eval_data['eval_initial']['y'])}, day={eval_data['eval_initial']['day']}")
+    for i, rd in enumerate(round_data, start=1):
+        ek = f"eval_r{i}"
+        print(f"Unknown R{i} 70%:     {rd['X'].shape}, classes={np.unique(rd['y']).size}, labels={np.min(rd['y'])}-{np.max(rd['y'])}, day={rd['day']}")
+        print(f"After R{i} eval 30%:  {eval_data[ek]['X'].shape}, classes={np.unique(eval_data[ek]['y']).size}, labels={np.min(eval_data[ek]['y'])}-{np.max(eval_data[ek]['y'])}, day={eval_data[ek]['day']}")
+
+    train_set = to_dataset(X_train, y_train)
+    checkpoint_metadata = {
+        "dataset_path": os.path.abspath(args.dataset_path),
+        "selected_rx_list": list(selected_rx_list),
+        "known_tx": list(range(args.initial_known_classes)),
+        "training_day_index": 0,
+        "development_ratio": float(args.development_ratio),
+        "sample_split_protocol": "stratified_random_60_10_30_v1",
+        "seed": int(args.seed),
+        "use_supcon": bool(args.use_supcon),
+        "supcon_weight": float(args.supcon_weight),
+        "supcon_temperature": float(args.supcon_temperature),
+        "training_recipe_version": TRAINING_RECIPE_VERSION,
+        "closedset_validation_fraction": float(args.closedset_val_ratio),
+        "rf_augmentation": bool(not args.disable_rf_augmentation),
+        "supcon_projection_dim": int(args.projection_dim) if args.use_supcon else 0,
+        "supcon_projection_hidden_dim": int(args.projection_hidden_dim) if args.use_supcon else 0,
+    }
+    if args.train_closedset or not os.path.exists(args.checkpoint):
+        model = train_closedset_model(
+            train_set,
+            args.initial_known_classes,
+            args.feat_dim,
+            args.epochs,
+            args.batch_size,
+            args.lr,
+            device,
+            args.checkpoint,
+            use_supcon=args.use_supcon,
+            supcon_weight=args.supcon_weight,
+            supcon_temperature=args.supcon_temperature,
+            checkpoint_metadata=checkpoint_metadata,
+            seed=args.seed,
+            validation_fraction=args.closedset_val_ratio,
+            use_rf_augmentation=not args.disable_rf_augmentation,
+            projection_hidden_dim=args.projection_hidden_dim,
+            projection_dim=args.projection_dim,
+        )
+    else:
+        model = load_closedset_model(
+            args.checkpoint,
+            args.initial_known_classes,
+            args.feat_dim,
+            device,
+            expected_metadata=checkpoint_metadata,
+        )
+
+    print("\n[Extract] Deep embeddings")
+    Z_train, y_train = extract_deep_features(model, X_train, y_train, args.test_batch_size, device)
+    day1_training_subset, day1_validation_subset = stratified_train_validation_split(
+        train_set, validation_fraction=args.closedset_val_ratio, seed=args.seed
+    )
+    day1_validation_indices = np.asarray(day1_validation_subset.indices, dtype=np.int64)
+    with open(os.path.join(args.save_dir, "split_protocol.json"), "w", encoding="utf-8") as f:
+        json.dump({
+            "split_level": "stored-order block split (capture metadata unavailable)",
+            "seed": int(args.seed),
+            "day1_backbone_train_samples": int(len(day1_training_subset)),
+            "day1_validation_samples": int(len(day1_validation_subset)),
+            "day1_heldout_evaluation_samples": int(len(eval_data["eval_initial"]["y"])),
+            "development_ratio": float(args.development_ratio),
+            "frozen_before_unknown_rounds": ["checkpoint", "CF-LCG", "MV-ACC parameters"],
+        }, f, indent=2)
+    args.cflcg_extractor = None
+    args.cflcg_gate_open = True
+    if not args.disable_cflcg:
+        cflcg_selection, cflcg_extractor = select_classic_feature_view(
+            X_train[day1_validation_indices], y_train[day1_validation_indices], args.cflcg_gate_threshold)
+        args.cflcg_extractor = cflcg_extractor
+        args.cflcg_gate_open = bool(cflcg_selection["rf_gate_open"])
+        save_selection(cflcg_selection, args.save_dir)
+        print(f"[CF-LCG] view={cflcg_selection['output_feature_group']} | purity={cflcg_selection['best_purity']:.3f} | gate_open={cflcg_selection['rf_gate_open']}")
+        if not cflcg_selection["rf_gate_open"]:
+            print("[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.")
+    if not args.disable_mvacc_calibration:
+        calibrate_mvacc_on_known_day1(
+            X_train[day1_validation_indices], y_train[day1_validation_indices],
+            Z_train[day1_validation_indices], args,
+        )
+    for rd in round_data:
+        rd["Z"], rd["y"] = extract_deep_features(model, rd["X"], rd["y"], args.test_batch_size, device)
+
+    eval_Z_dict = {}
+    eval_X_dict = {}
+    eval_y_dict = {}
+    for key, ed in eval_data.items():
+        eval_Z_dict[key], eval_y_dict[key] = extract_deep_features(model, ed["X"], ed["y"], args.test_batch_size, device)
+        eval_X_dict[key] = ed["X"]
+
+    # MV-ACC-CIL: discovery uses a frozen Teacher; only then is the Student updated.
+    print("\n[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning")
+    clustering_rows, incremental_rows, retention_rows = [], [], []
+    student = copy.deepcopy(model).to(device).eval()
+    pseudo_to_true = {int(c): int(c) for c in range(args.initial_known_classes)}
+    memory_x, memory_y = _update_iq_memory(None, None, X_train, y_train, args.memory_per_class, args.seed)
+    initial_pred = _predict_end_to_end(student, eval_data["eval_initial"]["X"], args.test_batch_size, device)
+    initial_row = _evaluate_raw_predictions(
+        "MV-ACC-CIL", "Initial", eval_data["eval_initial"]["day"], args.initial_known_classes,
+        "day1_eval_initial_30pct", eval_y_dict["eval_initial"], initial_pred, pseudo_to_true,
+        "-", "-", "-", args.initial_known_classes, args.round_size, None,
+    )
+    incremental_rows.append(initial_row)
+    retention_rows.append({"Round": "Initial", "Fixed Day1 Old-Class Acc": float(initial_row["Overall Acc"])})
+    initial_reference_acc = float(initial_row["Initial Known Acc"])
+    next_label = int(args.initial_known_classes)
+
+    for i, rd in enumerate(round_data, start=1):
+        teacher = copy.deepcopy(student).to(device).eval()
+        # Teacher is frozen during discovery. This prevents moving representations from changing clusters.
+        rd["Z"], _ = extract_deep_features(teacher, rd["X"], rd["y"], args.test_batch_size, device)
+        row, info = run_discovery("MV-ACC", f"R{i}", f"Day {i + 1}", args.round_size, rd["X"], rd["y"], rd["Z"], args)
+        row["Method"] = "MV-ACC-CIL discovery"
+        clustering_rows.append(row)
+        labels = np.asarray(info["labels"], dtype=np.int64)
+        if np.any(labels < 0):
+            raise RuntimeError("MV-ACC-CIL requires no-drop labels; found an unassigned noise sample.")
+        cluster_ids = sorted(np.unique(labels).tolist())
+        cid_to_pseudo = {int(cid): int(next_label + j) for j, cid in enumerate(cluster_ids)}
+        pseudo_y = np.asarray([cid_to_pseudo[int(c)] for c in labels], dtype=np.int64)
+        pairs = [(int(cid), int(cid_to_pseudo[int(cid)])) for cid in cluster_ids]
+        pseudo_to_true.update(build_posthoc_pseudo_to_true(rd["y"], labels, pairs))
+        raw_probs = np.asarray(info.get("raw_hdbscan_probabilities", np.ones(len(labels))), dtype=np.float32)
+        raw_noise = np.asarray(info.get("raw_noise_mask", np.zeros(len(labels), dtype=bool)), dtype=bool)
+        current_w = np.maximum(float(args.pseudo_weight_floor), np.nan_to_num(raw_probs, nan=0.0))
+        current_w[raw_noise] = float(args.pseudo_weight_floor)
+        old_out = int(student.classifier.out_features)
+        imprinted_means = np.stack([rd["Z"][pseudo_y == int(next_label + j)].mean(axis=0) for j in range(len(cluster_ids))]).astype(np.float32)
+        next_label += len(cluster_ids)
+        student = _expand_closedset_classifier(teacher, next_label, device, imprinted_means)
+        student = _train_end_to_end_cil(student, teacher, rd["X"], pseudo_y, current_w, memory_x, memory_y, old_out, args, device)
+        memory_x, memory_y = _update_iq_memory(memory_x, memory_y, rd["X"], pseudo_y, args.memory_per_class, args.seed + i)
+        eval_key = f"eval_r{i}"
+        pred = _predict_end_to_end(student, eval_data[eval_key]["X"], args.test_batch_size, device)
+        incremental_rows.append(_evaluate_raw_predictions(
+            "MV-ACC-CIL", f"After R{i}", eval_data[eval_key]["day"], args.initial_known_classes + i * args.round_size,
+            f"{eval_key}_30pct_{args.initial_known_classes + i * args.round_size}_seen", eval_y_dict[eval_key], pred,
+            pseudo_to_true, args.round_size, info["discovered_clusters"], len(cluster_ids),
+            args.initial_known_classes, args.round_size, initial_reference_acc,
+        ))
+        fixed_pred = _predict_end_to_end(student, eval_data["eval_initial"]["X"], args.test_batch_size, device)
+        fixed_true = eval_y_dict["eval_initial"]
+        fixed_mapped = np.asarray([pseudo_to_true.get(int(p), int(p)) for p in fixed_pred], dtype=np.int64)
+        retention_rows.append({"Round": f"R{i}", "Fixed Day1 Old-Class Acc": float(np.mean(fixed_true == fixed_mapped))})
+        torch.save({"model_state": student.state_dict(), "round": i, "num_outputs": int(student.classifier.out_features)}, os.path.join(args.save_dir, f"mvacc_cil_after_r{i}.pth"))
+        np.savez_compressed(os.path.join(args.save_dir, f"replay_memory_after_r{i}.npz"), X=memory_x, y=memory_y)
+
+    clustering_df = save_csv(clustering_rows, os.path.join(args.save_dir, "clustering_results.csv"))
+    incremental_df = save_csv(incremental_rows, os.path.join(args.save_dir, "incremental_results.csv"))
+    save_csv(retention_rows, os.path.join(args.save_dir, "fixed_day1_retention.csv"))
+    per_round_summary_df = build_per_round_summary(clustering_df, incremental_df)
+    if not clustering_df.empty and "MV-ACC-CIL discovery" in set(clustering_df["Method"].astype(str)):
+        c = clustering_df[clustering_df["Method"].astype(str) == "MV-ACC-CIL discovery"].set_index("Round")
+        inc = incremental_df[incremental_df["Method"].astype(str) == "MV-ACC-CIL"].copy()
+        cil_rows = []
+        for _, r in inc[inc["Stage"].astype(str).str.startswith("After R")].iterrows():
+            rnd = str(r["Stage"]).replace("After ", "")
+            d = c.loc[rnd]
+            cil_rows.append({"Method":"MV-ACC-CIL", "Round":rnd, "Cluster Count":int(d["Final Cluster Count"]), "Incremental Pseudo-label Classes":int(r["Enrolled Clusters"]), "Cluster Count Error":int(d["Cluster Count Error"]), "Sample Coverage":float(d["Assignment Coverage"]), "Purity":float(d["Purity"]), "NMI":float(d["NMI"]), "ARI":float(d["ARI"]), "Hungarian Acc":float(d["Hungarian Acc"]), "Overall Acc":float(r["Overall Acc"]), "New Acc":float(r["New Acc"]), "Forgetting Rate":float(r["Forgetting Rate"])})
+        per_round_summary_df = pd.DataFrame(cil_rows)
+    save_csv(per_round_summary_df.to_dict("records"), os.path.join(args.save_dir, "per_round_summary_results.csv"))
+
+    shared_baseline_df = pd.DataFrame()
+    shared_comparison_df = pd.DataFrame()
+    end_to_end_baseline_df = pd.DataFrame()
+    end_to_end_comparison_df = pd.DataFrame()
+    full_system_comparison_df = pd.DataFrame()
+
+    if not args.disable_cil_baselines:
+        # ------------------------------------------------------------
+        # A) Shared-discovery controlled comparison
+        # Every incremental learner receives the same high-quality pseudo-labels
+        # produced by the proposed Graph-fusion discovery front-end. This isolates
+        # the incremental retention / anti-forgetting component.
+        # ------------------------------------------------------------
+        if graph_fusion_round_infos is not None:
+            shared_baseline_df = run_incremental_learning_baselines(
+                graph_fusion_round_infos,
+                proto_bank,
+                y_train,
+                round_data,
+                eval_data,
+                eval_y_dict,
+                args,
+                device,
+                method_prefix="",
+                comparison_label="Shared Graph-fusion pseudo-labels",
+                feat_type="hybrid",
+            )
+            save_csv(shared_baseline_df.to_dict("records"), os.path.join(args.save_dir, "shared_discovery_baseline_results.csv"))
+            shared_comparison_df = build_comparison_summary(
+                shared_baseline_df,
+                incremental_df,
+                proposed_source_method="MV-ACC",
+                proposed_name="Ours (MV-ACC)",
+            )
+            save_csv(shared_comparison_df.to_dict("records"), os.path.join(args.save_dir, "shared_discovery_comparison_results.csv"))
+
+            # Backward-compatible aliases for earlier scripts/results.
+            save_csv(shared_baseline_df.to_dict("records"), os.path.join(args.save_dir, "incremental_baseline_results.csv"))
+            save_csv(shared_comparison_df.to_dict("records"), os.path.join(args.save_dir, "sota_comparison_results.csv"))
+
+        # ------------------------------------------------------------
+        # B) End-to-end open-set incremental comparison
+        # Conventional CIL learners are coupled with a neutral Deep-feature +
+        # HDBSCAN discovery front-end, while Ours keeps its own adaptive multi-view
+        # Graph-fusion discovery. Thus the table measures discovery quality and
+        # incremental retention jointly.
+        # ------------------------------------------------------------
+        if deep_only_round_infos is not None:
+            end_to_end_baseline_df = run_incremental_learning_baselines(
+                deep_only_round_infos,
+                proto_bank,
+                y_train,
+                round_data,
+                eval_data,
+                eval_y_dict,
+                args,
+                device,
+                method_prefix="Deep-HDBSCAN + ",
+                comparison_label="End-to-end with neutral Deep-HDBSCAN discovery",
+                feat_type="deep",
+            )
+            save_csv(end_to_end_baseline_df.to_dict("records"), os.path.join(args.save_dir, "end_to_end_baseline_results.csv"))
+            end_to_end_comparison_df = build_comparison_summary(
+                end_to_end_baseline_df,
+                incremental_df,
+                proposed_source_method="MV-ACC",
+                proposed_name="Ours (MV-ACC)",
+            )
+            save_csv(end_to_end_comparison_df.to_dict("records"), os.path.join(args.save_dir, "end_to_end_comparison_results.csv"))
+
+            # Paper-facing main table: discovery quality + incremental learning quality.
+            full_system_comparison_df = build_full_end_to_end_system_comparison(
+                end_to_end_baseline_df, incremental_df
+            )
+            save_csv(
+                full_system_comparison_df.to_dict("records"),
+                os.path.join(args.save_dir, "end_to_end_system_comparison.csv"),
+            )
+
+    if args.save_detailed_visualizations:
+        plot_core_method_visualization_panels(args)
+
+    pd.set_option("display.max_columns", 80)
+    pd.set_option("display.width", 240)
+
+    print("\n========== Table 1: Unknown Discovery / Clustering Results ==========")
+    print(clustering_df.to_string(index=False))
+    print(f"Saved: {os.path.join(args.save_dir, 'clustering_results.csv')}")
+
+    print("\n========== Table 2: Incremental Recognition Results ==========")
+    print(incremental_df.to_string(index=False))
+    print(f"Saved: {os.path.join(args.save_dir, 'incremental_results.csv')}")
+
+    print("\n========== Table 3: Per-Round Summary Results ==========")
+    # This is the compact table for reporting: Method/Round + the six requested metrics only.
+    print(per_round_summary_df.to_string(index=False, float_format=lambda x: f"{x:.6f}"))
+    print(f"Saved: {os.path.join(args.save_dir, 'per_round_summary_results.csv')}")
+
+    if shared_baseline_df is not None and not shared_baseline_df.empty:
+        print("\n========== Table 4: Shared-Discovery Baseline Details ==========")
+        print(shared_baseline_df.to_string(index=False, float_format=lambda x: f"{x:.6f}"))
+        print(f"Saved: {os.path.join(args.save_dir, 'shared_discovery_baseline_results.csv')}")
+
+    if shared_comparison_df is not None and not shared_comparison_df.empty:
+        print("\n========== Table 5: Shared-Discovery Controlled Comparison ==========")
+        print(shared_comparison_df.to_string(index=False, float_format=lambda x: f"{x:.6f}"))
+        print(f"Saved: {os.path.join(args.save_dir, 'shared_discovery_comparison_results.csv')}")
+
+    if end_to_end_comparison_df is not None and not end_to_end_comparison_df.empty:
+        print("\n========== Table 6: End-to-End Open-Set Incremental Comparison ==========")
+        print(end_to_end_comparison_df.to_string(index=False, float_format=lambda x: f"{x:.6f}"))
+        print(f"Saved: {os.path.join(args.save_dir, 'end_to_end_comparison_results.csv')}")
+
+    if full_system_comparison_df is not None and not full_system_comparison_df.empty:
+        print("\n========== Table 7: Full End-to-End System Comparison (Main Table) ==========")
+        print(full_system_comparison_df.to_string(index=False, float_format=lambda x: f"{x:.6f}"))
+        print(f"Saved: {os.path.join(args.save_dir, 'end_to_end_system_comparison.csv')}")
+
+    if args.enable_visualization:
+        print(f"Visualizations saved under: {os.path.join(args.save_dir, 'visualizations')}")
+        print(f"Core comparison panels saved under: {os.path.join(args.save_dir, 'visualizations', 'core_comparison')}")
+
+
+if __name__ == "__main__":
+    main()

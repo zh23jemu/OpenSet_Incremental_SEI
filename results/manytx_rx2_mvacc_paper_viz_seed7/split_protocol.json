@@ -1,0 +1,8 @@
+{
+  "split_level": "sample-level stratified random",
+  "seed": 7,
+  "day1_backbone_train_samples": 300,
+  "day1_validation_samples": 50,
+  "day1_heldout_evaluation_samples": 150,
+  "development_ratio": 0.7
+}

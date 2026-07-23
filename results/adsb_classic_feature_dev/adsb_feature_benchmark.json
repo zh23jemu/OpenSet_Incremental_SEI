@@ -1,0 +1,105 @@
+{
+  "protocol": "base file stored-order validation block only (60% train / 10% validation / 30% untouched)",
+  "validation_samples": 2052,
+  "classes": 90,
+  "test_files_opened": false,
+  "payload_bits_or_labels_used_by_features": false,
+  "ranking": [
+    {
+      "feature_group": "adsb_hardware_23d",
+      "dimension": 23,
+      "purity_k5": 0.29785575048732943,
+      "purity_k10": 0.2409356725146199,
+      "purity_k20": 0.1851608187134503,
+      "mean_purity": 0.2413174139051332
+    },
+    {
+      "feature_group": "adsb_all37d",
+      "dimension": 37,
+      "purity_k5": 0.2948343079922027,
+      "purity_k10": 0.23435672514619882,
+      "purity_k20": 0.18199317738791423,
+      "mean_purity": 0.23706140350877192
+    },
+    {
+      "feature_group": "generic_all24_base",
+      "dimension": 24,
+      "purity_k5": 0.23840155945419103,
+      "purity_k10": 0.19298245614035087,
+      "purity_k20": 0.15487329434697855,
+      "mean_purity": 0.19541910331384016
+    },
+    {
+      "feature_group": "adsb_oscillator_8d",
+      "dimension": 8,
+      "purity_k5": 0.22290448343079922,
+      "purity_k10": 0.18932748538011696,
+      "purity_k20": 0.15194931773879142,
+      "mean_purity": 0.1880604288499025
+    },
+    {
+      "feature_group": "generic_all48_extended",
+      "dimension": 48,
+      "purity_k5": 0.20828460038986354,
+      "purity_k10": 0.17012670565302143,
+      "purity_k20": 0.13330896686159843,
+      "mean_purity": 0.17057342430149447
+    },
+    {
+      "feature_group": "adsb_spectral_8d",
+      "dimension": 8,
+      "purity_k5": 0.18226120857699804,
+      "purity_k10": 0.15467836257309941,
+      "purity_k20": 0.12585282651072124,
+      "mean_purity": 0.15426413255360624
+    },
+    {
+      "feature_group": "generic_spectral_3d",
+      "dimension": 3,
+      "purity_k5": 0.13469785575048732,
+      "purity_k10": 0.12173489278752436,
+      "purity_k20": 0.11018518518518519,
+      "mean_purity": 0.12220597790773229
+    },
+    {
+      "feature_group": "adsb_iq_hardware_7d",
+      "dimension": 7,
+      "purity_k5": 0.13830409356725146,
+      "purity_k10": 0.11379142300194932,
+      "purity_k20": 0.09035087719298246,
+      "mean_purity": 0.11414879792072774
+    },
+    {
+      "feature_group": "generic_iq_imbalance_9d",
+      "dimension": 9,
+      "purity_k5": 0.14181286549707603,
+      "purity_k10": 0.11330409356725146,
+      "purity_k20": 0.08608674463937621,
+      "mean_purity": 0.11373456790123458
+    },
+    {
+      "feature_group": "adsb_transient_14d",
+      "dimension": 14,
+      "purity_k5": 0.10760233918128655,
+      "purity_k10": 0.09186159844054581,
+      "purity_k20": 0.07344054580896686,
+      "mean_purity": 0.09096816114359974
+    },
+    {
+      "feature_group": "generic_amplitude_8d",
+      "dimension": 8,
+      "purity_k5": 0.06666666666666667,
+      "purity_k10": 0.061598440545808965,
+      "purity_k20": 0.05307017543859649,
+      "mean_purity": 0.06044509421702404
+    },
+    {
+      "feature_group": "generic_phase_frequency_4d",
+      "dimension": 4,
+      "purity_k5": 0.04873294346978557,
+      "purity_k10": 0.04488304093567252,
+      "purity_k20": 0.042909356725146196,
+      "mean_purity": 0.04550844704353477
+    }
+  ]
+}

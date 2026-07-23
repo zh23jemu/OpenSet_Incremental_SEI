@@ -1,0 +1,13 @@
+{
+  "split_level": "stored-order block split (capture metadata unavailable)",
+  "seed": 23,
+  "day1_backbone_train_samples": 1800,
+  "day1_validation_samples": 300,
+  "day1_heldout_evaluation_samples": 900,
+  "development_ratio": 0.7,
+  "frozen_before_unknown_rounds": [
+    "checkpoint",
+    "CF-LCG",
+    "MV-ACC parameters"
+  ]
+}
