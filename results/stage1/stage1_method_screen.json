@@ -1,0 +1,241 @@
+{
+  "schema_version": "stage1_method_screen_v1",
+  "created_at_utc": "2026-07-26T23:51:48.221503+00:00",
+  "project_root": "C:\\Coding\\OpenSet_Incremental_SEI",
+  "existing_evidence": {
+    "wisig_rx3_cil_v2": {
+      "path": "C:\\Coding\\OpenSet_Incremental_SEI\\results\\wisig_rx3_mvacc_cil_v2_seed7\\per_round_summary_results.csv",
+      "exists": true,
+      "rounds": [
+        {
+          "round": "R1",
+          "cluster_count": 10.0,
+          "pseudo_label_classes": 10.0,
+          "purity": 0.938571,
+          "nmi": 0.907073,
+          "ari": 0.881726,
+          "hungarian_acc": 0.938571,
+          "overall_acc": 0.9005555555555556,
+          "new_acc": 0.9288888888888889,
+          "forgetting_rate": 0.12555555555555553
+        },
+        {
+          "round": "R2",
+          "cluster_count": 10.0,
+          "pseudo_label_classes": 10.0,
+          "purity": 0.981905,
+          "nmi": 0.963298,
+          "ari": 0.96056,
+          "hungarian_acc": 0.981905,
+          "overall_acc": 0.8388888888888889,
+          "new_acc": 0.9288888888888889,
+          "forgetting_rate": 0.3088888888888889
+        },
+        {
+          "round": "R3",
+          "cluster_count": 10.0,
+          "pseudo_label_classes": 10.0,
+          "purity": 0.994286,
+          "nmi": 0.985231,
+          "ari": 0.987369,
+          "hungarian_acc": 0.994286,
+          "overall_acc": 0.725,
+          "new_acc": 0.9811111111111112,
+          "forgetting_rate": 0.3277777777777777
+        }
+      ]
+    },
+    "manytx_rx2_cil_v2": {
+      "path": "C:\\Coding\\OpenSet_Incremental_SEI\\results\\manytx_rx2_mvacc_cil_v2_seed7\\per_round_summary_results.csv",
+      "exists": true,
+      "rounds": [
+        {
+          "round": "R1",
+          "cluster_count": 10.0,
+          "pseudo_label_classes": 10.0,
+          "purity": 0.945714,
+          "nmi": 0.917753,
+          "ari": 0.890672,
+          "hungarian_acc": 0.945714,
+          "overall_acc": 0.30333333333333334,
+          "new_acc": 0.5066666666666667,
+          "forgetting_rate": 0.32666666666666666
+        },
+        {
+          "round": "R2",
+          "cluster_count": 11.0,
+          "pseudo_label_classes": 11.0,
+          "purity": 0.977143,
+          "nmi": 0.946635,
+          "ari": 0.920229,
+          "hungarian_acc": 0.934286,
+          "overall_acc": 0.23333333333333334,
+          "new_acc": 0.4866666666666667,
+          "forgetting_rate": 0.4266666666666667
+        },
+        {
+          "round": "R3",
+          "cluster_count": 10.0,
+          "pseudo_label_classes": 10.0,
+          "purity": 0.894286,
+          "nmi": 0.892876,
+          "ari": 0.81174,
+          "hungarian_acc": 0.894286,
+          "overall_acc": 0.27,
+          "new_acc": 0.56,
+          "forgetting_rate": 0.4266666666666667
+        }
+      ]
+    },
+    "adsb_90known_strict": {
+      "path": "C:\\Coding\\OpenSet_Incremental_SEI\\results\\adsb_90known_mvacc_cil_strict_seed31\\per_round_summary_results.csv",
+      "exists": true,
+      "rounds": [
+        {
+          "round": "R1",
+          "cluster_count": 10.0,
+          "pseudo_label_classes": 10.0,
+          "purity": 0.8094774423888348,
+          "nmi": 0.7563147568386461,
+          "ari": 0.6703676098592072,
+          "hungarian_acc": 0.7718273287893541,
+          "overall_acc": 0.353301755363611,
+          "new_acc": 0.71,
+          "forgetting_rate": 0.1803172547750081
+        },
+        {
+          "round": "R2",
+          "cluster_count": 9.0,
+          "pseudo_label_classes": 9.0,
+          "purity": 0.6894537959464102,
+          "nmi": 0.7421699658826472,
+          "ari": 0.5484176388538486,
+          "hungarian_acc": 0.6894537959464102,
+          "overall_acc": 0.3392027390560039,
+          "new_acc": 0.638,
+          "forgetting_rate": 0.21026222078342505
+        },
+        {
+          "round": "R3",
+          "cluster_count": 6.0,
+          "pseudo_label_classes": 6.0,
+          "purity": 0.5698529411764706,
+          "nmi": 0.7346092005413858,
+          "ari": 0.44302362974495035,
+          "hungarian_acc": 0.5698529411764706,
+          "overall_acc": 0.3273044236217041,
+          "new_acc": 0.513,
+          "forgetting_rate": 0.18938167691809643
+        }
+      ]
+    },
+    "diagnosis": [
+      {
+        "dataset": "WiSig RX3",
+        "judgment": "发现质量高，新类能学进分类头，但 R2/R3 旧类遗忘明显；优先检查表征漂移、回放容量、KD 权重和冻结/解冻策略。"
+      },
+      {
+        "dataset": "ManyTx RX2",
+        "judgment": "发现指标尚可但端到端准确率很低；既有报告显示 Day1 神经分类器 held-out 初始准确率偏低，优先视为表征瓶颈。"
+      },
+      {
+        "dataset": "ADS-B",
+        "judgment": "strict 流程可跑通但初始 90 类模型弱且后续欠聚类；优先处理长序列表征和类别发现前端。"
+      }
+    ]
+  },
+  "sota_candidates": [
+    {
+      "name": "IGCD",
+      "role": "strict_candidate",
+      "source": "Incremental Generalized Category Discovery, ICCV 2023 / arXiv 2304.14310",
+      "url": "https://arxiv.org/abs/2304.14310",
+      "why": "任务形态接近多轮新类发现与旧类保持，可作为开放增量发现/保持的严格候选。",
+      "rf_adaptation_boundary": [
+        "输入统一使用本项目 WiSig strict 60/10/30 协议。",
+        "图像增强替换为项目 IQ 增强，禁止用未知轮次真值选择类别数。",
+        "先做接口草图和单轮小样本验证，再决定是否纳入正式 baseline。"
+      ],
+      "current_status": "adapter_design_required"
+    },
+    {
+      "name": "SimGCD",
+      "role": "strict_candidate_discovery_frontend",
+      "source": "Parametric Classification for Generalized Category Discovery, arXiv 2211.11727",
+      "url": "https://arxiv.org/abs/2211.11727",
+      "code": "https://github.com/CVMI-Lab/SimGCD",
+      "why": "代码可用，适合作为学习式类别发现头，对比 Deep-HDBSCAN/MV-ACC 的手工密度聚类前端。",
+      "rf_adaptation_boundary": [
+        "每轮只使用已知类训练/验证数据和当前 discovery 未标注样本。",
+        "类别数和阈值只能来自 Day1 验证或无标签准则，不能使用未知真值。",
+        "先作为发现前端候选，不单独声称解决完整 CIL 遗忘。"
+      ],
+      "current_status": "short_experiment_required"
+    }
+  ],
+  "short_experiment_matrix": [
+    {
+      "variant": "ce_baseline",
+      "purpose": "复现轻量 CE 初始骨干，作为表征短实验下界。",
+      "args": [
+        "--dataset_path 数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl",
+        "--selected_rx_list 2",
+        "--initial_known_classes 10",
+        "--round_size 10",
+        "--num_rounds 3",
+        "--seed 7",
+        "--train_closedset",
+        "--epochs 8",
+        "--batch_size 128",
+        "--test_batch_size 256",
+        "--disable_visualization",
+        "--disable_cil_baselines",
+        "--cil_head_warmup_epochs 1",
+        "--cil_joint_epochs 3"
+      ],
+      "expected_outputs": [
+        "per_round_summary_results.csv",
+        "incremental_results.csv",
+        "clustering_results.csv",
+        "fixed_day1_retention.csv"
+      ]
+    },
+    {
+      "variant": "supcon_representation",
+      "purpose": "比较 SupCon 初始表征是否降低旧类遗忘或改善发现质量。",
+      "args": [
+        "--dataset_path 数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl",
+        "--selected_rx_list 2",
+        "--initial_known_classes 10",
+        "--round_size 10",
+        "--num_rounds 3",
+        "--seed 7",
+        "--train_closedset",
+        "--epochs 8",
+        "--batch_size 128",
+        "--test_batch_size 256",
+        "--disable_visualization",
+        "--disable_cil_baselines",
+        "--cil_head_warmup_epochs 1",
+        "--cil_joint_epochs 3",
+        "--use_supcon",
+        "--supcon_weight 0.1"
+      ],
+      "expected_outputs": [
+        "per_round_summary_results.csv",
+        "incremental_results.csv",
+        "clustering_results.csv",
+        "fixed_day1_retention.csv"
+      ]
+    }
+  ],
+  "decision": {
+    "pseudo_replay_distill_status": "baseline_or_ablation_only",
+    "main_contribution_priority": [
+      "RF/IQ 表征稳定性",
+      "学习式或约束式类别发现前端",
+      "经过消融证明有效的后端训练策略"
+    ],
+    "next_gate": "运行 WiSig 单种子短实验并比较 CE baseline 与 SupCon representation 变体。"
+  }
+}

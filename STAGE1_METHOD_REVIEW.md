@@ -73,7 +73,13 @@
 3. ADS-B 表征短实验：先复核 `results/adsb_closedset_long_dev_seed41/ADSB_PHASE1_CLOSEDSET_REPORT.md` 的长序列骨干方向，避免在弱初始模型上反复调 CIL。
 4. IGCD 适配评估：先做伪实现方案和接口草图，不直接大规模训练；确认它能按本项目 60/10/30 协议运行后再纳入正式 baseline。
 
-## 6. 当前锁定决策
+## 6. 已落地执行入口
+
+- `tools/stage1_method_screen.py`：汇总既有 WiSig/ManyTx/ADS-B MV-ACC-CIL 结果、IGCD/SimGCD 适配边界和 WiSig 短实验矩阵，输出 JSON 报告。
+- `results/stage1/stage1_method_screen.json`：本地生成的阶段 1 筛选报告，当前包含 `ce_baseline` 与 `supcon_representation` 两个 WiSig 单种子短实验变体。
+- `slurm/stage1_wisig_short_screen.sbatch`：服务器侧短实验入口，使用 `gpuHz` + `shortjobs`，在相同 WiSig strict 协议下依次运行 CE baseline 与 SupCon representation 变体。
+
+## 7. 当前锁定决策
 
 - 可靠伪标签、回放和蒸馏保留为已有 baseline/消融，不作为新方法核心贡献。
 - 阶段 1 的新贡献候选优先放在表征和类别发现前端，其次才是后端训练策略。
