@@ -72,6 +72,7 @@
 - 已使用 RecallLoom helper 完成 recovery proposal/review、滚动摘要刷新和 `update_protocol.md` helper 写入；完整 provenance 校验已通过，当前 receipt store 覆盖 `context_brief`、`daily_log`、`rolling_summary` 和 `update_protocol`。
 - 用户确认 LoRa 数据来源为 Comprehensive LoRa RF Datasets for Device Fingerprinting Using Deep Learning，使用子集为 LoRa RFFP Dataset - Different Days Indoor Scenario；完整数据较大，后续可只下载或切分 Setup 1 必要子集。
 - 用户反馈项目中后期已尝试可靠伪标签筛选、旧类回放和知识蒸馏，但效果一般；阶段 1 需要复盘已有实现和瓶颈，不能把这些已有后端组件简单组合成新贡献。
+- 阶段 1 已新增 `STAGE1_METHOD_REVIEW.md`，完成既有 CIL 后端效果复盘和 SOTA 初筛；严格候选暂定 IGCD 与 SimGCD，SEI-specific FSCIL/CIL 方法先作为非严格参考池。
 
 ## Recent Changes
 
@@ -85,6 +86,7 @@
 - 2026-07-26：通过 RecallLoom 受控 helper 写入稳定上下文、当前状态和阶段 0 里程碑，并在交接中明确 Slurm 运行产物尚未同步回本地。
 - 2026-07-27：通过 RecallLoom recovery proposal/review 将初始化 receipt 缺口先安全降级为 reviewed import baseline，再使用 helper 刷新 rolling summary 和 `update_protocol.md`，完整 provenance 校验 `--require-provenance --full` 已通过。
 - 2026-07-27：根据用户反馈补充 LoRa 数据集正式名称和子集来源，并记录可靠伪标签筛选、旧类回放、知识蒸馏已尝试且效果一般，阶段 1 需避免重复包装。
+- 2026-07-27：新增 `STAGE1_METHOD_REVIEW.md`，复盘 WiSig/ManyTx/ADS-B 既有 MV-ACC-CIL 结果，确认可靠伪标签、回放和蒸馏应保留为 baseline/消融而不是新方法核心，并初筛 IGCD、SimGCD 作为严格 SOTA 候选。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
@@ -102,8 +104,9 @@
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
-- 进入阶段 1：筛选 1–2 个可公平复现的 SOTA、候选深度表征和候选类别发现方案。
-- 复盘现有可靠伪标签筛选、旧类回放和知识蒸馏实现及结果，明确为何效果一般，再决定 RADCIL 后端是否保留、替换或只作为 baseline/消融。
+- 继续阶段 1：在 WiSig 单种子短实验上比较现有骨干与候选深度表征。
+- 比较 Deep-HDBSCAN/MV-ACC 与 SimGCD 式学习发现头，检查聚类质量、类别数误差和伪标签 purity。
+- 为 IGCD 适配本项目 60/10/30 协议设计最小接口草图，确认能否作为严格 baseline。
 - 在 WiSig 单种子短实验前，基于 `tools/stage0_strict_loader_audit.py` 的输出确认后续实验入口统一使用可移植数据路径。
 - 明确 ManyRx 当前正式入口：恢复受维护的 runner，或同步修改 `experiments/README_MAIN_EXPERIMENTS.md`，避免引用不存在的脚本。
 - 为核心工具与严格协议增加轻量级单元测试/数据完整性测试；当前仓库未发现独立测试目录。
