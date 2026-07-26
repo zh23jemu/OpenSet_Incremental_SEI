@@ -23,6 +23,7 @@
 - 未知轮次训练只能使用伪标签，真实标签只用于最终评估、事后指标和解释图，禁止进入阈值、聚类、伪标签筛选或网络训练。
 - 原 MV-ACC、CF-LCG、HDBSCAN 和原型注册完整链路保留为 baseline，不再约束新主方法结构。
 - 新主方法允许重新设计深度表征、未知检测、类别发现、可靠伪标签和 RADCIL 增量后端。
+- 用户反馈可靠伪标签筛选、旧类回放和知识蒸馏在现有代码后期已有尝试但效果一般；阶段 1 需要先复盘已有实现和结果，不要把这三项简单组合当作新方法贡献。
 - 经典 RF 特征退出新主方法，只作为 legacy baseline 和消融。
 - 正式对照必须包含：原完整方法、Deep-HDBSCAN + 原型注册、相同伪标签下的 Fine-tuning/LwF/iCaRL/EEIL、至少 1–2 个可公平适配的近年 SOTA，以及仅作上限的 Oracle。
 - 必须运行“固定旧前端 + 新后端”“新前端 + 原型注册”“完整新方法”三组组合，分离发现前端与增量后端的贡献。
@@ -32,6 +33,7 @@
 - WiSig 主实验：初始 10 类，3 轮增量，每轮 10 类，最终 40 类。
 - ADS-B 主实验：初始 90 类，剩余 30 类分 3 轮，每轮 10 类。
 - LoRa25：默认 10 + 5 × 3，作为跨信号体制验证。
+- LoRa 数据来源已由用户确认：Comprehensive LoRa RF Datasets for Device Fingerprinting Using Deep Learning；使用子集为 LoRa RFFP Dataset - Different Days Indoor Scenario。完整数据较大，后续可只下载或切分 Setup 1 必要子集。
 - ManyTx/ManyRx：作为 WiSig 补充协议，不得延迟 WiSig、ADS-B 主结果。
 - WiSig 主协议继续采用 60% 初始训练、10% 验证、30% 最终评估；其它数据优先使用 strict loader 并输出完整性审计。
 
@@ -94,9 +96,10 @@ Strict loader 审计：
 ## 7. 下一步执行顺序
 
 1. 进入阶段 1：文献筛选 1–2 个 SOTA，在 WiSig 单种子短实验上比较候选表征和候选类别发现前端。
-2. 设计新主方法入口时统一使用 `configs/data_paths.example.json` 的路径结构或等价命令行参数，避免写入开发者绝对路径。
-3. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
-4. 若后续补充实验需要 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压，不删除 Release 分片或原压缩包。
+2. 复盘现有可靠伪标签筛选、旧类回放和知识蒸馏实现，确认效果一般的具体瓶颈，再决定 RADCIL 后端保留、替换或作为消融。
+3. 设计新主方法入口时统一使用 `configs/data_paths.example.json` 的路径结构或等价命令行参数，避免写入开发者绝对路径。
+4. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
+5. 若后续补充实验需要 LoRa 完整数据或 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压或下载；LoRa 可优先只取 Different Days Indoor Scenario 的必要子集，不删除 Release 分片或原压缩包。
 
 ## 8. 变更与 Git 状态
 

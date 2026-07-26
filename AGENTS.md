@@ -70,6 +70,8 @@
 - 阶段 0 已确认四份大数据哈希、ManyTx/ManyRx ZIP 结构和 LoRa/ManyRx 紧凑 NPZ 可读；ADS-B 已在 Slurm 解压，WiSig/ADS-B strict loader 审计已通过。
 - 已新增可移植数据路径示例、阶段 0 strict loader 审计脚本和 Slurm 提交脚本；Job `44401081` 确认 WiSig 与 ADS-B 主实验 split 的形状、类别数、样本数和协议边界均通过。
 - 已使用 RecallLoom helper 完成 recovery proposal/review、滚动摘要刷新和 `update_protocol.md` helper 写入；完整 provenance 校验已通过，当前 receipt store 覆盖 `context_brief`、`daily_log`、`rolling_summary` 和 `update_protocol`。
+- 用户确认 LoRa 数据来源为 Comprehensive LoRa RF Datasets for Device Fingerprinting Using Deep Learning，使用子集为 LoRa RFFP Dataset - Different Days Indoor Scenario；完整数据较大，后续可只下载或切分 Setup 1 必要子集。
+- 用户反馈项目中后期已尝试可靠伪标签筛选、旧类回放和知识蒸馏，但效果一般；阶段 1 需要复盘已有实现和瓶颈，不能把这些已有后端组件简单组合成新贡献。
 
 ## Recent Changes
 
@@ -82,6 +84,7 @@
 - 2026-07-26：新增 `PROJECT_HANDOFF.md`，固化新会话恢复顺序、当前状态、关键决策、验证证据、风险和下一步。
 - 2026-07-26：通过 RecallLoom 受控 helper 写入稳定上下文、当前状态和阶段 0 里程碑，并在交接中明确 Slurm 运行产物尚未同步回本地。
 - 2026-07-27：通过 RecallLoom recovery proposal/review 将初始化 receipt 缺口先安全降级为 reviewed import baseline，再使用 helper 刷新 rolling summary 和 `update_protocol.md`，完整 provenance 校验 `--require-provenance --full` 已通过。
+- 2026-07-27：根据用户反馈补充 LoRa 数据集正式名称和子集来源，并记录可靠伪标签筛选、旧类回放、知识蒸馏已尝试且效果一般，阶段 1 需避免重复包装。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
@@ -100,6 +103,7 @@
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
 - 进入阶段 1：筛选 1–2 个可公平复现的 SOTA、候选深度表征和候选类别发现方案。
+- 复盘现有可靠伪标签筛选、旧类回放和知识蒸馏实现及结果，明确为何效果一般，再决定 RADCIL 后端是否保留、替换或只作为 baseline/消融。
 - 在 WiSig 单种子短实验前，基于 `tools/stage0_strict_loader_audit.py` 的输出确认后续实验入口统一使用可移植数据路径。
 - 明确 ManyRx 当前正式入口：恢复受维护的 runner，或同步修改 `experiments/README_MAIN_EXPERIMENTS.md`，避免引用不存在的脚本。
 - 为核心工具与严格协议增加轻量级单元测试/数据完整性测试；当前仓库未发现独立测试目录。
@@ -129,6 +133,7 @@
 - 原 MV-ACC、CF-LCG、HDBSCAN 和原型注册链路完整保留为 baseline，但不再约束新主方法结构；新主方法可重新设计深度表征、未知检测、类别发现、可靠伪标签和真实网络增量训练，经典特征仅用于旧方法对照与消融。
 - 正式实验必须包含固定旧前端配新后端、新前端配原型注册和完整新方法三组组合，分离类别发现与增量后端的贡献，并补充至少 1–2 个可公平复现的近年 SOTA 对照。
 - 主实验优先 WiSig 10+10×3 和 ADS-B 90+10×3；LoRa25 默认 10+5×3，ManyTx/ManyRx 沿用现有协议作为补充验证。
+- LoRa 跨体制验证优先使用 LoRa RFFP Different Days Indoor Scenario；完整数据较大时只下载或切分必要 Setup 1 子集，不因完整 LoRa 全量下载延迟 WiSig/ADS-B 主线。
 - 客户补充的超大数据保留为本地压缩包并精确排除出 Git；ADS-B 统一以 `ADS-B.rar` 作为实验数据源。
 - 普通源码和小型结果使用 Git 管理；超过 100 MB 的原始数据通过 GitHub Release 和 `gh` 在本地、GitHub、Slurm 之间同步，不使用 `scp`。
 - 阶段 0 的可重复验证入口固定为 `tools/stage0_env_data_check.py`、`tools/stage0_strict_loader_audit.py` 及对应 Slurm 脚本；正式进入算法实验前必须先通过环境/数据自检和完整 strict loader 审计。
