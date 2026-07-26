@@ -1,7 +1,10 @@
 torch
 numpy
+pandas
 scikit-learn
 scipy
 matplotlib
 h5py
 tqdm
+hdbscan
+umap-learn
