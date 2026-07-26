@@ -64,9 +64,14 @@
 - 客户补充的 ADS-B、ManyTx 和 ManyRx 完整原始数据压缩包已放入 `数据集/`；结合现有 WiSig 原始数据和 LoRa25 紧凑数据，当前确认的 WiSig、ADS-B、LoRa 主实验数据已齐备。
 - 已将确认后的开集增量目标、数据协议、无泄漏边界、baseline、RADCIL 后端、指标、阶段验收和交付要求固化到 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`；后续实施以该文件为唯一执行基准。
 - 已使用 Python 3.11 创建项目 `.venv`，并初始化简体中文 RecallLoom 1.0 隐藏侧车 `.recallloom/`；初始化结构验证通过，当前仍是尚未导入项目现实的空侧车骨架。
+- 已创建 GitHub 公共仓库 `zh23jemu/OpenSet_Incremental_SEI` 并推送 `master`；超大数据通过 `datasets-2026-07-26` Release 分发。
+- 项目代码和 Release 数据已通过 `gh` 同步到可用 Slurm 集群的 `/mnt/users/xj62kv/OpenSet_Incremental_SEI`，ManyTx 分片合并后的 SHA-256 与本地原文件一致。
 
 ## Recent Changes
 
+- 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
+- 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
+- 2026-07-26：补充 GitHub Release 下载、ManyTx 分片合并和四份原始数据 SHA-256 说明，并精确忽略本地传输分片。
 - 2026-07-26：通过 RecallLoom dispatcher 初始化 `.recallloom/`，创建上下文、滚动摘要、更新协议、当日日志骨架和状态文件，并写入本地 Git exclude。
 - 2026-07-26：新增 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`，锁定 WiSig/ADS-B 主实验、LoRa/ManyTx/ManyRx 补充实验、经典特征退出主路径、可靠伪标签和网络增量训练方案。
 - 2026-07-26：核对 `数据集/` 中的 ADS-B、ManyTx 和 ManyRx 压缩包；确认 `ADS-B.rar` 包含加载器需要的 90 类和 30 类训练/测试文件，重复的 `Dataset.rar` 已由用户清理。
@@ -87,6 +92,7 @@
 - 增加根目录用户 README，统一说明环境、数据位置、主实验入口和结果目录。
 - 评估大量 PNG、PTH、NPZ 历史结果长期使用普通 Git 的仓库体积成本；如需要远端协作，再决定是否引入 Git LFS，不能直接丢弃小型结果。
 - 根据训练时长与资源需求，为主要 GPU 实验补充或维护 Slurm 提交脚本。
+- 在 Slurm 项目目录创建项目 `.venv`、锁定依赖并执行最小数据加载与 GPU 环境自检；本次只完成代码和数据同步，尚未安装训练环境。
 
 ## Open Issues
 
@@ -98,6 +104,7 @@
 - 实验脚本体量较大且 WiSig/ManyTx 多版本之间存在明显重复，当前不做无关重构；后续修改须谨慎同步公共逻辑。
 - 仓库包含大量历史图片、模型和回放记忆；单文件目前已盘点到的最大可提交结果约 82 MB，虽低于 100 MB，首次提交和后续克隆仍可能较慢。
 - 尚未执行完整训练或端到端验证；本次目标仅为理解现状与安全初始化版本管理。
+- Slurm 端目前保留 ManyTx 的 6 个 Release 分片和合并后的 ZIP，会额外占用约 2.63 GB；确认长期保留策略前不做文件删除。
 
 ## Architecture Decisions
 
@@ -106,6 +113,7 @@
 - 新主方法以深度表征、可靠伪标签和真实网络增量训练为核心；经典特征及 CF-LCG 从主路径移除，仅作为旧方法 baseline 和消融。
 - 主实验优先 WiSig 10+10×3 和 ADS-B 90+10×3；LoRa25 默认 10+5×3，ManyTx/ManyRx 沿用现有协议作为补充验证。
 - 客户补充的超大数据保留为本地压缩包并精确排除出 Git；ADS-B 统一以 `ADS-B.rar` 作为实验数据源。
+- 普通源码和小型结果使用 Git 管理；超过 100 MB 的原始数据通过 GitHub Release 和 `gh` 在本地、GitHub、Slurm 之间同步，不使用 `scp`。
 - 以严格的 60/10/30 隔离协议作为主实验可信度边界，Day1 验证集承担模型选择与无测试泄漏校准。
 - 现有 MV-ACC 仍以深度表征为主视图，并通过 CF-LCG 引入经典 RF 特征；该路线后续只作为 legacy baseline 保留。
 - MV-ACC 的发现阶段采用 HDBSCAN 微簇，再执行多视图合并、噪声重分配和过大簇分裂，以实现无丢样本的设备注册。

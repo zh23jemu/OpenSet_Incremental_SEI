@@ -33,6 +33,9 @@ Desktop.ini
 # 客户补充的超大射频原始数据压缩包及其本地解压目录
 /数据集/*.rar
 /数据集/*.zip
+/数据集/ManyTx.pkl.zip.part*
+/数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl
+/数据集/release_parts*/
 /数据集/ADS-B/
 /数据集/Dataset/
 /数据集/ManyTx/

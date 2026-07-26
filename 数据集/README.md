@@ -36,6 +36,31 @@
 - 解压后通过实验参数显式传入数据路径，不依赖源码中的开发者绝对路径。
 - 原始数据、压缩包和本地解压目录均不提交到 Git。
 
+## GitHub Release 分发
+
+超大原始数据通过公共仓库的 `datasets-2026-07-26` Release 分发，不进入普通 Git 历史。可在仓库根目录执行：
+
+```bash
+gh release download datasets-2026-07-26 \
+  --repo zh23jemu/OpenSet_Incremental_SEI \
+  --dir 数据集
+```
+
+`ManyTx.pkl.zip` 超过 GitHub 单资产限制，因此拆为 6 个有序分片。Linux 训练服务器下载后按顺序合并：
+
+```bash
+cat 数据集/ManyTx.pkl.zip.part{01..06} > 数据集/ManyTx.pkl.zip
+```
+
+合并后用 SHA-256 核对原始资产：
+
+| 文件 | SHA-256 |
+| --- | --- |
+| `WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl` | `63794418ba7ffaaa2198fabbdd5e3429ebd0f1f6346ac2c33db8c363cdd3195f` |
+| `ADS-B.rar` | `4748fb7cf0cf0bc0da710e4057961ace831a384f9ca6931a7f839b6714fca2ad` |
+| `ManyRx.pkl.zip` | `d2b23108c3f6f63a10ebbb149d7b08d6e1c1961cf5184926fbab452def3049de` |
+| `ManyTx.pkl.zip` | `a8fc3e35134a240bfb4dab8862a6e482cef44de000b813d42417b853c47ccc7e` |
+
 ## 完整性结论
 
 当前主线所需的 WiSig、ADS-B、LoRa 数据均已具备。ManyTx 和 ManyRx 的完整原始压缩包也已具备。ORACLE/Orbit RF 原始数据仍未提供，但它们不属于当前确认的 WiSig、ADS-B、LoRa 主实验范围。
