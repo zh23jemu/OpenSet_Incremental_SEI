@@ -1,0 +1,896 @@
+{
+  "python": "3.11.11 (main, Dec 12 2024, 16:28:23) [GCC 8.5.0 20210514 (Red Hat 8.5.0-22)]",
+  "project_root": "/mnt/users/xj62kv/OpenSet_Incremental_SEI",
+  "data_root": "/mnt/users/xj62kv/OpenSet_Incremental_SEI/数据集",
+  "imports": {
+    "torch": {
+      "ok": true,
+      "version": "2.13.0+cu126"
+    },
+    "numpy": {
+      "ok": true,
+      "version": "2.4.4"
+    },
+    "pandas": {
+      "ok": true,
+      "version": "3.0.5"
+    },
+    "sklearn": {
+      "ok": true,
+      "version": "1.9.0"
+    },
+    "scipy": {
+      "ok": true,
+      "version": "1.17.1"
+    },
+    "matplotlib": {
+      "ok": true,
+      "version": "3.11.1"
+    },
+    "h5py": {
+      "ok": true,
+      "version": "3.16.0"
+    },
+    "tqdm": {
+      "ok": true,
+      "version": "4.69.1"
+    },
+    "hdbscan": {
+      "ok": true,
+      "version": "unknown"
+    },
+    "umap": {
+      "ok": true,
+      "version": "0.5.12"
+    }
+  },
+  "torch_cuda": {
+    "torch_version": "2.13.0+cu126",
+    "cuda_available": true,
+    "cuda_version": "12.6",
+    "device_count": 1,
+    "devices": [
+      "NVIDIA L40S"
+    ],
+    "gpu_smoke_ok": true
+  },
+  "data_files": {
+    "wisig": {
+      "path": "/mnt/users/xj62kv/OpenSet_Incremental_SEI/数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl",
+      "exists": true,
+      "size_bytes": 589850076,
+      "sha256": "63794418ba7ffaaa2198fabbbd5e3429ebd0f1f6346ac2c33db8c363cdd3195f",
+      "expected_sha256": "63794418ba7ffaaa2198fabbbd5e3429ebd0f1f6346ac2c33db8c363cdd3195f",
+      "sha256_ok": true
+    },
+    "adsb": {
+      "path": "/mnt/users/xj62kv/OpenSet_Incremental_SEI/数据集/ADS-B.rar",
+      "exists": true,
+      "size_bytes": 1671399947,
+      "sha256": "4748fb7cf0cf0bc0da710e4057961ace831a384f9ca6931a7f839b6714fca2ad",
+      "expected_sha256": "4748fb7cf0cf0bc0da710e4057961ace831a384f9ca6931a7f839b6714fca2ad",
+      "sha256_ok": true
+    },
+    "manyrx": {
+      "path": "/mnt/users/xj62kv/OpenSet_Incremental_SEI/数据集/ManyRx.pkl.zip",
+      "exists": true,
+      "size_bytes": 1249528063,
+      "sha256": "d2b23108c3f6f63a10ebbb149d7b08d6e1c1961cf5184926fbab452def3049de",
+      "expected_sha256": "d2b23108c3f6f63a10ebbb149d7b08d6e1c1961cf5184926fbab452def3049de",
+      "sha256_ok": true
+    },
+    "manytx": {
+      "path": "/mnt/users/xj62kv/OpenSet_Incremental_SEI/数据集/ManyTx.pkl.zip",
+      "exists": true,
+      "size_bytes": 2631104718,
+      "sha256": "a8fc3e35134a240bfb4dab8862a6e482cef44de000b813d42417b853c47ccc7e",
+      "expected_sha256": "a8fc3e35134a240bfb4dab8862a6e482cef44de000b813d42417b853c47ccc7e",
+      "sha256_ok": true
+    }
+  },
+  "zip_files": {
+    "manyrx": {
+      "path": "/mnt/users/xj62kv/OpenSet_Incremental_SEI/数据集/ManyRx.pkl.zip",
+      "exists": true,
+      "zip_ok": true,
+      "member_count": 1,
+      "members": [
+        {
+          "name": "ManyRx.pkl",
+          "compressed_size": 1249527909,
+          "file_size": 2037337668
+        }
+      ]
+    },
+    "manytx": {
+      "path": "/mnt/users/xj62kv/OpenSet_Incremental_SEI/数据集/ManyTx.pkl.zip",
+      "exists": true,
+      "zip_ok": true,
+      "member_count": 1,
+      "members": [
+        {
+          "name": "ManyTx.pkl",
+          "compressed_size": 2631104544,
+          "file_size": 4182065863
+        }
+      ]
+    }
+  },
+  "compact_npz": {
+    "lora25_compact": {
+      "path": "/mnt/users/xj62kv/OpenSet_Incremental_SEI/datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz",
+      "exists": true,
+      "npz_ok": true,
+      "arrays": {
+        "day1_known_train_X": {
+          "shape": [
+            980,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "day1_known_train_y": {
+          "shape": [
+            980
+          ],
+          "dtype": "int64"
+        },
+        "day1_known_train_transmission": {
+          "shape": [
+            980
+          ],
+          "dtype": "int16"
+        },
+        "day1_known_train_recording_id": {
+          "shape": [
+            980
+          ],
+          "dtype": "int32"
+        },
+        "day1_initial_eval_X": {
+          "shape": [
+            420,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "day1_initial_eval_y": {
+          "shape": [
+            420
+          ],
+          "dtype": "int64"
+        },
+        "day1_initial_eval_transmission": {
+          "shape": [
+            420
+          ],
+          "dtype": "int16"
+        },
+        "day1_initial_eval_recording_id": {
+          "shape": [
+            420
+          ],
+          "dtype": "int32"
+        },
+        "day2_unknown_round1_X": {
+          "shape": [
+            490,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "day2_unknown_round1_y": {
+          "shape": [
+            490
+          ],
+          "dtype": "int64"
+        },
+        "day2_unknown_round1_transmission": {
+          "shape": [
+            490
+          ],
+          "dtype": "int16"
+        },
+        "day2_unknown_round1_recording_id": {
+          "shape": [
+            490
+          ],
+          "dtype": "int32"
+        },
+        "day2_eval_after_r1_X": {
+          "shape": [
+            630,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "day2_eval_after_r1_y": {
+          "shape": [
+            630
+          ],
+          "dtype": "int64"
+        },
+        "day2_eval_after_r1_transmission": {
+          "shape": [
+            630
+          ],
+          "dtype": "int16"
+        },
+        "day2_eval_after_r1_recording_id": {
+          "shape": [
+            630
+          ],
+          "dtype": "int32"
+        },
+        "day3_unknown_round2_X": {
+          "shape": [
+            490,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "day3_unknown_round2_y": {
+          "shape": [
+            490
+          ],
+          "dtype": "int64"
+        },
+        "day3_unknown_round2_transmission": {
+          "shape": [
+            490
+          ],
+          "dtype": "int16"
+        },
+        "day3_unknown_round2_recording_id": {
+          "shape": [
+            490
+          ],
+          "dtype": "int32"
+        },
+        "day3_eval_after_r2_X": {
+          "shape": [
+            840,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "day3_eval_after_r2_y": {
+          "shape": [
+            840
+          ],
+          "dtype": "int64"
+        },
+        "day3_eval_after_r2_transmission": {
+          "shape": [
+            840
+          ],
+          "dtype": "int16"
+        },
+        "day3_eval_after_r2_recording_id": {
+          "shape": [
+            840
+          ],
+          "dtype": "int32"
+        },
+        "day4_unknown_round3_X": {
+          "shape": [
+            490,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "day4_unknown_round3_y": {
+          "shape": [
+            490
+          ],
+          "dtype": "int64"
+        },
+        "day4_unknown_round3_transmission": {
+          "shape": [
+            490
+          ],
+          "dtype": "int16"
+        },
+        "day4_unknown_round3_recording_id": {
+          "shape": [
+            490
+          ],
+          "dtype": "int32"
+        },
+        "day4_eval_after_r3_X": {
+          "shape": [
+            1050,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "day4_eval_after_r3_y": {
+          "shape": [
+            1050
+          ],
+          "dtype": "int64"
+        },
+        "day4_eval_after_r3_transmission": {
+          "shape": [
+            1050
+          ],
+          "dtype": "int16"
+        },
+        "day4_eval_after_r3_recording_id": {
+          "shape": [
+            1050
+          ],
+          "dtype": "int32"
+        },
+        "day_names": {
+          "shape": [
+            4
+          ],
+          "dtype": "<U4"
+        },
+        "device_names": {
+          "shape": [
+            25
+          ],
+          "dtype": "<U8"
+        },
+        "physical_device_order": {
+          "shape": [
+            25
+          ],
+          "dtype": "int16"
+        }
+      }
+    },
+    "manyrx_compact": {
+      "path": "/mnt/users/xj62kv/OpenSet_Incremental_SEI/datasets/manyrx_compact/manyrx_4known_3round_fixed_cross_rx.npz",
+      "exists": true,
+      "npz_ok": true,
+      "arrays": {
+        "fixedrx_day1_known_train_X": {
+          "shape": [
+            560,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "fixedrx_day1_known_train_y": {
+          "shape": [
+            560
+          ],
+          "dtype": "int64"
+        },
+        "fixedrx_day1_known_train_sample_index": {
+          "shape": [
+            560
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day1_known_train_rx_index": {
+          "shape": [
+            560
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day1_known_train_day_index": {
+          "shape": [
+            560
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day1_initial_eval_X": {
+          "shape": [
+            240,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "fixedrx_day1_initial_eval_y": {
+          "shape": [
+            240
+          ],
+          "dtype": "int64"
+        },
+        "fixedrx_day1_initial_eval_sample_index": {
+          "shape": [
+            240
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day1_initial_eval_rx_index": {
+          "shape": [
+            240
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day1_initial_eval_day_index": {
+          "shape": [
+            240
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day2_unknown_round1_X": {
+          "shape": [
+            280,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "fixedrx_day2_unknown_round1_y": {
+          "shape": [
+            280
+          ],
+          "dtype": "int64"
+        },
+        "fixedrx_day2_unknown_round1_sample_index": {
+          "shape": [
+            280
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day2_unknown_round1_rx_index": {
+          "shape": [
+            280
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day2_unknown_round1_day_index": {
+          "shape": [
+            280
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day2_eval_after_r1_X": {
+          "shape": [
+            360,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "fixedrx_day2_eval_after_r1_y": {
+          "shape": [
+            360
+          ],
+          "dtype": "int64"
+        },
+        "fixedrx_day2_eval_after_r1_sample_index": {
+          "shape": [
+            360
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day2_eval_after_r1_rx_index": {
+          "shape": [
+            360
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day2_eval_after_r1_day_index": {
+          "shape": [
+            360
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day3_unknown_round2_X": {
+          "shape": [
+            280,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "fixedrx_day3_unknown_round2_y": {
+          "shape": [
+            280
+          ],
+          "dtype": "int64"
+        },
+        "fixedrx_day3_unknown_round2_sample_index": {
+          "shape": [
+            280
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day3_unknown_round2_rx_index": {
+          "shape": [
+            280
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day3_unknown_round2_day_index": {
+          "shape": [
+            280
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day3_eval_after_r2_X": {
+          "shape": [
+            480,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "fixedrx_day3_eval_after_r2_y": {
+          "shape": [
+            480
+          ],
+          "dtype": "int64"
+        },
+        "fixedrx_day3_eval_after_r2_sample_index": {
+          "shape": [
+            480
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day3_eval_after_r2_rx_index": {
+          "shape": [
+            480
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day3_eval_after_r2_day_index": {
+          "shape": [
+            480
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day4_unknown_round3_X": {
+          "shape": [
+            280,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "fixedrx_day4_unknown_round3_y": {
+          "shape": [
+            280
+          ],
+          "dtype": "int64"
+        },
+        "fixedrx_day4_unknown_round3_sample_index": {
+          "shape": [
+            280
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day4_unknown_round3_rx_index": {
+          "shape": [
+            280
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day4_unknown_round3_day_index": {
+          "shape": [
+            280
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day4_eval_after_r3_X": {
+          "shape": [
+            600,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "fixedrx_day4_eval_after_r3_y": {
+          "shape": [
+            600
+          ],
+          "dtype": "int64"
+        },
+        "fixedrx_day4_eval_after_r3_sample_index": {
+          "shape": [
+            600
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day4_eval_after_r3_rx_index": {
+          "shape": [
+            600
+          ],
+          "dtype": "int16"
+        },
+        "fixedrx_day4_eval_after_r3_day_index": {
+          "shape": [
+            600
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day1_known_train_X": {
+          "shape": [
+            800,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "crossrx_day1_known_train_y": {
+          "shape": [
+            800
+          ],
+          "dtype": "int64"
+        },
+        "crossrx_day1_known_train_sample_index": {
+          "shape": [
+            800
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day1_known_train_rx_index": {
+          "shape": [
+            800
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day1_known_train_day_index": {
+          "shape": [
+            800
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day1_initial_eval_X": {
+          "shape": [
+            800,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "crossrx_day1_initial_eval_y": {
+          "shape": [
+            800
+          ],
+          "dtype": "int64"
+        },
+        "crossrx_day1_initial_eval_sample_index": {
+          "shape": [
+            800
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day1_initial_eval_rx_index": {
+          "shape": [
+            800
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day1_initial_eval_day_index": {
+          "shape": [
+            800
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day2_unknown_round1_X": {
+          "shape": [
+            400,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "crossrx_day2_unknown_round1_y": {
+          "shape": [
+            400
+          ],
+          "dtype": "int64"
+        },
+        "crossrx_day2_unknown_round1_sample_index": {
+          "shape": [
+            400
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day2_unknown_round1_rx_index": {
+          "shape": [
+            400
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day2_unknown_round1_day_index": {
+          "shape": [
+            400
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day2_eval_after_r1_X": {
+          "shape": [
+            1200,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "crossrx_day2_eval_after_r1_y": {
+          "shape": [
+            1200
+          ],
+          "dtype": "int64"
+        },
+        "crossrx_day2_eval_after_r1_sample_index": {
+          "shape": [
+            1200
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day2_eval_after_r1_rx_index": {
+          "shape": [
+            1200
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day2_eval_after_r1_day_index": {
+          "shape": [
+            1200
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day3_unknown_round2_X": {
+          "shape": [
+            400,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "crossrx_day3_unknown_round2_y": {
+          "shape": [
+            400
+          ],
+          "dtype": "int64"
+        },
+        "crossrx_day3_unknown_round2_sample_index": {
+          "shape": [
+            400
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day3_unknown_round2_rx_index": {
+          "shape": [
+            400
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day3_unknown_round2_day_index": {
+          "shape": [
+            400
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day3_eval_after_r2_X": {
+          "shape": [
+            1600,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "crossrx_day3_eval_after_r2_y": {
+          "shape": [
+            1600
+          ],
+          "dtype": "int64"
+        },
+        "crossrx_day3_eval_after_r2_sample_index": {
+          "shape": [
+            1600
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day3_eval_after_r2_rx_index": {
+          "shape": [
+            1600
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day3_eval_after_r2_day_index": {
+          "shape": [
+            1600
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day4_unknown_round3_X": {
+          "shape": [
+            400,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "crossrx_day4_unknown_round3_y": {
+          "shape": [
+            400
+          ],
+          "dtype": "int64"
+        },
+        "crossrx_day4_unknown_round3_sample_index": {
+          "shape": [
+            400
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day4_unknown_round3_rx_index": {
+          "shape": [
+            400
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day4_unknown_round3_day_index": {
+          "shape": [
+            400
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day4_eval_after_r3_X": {
+          "shape": [
+            2000,
+            2,
+            256
+          ],
+          "dtype": "float32"
+        },
+        "crossrx_day4_eval_after_r3_y": {
+          "shape": [
+            2000
+          ],
+          "dtype": "int64"
+        },
+        "crossrx_day4_eval_after_r3_sample_index": {
+          "shape": [
+            2000
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day4_eval_after_r3_rx_index": {
+          "shape": [
+            2000
+          ],
+          "dtype": "int16"
+        },
+        "crossrx_day4_eval_after_r3_day_index": {
+          "shape": [
+            2000
+          ],
+          "dtype": "int16"
+        },
+        "tx_names": {
+          "shape": [
+            10
+          ],
+          "dtype": "<U5"
+        },
+        "rx_names": {
+          "shape": [
+            32
+          ],
+          "dtype": "<U5"
+        },
+        "day_names": {
+          "shape": [
+            4
+          ],
+          "dtype": "<U10"
+        }
+      }
+    }
+  },
+  "adsb_extracted": {
+    "extracted": false,
+    "base": null
+  },
+  "ok": true
+}
