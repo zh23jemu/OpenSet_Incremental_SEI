@@ -67,7 +67,8 @@
 - 已创建 GitHub 公共仓库 `zh23jemu/OpenSet_Incremental_SEI` 并推送 `master`；超大数据通过 `datasets-2026-07-26` Release 分发。
 - 项目代码和 Release 数据已通过 `gh` 同步到可用 Slurm 集群的 `/mnt/users/xj62kv/OpenSet_Incremental_SEI`，ManyTx 分片合并后的 SHA-256 与本地原文件一致。
 - Slurm 项目已创建 Python 3.11 `.venv`，安装 PyTorch 2.13.0+cu126、pandas、hdbscan、umap-learn 等依赖；Job `44398322` 在 L40S 计算节点完成阶段 0 自检，退出码为 0。
-- 阶段 0 已确认四份大数据哈希、ManyTx/ManyRx ZIP 结构和 LoRa/ManyRx 紧凑 NPZ 可读；ADS-B 及完整 ManyTx/ManyRx 尚未按实验需要解压，WiSig/ADS-B strict loader 尚未验证。
+- 阶段 0 已确认四份大数据哈希、ManyTx/ManyRx ZIP 结构和 LoRa/ManyRx 紧凑 NPZ 可读；ADS-B 已在 Slurm 解压，WiSig/ADS-B strict loader 审计已通过。
+- 已新增可移植数据路径示例、阶段 0 strict loader 审计脚本和 Slurm 提交脚本；Job `44401081` 确认 WiSig 与 ADS-B 主实验 split 的形状、类别数、样本数和协议边界均通过。
 - 已使用 RecallLoom helper 补齐稳定项目上下文、刷新滚动摘要并追加阶段 0 交接里程碑；当前 workspace revision 为 9、滚动摘要 revision 为 5。
 
 ## Recent Changes
@@ -75,6 +76,9 @@
 - 2026-07-26：新增 `tools/stage0_env_data_check.py`，检查 Python 依赖、CUDA、GPU 张量计算、大数据 SHA-256、ZIP 目录和紧凑 NPZ 元信息。
 - 2026-07-26：补齐 `requirements.txt` 中的 pandas、hdbscan 和 umap-learn，并在 Slurm 创建 Python 3.11 `.venv` 安装 CUDA 12.6 兼容 PyTorch 及项目依赖。
 - 2026-07-26：新增 `slurm/stage0_env_data_check.sbatch`，提交 Job `44398322`；任务在 L40S 计算节点完成，耗时 34 秒，stderr 为空，JSON 报告保存于 `results/stage0/`。
+- 2026-07-26：通过 Git/`gh` 将 Slurm Job `44398322` 的阶段 0 环境与数据自检产物同步回本地，并提交到工作分支。
+- 2026-07-26：新增 `configs/data_paths.example.json`、`tools/stage0_strict_loader_audit.py` 和 `slurm/stage0_strict_loader_audit.sbatch`，用于可移植路径配置和 WiSig/ADS-B strict loader 审计。
+- 2026-07-26：在 Slurm 安装用户级 7-Zip 控制台工具用于解压 `ADS-B.rar`，保留原压缩包；提交 Job `44401081` 完成 WiSig/ADS-B strict loader 审计，退出码为 0。
 - 2026-07-26：新增 `PROJECT_HANDOFF.md`，固化新会话恢复顺序、当前状态、关键决策、验证证据、风险和下一步。
 - 2026-07-26：通过 RecallLoom 受控 helper 写入稳定上下文、当前状态和阶段 0 里程碑，并在交接中明确 Slurm 运行产物尚未同步回本地。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
@@ -94,8 +98,8 @@
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 新会话先处理 RecallLoom 完整 provenance 审计的初始化 receipt 缺口：优先升级到建议版本并按官方恢复流程操作，禁止手工编辑受管侧车状态。
-- 继续阶段 0：优先解压 ADS-B，建立可移植数据路径配置，并运行 WiSig/ADS-B strict loader 的形状、类别、样本数和无泄漏审计。
-- 阶段 0 完成后进入阶段 1：筛选 1–2 个可公平复现的 SOTA、候选深度表征和候选类别发现方案。
+- 进入阶段 1：筛选 1–2 个可公平复现的 SOTA、候选深度表征和候选类别发现方案。
+- 在 WiSig 单种子短实验前，基于 `tools/stage0_strict_loader_audit.py` 的输出确认后续实验入口统一使用可移植数据路径。
 - 明确 ManyRx 当前正式入口：恢复受维护的 runner，或同步修改 `experiments/README_MAIN_EXPERIMENTS.md`，避免引用不存在的脚本。
 - 为核心工具与严格协议增加轻量级单元测试/数据完整性测试；当前仓库未发现独立测试目录。
 - 增加根目录用户 README，统一说明环境、数据位置、主实验入口和结果目录。
@@ -108,14 +112,14 @@
 - RecallLoom 普通结构读取可用，但完整 provenance 审计未通过：初始化生成的 `update_protocol.md` 没有 finalized receipt，审计报告为 `provenance_update_protocol_receipt_missing`；在升级或官方恢复完成前，不继续执行受管侧车写入。
 - 当前 C 盘可用空间约 8.53 GB，不适合同时展开 ADS-B、ManyTx 和 ManyRx；完整解压应优先在训练服务器进行。
 - Slurm `.venv` 当前安装的是 2026-07-26 可用的较新依赖组合，尚未通过旧版端到端实验验证；如出现兼容问题，应基于成功环境生成锁文件后做最小范围降级。
-- ADS-B 目前只有 `ADS-B.rar`，自检报告显示 `extracted=false`；ManyTx/ManyRx 完整 ZIP 结构有效但未解压，当前只完成归档级完整性验证。
+- ADS-B 已在 Slurm 解压到 `数据集/ADS-B/Dataset` 并通过 strict loader 审计；ManyTx/ManyRx 完整 ZIP 结构有效但未解压，后续仅在补充实验需要时按需展开。
 - `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`。
 - 部分 ADS-B 结果清单和报告保存了开发者机器绝对数据路径，虽未发现认证令牌，但跨机器复现需要显式覆盖数据根目录。
 - 实验脚本体量较大且 WiSig/ManyTx 多版本之间存在明显重复，当前不做无关重构；后续修改须谨慎同步公共逻辑。
 - 仓库包含大量历史图片、模型和回放记忆；单文件目前已盘点到的最大可提交结果约 82 MB，虽低于 100 MB，首次提交和后续克隆仍可能较慢。
 - 尚未执行完整训练或端到端验证；本次目标仅为理解现状与安全初始化版本管理。
 - Slurm 端目前保留 ManyTx 的 6 个 Release 分片和合并后的 ZIP，会额外占用约 2.63 GB；确认长期保留策略前不做文件删除。
-- 阶段 0 JSON 报告与 stdout 当前只记录为 Slurm 端路径，尚未同步回本地工作树；新会话不要把本地缺失误判为实验未运行，应先通过 Git/`gh` 拉回产物再继续审计。
+- 阶段 0 Job `44398322` 与 `44401081` 的 JSON/stdout/stderr 已通过 Git/`gh` 同步回本地工作树；后续审计优先引用 `results/stage0/` 下的本地 JSON。
 
 ## Architecture Decisions
 
@@ -126,7 +130,7 @@
 - 主实验优先 WiSig 10+10×3 和 ADS-B 90+10×3；LoRa25 默认 10+5×3，ManyTx/ManyRx 沿用现有协议作为补充验证。
 - 客户补充的超大数据保留为本地压缩包并精确排除出 Git；ADS-B 统一以 `ADS-B.rar` 作为实验数据源。
 - 普通源码和小型结果使用 Git 管理；超过 100 MB 的原始数据通过 GitHub Release 和 `gh` 在本地、GitHub、Slurm 之间同步，不使用 `scp`。
-- 阶段 0 的可重复验证入口固定为 `tools/stage0_env_data_check.py` 和 `slurm/stage0_env_data_check.sbatch`；正式进入算法实验前必须先通过该检查和完整 strict loader 审计。
+- 阶段 0 的可重复验证入口固定为 `tools/stage0_env_data_check.py`、`tools/stage0_strict_loader_audit.py` 及对应 Slurm 脚本；正式进入算法实验前必须先通过环境/数据自检和完整 strict loader 审计。
 - 以严格的 60/10/30 隔离协议作为主实验可信度边界，Day1 验证集承担模型选择与无测试泄漏校准。
 - 现有 MV-ACC 仍以深度表征为主视图，并通过 CF-LCG 引入经典 RF 特征；该路线后续只作为 legacy baseline 保留。
 - MV-ACC 的发现阶段采用 HDBSCAN 微簇，再执行多视图合并、噪声重分配和过大簇分裂，以实现无丢样本的设备注册。

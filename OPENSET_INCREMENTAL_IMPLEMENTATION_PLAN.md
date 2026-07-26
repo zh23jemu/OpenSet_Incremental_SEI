@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划
 
-- 状态：实施中；阶段 0 环境与归档数据自检已完成，完整数据解压和 strict loader 检查待继续
+- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成，补充数据按需解压待后续阶段继续
 - 版本：1.1
 - 日期：2026-07-26
 - 预计周期：3–4 周；前 5–7 天完成方案筛选和可运行初版
@@ -127,11 +127,11 @@
 ### 阶段 0：数据与环境，1 天
 
 - [x] 将 GitHub 代码和 Release 数据同步到 Slurm，并核对 WiSig、ADS-B、ManyTx、ManyRx 的 SHA-256。
-- [ ] 在服务器确认 WiSig 原始 PKL 路径，并按实验需要解压 ADS-B、LoRa、ManyTx 和 ManyRx 数据。
-- [ ] 统一可移植数据路径和协议配置。
+- [x] 在服务器确认 WiSig 原始 PKL 路径，并按主实验需要解压 ADS-B；LoRa、ManyTx 和 ManyRx 补充数据后续按实验需要解压。
+- [x] 统一可移植数据路径和协议配置，新增示例配置与 strict loader 审计入口。
 - [x] 创建项目 `.venv`，安装 CUDA 12.6 兼容 PyTorch、pandas、hdbscan、umap-learn 等依赖。
 - [x] 使用 Slurm Job `44398322` 完成计算节点 CUDA、依赖、四份大数据哈希、ZIP 结构和紧凑 NPZ 可读性自检。
-- [ ] 对 WiSig、ADS-B 完整数据的输入形状、类别数、样本数和 strict 划分隔离执行完整性检查。
+- [x] 使用 Slurm Job `44401081` 对 WiSig、ADS-B 完整数据的输入形状、类别数、样本数和 strict 划分隔离执行完整性检查。
 
 ### 阶段 1：方案筛选与架构锁定，3–5 天
 

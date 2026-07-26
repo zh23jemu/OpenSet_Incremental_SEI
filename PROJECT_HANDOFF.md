@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-26
-- 当前阶段：实施计划 1.1，阶段 0 部分完成
+- 当前阶段：实施计划 1.1，阶段 0 主实验审计完成，准备进入阶段 1
 - 当前分支：`master`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -35,7 +35,7 @@
 - ManyTx/ManyRx：作为 WiSig 补充协议，不得延迟 WiSig、ADS-B 主结果。
 - WiSig 主协议继续采用 60% 初始训练、10% 验证、30% 最终评估；其它数据优先使用 strict loader 并输出完整性审计。
 
-GitHub Release `datasets-2026-07-26` 已包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片。Slurm 项目目录已下载所有资产，ManyTx 已合并，四份大数据 SHA-256 均通过。
+GitHub Release `datasets-2026-07-26` 已包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片。Slurm 项目目录已下载所有资产，ManyTx 已合并，四份大数据 SHA-256 均通过；ADS-B 已在 Slurm 解压到 `数据集/ADS-B/Dataset`。
 
 ## 4. 已完成工作
 
@@ -44,6 +44,7 @@ GitHub Release `datasets-2026-07-26` 已包含 WiSig、ADS-B、ManyRx 和 ManyTx
 - `requirements.txt` 已补充 pandas、hdbscan、umap-learn。
 - 新增 `tools/stage0_env_data_check.py`：检查依赖、CUDA、GPU 张量计算、大数据哈希、ZIP 结构、紧凑 NPZ 和 ADS-B 解压状态。
 - 新增 `slurm/stage0_env_data_check.sbatch`：使用 `gpuHz`、`shortjobs`、1 张 GPU 运行阶段 0 检查。
+- 新增 `configs/data_paths.example.json`、`tools/stage0_strict_loader_audit.py` 和 `slurm/stage0_strict_loader_audit.sbatch`：提供可移植路径模板和 WiSig/ADS-B strict loader 审计入口。
 - Slurm 项目已创建 Python 3.11 `.venv` 并安装 CUDA 12.6 兼容 PyTorch 与项目依赖。
 
 ## 5. 阶段 0 验证证据
@@ -55,7 +56,7 @@ GitHub Release `datasets-2026-07-26` 已包含 WiSig、ADS-B、ManyRx 和 ManyTx
 - stderr：0 字节
 - Slurm 端 JSON 报告：`results/stage0/stage0_env_data_check_44398322.json`
 - Slurm 端 stdout：`results/slurm-osei-stage0-check-44398322.out`
-- 上述两个运行产物尚未同步回本地工作树；本地只能从本文件和 `AGENTS.md` 恢复结果摘要，下一阶段开始前应通过 Git/`gh` 同步回来
+- 上述运行产物已通过 Git/`gh` 同步回本地工作树，保存于 `results/stage0/stage0_env_data_check_44398322.json` 和 `results/slurm-osei-stage0-check-44398322.out`
 
 关键结果：
 
@@ -65,35 +66,47 @@ GitHub Release `datasets-2026-07-26` 已包含 WiSig、ADS-B、ManyRx 和 ManyTx
 - WiSig、ADS-B、ManyRx、ManyTx 文件存在且 SHA-256 全部匹配。
 - ManyRx ZIP 包含 `ManyRx.pkl`，ManyTx ZIP 包含 `ManyTx.pkl`，ZIP 结构检查通过。
 - LoRa25 和 ManyRx 紧凑 NPZ 可读取，数组形状和 dtype 已记录在 JSON 报告。
-- ADS-B 尚未解压，报告中为 `extracted=false`。
+- ADS-B 在 Job `44398322` 时尚未解压，报告中为 `extracted=false`；随后已在 Slurm 用用户级 7-Zip 解压，原 `ADS-B.rar` 保留。
+
+Strict loader 审计：
+
+- Slurm Job：`44401081`
+- 状态：`COMPLETED`
+- 退出码：`0:0`
+- 耗时：13 秒
+- stderr：0 字节
+- 本地 JSON 报告：`results/stage0/stage0_strict_loader_audit_44401081.json`
+- 本地 stdout：`results/slurm-osei-stage0-loader-44401081.out`
+- WiSig strict loader：`ok=true`，Day1 train 为 `[6300, 2, 256]`，最终 eval after R3 为 `[10800, 2, 256]`
+- ADS-B strict loader：`ok=true`，Day1 train 为 `[14388, 2, 4800]`，最终 eval after R3 为 `[9178, 2, 4800]`
+- ADS-B 三轮 discovery 样本数分别为 3081、2911、2448；每轮 held-out 新类评估样本数均为 1000
 
 ## 6. 当前未完成与风险
 
-- ADS-B、ManyTx、ManyRx 完整数据尚未按实验需要解压；WiSig 和 ADS-B strict loader 尚未运行。
-- 可移植数据路径配置尚未建立，部分旧脚本仍包含开发者绝对路径。
+- ManyTx、ManyRx 完整数据尚未按补充实验需要解压；主实验阶段不应因此延迟 WiSig/ADS-B 阶段 1。
+- 可移植数据路径模板和审计入口已建立；部分旧脚本仍包含开发者绝对路径，后续新入口必须继续使用命令行参数或配置覆盖。
 - 当前 Slurm `.venv` 使用较新依赖版本，尚未通过旧主实验端到端验证；出现兼容问题时应先记录错误，再做最小范围版本调整。
 - 阶段 1 尚未开始：具体 SOTA、候选表征和候选类别发现方法还没有锁定。
 - Slurm 端同时保留 ManyTx 的 6 个分片和合并 ZIP，存在约 2.63 GB 重复占用；未取得明确清理指令前不要删除。
-- 阶段 0 JSON 报告和 stdout 尚未同步回本地，不能在本地直接按记录路径读取；后续应先从 Slurm 纳入 Git/`gh` 同步链路。
+- 阶段 0 两个 Slurm job 的 JSON/stdout/stderr 已同步回本地；后续不要再把本地缺失误判为实验未运行。
 - RecallLoom 已完成稳定上下文、滚动摘要和当日里程碑写入，当前 workspace revision 为 9、滚动摘要 revision 为 5；普通结构校验可用。完整 provenance 审计发现初始化生成的 `update_protocol.md` 缺少 receipt，需升级 RecallLoom 或按官方恢复流程补齐，在此之前不要继续修改受管侧车。
 
 ## 7. 下一步执行顺序
 
-1. 将阶段 0 JSON 报告和 stdout 从 Slurm 通过 Git/`gh` 同步回本地，并核对内容与本文件摘要一致。
-2. 升级 RecallLoom 到建议版本或按官方恢复流程补齐 `update_protocol.md` receipt，并重新执行完整 provenance 校验；不要手工编辑侧车状态或 receipt store。
-3. 在 Slurm 检查 ADS-B 解压工具，并解压 ADS-B 到项目数据目录；不要删除原压缩包。
-4. 建立可移植数据路径配置，移除新入口对开发者绝对路径的依赖。
-5. 运行 WiSig 和 ADS-B strict loader 的最小加载，核对形状、类别数、样本数和 60/10/30 或对应 strict 隔离协议。
-6. 将阶段 0 剩余检查项标记完成并保存审计报告。
-7. 进入阶段 1：文献筛选 1–2 个 SOTA，在 WiSig 单种子短实验上比较候选表征和候选类别发现前端。
+1. 升级 RecallLoom 到建议版本或按官方恢复流程补齐 `update_protocol.md` receipt，并重新执行完整 provenance 校验；不要手工编辑侧车状态或 receipt store。
+2. 进入阶段 1：文献筛选 1–2 个 SOTA，在 WiSig 单种子短实验上比较候选表征和候选类别发现前端。
+3. 设计新主方法入口时统一使用 `configs/data_paths.example.json` 的路径结构或等价命令行参数，避免写入开发者绝对路径。
+4. 若后续补充实验需要 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压，不删除 Release 分片或原压缩包。
 
 ## 8. 变更与 Git 状态
 
 最近关键提交：
 
+- `950a050 test: 保存阶段零strict加载器审计产物`
+- `ab4ce96 test: 增加阶段零strict加载器审计`
 - `33cc713 build: 增加Slurm阶段零自检任务`
 - `94b98be feat: 增加阶段零环境数据自检`
 - `3a02ced docs: 放开新主方法设计约束`
 - `394217d docs: 记录GitHub与Slurm同步`
 
-本文件、计划状态和 `AGENTS.md` 已在提交 `78bae2e` 中保存；本次 RecallLoom 交接刷新完成后需创建新的中文 Conventional Commit。除非用户明确要求，不自动推送远端。
+本文件、计划状态和 `AGENTS.md` 将随阶段 0 收束更新提交；除非用户明确要求，不自动推送 `master`。
