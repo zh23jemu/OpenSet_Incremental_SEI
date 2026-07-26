@@ -65,7 +65,7 @@
 
 ## Recent Changes
 
-- 2026-07-26：核对 `数据集/` 中的 ADS-B、ManyTx 和 ManyRx 压缩包；确认两个 ADS-B RAR 哈希完全相同，且规范副本包含加载器需要的 90 类和 30 类训练/测试文件。
+- 2026-07-26：核对 `数据集/` 中的 ADS-B、ManyTx 和 ManyRx 压缩包；确认 `ADS-B.rar` 包含加载器需要的 90 类和 30 类训练/测试文件，重复的 `Dataset.rar` 已由用户清理。
 - 2026-07-26：新增 `数据集/README.md` 数据清单，并精确忽略超大原始数据压缩包和本地解压目录。
 - 2026-07-23：系统性阅读并梳理项目源代码、实验说明、结果报告、协议清单和二进制产物分布。
 - 2026-07-23：新增项目级 `.gitignore`，仅精确排除本地环境/缓存/密钥类文件及约 590 MB 的根目录 WiSig 原始 PKL。
@@ -84,7 +84,6 @@
 
 ## Open Issues
 
-- `数据集/ADS-B.rar` 与 `数据集/Dataset.rar` 的大小及 SHA-256 完全相同，是重复副本；按不删除文件的项目规则暂时同时保留。
 - 当前 C 盘可用空间约 8.53 GB，不适合同时展开 ADS-B、ManyTx 和 ManyRx；完整解压应优先在训练服务器进行。
 - `requirements.txt` 目前仅列出 `torch`、`numpy`、`scikit-learn`、`scipy`、`matplotlib`、`h5py`、`tqdm`，但源码直接使用 `pandas`，主实验还需要 `hdbscan`，默认 UMAP 可视化需要 `umap-learn`。
 - `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`。
@@ -95,7 +94,7 @@
 
 ## Architecture Decisions
 
-- 客户补充的超大数据保留为本地压缩包并精确排除出 Git；ADS-B 以 `ADS-B.rar` 为规范副本，重复的 `Dataset.rar` 不参与实验路径配置。
+- 客户补充的超大数据保留为本地压缩包并精确排除出 Git；ADS-B 统一以 `ADS-B.rar` 作为实验数据源。
 - 以严格的 60/10/30 隔离协议作为主实验可信度边界，Day1 验证集承担模型选择与无测试泄漏校准。
 - 以深度表征作为主视图，经典 RF 特征通过 CF-LCG 验证门控后参与自适应多视图图融合。
 - MV-ACC 的发现阶段采用 HDBSCAN 微簇，再执行多视图合并、噪声重分配和过大簇分裂，以实现无丢样本的设备注册。
