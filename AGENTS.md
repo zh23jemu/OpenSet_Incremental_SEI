@@ -63,13 +63,13 @@
 - 项目此前没有 Git 仓库、项目级 `AGENTS.md` 或 `.gitignore`，现已完成首次初始化；基线提交为 `ca50523`。
 - 客户补充的 ADS-B、ManyTx 和 ManyRx 完整原始数据压缩包已放入 `数据集/`；结合现有 WiSig 原始数据和 LoRa25 紧凑数据，当前确认的 WiSig、ADS-B、LoRa 主实验数据已齐备。
 - 已将确认后的开集增量目标、数据协议、无泄漏边界、分层 baseline、可重新设计的深度发现前端、RADCIL 后端、指标、阶段验收和交付要求固化到 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1；后续实施以该文件为唯一执行基准。
-- 已使用 Python 3.11 创建项目 `.venv`，并初始化简体中文 RecallLoom 1.0 隐藏侧车 `.recallloom/`；已记录 GitHub/Slurm 同步和实施计划 1.1 决策，当前侧车状态为 `initialized_seeded`。
+- 已使用 Python 3.11 创建项目 `.venv`，并初始化简体中文 RecallLoom 1.0 隐藏侧车 `.recallloom/`；已记录 GitHub/Slurm 同步和实施计划 1.1 决策。
 - 已创建 GitHub 公共仓库 `zh23jemu/OpenSet_Incremental_SEI` 并推送 `master`；超大数据通过 `datasets-2026-07-26` Release 分发。
 - 项目代码和 Release 数据已通过 `gh` 同步到可用 Slurm 集群的 `/mnt/users/xj62kv/OpenSet_Incremental_SEI`，ManyTx 分片合并后的 SHA-256 与本地原文件一致。
 - Slurm 项目已创建 Python 3.11 `.venv`，安装 PyTorch 2.13.0+cu126、pandas、hdbscan、umap-learn 等依赖；Job `44398322` 在 L40S 计算节点完成阶段 0 自检，退出码为 0。
 - 阶段 0 已确认四份大数据哈希、ManyTx/ManyRx ZIP 结构和 LoRa/ManyRx 紧凑 NPZ 可读；ADS-B 已在 Slurm 解压，WiSig/ADS-B strict loader 审计已通过。
 - 已新增可移植数据路径示例、阶段 0 strict loader 审计脚本和 Slurm 提交脚本；Job `44401081` 确认 WiSig 与 ADS-B 主实验 split 的形状、类别数、样本数和协议边界均通过。
-- 已使用 RecallLoom helper 补齐稳定项目上下文、刷新滚动摘要并追加阶段 0 交接里程碑；当前 workspace revision 为 9、滚动摘要 revision 为 5。
+- 已使用 RecallLoom helper 完成 recovery proposal/review、滚动摘要刷新和 `update_protocol.md` helper 写入；完整 provenance 校验已通过，当前 receipt store 覆盖 `context_brief`、`daily_log`、`rolling_summary` 和 `update_protocol`。
 
 ## Recent Changes
 
@@ -81,6 +81,7 @@
 - 2026-07-26：在 Slurm 安装用户级 7-Zip 控制台工具用于解压 `ADS-B.rar`，保留原压缩包；提交 Job `44401081` 完成 WiSig/ADS-B strict loader 审计，退出码为 0。
 - 2026-07-26：新增 `PROJECT_HANDOFF.md`，固化新会话恢复顺序、当前状态、关键决策、验证证据、风险和下一步。
 - 2026-07-26：通过 RecallLoom 受控 helper 写入稳定上下文、当前状态和阶段 0 里程碑，并在交接中明确 Slurm 运行产物尚未同步回本地。
+- 2026-07-27：通过 RecallLoom recovery proposal/review 将初始化 receipt 缺口先安全降级为 reviewed import baseline，再使用 helper 刷新 rolling summary 和 `update_protocol.md`，完整 provenance 校验 `--require-provenance --full` 已通过。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
@@ -97,7 +98,7 @@
 ## Next TODO
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
-- 新会话先处理 RecallLoom 完整 provenance 审计的初始化 receipt 缺口：优先升级到建议版本并按官方恢复流程操作，禁止手工编辑受管侧车状态。
+- 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
 - 进入阶段 1：筛选 1–2 个可公平复现的 SOTA、候选深度表征和候选类别发现方案。
 - 在 WiSig 单种子短实验前，基于 `tools/stage0_strict_loader_audit.py` 的输出确认后续实验入口统一使用可移植数据路径。
 - 明确 ManyRx 当前正式入口：恢复受维护的 runner，或同步修改 `experiments/README_MAIN_EXPERIMENTS.md`，避免引用不存在的脚本。
@@ -108,11 +109,11 @@
 
 ## Open Issues
 
-- 当前安装的 RecallLoom 为 0.4.5，支持执行但提示可升级到 0.4.8.2；侧车已 seeded 并记录当前交接状态。
-- RecallLoom 普通结构读取可用，但完整 provenance 审计未通过：初始化生成的 `update_protocol.md` 没有 finalized receipt，审计报告为 `provenance_update_protocol_receipt_missing`；在升级或官方恢复完成前，不继续执行受管侧车写入。
+- 当前安装的 RecallLoom 为 0.4.5，支持执行但提示可升级到 0.4.8.2；这只是升级建议，不再阻塞读取、写入或完整 provenance 校验。
+- RecallLoom 结构校验和完整 provenance 校验已通过；`legacy_optional_metadata_missing` 仅为协议 1.0 旧侧车可省略字段的兼容性警告。
 - 当前 C 盘可用空间约 8.53 GB，不适合同时展开 ADS-B、ManyTx 和 ManyRx；完整解压应优先在训练服务器进行。
 - Slurm `.venv` 当前安装的是 2026-07-26 可用的较新依赖组合，尚未通过旧版端到端实验验证；如出现兼容问题，应基于成功环境生成锁文件后做最小范围降级。
-- ADS-B 已在 Slurm 解压到 `数据集/ADS-B/Dataset` 并通过 strict loader 审计；ManyTx/ManyRx 完整 ZIP 结构有效但未解压，后续仅在补充实验需要时按需展开。
+- ADS-B 已在 Slurm 解压并通过 strict loader 审计；ManyTx/ManyRx 完整 ZIP 结构有效但未解压，后续仅在补充实验需要时按需展开，不作为阶段 1 阻塞风险。
 - `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`。
 - 部分 ADS-B 结果清单和报告保存了开发者机器绝对数据路径，虽未发现认证令牌，但跨机器复现需要显式覆盖数据根目录。
 - 实验脚本体量较大且 WiSig/ManyTx 多版本之间存在明显重复，当前不做无关重构；后续修改须谨慎同步公共逻辑。

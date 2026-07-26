@@ -83,19 +83,19 @@ Strict loader 审计：
 
 ## 6. 当前未完成与风险
 
-- ManyTx、ManyRx 完整数据尚未按补充实验需要解压；主实验阶段不应因此延迟 WiSig/ADS-B 阶段 1。
+- ManyTx、ManyRx 完整数据尚未按补充实验需要解压；这是按需展开项，主实验阶段不应因此延迟 WiSig/ADS-B 阶段 1。
 - 可移植数据路径模板和审计入口已建立；部分旧脚本仍包含开发者绝对路径，后续新入口必须继续使用命令行参数或配置覆盖。
 - 当前 Slurm `.venv` 使用较新依赖版本，尚未通过旧主实验端到端验证；出现兼容问题时应先记录错误，再做最小范围版本调整。
 - 阶段 1 尚未开始：具体 SOTA、候选表征和候选类别发现方法还没有锁定。
 - Slurm 端同时保留 ManyTx 的 6 个分片和合并 ZIP，存在约 2.63 GB 重复占用；未取得明确清理指令前不要删除。
 - 阶段 0 两个 Slurm job 的 JSON/stdout/stderr 已同步回本地；后续不要再把本地缺失误判为实验未运行。
-- RecallLoom 已完成稳定上下文、滚动摘要和当日里程碑写入，当前 workspace revision 为 9、滚动摘要 revision 为 5；普通结构校验可用。完整 provenance 审计发现初始化生成的 `update_protocol.md` 缺少 receipt，需升级 RecallLoom 或按官方恢复流程补齐，在此之前不要继续修改受管侧车。
+- RecallLoom 已通过官方 helper 路径处理初始化 receipt 缺口：先记录 recovery proposal/review，再刷新 rolling summary 和 `update_protocol.md`。结构校验、`--require-provenance --changed-only` 和 `--require-provenance --full` 均已通过；当前仍提示可升级到 0.4.8.2，但不是阻塞项。
 
 ## 7. 下一步执行顺序
 
-1. 升级 RecallLoom 到建议版本或按官方恢复流程补齐 `update_protocol.md` receipt，并重新执行完整 provenance 校验；不要手工编辑侧车状态或 receipt store。
-2. 进入阶段 1：文献筛选 1–2 个 SOTA，在 WiSig 单种子短实验上比较候选表征和候选类别发现前端。
-3. 设计新主方法入口时统一使用 `configs/data_paths.example.json` 的路径结构或等价命令行参数，避免写入开发者绝对路径。
+1. 进入阶段 1：文献筛选 1–2 个 SOTA，在 WiSig 单种子短实验上比较候选表征和候选类别发现前端。
+2. 设计新主方法入口时统一使用 `configs/data_paths.example.json` 的路径结构或等价命令行参数，避免写入开发者绝对路径。
+3. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 4. 若后续补充实验需要 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压，不删除 Release 分片或原压缩包。
 
 ## 8. 变更与 Git 状态
