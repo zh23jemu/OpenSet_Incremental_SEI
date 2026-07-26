@@ -66,9 +66,15 @@
 - 已使用 Python 3.11 创建项目 `.venv`，并初始化简体中文 RecallLoom 1.0 隐藏侧车 `.recallloom/`；已记录 GitHub/Slurm 同步和实施计划 1.1 决策，当前侧车状态为 `initialized_seeded`。
 - 已创建 GitHub 公共仓库 `zh23jemu/OpenSet_Incremental_SEI` 并推送 `master`；超大数据通过 `datasets-2026-07-26` Release 分发。
 - 项目代码和 Release 数据已通过 `gh` 同步到可用 Slurm 集群的 `/mnt/users/xj62kv/OpenSet_Incremental_SEI`，ManyTx 分片合并后的 SHA-256 与本地原文件一致。
+- Slurm 项目已创建 Python 3.11 `.venv`，安装 PyTorch 2.13.0+cu126、pandas、hdbscan、umap-learn 等依赖；Job `44398322` 在 L40S 计算节点完成阶段 0 自检，退出码为 0。
+- 阶段 0 已确认四份大数据哈希、ManyTx/ManyRx ZIP 结构和 LoRa/ManyRx 紧凑 NPZ 可读；ADS-B 及完整 ManyTx/ManyRx 尚未按实验需要解压，WiSig/ADS-B strict loader 尚未验证。
 
 ## Recent Changes
 
+- 2026-07-26：新增 `tools/stage0_env_data_check.py`，检查 Python 依赖、CUDA、GPU 张量计算、大数据 SHA-256、ZIP 目录和紧凑 NPZ 元信息。
+- 2026-07-26：补齐 `requirements.txt` 中的 pandas、hdbscan 和 umap-learn，并在 Slurm 创建 Python 3.11 `.venv` 安装 CUDA 12.6 兼容 PyTorch 及项目依赖。
+- 2026-07-26：新增 `slurm/stage0_env_data_check.sbatch`，提交 Job `44398322`；任务在 L40S 计算节点完成，耗时 34 秒，stderr 为空，JSON 报告保存于 `results/stage0/`。
+- 2026-07-26：新增 `PROJECT_HANDOFF.md`，固化新会话恢复顺序、当前状态、关键决策、验证证据、风险和下一步。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
@@ -84,22 +90,21 @@
 
 ## Next TODO
 
-- 使用 RecallLoom 的冷启动提案和受控 helper 将现有 `AGENTS.md`、实施计划及已验证项目状态导入侧车；导入前先运行 preflight，不手工编辑侧车托管文件。
-- 严格按 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1 的阶段 0 开始实施：先完成服务器数据解压、可移植路径、项目 `.venv` 和协议完整性检查，再进行表征/类别发现候选与 SOTA 筛选。
-- 在训练服务器或本地释放足够磁盘空间后，按实验需要分别解压 ADS-B、ManyTx 和 ManyRx，并把主实验入口的数据参数改为可移植路径。
-- 补齐并锁定运行依赖，至少核对 `pandas`、`hdbscan`、`umap-learn` 与当前 PyTorch/CUDA 组合。
+- 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
+- 继续阶段 0：优先解压 ADS-B，建立可移植数据路径配置，并运行 WiSig/ADS-B strict loader 的形状、类别、样本数和无泄漏审计。
+- 阶段 0 完成后进入阶段 1：筛选 1–2 个可公平复现的 SOTA、候选深度表征和候选类别发现方案。
 - 明确 ManyRx 当前正式入口：恢复受维护的 runner，或同步修改 `experiments/README_MAIN_EXPERIMENTS.md`，避免引用不存在的脚本。
 - 为核心工具与严格协议增加轻量级单元测试/数据完整性测试；当前仓库未发现独立测试目录。
 - 增加根目录用户 README，统一说明环境、数据位置、主实验入口和结果目录。
 - 评估大量 PNG、PTH、NPZ 历史结果长期使用普通 Git 的仓库体积成本；如需要远端协作，再决定是否引入 Git LFS，不能直接丢弃小型结果。
 - 根据训练时长与资源需求，为主要 GPU 实验补充或维护 Slurm 提交脚本。
-- 在 Slurm 项目目录创建项目 `.venv`、锁定依赖并执行最小数据加载与 GPU 环境自检；本次只完成代码和数据同步，尚未安装训练环境。
 
 ## Open Issues
 
-- 当前安装的 RecallLoom 为 0.4.5，支持执行但提示可升级到 0.4.8.2；侧车尚未 seeded，现阶段只能视为结构有效的空骨架。
+- 当前安装的 RecallLoom 为 0.4.5，支持执行但提示可升级到 0.4.8.2；侧车已 seeded 并记录当前交接状态。
 - 当前 C 盘可用空间约 8.53 GB，不适合同时展开 ADS-B、ManyTx 和 ManyRx；完整解压应优先在训练服务器进行。
-- `requirements.txt` 目前仅列出 `torch`、`numpy`、`scikit-learn`、`scipy`、`matplotlib`、`h5py`、`tqdm`，但源码直接使用 `pandas`，主实验还需要 `hdbscan`，默认 UMAP 可视化需要 `umap-learn`。
+- Slurm `.venv` 当前安装的是 2026-07-26 可用的较新依赖组合，尚未通过旧版端到端实验验证；如出现兼容问题，应基于成功环境生成锁文件后做最小范围降级。
+- ADS-B 目前只有 `ADS-B.rar`，自检报告显示 `extracted=false`；ManyTx/ManyRx 完整 ZIP 结构有效但未解压，当前只完成归档级完整性验证。
 - `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`。
 - 部分 ADS-B 结果清单和报告保存了开发者机器绝对数据路径，虽未发现认证令牌，但跨机器复现需要显式覆盖数据根目录。
 - 实验脚本体量较大且 WiSig/ManyTx 多版本之间存在明显重复，当前不做无关重构；后续修改须谨慎同步公共逻辑。
@@ -116,6 +121,7 @@
 - 主实验优先 WiSig 10+10×3 和 ADS-B 90+10×3；LoRa25 默认 10+5×3，ManyTx/ManyRx 沿用现有协议作为补充验证。
 - 客户补充的超大数据保留为本地压缩包并精确排除出 Git；ADS-B 统一以 `ADS-B.rar` 作为实验数据源。
 - 普通源码和小型结果使用 Git 管理；超过 100 MB 的原始数据通过 GitHub Release 和 `gh` 在本地、GitHub、Slurm 之间同步，不使用 `scp`。
+- 阶段 0 的可重复验证入口固定为 `tools/stage0_env_data_check.py` 和 `slurm/stage0_env_data_check.sbatch`；正式进入算法实验前必须先通过该检查和完整 strict loader 审计。
 - 以严格的 60/10/30 隔离协议作为主实验可信度边界，Day1 验证集承担模型选择与无测试泄漏校准。
 - 现有 MV-ACC 仍以深度表征为主视图，并通过 CF-LCG 引入经典 RF 特征；该路线后续只作为 legacy baseline 保留。
 - MV-ACC 的发现阶段采用 HDBSCAN 微簇，再执行多视图合并、噪声重分配和过大簇分裂，以实现无丢样本的设备注册。
