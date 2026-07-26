@@ -63,9 +63,11 @@
 - 项目此前没有 Git 仓库、项目级 `AGENTS.md` 或 `.gitignore`，现已完成首次初始化；基线提交为 `ca50523`。
 - 客户补充的 ADS-B、ManyTx 和 ManyRx 完整原始数据压缩包已放入 `数据集/`；结合现有 WiSig 原始数据和 LoRa25 紧凑数据，当前确认的 WiSig、ADS-B、LoRa 主实验数据已齐备。
 - 已将确认后的开集增量目标、数据协议、无泄漏边界、baseline、RADCIL 后端、指标、阶段验收和交付要求固化到 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`；后续实施以该文件为唯一执行基准。
+- 已使用 Python 3.11 创建项目 `.venv`，并初始化简体中文 RecallLoom 1.0 隐藏侧车 `.recallloom/`；初始化结构验证通过，当前仍是尚未导入项目现实的空侧车骨架。
 
 ## Recent Changes
 
+- 2026-07-26：通过 RecallLoom dispatcher 初始化 `.recallloom/`，创建上下文、滚动摘要、更新协议、当日日志骨架和状态文件，并写入本地 Git exclude。
 - 2026-07-26：新增 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`，锁定 WiSig/ADS-B 主实验、LoRa/ManyTx/ManyRx 补充实验、经典特征退出主路径、可靠伪标签和网络增量训练方案。
 - 2026-07-26：核对 `数据集/` 中的 ADS-B、ManyTx 和 ManyRx 压缩包；确认 `ADS-B.rar` 包含加载器需要的 90 类和 30 类训练/测试文件，重复的 `Dataset.rar` 已由用户清理。
 - 2026-07-26：新增 `数据集/README.md` 数据清单，并精确忽略超大原始数据压缩包和本地解压目录。
@@ -76,6 +78,7 @@
 
 ## Next TODO
 
+- 使用 RecallLoom 的冷启动提案和受控 helper 将现有 `AGENTS.md`、实施计划及已验证项目状态导入侧车；导入前先运行 preflight，不手工编辑侧车托管文件。
 - 严格按 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 的阶段 0 开始实施：先完成服务器数据解压、可移植路径、项目 `.venv` 和协议完整性检查。
 - 在训练服务器或本地释放足够磁盘空间后，按实验需要分别解压 ADS-B、ManyTx 和 ManyRx，并把主实验入口的数据参数改为可移植路径。
 - 补齐并锁定运行依赖，至少核对 `pandas`、`hdbscan`、`umap-learn` 与当前 PyTorch/CUDA 组合。
@@ -87,6 +90,7 @@
 
 ## Open Issues
 
+- 当前安装的 RecallLoom 为 0.4.5，支持执行但提示可升级到 0.4.8.2；侧车尚未 seeded，现阶段只能视为结构有效的空骨架。
 - 当前 C 盘可用空间约 8.53 GB，不适合同时展开 ADS-B、ManyTx 和 ManyRx；完整解压应优先在训练服务器进行。
 - `requirements.txt` 目前仅列出 `torch`、`numpy`、`scikit-learn`、`scipy`、`matplotlib`、`h5py`、`tqdm`，但源码直接使用 `pandas`，主实验还需要 `hdbscan`，默认 UMAP 可视化需要 `umap-learn`。
 - `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`。
@@ -97,6 +101,7 @@
 
 ## Architecture Decisions
 
+- RecallLoom 使用隐藏存储模式和 `zh-CN` 工作区语言，由 helper 管理并通过 `.git/info/exclude` 排除；禁止手工修改 `.recallloom/config.json`、`.recallloom/state.json` 及其他托管状态标记。
 - `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 是新一轮方法实施的唯一计划来源；偏离算法、协议、标签边界、baseline 或验收标准前必须先更新计划并说明原因。
 - 新主方法以深度表征、可靠伪标签和真实网络增量训练为核心；经典特征及 CF-LCG 从主路径移除，仅作为旧方法 baseline 和消融。
 - 主实验优先 WiSig 10+10×3 和 ADS-B 90+10×3；LoRa25 默认 10+5×3，ManyTx/ManyRx 沿用现有协议作为补充验证。
