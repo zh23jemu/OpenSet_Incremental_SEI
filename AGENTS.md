@@ -62,9 +62,11 @@
 - WiSig 与 ManyTx 提供 PowerShell runner；ManyRx 的历史实验代码已归档到 `results/code_archives/`。
 - 项目此前没有 Git 仓库、项目级 `AGENTS.md` 或 `.gitignore`，现已完成首次初始化；基线提交为 `ca50523`。
 - 客户补充的 ADS-B、ManyTx 和 ManyRx 完整原始数据压缩包已放入 `数据集/`；结合现有 WiSig 原始数据和 LoRa25 紧凑数据，当前确认的 WiSig、ADS-B、LoRa 主实验数据已齐备。
+- 已将确认后的开集增量目标、数据协议、无泄漏边界、baseline、RADCIL 后端、指标、阶段验收和交付要求固化到 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`；后续实施以该文件为唯一执行基准。
 
 ## Recent Changes
 
+- 2026-07-26：新增 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`，锁定 WiSig/ADS-B 主实验、LoRa/ManyTx/ManyRx 补充实验、经典特征退出主路径、可靠伪标签和网络增量训练方案。
 - 2026-07-26：核对 `数据集/` 中的 ADS-B、ManyTx 和 ManyRx 压缩包；确认 `ADS-B.rar` 包含加载器需要的 90 类和 30 类训练/测试文件，重复的 `Dataset.rar` 已由用户清理。
 - 2026-07-26：新增 `数据集/README.md` 数据清单，并精确忽略超大原始数据压缩包和本地解压目录。
 - 2026-07-23：系统性阅读并梳理项目源代码、实验说明、结果报告、协议清单和二进制产物分布。
@@ -74,6 +76,7 @@
 
 ## Next TODO
 
+- 严格按 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 的阶段 0 开始实施：先完成服务器数据解压、可移植路径、项目 `.venv` 和协议完整性检查。
 - 在训练服务器或本地释放足够磁盘空间后，按实验需要分别解压 ADS-B、ManyTx 和 ManyRx，并把主实验入口的数据参数改为可移植路径。
 - 补齐并锁定运行依赖，至少核对 `pandas`、`hdbscan`、`umap-learn` 与当前 PyTorch/CUDA 组合。
 - 明确 ManyRx 当前正式入口：恢复受维护的 runner，或同步修改 `experiments/README_MAIN_EXPERIMENTS.md`，避免引用不存在的脚本。
@@ -94,9 +97,12 @@
 
 ## Architecture Decisions
 
+- `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 是新一轮方法实施的唯一计划来源；偏离算法、协议、标签边界、baseline 或验收标准前必须先更新计划并说明原因。
+- 新主方法以深度表征、可靠伪标签和真实网络增量训练为核心；经典特征及 CF-LCG 从主路径移除，仅作为旧方法 baseline 和消融。
+- 主实验优先 WiSig 10+10×3 和 ADS-B 90+10×3；LoRa25 默认 10+5×3，ManyTx/ManyRx 沿用现有协议作为补充验证。
 - 客户补充的超大数据保留为本地压缩包并精确排除出 Git；ADS-B 统一以 `ADS-B.rar` 作为实验数据源。
 - 以严格的 60/10/30 隔离协议作为主实验可信度边界，Day1 验证集承担模型选择与无测试泄漏校准。
-- 以深度表征作为主视图，经典 RF 特征通过 CF-LCG 验证门控后参与自适应多视图图融合。
+- 现有 MV-ACC 仍以深度表征为主视图，并通过 CF-LCG 引入经典 RF 特征；该路线后续只作为 legacy baseline 保留。
 - MV-ACC 的发现阶段采用 HDBSCAN 微簇，再执行多视图合并、噪声重分配和过大簇分裂，以实现无丢样本的设备注册。
 - 小型指标、可视化、模型和回放结果继续保留在 Git 范围内；只对明确超限、敏感或稳定本地运行态文件使用精确忽略规则。
 - 首次 Git 初始化不修改算法、依赖或历史结果，只增加版本管理与长期项目上下文所必需的文件。
