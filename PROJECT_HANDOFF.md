@@ -3,7 +3,7 @@
 - 更新时间：2026-07-26
 - 当前阶段：实施计划 1.1，阶段 0 部分完成
 - 当前分支：`master`
-- 交接前远端基线提交：`33cc713`；本次交接提交以新会话执行 `git log -1` 的结果为准
+- 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
 
 ## 1. 新会话恢复顺序
@@ -53,8 +53,9 @@ GitHub Release `datasets-2026-07-26` 已包含 WiSig、ADS-B、ManyRx 和 ManyTx
 - 退出码：`0:0`
 - 耗时：34 秒
 - stderr：0 字节
-- JSON 报告：`results/stage0/stage0_env_data_check_44398322.json`
-- stdout：`results/slurm-osei-stage0-check-44398322.out`
+- Slurm 端 JSON 报告：`results/stage0/stage0_env_data_check_44398322.json`
+- Slurm 端 stdout：`results/slurm-osei-stage0-check-44398322.out`
+- 上述两个运行产物尚未同步回本地工作树；本地只能从本文件和 `AGENTS.md` 恢复结果摘要，下一阶段开始前应通过 Git/`gh` 同步回来
 
 关键结果：
 
@@ -73,14 +74,18 @@ GitHub Release `datasets-2026-07-26` 已包含 WiSig、ADS-B、ManyRx 和 ManyTx
 - 当前 Slurm `.venv` 使用较新依赖版本，尚未通过旧主实验端到端验证；出现兼容问题时应先记录错误，再做最小范围版本调整。
 - 阶段 1 尚未开始：具体 SOTA、候选表征和候选类别发现方法还没有锁定。
 - Slurm 端同时保留 ManyTx 的 6 个分片和合并 ZIP，存在约 2.63 GB 重复占用；未取得明确清理指令前不要删除。
+- 阶段 0 JSON 报告和 stdout 尚未同步回本地，不能在本地直接按记录路径读取；后续应先从 Slurm 纳入 Git/`gh` 同步链路。
+- RecallLoom 已完成稳定上下文、滚动摘要和当日里程碑写入，当前 workspace revision 为 9、滚动摘要 revision 为 5；普通结构校验可用。完整 provenance 审计发现初始化生成的 `update_protocol.md` 缺少 receipt，需升级 RecallLoom 或按官方恢复流程补齐，在此之前不要继续修改受管侧车。
 
 ## 7. 下一步执行顺序
 
-1. 在 Slurm 检查 ADS-B 解压工具，并解压 ADS-B 到项目数据目录；不要删除原压缩包。
-2. 建立可移植数据路径配置，移除新入口对开发者绝对路径的依赖。
-3. 运行 WiSig 和 ADS-B strict loader 的最小加载，核对形状、类别数、样本数和 60/10/30 或对应 strict 隔离协议。
-4. 将阶段 0 剩余检查项标记完成并保存审计报告。
-5. 进入阶段 1：文献筛选 1–2 个 SOTA，在 WiSig 单种子短实验上比较候选表征和候选类别发现前端。
+1. 将阶段 0 JSON 报告和 stdout 从 Slurm 通过 Git/`gh` 同步回本地，并核对内容与本文件摘要一致。
+2. 升级 RecallLoom 到建议版本或按官方恢复流程补齐 `update_protocol.md` receipt，并重新执行完整 provenance 校验；不要手工编辑侧车状态或 receipt store。
+3. 在 Slurm 检查 ADS-B 解压工具，并解压 ADS-B 到项目数据目录；不要删除原压缩包。
+4. 建立可移植数据路径配置，移除新入口对开发者绝对路径的依赖。
+5. 运行 WiSig 和 ADS-B strict loader 的最小加载，核对形状、类别数、样本数和 60/10/30 或对应 strict 隔离协议。
+6. 将阶段 0 剩余检查项标记完成并保存审计报告。
+7. 进入阶段 1：文献筛选 1–2 个 SOTA，在 WiSig 单种子短实验上比较候选表征和候选类别发现前端。
 
 ## 8. 变更与 Git 状态
 
@@ -91,4 +96,4 @@ GitHub Release `datasets-2026-07-26` 已包含 WiSig、ADS-B、ManyRx 和 ManyTx
 - `3a02ced docs: 放开新主方法设计约束`
 - `394217d docs: 记录GitHub与Slurm同步`
 
-本文件、计划状态和 `AGENTS.md` 更新后需要创建新的中文 Conventional Commit。除非用户明确要求，不自动推送远端。
+本文件、计划状态和 `AGENTS.md` 已在提交 `78bae2e` 中保存；本次 RecallLoom 交接刷新完成后需创建新的中文 Conventional Commit。除非用户明确要求，不自动推送远端。

@@ -68,6 +68,7 @@
 - 项目代码和 Release 数据已通过 `gh` 同步到可用 Slurm 集群的 `/mnt/users/xj62kv/OpenSet_Incremental_SEI`，ManyTx 分片合并后的 SHA-256 与本地原文件一致。
 - Slurm 项目已创建 Python 3.11 `.venv`，安装 PyTorch 2.13.0+cu126、pandas、hdbscan、umap-learn 等依赖；Job `44398322` 在 L40S 计算节点完成阶段 0 自检，退出码为 0。
 - 阶段 0 已确认四份大数据哈希、ManyTx/ManyRx ZIP 结构和 LoRa/ManyRx 紧凑 NPZ 可读；ADS-B 及完整 ManyTx/ManyRx 尚未按实验需要解压，WiSig/ADS-B strict loader 尚未验证。
+- 已使用 RecallLoom helper 补齐稳定项目上下文、刷新滚动摘要并追加阶段 0 交接里程碑；当前 workspace revision 为 9、滚动摘要 revision 为 5。
 
 ## Recent Changes
 
@@ -75,6 +76,7 @@
 - 2026-07-26：补齐 `requirements.txt` 中的 pandas、hdbscan 和 umap-learn，并在 Slurm 创建 Python 3.11 `.venv` 安装 CUDA 12.6 兼容 PyTorch 及项目依赖。
 - 2026-07-26：新增 `slurm/stage0_env_data_check.sbatch`，提交 Job `44398322`；任务在 L40S 计算节点完成，耗时 34 秒，stderr 为空，JSON 报告保存于 `results/stage0/`。
 - 2026-07-26：新增 `PROJECT_HANDOFF.md`，固化新会话恢复顺序、当前状态、关键决策、验证证据、风险和下一步。
+- 2026-07-26：通过 RecallLoom 受控 helper 写入稳定上下文、当前状态和阶段 0 里程碑，并在交接中明确 Slurm 运行产物尚未同步回本地。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
@@ -91,6 +93,7 @@
 ## Next TODO
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
+- 新会话先处理 RecallLoom 完整 provenance 审计的初始化 receipt 缺口：优先升级到建议版本并按官方恢复流程操作，禁止手工编辑受管侧车状态。
 - 继续阶段 0：优先解压 ADS-B，建立可移植数据路径配置，并运行 WiSig/ADS-B strict loader 的形状、类别、样本数和无泄漏审计。
 - 阶段 0 完成后进入阶段 1：筛选 1–2 个可公平复现的 SOTA、候选深度表征和候选类别发现方案。
 - 明确 ManyRx 当前正式入口：恢复受维护的 runner，或同步修改 `experiments/README_MAIN_EXPERIMENTS.md`，避免引用不存在的脚本。
@@ -102,6 +105,7 @@
 ## Open Issues
 
 - 当前安装的 RecallLoom 为 0.4.5，支持执行但提示可升级到 0.4.8.2；侧车已 seeded 并记录当前交接状态。
+- RecallLoom 普通结构读取可用，但完整 provenance 审计未通过：初始化生成的 `update_protocol.md` 没有 finalized receipt，审计报告为 `provenance_update_protocol_receipt_missing`；在升级或官方恢复完成前，不继续执行受管侧车写入。
 - 当前 C 盘可用空间约 8.53 GB，不适合同时展开 ADS-B、ManyTx 和 ManyRx；完整解压应优先在训练服务器进行。
 - Slurm `.venv` 当前安装的是 2026-07-26 可用的较新依赖组合，尚未通过旧版端到端实验验证；如出现兼容问题，应基于成功环境生成锁文件后做最小范围降级。
 - ADS-B 目前只有 `ADS-B.rar`，自检报告显示 `extracted=false`；ManyTx/ManyRx 完整 ZIP 结构有效但未解压，当前只完成归档级完整性验证。
@@ -111,6 +115,7 @@
 - 仓库包含大量历史图片、模型和回放记忆；单文件目前已盘点到的最大可提交结果约 82 MB，虽低于 100 MB，首次提交和后续克隆仍可能较慢。
 - 尚未执行完整训练或端到端验证；本次目标仅为理解现状与安全初始化版本管理。
 - Slurm 端目前保留 ManyTx 的 6 个 Release 分片和合并后的 ZIP，会额外占用约 2.63 GB；确认长期保留策略前不做文件删除。
+- 阶段 0 JSON 报告与 stdout 当前只记录为 Slurm 端路径，尚未同步回本地工作树；新会话不要把本地缺失误判为实验未运行，应先通过 Git/`gh` 拉回产物再继续审计。
 
 ## Architecture Decisions
 
