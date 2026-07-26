@@ -62,13 +62,14 @@
 - WiSig 与 ManyTx 提供 PowerShell runner；ManyRx 的历史实验代码已归档到 `results/code_archives/`。
 - 项目此前没有 Git 仓库、项目级 `AGENTS.md` 或 `.gitignore`，现已完成首次初始化；基线提交为 `ca50523`。
 - 客户补充的 ADS-B、ManyTx 和 ManyRx 完整原始数据压缩包已放入 `数据集/`；结合现有 WiSig 原始数据和 LoRa25 紧凑数据，当前确认的 WiSig、ADS-B、LoRa 主实验数据已齐备。
-- 已将确认后的开集增量目标、数据协议、无泄漏边界、baseline、RADCIL 后端、指标、阶段验收和交付要求固化到 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`；后续实施以该文件为唯一执行基准。
-- 已使用 Python 3.11 创建项目 `.venv`，并初始化简体中文 RecallLoom 1.0 隐藏侧车 `.recallloom/`；初始化结构验证通过，当前仍是尚未导入项目现实的空侧车骨架。
+- 已将确认后的开集增量目标、数据协议、无泄漏边界、分层 baseline、可重新设计的深度发现前端、RADCIL 后端、指标、阶段验收和交付要求固化到 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1；后续实施以该文件为唯一执行基准。
+- 已使用 Python 3.11 创建项目 `.venv`，并初始化简体中文 RecallLoom 1.0 隐藏侧车 `.recallloom/`；已记录 GitHub/Slurm 同步和实施计划 1.1 决策，当前侧车状态为 `initialized_seeded`。
 - 已创建 GitHub 公共仓库 `zh23jemu/OpenSet_Incremental_SEI` 并推送 `master`；超大数据通过 `datasets-2026-07-26` Release 分发。
 - 项目代码和 Release 数据已通过 `gh` 同步到可用 Slurm 集群的 `/mnt/users/xj62kv/OpenSet_Incremental_SEI`，ManyTx 分片合并后的 SHA-256 与本地原文件一致。
 
 ## Recent Changes
 
+- 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
 - 2026-07-26：补充 GitHub Release 下载、ManyTx 分片合并和四份原始数据 SHA-256 说明，并精确忽略本地传输分片。
@@ -84,7 +85,7 @@
 ## Next TODO
 
 - 使用 RecallLoom 的冷启动提案和受控 helper 将现有 `AGENTS.md`、实施计划及已验证项目状态导入侧车；导入前先运行 preflight，不手工编辑侧车托管文件。
-- 严格按 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 的阶段 0 开始实施：先完成服务器数据解压、可移植路径、项目 `.venv` 和协议完整性检查。
+- 严格按 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1 的阶段 0 开始实施：先完成服务器数据解压、可移植路径、项目 `.venv` 和协议完整性检查，再进行表征/类别发现候选与 SOTA 筛选。
 - 在训练服务器或本地释放足够磁盘空间后，按实验需要分别解压 ADS-B、ManyTx 和 ManyRx，并把主实验入口的数据参数改为可移植路径。
 - 补齐并锁定运行依赖，至少核对 `pandas`、`hdbscan`、`umap-learn` 与当前 PyTorch/CUDA 组合。
 - 明确 ManyRx 当前正式入口：恢复受维护的 runner，或同步修改 `experiments/README_MAIN_EXPERIMENTS.md`，避免引用不存在的脚本。
@@ -110,7 +111,8 @@
 
 - RecallLoom 使用隐藏存储模式和 `zh-CN` 工作区语言，由 helper 管理并通过 `.git/info/exclude` 排除；禁止手工修改 `.recallloom/config.json`、`.recallloom/state.json` 及其他托管状态标记。
 - `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 是新一轮方法实施的唯一计划来源；偏离算法、协议、标签边界、baseline 或验收标准前必须先更新计划并说明原因。
-- 新主方法以深度表征、可靠伪标签和真实网络增量训练为核心；经典特征及 CF-LCG 从主路径移除，仅作为旧方法 baseline 和消融。
+- 原 MV-ACC、CF-LCG、HDBSCAN 和原型注册链路完整保留为 baseline，但不再约束新主方法结构；新主方法可重新设计深度表征、未知检测、类别发现、可靠伪标签和真实网络增量训练，经典特征仅用于旧方法对照与消融。
+- 正式实验必须包含固定旧前端配新后端、新前端配原型注册和完整新方法三组组合，分离类别发现与增量后端的贡献，并补充至少 1–2 个可公平复现的近年 SOTA 对照。
 - 主实验优先 WiSig 10+10×3 和 ADS-B 90+10×3；LoRa25 默认 10+5×3，ManyTx/ManyRx 沿用现有协议作为补充验证。
 - 客户补充的超大数据保留为本地压缩包并精确排除出 Git；ADS-B 统一以 `ADS-B.rar` 作为实验数据源。
 - 普通源码和小型结果使用 Git 管理；超过 100 MB 的原始数据通过 GitHub Release 和 `gh` 在本地、GitHub、Slurm 之间同步，不使用 `scp`。
