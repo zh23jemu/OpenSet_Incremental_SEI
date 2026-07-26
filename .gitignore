@@ -17,6 +17,7 @@ htmlcov/
 !.env.example
 *.key
 *.pem
+/configs/data_paths.local.json
 
 # IDE、编辑器与操作系统生成文件
 .idea/

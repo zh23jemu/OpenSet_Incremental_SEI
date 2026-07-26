@@ -1,0 +1,6 @@
+{
+  "project_root": ".",
+  "data_root": "数据集",
+  "wisig_pkl": "数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl",
+  "adsb_root": "数据集/ADS-B/Dataset"
+}
