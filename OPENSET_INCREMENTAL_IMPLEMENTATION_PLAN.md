@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划与项目进度总表
 
-- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成 WiSig 表征、后端、发现前端短实验、IGCD strict 最小入口、RADCIL 后端二阶验证、ratio/weight 细化矩阵和真实 WiSig IGCD 前端对比，下一步做 RADCIL 多种子确认并锁定主前端/后端组合
+- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成 WiSig 表征、后端、发现前端短实验、IGCD strict 最小入口、RADCIL 后端二阶验证、ratio/weight 细化矩阵、真实 WiSig IGCD 前端对比和 RADCIL 多种子确认，下一步进入阶段 2 共享框架与 WiSig 单种子主流程
 - 版本：1.1
 - 创建日期：2026-07-26
 - 最近更新：2026-07-27
@@ -18,7 +18,7 @@
 | 模块            | 当前状态                  | 说明                                                                    |
 | ------------- | --------------------- | --------------------------------------------------------------------- |
 | 数据与环境         | 已完成阶段 0               | WiSig、ADS-B、ManyTx、ManyRx 大数据哈希和结构已校验；WiSig/ADS-B strict loader 审计已通过 |
-| WiSig 阶段 1    | 已完成多轮短实验              | 已比较表征、发现前端、后端消融、RADCIL ratio/weight 和 IGCD strict baseline            |
+| WiSig 阶段 1    | 已完成多轮短实验              | 已比较表征、发现前端、后端消融、RADCIL ratio/weight、多种子确认和 IGCD strict baseline       |
 | ADS-B         | 数据与 strict loader 已通过 | 后续进入阶段 4，重点是长序列表征和发现前端                                                |
 | LoRa          | 数据来源已确认               | 使用 LoRa RFFP Dataset - Different Days Indoor Scenario，后续按需下载或切分必要子集   |
 | ManyTx/ManyRx | 作为补充实验                | 完整压缩包已收到并校验结构，后续按补充实验需要展开                                             |
@@ -31,7 +31,7 @@
 - 数据、服务器环境和 WiSig/ADS-B 严格协议已经打通，主实验基础可靠。
 - 已经复盘并验证客户提到的可靠伪标签、回放和蒸馏问题；当前证据显示不能简单把这些组件组合成新方法贡献。
 - WiSig 当前发现前端质量较高，MV-ACC 仍强；阶段 1 最大瓶颈转为网络增量后的旧类遗忘。
-- RADCIL 后端细化已经取得阶段性提升，R3 Overall 从上一轮锚点 0.5589 提升到 0.5772，遗忘率最低组合达到 0.3000。
+- RADCIL 后端细化已经取得阶段性提升；多种子确认显示 `ratio_2p0_replay_3p0` 与 `ratio_3p0_replay_3p0` Overall 基本持平，但前者旧类保持更好、遗忘更低。
 - SimGCD-style 和 IGCD-minimal 都已按 strict 协议接入真实 WiSig 特征，但结果弱于 MV-ACC，因此会作为 baseline 和边界分析，而不是包装成主方法。
 
 需要谨慎表述：
@@ -184,19 +184,19 @@
 - [x] 运行 RADCIL ratio/weight 细化矩阵 Job `44422703`；结果见 `results/stage1/STAGE1_RADCIL_RATIO_WEIGHT_REPORT.md`，当前 `ratio_3p0_replay_3p0` Overall 最优，`ratio_2p0_replay_3p0` 遗忘最低。
 - [x] 运行真实 WiSig IGCD strict 前端对比 Job `44422704`；结果见 `results/stage1/STAGE1_WISIG_IGCD_FRONTEND_COMPARE_REPORT.md`，IGCD-minimal 可作为 strict baseline，但不替代 MV-ACC。
 - [x] 准备 RADCIL 多种子确认计划和 Slurm 入口：`tools/stage1_radcil_multiseed_plan.py`、`results/stage1/stage1_radcil_multiseed_plan.json`、`slurm/stage1_wisig_radcil_multiseed.sbatch`；候选为 `ratio_3p0_replay_3p0` 与 `ratio_2p0_replay_3p0`，种子为 7、13、31。
-- [ ] 运行 RADCIL 多种子确认 Slurm 短实验，并汇总 3 种子 R3 Overall、Old、New、Forgetting 和 Macro F1 的均值与标准差。
-- [ ] 根据验证集结果锁定新主方法前端与 RADCIL 后端组合，不使用未知轮次评估真值。
+- [x] 运行 RADCIL 多种子确认 Slurm 短实验 Job `44426767`，结果见 `results/stage1/STAGE1_RADCIL_MULTISEED_REPORT.md`；`ratio_2p0_replay_3p0` 按 tie-break 规则成为阶段 2 主后端候选。
+- [x] 基于阶段 1 验证结果锁定短期主组合：前端优先 MV-ACC 或稳定 Deep-HDBSCAN，后端主候选为 `ratio_2p0_replay_3p0`，不使用未知轮次评估真值。
 
 当前阶段 1 判断：
 
 - WiSig 的发现前端不是当前最大瓶颈，MV-ACC 仍强于 SimGCD-style 和 IGCD-minimal。
 - R3 主要风险来自旧类遗忘，重点应放在 RADCIL 后端的旧类 batch 配比和 replay 强度。
 - KD 与 feature distill 当前没有显示稳定收益，暂不进入主矩阵。
-- 下一步应对 `ratio_3p0_replay_3p0` 和 `ratio_2p0_replay_3p0` 做多种子确认。
+- 多种子确认后，`ratio_2p0_replay_3p0` 在 Overall 近似持平时具备更低遗忘和更高 Old Acc，适合作为阶段 2 主后端候选。
 
 ### 阶段 2：共享框架与 WiSig 初版，3–4 天
 
-- [ ] 提取共享的深度表征、未知发现、可靠伪标签和 RADCIL 后端模块。
+- [ ] 提取共享的深度表征、未知发现、可靠伪标签和 RADCIL 后端模块，并优先接入 `ratio_2p0_replay_3p0`。
 - [ ] 保留旧实验入口默认行为，新增明确的新方法入口或开关。
 - [ ] 在 WiSig 单种子短训练上跑通 3 轮完整流程。
 - [ ] 验证模型参数在每轮确实更新，新类别进入分类头和回放记忆。
@@ -257,19 +257,26 @@
 
 | 变体                                                | R3 Overall | R3 Old | R3 New | Forgetting | Macro F1 |
 | ------------------------------------------------- | ----------:| ------:| ------:| ----------:| --------:|
-| `ratio_3p0_replay_3p0`                            | 0.5772     | 0.4993 | 0.8111 | 0.3322     | 0.5223   |
-| `ratio_2p0_replay_3p0`                            | 0.5767     | 0.5041 | 0.7944 | 0.3000     | 0.5164   |
+| `ratio_3p0_replay_3p0` 单种子                            | 0.5772     | 0.4993 | 0.8111 | 0.3322     | 0.5223   |
+| `ratio_2p0_replay_3p0` 单种子                            | 0.5767     | 0.5041 | 0.7944 | 0.3000     | 0.5164   |
 | `ratio_2p0_replay_2p5`                            | 0.5708     | 0.4870 | 0.8222 | 0.3211     | 0.5096   |
 | `balanced_old_new_batch` / `ratio_2p0_replay_2p0` | 0.5589     | 0.4689 | 0.8289 | 0.3611     | 0.4971   |
 | `replay_x2_confirm`                               | 0.5103     | 0.4204 | 0.7800 | 0.4611     | 0.4520   |
 
-判断：RADCIL 细化后端已比上一轮 `balanced_old_new_batch` 进一步提升。当前应围绕 Overall 最优和 Forgetting 最优两个候选做多种子确认。
+三种子确认：
+
+| 变体 | R3 Overall 均值 | R3 Overall 标准差 | R3 Old 均值 | R3 New 均值 | Forgetting 均值 | Macro F1 均值 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `ratio_2p0_replay_3p0` | 0.5427 | 0.0555 | 0.4778 | 0.7374 | 0.3119 | 0.4962 |
+| `ratio_3p0_replay_3p0` | 0.5432 | 0.0518 | 0.4732 | 0.7533 | 0.3281 | 0.4989 |
+
+判断：RADCIL 细化后端已比上一轮 `balanced_old_new_batch` 进一步提升。三种子确认中两个候选 Overall 基本持平，`ratio_2p0_replay_3p0` 的旧类保持和遗忘率更优，因此作为阶段 2 主后端候选；`ratio_3p0_replay_3p0` 保留为 high-replay 对照。
 
 ## 8.2 当前风险与应对
 
 | 风险                  | 影响                   | 当前应对                                         |
 | ------------------- | -------------------- | -------------------------------------------- |
-| RADCIL 当前结果仍是单种子    | 可能存在随机种子波动           | 下一步运行两个候选后端的多种子确认                            |
+| RADCIL 正式结果尚未进入完整主流程 | 阶段 1 已锁定候选，但还不是最终正式结果 | 阶段 2 用 `ratio_2p0_replay_3p0` 跑通 WiSig 单种子完整主流程 |
 | IGCD-minimal 不是完整复现 | 客户或论文审稿可能质疑 SOTA 公平性 | 明确标注为 minimal strict adaptation，必要时后续补齐更完整适配 |
 | ADS-B 历史闭集和发现质量偏弱   | 主实验第二数据集可能拖慢         | 阶段 4 优先处理 ADS-B 长序列表征                        |
 | ManyRx 正式 runner 缺失 | 补充实验入口不清晰            | 后续恢复 runner 或修正文档引用                          |
@@ -279,10 +286,10 @@
 
 短期优先级：
 
-1. 提交并运行 `slurm/stage1_wisig_radcil_multiseed.sbatch`，确认 RADCIL `ratio_3p0_replay_3p0` 与 `ratio_2p0_replay_3p0` 的 3 种子表现。
-2. 根据多种子均值、标准差和 R3 Old/New/Forgetting 折中锁定 WiSig 主后端。
+1. 抽取共享模块，准备阶段 2 WiSig 单种子完整主流程。
+2. 以前端 MV-ACC 或稳定 Deep-HDBSCAN、后端 `ratio_2p0_replay_3p0` 作为首个主组合。
 3. 将 IGCD-minimal 和 SimGCD-style 放入 strict baseline 表，并明确适配级别。
-4. 抽取共享模块，准备阶段 2 WiSig 单种子完整主流程。
+4. 保留 `ratio_3p0_replay_3p0` 作为 high-replay 后端对照。
 
 中期优先级：
 
@@ -332,4 +339,5 @@
 - `results/stage1/STAGE1_WISIG_FRONTEND_COMPARE_REPORT.md`
 - `results/stage1/STAGE1_RADCIL_BACKEND_MATRIX_REPORT.md`
 - `results/stage1/STAGE1_RADCIL_RATIO_WEIGHT_REPORT.md`
+- `results/stage1/STAGE1_RADCIL_MULTISEED_REPORT.md`
 - `results/stage1/STAGE1_WISIG_IGCD_FRONTEND_COMPARE_REPORT.md`
