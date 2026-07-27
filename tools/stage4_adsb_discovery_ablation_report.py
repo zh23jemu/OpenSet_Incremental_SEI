@@ -39,7 +39,11 @@ def extract_run(run: dict[str, Any]) -> dict[str, Any]:
             "round": round_name,
             "initial_clusters": int(number(cluster, "Initial Cluster Count")),
             "final_clusters": int(number(cluster, "Final Cluster Count")),
-            "cluster_loss": int(number(cluster, "Initial Cluster Count") - number(cluster, "Final Cluster Count")),
+            # 正值表示后处理净减少簇，负值表示分裂导致最终簇数净增加；
+            # 这里不能称为“合并损失”，因为同一链路还包含自适应分裂。
+            "net_cluster_reduction": int(
+                number(cluster, "Initial Cluster Count") - number(cluster, "Final Cluster Count")
+            ),
             "label_free_silhouette": number(cluster, "Label-free Silhouette"),
             "cluster_size_cv": number(cluster, "Cluster Size CV"),
             "raw_hdbscan_confidence": number(cluster, "Raw HDBSCAN Confidence Mean"),
@@ -57,7 +61,7 @@ def extract_run(run: dict[str, Any]) -> dict[str, Any]:
             "silhouette_mean": statistics.mean(row["label_free_silhouette"] for row in rounds),
             "cluster_size_cv_mean": statistics.mean(row["cluster_size_cv"] for row in rounds),
             "raw_hdbscan_confidence_mean": statistics.mean(row["raw_hdbscan_confidence"] for row in rounds),
-            "cluster_loss_total": sum(row["cluster_loss"] for row in rounds),
+            "net_cluster_reduction_total": sum(row["net_cluster_reduction"] for row in rounds),
         },
     }
 
@@ -72,7 +76,7 @@ def build_report(results: list[dict[str, Any]], job_id: str) -> str:
         "",
         "## 无标签发现诊断",
         "",
-        "| 变体 | Silhouette 均值 | HDBSCAN 置信度均值 | 簇大小 CV 均值 | 三轮合并损失 |",
+        "| 变体 | Silhouette 均值 | HDBSCAN 置信度均值 | 簇大小 CV 均值 | 三轮初始到最终净减少 |",
         "| --- | ---: | ---: | ---: | ---: |",
     ]
     for result in results:
@@ -80,7 +84,7 @@ def build_report(results: list[dict[str, Any]], job_id: str) -> str:
         lines.append(
             f"| {result['name']} | {item['silhouette_mean']:.4f} | "
             f"{item['raw_hdbscan_confidence_mean']:.4f} | {item['cluster_size_cv_mean']:.4f} | "
-            f"{item['cluster_loss_total']} |"
+            f"{item['net_cluster_reduction_total']} |"
         )
     lines.extend([
         "",
@@ -102,6 +106,7 @@ def build_report(results: list[dict[str, Any]], job_id: str) -> str:
         "",
         "本次单种子结果只用于定位敏感因素，不自动锁定正式参数。候选必须先在无标签结构指标上不出现明显退化，",
         "再扩展 seed7/13 检查跨种子稳定性；NMI、ARI、Hungarian、Overall 和 New Acc 不参与候选选择。",
+        "净减少为负表示后处理增加了簇；若绝对值过大，则视为分裂过强的结构风险。",
         "",
     ])
     return "\n".join(lines)
