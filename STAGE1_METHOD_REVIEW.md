@@ -89,6 +89,7 @@
 - `tools/stage1_wisig_simgcd_frontend_compare.py`、`slurm/stage1_wisig_simgcd_frontend_compare.sbatch` 与 `results/stage1/STAGE1_WISIG_FRONTEND_COMPARE_REPORT.md`：将 SimGCD-style 接入真实 WiSig frozen embeddings，并与 Deep-HDBSCAN/MV-ACC 做同轮次发现质量对比。Job `44422110` 显示 MV-ACC 仍是当前最强前端。
 - `utils/igcd_minimal_adapter.py`、`tools/stage1_igcd_strict_entry.py` 与 `results/stage1/stage1_igcd_strict_entry.json`：新增 IGCD strict 最小入口，将多时间步 GCD 映射到 WiSig R1/R2/R3 输入边界，并用合成三轮 smoke test 验证输出契约和无泄漏诊断。
 - `experiments/exp_wisig_mvacc_cil_strict.py`、`tools/stage1_radcil_backend_matrix.py` 与 `slurm/stage1_wisig_radcil_backend_matrix.sbatch`：补齐 `replay_x2` 起点后端二阶矩阵的代码和 Slurm 支持，包括旧/新 batch 配比、masked KD、KD schedule、replay 特征蒸馏和 joint 阶段解冻范围；矩阵 JSON 保存于 `results/stage1/stage1_radcil_backend_matrix.json`。
+- `results/stage1/STAGE1_RADCIL_BACKEND_MATRIX_REPORT.md`：汇总 Job `44422380` 的 RADCIL 二阶结果。`balanced_old_new_batch` 当前 R3 Overall 0.5589、Old 0.4689、New 0.8289、Forgetting 0.3611，是单种子最佳折中；`replay_x3` 遗忘最低但新类下降，KD 与 feature distill 仍未恢复收益。
 
 ## 7. 当前锁定决策
 
@@ -97,5 +98,5 @@
 - RADCIL 后端下一轮不沿用默认 KD/回放配置：优先强化 replay 约束，并将 KD 拆分为旧类 masked logits KD、温度/权重调度和特征蒸馏等可独立验证组件。
 - SimGCD 式发现头已接入 WiSig frozen embeddings；当前结果低于 MV-ACC，后续只保留为学习式发现 baseline，不作为阶段 1 主前端锁定对象。
 - IGCD 60/10/30 strict 最小入口已完成；下一步是接入真实 WiSig frozen embeddings，确认它能否作为严格 baseline。
-- RADCIL 后端二阶参数支持已落地；下一步应在 Slurm 上运行 `replay_x2` 锚点、old:new batch、masked KD、KD schedule、特征蒸馏和解冻范围短实验。
+- RADCIL 后端二阶 Slurm 验证已完成；下一步以 `balanced_old_new_batch` 为锚点，细化 old:new ratio 与 replay weight，并暂时降低 KD/feature distill 的主线优先级。
 - 严格 SOTA 候选暂定为 IGCD 与 SimGCD；SEI-specific FSCIL/CIL 论文先作为非严格参考池，待协议可公平适配后再升级为正式对照。

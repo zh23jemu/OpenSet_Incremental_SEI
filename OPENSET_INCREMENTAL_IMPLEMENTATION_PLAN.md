@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划
 
-- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成 WiSig 表征、后端、发现前端短实验、IGCD strict 最小入口和 RADCIL 后端二阶参数支持，下一步优先提交 Slurm 短实验验证
+- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成 WiSig 表征、后端、发现前端短实验、IGCD strict 最小入口和 RADCIL 后端二阶 Slurm 验证，下一步围绕 old:new batch 配比细化后端并接入真实 WiSig IGCD
 - 版本：1.1
 - 日期：2026-07-26
 - 预计周期：3–4 周；前 5–7 天完成方案筛选和可运行初版
@@ -148,6 +148,7 @@
 - [x] 比较 Deep-HDBSCAN、MV-ACC 与 SimGCD 式学习发现头，检查聚类质量和稳定性；Job `44422110` 结果见 `results/stage1/STAGE1_WISIG_FRONTEND_COMPARE_REPORT.md`，当前 SimGCD-style 低于 MV-ACC，暂不作为正式主前端。
 - [x] 为 IGCD 适配本项目 60/10/30 strict 协议设计最小运行入口；`utils/igcd_minimal_adapter.py` 与 `tools/stage1_igcd_strict_entry.py` 已通过合成三轮 smoke test，结果见 `results/stage1/stage1_igcd_strict_entry.json`。
 - [x] 补齐 RADCIL 后端二阶矩阵所需参数支持；`experiments/exp_wisig_mvacc_cil_strict.py` 已支持旧/新 batch 配比、masked KD、KD schedule、特征蒸馏和解冻范围，矩阵见 `results/stage1/stage1_radcil_backend_matrix.json`，Slurm 入口为 `slurm/stage1_wisig_radcil_backend_matrix.sbatch`。
+- [x] 运行 RADCIL 后端二阶 Slurm 短实验 Job `44422380`；结果见 `results/stage1/STAGE1_RADCIL_BACKEND_MATRIX_REPORT.md`，当前 `balanced_old_new_batch` 是最佳折中。
 - [ ] 根据验证集结果锁定新主方法前端与 RADCIL 后端组合，不使用未知轮次评估真值。
 
 ### 阶段 2：共享框架与 WiSig 初版，3–4 天

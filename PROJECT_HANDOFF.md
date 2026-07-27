@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-27
-- 当前阶段：实施计划 1.1，阶段 1 已完成既有后端复盘、SOTA 初筛、WiSig 表征短实验、后端消融、SimGCD 式发现头最小适配、真实 WiSig frozen embeddings 前端对比、IGCD strict 最小入口和 RADCIL 后端二阶参数支持，下一步提交 Slurm 短实验验证
+- 当前阶段：实施计划 1.1，阶段 1 已完成既有后端复盘、SOTA 初筛、WiSig 表征短实验、后端消融、SimGCD 式发现头最小适配、真实 WiSig frozen embeddings 前端对比、IGCD strict 最小入口和 RADCIL 后端二阶 Slurm 验证，下一步细化 old:new batch 后端并接入真实 WiSig IGCD
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -54,6 +54,7 @@ GitHub Release `datasets-2026-07-26` 已包含 WiSig、ADS-B、ManyRx 和 ManyTx
 - Slurm Job `44422110` 已完成阶段 1 WiSig 前端对比并同步结果；新增 `results/stage1/STAGE1_WISIG_FRONTEND_COMPARE_REPORT.md`。SimGCD-style 三轮均输出 10 类并保持 100% coverage，但 R1/R2/R3 的 NMI、ARI 和 Hungarian Acc 均低于 MV-ACC，当前不能替代 MV-ACC 作为正式主前端。
 - 新增 `utils/igcd_minimal_adapter.py` 和 `tools/stage1_igcd_strict_entry.py`：实现 IGCD-style strict 最小入口，把 IGCD time step 映射到 WiSig R1/R2/R3 输入边界。合成 smoke test 报告保存于 `results/stage1/stage1_igcd_strict_entry.json`，三轮 NMI/ARI/purity 均为 1.0，诊断字段确认不使用未知真值或 held-out eval。
 - 更新 `experiments/exp_wisig_mvacc_cil_strict.py`、`tools/stage1_radcil_backend_matrix.py` 和 `slurm/stage1_wisig_radcil_backend_matrix.sbatch`：RADCIL 后端已支持旧/新 batch 配比、masked KD、KD schedule、replay 特征蒸馏和 joint 解冻范围；`results/stage1/stage1_radcil_backend_matrix.json` 中二阶矩阵不再有待实现参数。
+- Slurm Job `44422380` 已完成 RADCIL 后端二阶矩阵，结果已同步；新增 `results/stage1/STAGE1_RADCIL_BACKEND_MATRIX_REPORT.md`。当前最佳折中为 `balanced_old_new_batch`，R3 Overall 0.5589、Old 0.4689、New 0.8289、Forgetting 0.3611；KD 与 feature distill 变体仍未带来收益。
 - `requirements.txt` 已补充 pandas、hdbscan、umap-learn。
 - 新增 `tools/stage0_env_data_check.py`：检查依赖、CUDA、GPU 张量计算、大数据哈希、ZIP 结构、紧凑 NPZ 和 ADS-B 解压状态。
 - 新增 `slurm/stage0_env_data_check.sbatch`：使用 `gpuHz`、`shortjobs`、1 张 GPU 运行阶段 0 检查。
@@ -99,7 +100,7 @@ Strict loader 审计：
 - ManyTx、ManyRx 完整数据尚未按补充实验需要解压；这是按需展开项，主实验阶段不应因此延迟 WiSig/ADS-B 阶段 1。
 - 可移植数据路径模板和审计入口已建立；部分旧脚本仍包含开发者绝对路径，后续新入口必须继续使用命令行参数或配置覆盖。
 - 当前 Slurm `.venv` 使用较新依赖版本，尚未通过旧主实验端到端验证；出现兼容问题时应先记录错误，再做最小范围版本调整。
-- 阶段 1 已完成文档级复盘、SOTA 初筛、WiSig CE/SupCon 表征短实验、后端消融、SimGCD/IGCD 适配契约、Python 接口骨架、SimGCD 式最小适配器、WiSig 前端对比、IGCD strict 最小入口和 RADCIL 后端二阶参数支持；R3 旧类遗忘的当前证据指向回放约束不足和默认 KD 目标/权重不稳。
+- 阶段 1 已完成文档级复盘、SOTA 初筛、WiSig CE/SupCon 表征短实验、后端消融、SimGCD/IGCD 适配契约、Python 接口骨架、SimGCD 式最小适配器、WiSig 前端对比、IGCD strict 最小入口和 RADCIL 后端二阶 Slurm 验证；R3 旧类遗忘的当前证据指向旧类 batch 配比与 replay 强度不足，KD/feature distill 暂未显示正收益。
 - SimGCD-style 已验证为可运行学习式发现 baseline，但真实 WiSig 前端质量低于 MV-ACC；阶段 1 短期主线应保留 MV-ACC 或稳定 Deep-HDBSCAN 前端，避免把弱前端误锁为新主方法。
 - Slurm 端同时保留 ManyTx 的 6 个分片和合并 ZIP，存在约 2.63 GB 重复占用；未取得明确清理指令前不要删除。
 - 阶段 0 两个 Slurm job 的 JSON/stdout/stderr 已同步回本地；后续不要再把本地缺失误判为实验未运行。
@@ -107,7 +108,7 @@ Strict loader 审计：
 
 ## 7. 下一步执行顺序
 
-1. 提交 Slurm 短实验验证 RADCIL 二阶矩阵：`replay_x2` 锚点、old:new batch、masked KD、KD schedule、特征蒸馏和解冻范围。
+1. 以 `balanced_old_new_batch` 为锚点，继续细化 old:new ratio 1.5/2.0/3.0 和 replay weight 2.0/2.5/3.0。
 2. 将 IGCD strict 最小入口接入真实 WiSig frozen embeddings，确认能否作为严格 baseline。
 3. 后续 WiSig 短实验优先使用 MV-ACC 或稳定 Deep-HDBSCAN 前端，SimGCD-style 只作为学习式发现 baseline。
 4. 根据后端消融结论更新新主方法组合实验，避免把默认可靠伪标签、回放和 KD 简单包装为贡献。
