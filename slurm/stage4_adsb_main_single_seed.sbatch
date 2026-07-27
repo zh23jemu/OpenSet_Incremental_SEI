@@ -3,8 +3,8 @@
 #
 # 用途：
 #   1. 复用阶段 0 已审计的 ADS-B strict loader；
-#   2. 先验证当前 ADS-B strict 入口能在 Slurm 上完整跑完 90+10x3；
-#   3. 明确这是 legacy strict 入口，不等同于已经完成 WiSig RADCIL 后端迁移。
+#   2. 验证 ADS-B long-sequence backbone 能在 Slurm 上完整跑完 90+10x3；
+#   3. 固定使用 WiSig 主后端的 old:new=2.0、replay weight=3.0 配置。
 #
 # 分区可在提交时覆盖，例如：
 #   sbatch --partition=gpu --qos=normal --time=08:00:00 slurm/stage4_adsb_main_single_seed.sbatch
@@ -35,7 +35,7 @@ PYTHON_BIN="${PROJECT_ROOT}/.venv/bin/python"
 DATA_ROOT="${ADSB_DATA_ROOT:-数据集/ADS-B/Dataset}"
 JOB_ID="${SLURM_JOB_ID:-manual}"
 SEED="${ADSB_STAGE4_SEED:-31}"
-SAVE_DIR="results/stage4/adsb_main_legacy_seed${SEED}_${JOB_ID}"
+SAVE_DIR="results/stage4/adsb_main_long_radcil_seed${SEED}_${JOB_ID}"
 PLAN_PATH="results/stage4/stage4_adsb_main_single_seed_plan_${JOB_ID}.json"
 
 "${PYTHON_BIN}" tools/stage4_adsb_main_plan.py \
@@ -55,6 +55,7 @@ echo "运行阶段 4 ADS-B strict 单种子流程：seed=${SEED}, save_dir=${SAV
     --num_rounds 3 \
     --seed "${SEED}" \
     --train_closedset \
+    --backbone adsb_long \
     --epochs 30 \
     --batch_size 128 \
     --test_batch_size 256 \
@@ -63,6 +64,8 @@ echo "运行阶段 4 ADS-B strict 单种子流程：seed=${SEED}, save_dir=${SAV
     --supcon_weight 0.1 \
     --cil_head_warmup_epochs 2 \
     --cil_joint_epochs 8 \
-    --cil_replay_weight 3.0
+    --cil_replay_weight 3.0 \
+    --radcil_old_new_batch_ratio 2.0 \
+    --disable_visualization
 
 echo "阶段 4 ADS-B strict 单种子流程完成：${PROJECT_ROOT}/${SAVE_DIR}"

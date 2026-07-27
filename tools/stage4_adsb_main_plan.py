@@ -1,10 +1,8 @@
 """生成 ADS-B 阶段 4 单种子主流程计划。
 
-ADS-B 是阶段 4 主实验入口。当前 `exp_adsb_mvacc_cil_strict.py` 与 WiSig
-strict 脚本同构，但尚未接入 WiSig 阶段 3 使用的 old:new batch ratio
-后端参数，也尚未把阶段 1 开发出的 ADS-B long-sequence backbone 合入
-正式 strict 主流程。因此本计划先固化“可运行的 legacy strict 入口”，
-并显式记录需要迁移的后端/表征缺口。
+ADS-B 是阶段 4 主实验入口。本计划锁定阶段 1 已验证可运行的 ADS-B
+long-sequence backbone，并迁移 WiSig 阶段 3 使用的 old:new batch ratio
+与 replay weight，形成正式 strict 单种子 smoke test。
 """
 
 from __future__ import annotations
@@ -32,6 +30,8 @@ def build_plan(project_root: Path, data_root: str, save_dir: str, seed: int, job
         "--seed",
         str(seed),
         "--train_closedset",
+        "--backbone",
+        "adsb_long",
         "--epochs",
         "30",
         "--batch_size",
@@ -48,9 +48,12 @@ def build_plan(project_root: Path, data_root: str, save_dir: str, seed: int, job
         "8",
         "--cil_replay_weight",
         "3.0",
+        "--radcil_old_new_batch_ratio",
+        "2.0",
+        "--disable_visualization",
     ]
     return {
-        "schema_version": "stage4_adsb_main_single_seed_plan_v1",
+        "schema_version": "stage4_adsb_main_single_seed_plan_v2",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "project_root": str(project_root),
         "stage": "stage4",
@@ -66,14 +69,17 @@ def build_plan(project_root: Path, data_root: str, save_dir: str, seed: int, job
             "legacy_adsb_run": "results/adsb_90known_mvacc_cil_strict_seed31/ADSB_STRICT_RUN_REPORT.md",
             "closedset_dev": "results/adsb_closedset_long_dev_seed41/ADSB_PHASE1_CLOSEDSET_REPORT.md",
         },
-        "known_gaps_before_formal_multiseed": [
-            "正式 ADS-B strict 入口仍使用原 ClosedSetSEI 骨干，尚未接入 ADS-B long-sequence backbone。",
-            "ADS-B strict 入口尚未实现 WiSig RADCIL 的 old:new batch ratio 参数；本计划只能锁定 replay weight，不能完全复刻 ratio_2p0_replay_3p0。",
+        "migration_status": {
+            "backbone": "ADSBLongClosedSet 已接入 strict 主入口。",
+            "radcil_backend": "已锁定 old:new=2.0 与 replay weight=3.0。",
+        },
+        "known_risks_before_formal_multiseed": [
             "历史 ADS-B strict seed31 初始闭集弱且 R2/R3 欠聚类，单种子结果只能作为迁移 smoke test。",
+            "长序列网络显存和训练耗时高于 legacy backbone，需先在 Slurm 验证资源配置。",
         ],
         "go_no_go": [
             "先确认脚本在 Slurm 当前 .venv 和 ADS-B 解压路径下可完整跑完三轮。",
-            "若 R3 仍明显受闭集表征限制，下一步优先把 ADS-BLongClosedSet 合入 strict 主入口，而不是继续调 CIL 后端。",
+            "若 R3 仍明显受闭集表征限制，先审计 long backbone 的 Day1 validation 指标和发现簇数，再决定是否调参。",
             "只有单种子协议和产物完整后，才扩展 seed 7/13/31 正式三种子。",
         ],
     }
@@ -83,7 +89,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="生成 ADS-B 阶段 4单种子主流程计划。")
     parser.add_argument("--project-root", default=".")
     parser.add_argument("--data-root", default="数据集/ADS-B/Dataset")
-    parser.add_argument("--save-dir", default="results/stage4/adsb_main_legacy_seed31_manual")
+    parser.add_argument("--save-dir", default="results/stage4/adsb_main_long_radcil_seed31_manual")
     parser.add_argument("--seed", type=int, default=31)
     parser.add_argument("--job-id", default="manual")
     parser.add_argument("--output", default="results/stage4/stage4_adsb_main_single_seed_plan.json")

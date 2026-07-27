@@ -80,6 +80,7 @@ from features.rf_features import extract_rf_features_batch
 from utils.classic_feature_gating import select_classic_feature_view, save_selection, local_cross_view_consistency
 from utils.incremental_visualization import save_seen_class_visualizations, save_paper_method_visualizations
 from models.vup_model import ClosedSetSEI
+from models.adsb_long_model import ADSBLongClosedSet
 from utils.improved_closedset_training import (
     TRAINING_RECIPE_VERSION,
     stratified_train_validation_split,
@@ -299,11 +300,20 @@ def supervised_contrastive_loss(features, labels, temperature=0.2):
     loss = -mean_log_prob_pos[valid].mean()
     return loss
 
-def train_closedset_model(train_set, num_classes, feat_dim, epochs, batch_size, lr, device, save_path, use_supcon=False, supcon_weight=0.1, supcon_temperature=0.2, checkpoint_metadata=None, seed=7, validation_fraction=1.0 / 7.0, use_rf_augmentation=True, projection_hidden_dim=128, projection_dim=64):
+def _build_closedset_model(backbone, num_classes, feat_dim):
+    """按命令行配置构造 ADS-B 闭集模型，默认使用长序列专用骨干。"""
+    if backbone == "adsb_long":
+        return ADSBLongClosedSet(num_known_classes=num_classes, feat_dim=feat_dim)
+    if backbone == "legacy":
+        return ClosedSetSEI(num_known_classes=num_classes, feat_dim=feat_dim)
+    raise ValueError(f"Unsupported ADS-B backbone: {backbone}")
+
+
+def train_closedset_model(train_set, num_classes, feat_dim, epochs, batch_size, lr, device, save_path, backbone="adsb_long", use_supcon=False, supcon_weight=0.1, supcon_temperature=0.2, checkpoint_metadata=None, seed=7, validation_fraction=1.0 / 7.0, use_rf_augmentation=True, projection_hidden_dim=128, projection_dim=64):
     ensure_dir(os.path.dirname(save_path))
     train_closedset_with_validation(
         train_set=train_set,
-        model_factory=lambda: ClosedSetSEI(num_known_classes=num_classes, feat_dim=feat_dim),
+        model_factory=lambda: _build_closedset_model(backbone, num_classes, feat_dim),
         num_classes=num_classes, feat_dim=feat_dim, epochs=epochs, batch_size=batch_size,
         lr=lr, device=device, save_path=save_path, seed=seed, use_supcon=use_supcon,
         supcon_weight=supcon_weight, supcon_temperature=supcon_temperature,
@@ -311,11 +321,14 @@ def train_closedset_model(train_set, num_classes, feat_dim, epochs, batch_size, 
         use_rf_augmentation=use_rf_augmentation, projection_hidden_dim=projection_hidden_dim,
         projection_dim=projection_dim,
     )
-    return load_closedset_model(save_path, num_classes, feat_dim, device, expected_metadata=checkpoint_metadata)
+    return load_closedset_model(
+        save_path, num_classes, feat_dim, device,
+        backbone=backbone, expected_metadata=checkpoint_metadata,
+    )
 
 
-def load_closedset_model(checkpoint_path, num_classes, feat_dim, device, expected_metadata=None):
-    model = ClosedSetSEI(num_known_classes=num_classes, feat_dim=feat_dim).to(device)
+def load_closedset_model(checkpoint_path, num_classes, feat_dim, device, backbone="adsb_long", expected_metadata=None):
+    model = _build_closedset_model(backbone, num_classes, feat_dim).to(device)
     ckpt = torch.load(checkpoint_path, map_location=device)
     if expected_metadata is not None:
         stored = ckpt.get("metadata") if isinstance(ckpt, dict) else None
@@ -1783,13 +1796,23 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
     current_w = np.asarray(current_w, dtype=np.float32)
     memory_x = np.asarray(memory_x, dtype=np.float32)
     memory_y = np.asarray(memory_y, dtype=np.int64)
+    # old:new 比例只改变 replay batch 的样本数，replay loss 权重继续由
+    # cil_replay_weight 独立控制，便于和 WiSig 的 RADCIL 配置做公平对照。
+    current_batch_size = int(args.incremental_batch_size)
+    if float(args.radcil_old_new_batch_ratio) > 0:
+        memory_batch_size = max(
+            1,
+            int(round(current_batch_size * float(args.radcil_old_new_batch_ratio))),
+        )
+    else:
+        memory_batch_size = current_batch_size
     cur_loader = DataLoader(
         TensorDataset(torch.as_tensor(current_x), torch.as_tensor(current_y), torch.as_tensor(current_w)),
-        batch_size=int(args.incremental_batch_size), shuffle=True, drop_last=False, num_workers=0,
+        batch_size=current_batch_size, shuffle=True, drop_last=False, num_workers=0,
     )
     mem_loader = DataLoader(
         TensorDataset(torch.as_tensor(memory_x), torch.as_tensor(memory_y)),
-        batch_size=int(args.incremental_batch_size), shuffle=True, drop_last=False, num_workers=0,
+        batch_size=memory_batch_size, shuffle=True, drop_last=False, num_workers=0,
     )
     teacher = copy.deepcopy(teacher).to(device).eval()
     for p in teacher.parameters():
@@ -2725,6 +2748,12 @@ def main():
     parser.add_argument("--test_batch_size", type=int, default=256)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--feat_dim", type=int, default=128)
+    parser.add_argument(
+        "--backbone",
+        choices=["adsb_long", "legacy"],
+        default="adsb_long",
+        help="ADS-B 表征骨干；正式 strict 主流程默认使用 4800 点长序列专用网络。",
+    )
     parser.add_argument("--use_supcon", action="store_true", help="Use CE + supervised contrastive loss when training the initial closed-set backbone.")
     parser.add_argument("--supcon_weight", type=float, default=0.1, help="Weight lambda for supervised contrastive loss. Recommended: 0.05 or 0.1.")
     parser.add_argument("--supcon_temperature", type=float, default=0.2, help="Temperature for supervised contrastive loss. Recommended: 0.2.")
@@ -2761,6 +2790,12 @@ def main():
     parser.add_argument("--cil_temperature", type=float, default=2.0)
     parser.add_argument("--cil_supcon_weight", type=float, default=0.05)
     parser.add_argument("--cil_supcon_threshold", type=float, default=0.60)
+    parser.add_argument(
+        "--radcil_old_new_batch_ratio",
+        type=float,
+        default=0.0,
+        help="RADCIL replay old:new batch ratio；0 保持历史等 batch 行为。",
+    )
     parser.add_argument("--pseudo_weight_floor", type=float, default=0.20)
 
 
@@ -2839,6 +2874,7 @@ def main():
     print(f"Dataset root: {args.data_root}")
     print(f"Save dir: {args.save_dir}")
     print(f"Device: {device}")
+    print(f"Backbone: {args.backbone}")
     print("Protocol: 90 known + 10 novel R1 + 10 novel R2 + 10 novel R3")
     print("Receiver setting: receiver metadata unavailable; treated as one acquisition domain")
     print(f"Old-class prototype bonus beta: {args.old_class_bonus}")
@@ -2981,6 +3017,7 @@ def main():
         "supcon_weight": float(args.supcon_weight),
         "supcon_temperature": float(args.supcon_temperature),
         "training_recipe_version": TRAINING_RECIPE_VERSION,
+        "backbone": str(args.backbone),
         "closedset_validation_fraction": float(args.closedset_val_ratio),
         "rf_augmentation": bool(not args.disable_rf_augmentation),
         "supcon_projection_dim": int(args.projection_dim) if args.use_supcon else 0,
@@ -2996,6 +3033,7 @@ def main():
             args.lr,
             device,
             args.checkpoint,
+            backbone=args.backbone,
             use_supcon=args.use_supcon,
             supcon_weight=args.supcon_weight,
             supcon_temperature=args.supcon_temperature,
@@ -3012,6 +3050,7 @@ def main():
             args.initial_known_classes,
             args.feat_dim,
             device,
+            backbone=args.backbone,
             expected_metadata=checkpoint_metadata,
         )
 
