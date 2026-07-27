@@ -1,0 +1,854 @@
+{
+  "protocol_version": "adsb_90known_strict_mvacc_cil_v1",
+  "class_schedule": [
+    90,
+    100,
+    110,
+    120
+  ],
+  "base_partition": "per-class stored-order 70% development / 30% held-out; development becomes 60% train / 10% validation",
+  "novel_partition": "provided X_train_30Class only for discovery/training; provided X_test_30Class only for evaluation",
+  "receiver_metadata": "unavailable; one acquisition domain assumed",
+  "capture_session_metadata_available": false,
+  "exact_content_overlap_gate": "BLAKE2b-128, required zero",
+  "hyperparameter_policy": "all CLI values fixed before test evaluation; no ADS-B test-driven retry or selection",
+  "hungarian_policy": "discovery hidden labels only, frozen mapping, offline scoring only; evaluation labels never fit mapping",
+  "true_labels_forbidden_from": [
+    "feature extraction",
+    "CF-LCG local gating on unknown rounds",
+    "HDBSCAN",
+    "noise reassignment",
+    "cluster merge/split",
+    "pseudo-label CE",
+    "classifier expansion",
+    "replay",
+    "knowledge distillation"
+  ],
+  "seed": 13,
+  "locked_cli_configuration": {
+    "data_root": "数据集/ADS-B/Dataset",
+    "save_dir": "results/stage4/adsb_density_multiseed_seed13_baseline_locked_44474381",
+    "checkpoint": "results/stage4/adsb_main_long_radcil_seed13_44470736/closedset_adsb_90known_strict.pth",
+    "train_closedset": false,
+    "epochs": 20,
+    "batch_size": 128,
+    "test_batch_size": 256,
+    "lr": 0.001,
+    "feat_dim": 128,
+    "backbone": "adsb_long",
+    "use_supcon": true,
+    "supcon_weight": 0.1,
+    "supcon_temperature": 0.2,
+    "closedset_val_ratio": 0.14285714285714285,
+    "projection_hidden_dim": 128,
+    "projection_dim": 64,
+    "disable_rf_augmentation": false,
+    "disable_cflcg": false,
+    "cflcg_gate_threshold": 0.8,
+    "cflcg_local_k": 12,
+    "seed": 13,
+    "initial_known_classes": 90,
+    "round_size": 10,
+    "num_rounds": 3,
+    "development_ratio": 0.7,
+    "old_class_bonus": 0.0,
+    "disable_cil_baselines": true,
+    "cil_epochs": 12,
+    "cil_batch_size": 256,
+    "cil_lr": 0.001,
+    "cil_weight_decay": 0.0001,
+    "cil_distill_weight": 1.0,
+    "cil_distill_temperature": 2.0,
+    "memory_per_class": 20,
+    "tpcil_smoothing": 0.2,
+    "cil_head_warmup_epochs": 2,
+    "cil_joint_epochs": 8,
+    "incremental_batch_size": 128,
+    "cil_classifier_lr": 0.0001,
+    "cil_backbone_lr": 1e-05,
+    "cil_replay_weight": 3.0,
+    "cil_kd_weight": 1.0,
+    "cil_temperature": 2.0,
+    "cil_supcon_weight": 0.05,
+    "cil_supcon_threshold": 0.6,
+    "radcil_old_new_batch_ratio": 2.0,
+    "pseudo_weight_floor": 0.2,
+    "min_cluster_size": 10,
+    "min_samples": 5,
+    "alpha": 0.7,
+    "top_k": 20,
+    "graph_dim": 16,
+    "adaptive_fusion": false,
+    "alpha_min": 0.65,
+    "alpha_max": 0.95,
+    "reliability_min_cluster_size": 10,
+    "reliability_min_prob": 0.3,
+    "reliability_threshold": 0.5,
+    "merge_threshold": 0.7,
+    "no_mutual_nearest": false,
+    "iarc_secondary_min_cluster_size": 50,
+    "iarc_secondary_min_samples": 5,
+    "iarc_min_secondary_size": 30,
+    "iarc_merge_threshold": 0.78,
+    "iarc_new_threshold": 0.35,
+    "iarc_lambda_deep": 0.4,
+    "iarc_lambda_rf": 0.2,
+    "iarc_lambda_graph": 0.4,
+    "iter_merge_threshold": 0.86,
+    "iter_merge_lambda_deep": 0.4,
+    "iter_merge_lambda_rf": 0.2,
+    "iter_merge_lambda_graph": 0.4,
+    "nodrop_merge_rounds": 5,
+    "nodrop_merge_threshold": 0.78,
+    "nodrop_assign_lambda_deep": 0.4,
+    "nodrop_assign_lambda_rf": 0.2,
+    "nodrop_assign_lambda_graph": 0.4,
+    "mvacc_min_cluster_ratio": 0.03,
+    "mvacc_min_samples": 5,
+    "mvacc_merge_rounds": 12,
+    "mvacc_merge_threshold": 0.74,
+    "disable_mvacc_calibration": true,
+    "mvacc_calibration_ratios": "0.03,0.045,0.06,0.08",
+    "mvacc_calibration_thresholds": "0.74,0.78,0.82,0.86",
+    "mvacc_lambda_deep": 0.5,
+    "mvacc_lambda_rf": 0.1,
+    "mvacc_lambda_graph": 0.4,
+    "mvacc_prototypes_per_class": 5,
+    "mvacc_split_rounds": 6,
+    "mvacc_split_size_factor": 1.75,
+    "mvacc_split_min_part_ratio": 0.3,
+    "mvacc_split_silhouette": 0.3,
+    "enable_visualization": false,
+    "disable_visualization": true,
+    "visualization_method": "both",
+    "save_detailed_visualizations": false
+  },
+  "known_split_audit": {
+    "per_class": [
+      {
+        "original_label": 0,
+        "global_label": 0,
+        "total": 271,
+        "train": 190,
+        "eval": 81,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 1,
+        "global_label": 1,
+        "total": 290,
+        "train": 203,
+        "eval": 87,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 2,
+        "global_label": 2,
+        "total": 155,
+        "train": 108,
+        "eval": 47,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 3,
+        "global_label": 3,
+        "total": 189,
+        "train": 132,
+        "eval": 57,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 4,
+        "global_label": 4,
+        "total": 375,
+        "train": 262,
+        "eval": 113,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 5,
+        "global_label": 5,
+        "total": 212,
+        "train": 148,
+        "eval": 64,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 6,
+        "global_label": 6,
+        "total": 216,
+        "train": 151,
+        "eval": 65,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 7,
+        "global_label": 7,
+        "total": 184,
+        "train": 129,
+        "eval": 55,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 8,
+        "global_label": 8,
+        "total": 175,
+        "train": 122,
+        "eval": 53,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 9,
+        "global_label": 9,
+        "total": 375,
+        "train": 262,
+        "eval": 113,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 10,
+        "global_label": 10,
+        "total": 265,
+        "train": 186,
+        "eval": 79,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 11,
+        "global_label": 11,
+        "total": 271,
+        "train": 190,
+        "eval": 81,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 12,
+        "global_label": 12,
+        "total": 167,
+        "train": 117,
+        "eval": 50,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 13,
+        "global_label": 13,
+        "total": 320,
+        "train": 224,
+        "eval": 96,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 14,
+        "global_label": 14,
+        "total": 163,
+        "train": 114,
+        "eval": 49,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 15,
+        "global_label": 15,
+        "total": 149,
+        "train": 104,
+        "eval": 45,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 16,
+        "global_label": 16,
+        "total": 112,
+        "train": 78,
+        "eval": 34,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 17,
+        "global_label": 17,
+        "total": 124,
+        "train": 87,
+        "eval": 37,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 18,
+        "global_label": 18,
+        "total": 156,
+        "train": 109,
+        "eval": 47,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 19,
+        "global_label": 19,
+        "total": 113,
+        "train": 79,
+        "eval": 34,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 20,
+        "global_label": 20,
+        "total": 116,
+        "train": 81,
+        "eval": 35,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 21,
+        "global_label": 21,
+        "total": 170,
+        "train": 119,
+        "eval": 51,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 22,
+        "global_label": 22,
+        "total": 176,
+        "train": 123,
+        "eval": 53,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 23,
+        "global_label": 23,
+        "total": 109,
+        "train": 76,
+        "eval": 33,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 24,
+        "global_label": 24,
+        "total": 426,
+        "train": 298,
+        "eval": 128,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 25,
+        "global_label": 25,
+        "total": 120,
+        "train": 84,
+        "eval": 36,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 26,
+        "global_label": 26,
+        "total": 266,
+        "train": 186,
+        "eval": 80,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 27,
+        "global_label": 27,
+        "total": 396,
+        "train": 277,
+        "eval": 119,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 28,
+        "global_label": 28,
+        "total": 213,
+        "train": 149,
+        "eval": 64,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 29,
+        "global_label": 29,
+        "total": 462,
+        "train": 323,
+        "eval": 139,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 30,
+        "global_label": 30,
+        "total": 173,
+        "train": 121,
+        "eval": 52,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 31,
+        "global_label": 31,
+        "total": 172,
+        "train": 120,
+        "eval": 52,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 32,
+        "global_label": 32,
+        "total": 152,
+        "train": 106,
+        "eval": 46,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 33,
+        "global_label": 33,
+        "total": 458,
+        "train": 321,
+        "eval": 137,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 34,
+        "global_label": 34,
+        "total": 441,
+        "train": 309,
+        "eval": 132,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 35,
+        "global_label": 35,
+        "total": 124,
+        "train": 87,
+        "eval": 37,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 36,
+        "global_label": 36,
+        "total": 154,
+        "train": 108,
+        "eval": 46,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 37,
+        "global_label": 37,
+        "total": 229,
+        "train": 160,
+        "eval": 69,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 38,
+        "global_label": 38,
+        "total": 121,
+        "train": 85,
+        "eval": 36,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 39,
+        "global_label": 39,
+        "total": 187,
+        "train": 131,
+        "eval": 56,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 40,
+        "global_label": 40,
+        "total": 111,
+        "train": 78,
+        "eval": 33,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 41,
+        "global_label": 41,
+        "total": 104,
+        "train": 73,
+        "eval": 31,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 42,
+        "global_label": 42,
+        "total": 294,
+        "train": 206,
+        "eval": 88,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 43,
+        "global_label": 43,
+        "total": 303,
+        "train": 212,
+        "eval": 91,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 44,
+        "global_label": 44,
+        "total": 180,
+        "train": 126,
+        "eval": 54,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 45,
+        "global_label": 45,
+        "total": 315,
+        "train": 220,
+        "eval": 95,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 46,
+        "global_label": 46,
+        "total": 151,
+        "train": 106,
+        "eval": 45,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 47,
+        "global_label": 47,
+        "total": 129,
+        "train": 90,
+        "eval": 39,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 48,
+        "global_label": 48,
+        "total": 362,
+        "train": 253,
+        "eval": 109,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 49,
+        "global_label": 49,
+        "total": 133,
+        "train": 93,
+        "eval": 40,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 50,
+        "global_label": 50,
+        "total": 182,
+        "train": 127,
+        "eval": 55,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 51,
+        "global_label": 51,
+        "total": 133,
+        "train": 93,
+        "eval": 40,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 52,
+        "global_label": 52,
+        "total": 162,
+        "train": 113,
+        "eval": 49,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 53,
+        "global_label": 53,
+        "total": 149,
+        "train": 104,
+        "eval": 45,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 54,
+        "global_label": 54,
+        "total": 203,
+        "train": 142,
+        "eval": 61,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 55,
+        "global_label": 55,
+        "total": 194,
+        "train": 136,
+        "eval": 58,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 56,
+        "global_label": 56,
+        "total": 173,
+        "train": 121,
+        "eval": 52,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 57,
+        "global_label": 57,
+        "total": 139,
+        "train": 97,
+        "eval": 42,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 58,
+        "global_label": 58,
+        "total": 196,
+        "train": 137,
+        "eval": 59,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 59,
+        "global_label": 59,
+        "total": 267,
+        "train": 187,
+        "eval": 80,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 60,
+        "global_label": 60,
+        "total": 170,
+        "train": 119,
+        "eval": 51,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 61,
+        "global_label": 61,
+        "total": 466,
+        "train": 326,
+        "eval": 140,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 62,
+        "global_label": 62,
+        "total": 383,
+        "train": 268,
+        "eval": 115,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 63,
+        "global_label": 63,
+        "total": 226,
+        "train": 158,
+        "eval": 68,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 64,
+        "global_label": 64,
+        "total": 273,
+        "train": 191,
+        "eval": 82,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 65,
+        "global_label": 65,
+        "total": 235,
+        "train": 164,
+        "eval": 71,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 66,
+        "global_label": 66,
+        "total": 146,
+        "train": 102,
+        "eval": 44,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 67,
+        "global_label": 67,
+        "total": 414,
+        "train": 290,
+        "eval": 124,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 68,
+        "global_label": 68,
+        "total": 177,
+        "train": 124,
+        "eval": 53,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 69,
+        "global_label": 69,
+        "total": 163,
+        "train": 114,
+        "eval": 49,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 70,
+        "global_label": 70,
+        "total": 237,
+        "train": 166,
+        "eval": 71,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 71,
+        "global_label": 71,
+        "total": 107,
+        "train": 75,
+        "eval": 32,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 72,
+        "global_label": 72,
+        "total": 141,
+        "train": 99,
+        "eval": 42,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 73,
+        "global_label": 73,
+        "total": 126,
+        "train": 88,
+        "eval": 38,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 74,
+        "global_label": 74,
+        "total": 296,
+        "train": 207,
+        "eval": 89,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 75,
+        "global_label": 75,
+        "total": 214,
+        "train": 150,
+        "eval": 64,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 76,
+        "global_label": 76,
+        "total": 352,
+        "train": 246,
+        "eval": 106,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 77,
+        "global_label": 77,
+        "total": 173,
+        "train": 121,
+        "eval": 52,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 78,
+        "global_label": 78,
+        "total": 279,
+        "train": 195,
+        "eval": 84,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 79,
+        "global_label": 79,
+        "total": 152,
+        "train": 106,
+        "eval": 46,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 80,
+        "global_label": 80,
+        "total": 330,
+        "train": 231,
+        "eval": 99,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 81,
+        "global_label": 81,
+        "total": 373,
+        "train": 261,
+        "eval": 112,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 82,
+        "global_label": 82,
+        "total": 235,
+        "train": 164,
+        "eval": 71,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 83,
+        "global_label": 83,
+        "total": 194,
+        "train": 136,
+        "eval": 58,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 84,
+        "global_label": 84,
+        "total": 260,
+        "train": 182,
+        "eval": 78,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 85,
+        "global_label": 85,
+        "total": 180,
+        "train": 126,
+        "eval": 54,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 86,
+        "global_label": 86,
+        "total": 154,
+        "train": 108,
+        "eval": 46,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 87,
+        "global_label": 87,
+        "total": 449,
+        "train": 314,
+        "eval": 135,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 88,
+        "global_label": 88,
+        "total": 450,
+        "train": 315,
+        "eval": 135,
+        "strategy": "stored_order_block_70_30"
+      },
+      {
+        "original_label": 89,
+        "global_label": 89,
+        "total": 384,
+        "train": 269,
+        "eval": 115,
+        "strategy": "stored_order_block_70_30"
+      }
+    ],
+    "index_overlap": 0,
+    "strategy": "stored_order_block_70_30",
+    "capture_metadata_available": false,
+    "seed_used_for_known_split": false
+  }
+}
