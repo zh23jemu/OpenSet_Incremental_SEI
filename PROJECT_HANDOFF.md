@@ -55,6 +55,8 @@ GitHub Release `datasets-2026-07-26` 已包含 WiSig、ADS-B、ManyRx 和 ManyTx
 - 新增 `utils/igcd_minimal_adapter.py` 和 `tools/stage1_igcd_strict_entry.py`：实现 IGCD-style strict 最小入口，把 IGCD time step 映射到 WiSig R1/R2/R3 输入边界。合成 smoke test 报告保存于 `results/stage1/stage1_igcd_strict_entry.json`，三轮 NMI/ARI/purity 均为 1.0，诊断字段确认不使用未知真值或 held-out eval。
 - 更新 `experiments/exp_wisig_mvacc_cil_strict.py`、`tools/stage1_radcil_backend_matrix.py` 和 `slurm/stage1_wisig_radcil_backend_matrix.sbatch`：RADCIL 后端已支持旧/新 batch 配比、masked KD、KD schedule、replay 特征蒸馏和 joint 解冻范围；`results/stage1/stage1_radcil_backend_matrix.json` 中二阶矩阵不再有待实现参数。
 - Slurm Job `44422380` 已完成 RADCIL 后端二阶矩阵，结果已同步；新增 `results/stage1/STAGE1_RADCIL_BACKEND_MATRIX_REPORT.md`。当前最佳折中为 `balanced_old_new_batch`，R3 Overall 0.5589、Old 0.4689、New 0.8289、Forgetting 0.3611；KD 与 feature distill 变体仍未带来收益。
+- 新增 `tools/stage1_radcil_ratio_weight_matrix.py`、`results/stage1/stage1_radcil_ratio_weight_matrix.json` 和 `slurm/stage1_wisig_radcil_ratio_weight_matrix.sbatch`：围绕 `balanced_old_new_batch` 生成 old:new ratio 1.5/2.0/3.0 与 replay weight 2.0/2.5/3.0 的细化矩阵。
+- 新增 `tools/stage1_wisig_igcd_frontend_compare.py` 和 `slurm/stage1_wisig_igcd_frontend_compare.sbatch`：将 IGCD strict 最小入口接入真实 WiSig frozen embeddings，并与 Deep-HDBSCAN/MV-ACC 做同轮次前端对比。
 - `requirements.txt` 已补充 pandas、hdbscan、umap-learn。
 - 新增 `tools/stage0_env_data_check.py`：检查依赖、CUDA、GPU 张量计算、大数据哈希、ZIP 结构、紧凑 NPZ 和 ADS-B 解压状态。
 - 新增 `slurm/stage0_env_data_check.sbatch`：使用 `gpuHz`、`shortjobs`、1 张 GPU 运行阶段 0 检查。
@@ -108,8 +110,8 @@ Strict loader 审计：
 
 ## 7. 下一步执行顺序
 
-1. 以 `balanced_old_new_batch` 为锚点，继续细化 old:new ratio 1.5/2.0/3.0 和 replay weight 2.0/2.5/3.0。
-2. 将 IGCD strict 最小入口接入真实 WiSig frozen embeddings，确认能否作为严格 baseline。
+1. 提交并运行 Slurm RADCIL ratio/weight 细化矩阵。
+2. 提交并运行 Slurm IGCD strict 真实 WiSig 前端对比。
 3. 后续 WiSig 短实验优先使用 MV-ACC 或稳定 Deep-HDBSCAN 前端，SimGCD-style 只作为学习式发现 baseline。
 4. 根据后端消融结论更新新主方法组合实验，避免把默认可靠伪标签、回放和 KD 简单包装为贡献。
 5. 设计新主方法入口时统一使用 `configs/data_paths.example.json` 的路径结构或等价命令行参数，避免写入开发者绝对路径。

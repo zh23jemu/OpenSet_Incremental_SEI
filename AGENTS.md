@@ -83,6 +83,8 @@
 - 阶段 1 已新增 `utils/igcd_minimal_adapter.py` 和 `tools/stage1_igcd_strict_entry.py`，完成 IGCD strict 最小入口；合成三轮 smoke test 已生成 `results/stage1/stage1_igcd_strict_entry.json` 并通过输出契约校验。
 - 阶段 1 已在 `experiments/exp_wisig_mvacc_cil_strict.py` 中补齐 RADCIL 后端二阶参数支持：旧/新 batch 配比、masked KD、KD schedule、replay 特征蒸馏和 joint 解冻范围；`results/stage1/stage1_radcil_backend_matrix.json` 已更新为可执行矩阵，Slurm 入口为 `slurm/stage1_wisig_radcil_backend_matrix.sbatch`。
 - Slurm Job `44422380` 已完成 RADCIL 后端二阶矩阵并同步结果；`results/stage1/STAGE1_RADCIL_BACKEND_MATRIX_REPORT.md` 显示 `balanced_old_new_batch` 当前最佳，R3 Overall 0.5589、Old 0.4689、New 0.8289、Forgetting 0.3611。
+- 阶段 1 已新增 RADCIL ratio/weight 细化矩阵和 Slurm 入口：`tools/stage1_radcil_ratio_weight_matrix.py`、`results/stage1/stage1_radcil_ratio_weight_matrix.json`、`slurm/stage1_wisig_radcil_ratio_weight_matrix.sbatch`。
+- 阶段 1 已新增真实 WiSig frozen embeddings 上的 IGCD strict 前端对比入口：`tools/stage1_wisig_igcd_frontend_compare.py` 与 `slurm/stage1_wisig_igcd_frontend_compare.sbatch`。
 
 ## Recent Changes
 
@@ -107,6 +109,7 @@
 - 2026-07-27：新增 IGCD strict 最小适配器和三轮合成 smoke test；本地 `.venv\Scripts\python.exe -m py_compile` 与 `tools/stage1_igcd_strict_entry.py` 均通过。
 - 2026-07-27：更新 WiSig strict CIL 训练入口，新增 RADCIL 二阶后端参数，并刷新 `tools/stage1_radcil_backend_matrix.py`、`results/stage1/stage1_radcil_backend_matrix.json` 和 `slurm/stage1_wisig_radcil_backend_matrix.sbatch`；本地 `py_compile` 通过，端到端需 Slurm 环境验证。
 - 2026-07-27：提交并完成 Slurm Job `44422380`，同步 7 个 WiSig RADCIL 后端二阶变体结果，新增 `results/stage1/STAGE1_RADCIL_BACKEND_MATRIX_REPORT.md`；当前结论支持围绕旧/新 batch 配比继续细化，而非优先叠加 KD 或 feature distill。
+- 2026-07-27：新增 RADCIL old:new ratio / replay weight 细化矩阵脚本和 Slurm 入口，并新增真实 WiSig frozen embeddings 上的 IGCD strict 前端对比脚本和 Slurm 入口；本地 `py_compile` 通过。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
@@ -124,8 +127,8 @@
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
-- 以 `balanced_old_new_batch` 为锚点，继续细化 old:new ratio 1.5/2.0/3.0 和 replay weight 2.0/2.5/3.0。
-- 将 IGCD strict 最小入口接入真实 WiSig frozen embeddings，确认能否作为严格 baseline。
+- 提交并运行 Slurm RADCIL ratio/weight 细化矩阵。
+- 提交并运行 Slurm IGCD strict 真实 WiSig 前端对比。
 - 后续 WiSig 短实验优先使用 MV-ACC 或稳定 Deep-HDBSCAN 前端；SimGCD-style 保留为学习式发现 baseline，不作为阶段 1 主前端。
 - 在 WiSig 单种子短实验前，基于 `tools/stage0_strict_loader_audit.py` 的输出确认后续实验入口统一使用可移植数据路径。
 - 明确 ManyRx 当前正式入口：恢复受维护的 runner，或同步修改 `experiments/README_MAIN_EXPERIMENTS.md`，避免引用不存在的脚本。

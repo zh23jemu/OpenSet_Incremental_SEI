@@ -149,6 +149,8 @@
 - [x] 为 IGCD 适配本项目 60/10/30 strict 协议设计最小运行入口；`utils/igcd_minimal_adapter.py` 与 `tools/stage1_igcd_strict_entry.py` 已通过合成三轮 smoke test，结果见 `results/stage1/stage1_igcd_strict_entry.json`。
 - [x] 补齐 RADCIL 后端二阶矩阵所需参数支持；`experiments/exp_wisig_mvacc_cil_strict.py` 已支持旧/新 batch 配比、masked KD、KD schedule、特征蒸馏和解冻范围，矩阵见 `results/stage1/stage1_radcil_backend_matrix.json`，Slurm 入口为 `slurm/stage1_wisig_radcil_backend_matrix.sbatch`。
 - [x] 运行 RADCIL 后端二阶 Slurm 短实验 Job `44422380`；结果见 `results/stage1/STAGE1_RADCIL_BACKEND_MATRIX_REPORT.md`，当前 `balanced_old_new_batch` 是最佳折中。
+- [x] 准备 RADCIL old:new ratio / replay weight 细化矩阵和 Slurm 入口：`tools/stage1_radcil_ratio_weight_matrix.py`、`results/stage1/stage1_radcil_ratio_weight_matrix.json`、`slurm/stage1_wisig_radcil_ratio_weight_matrix.sbatch`。
+- [x] 准备真实 WiSig frozen embeddings 上的 IGCD strict 前端对比入口：`tools/stage1_wisig_igcd_frontend_compare.py` 与 `slurm/stage1_wisig_igcd_frontend_compare.sbatch`。
 - [ ] 根据验证集结果锁定新主方法前端与 RADCIL 后端组合，不使用未知轮次评估真值。
 
 ### 阶段 2：共享框架与 WiSig 初版，3–4 天
