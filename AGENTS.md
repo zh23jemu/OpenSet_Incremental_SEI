@@ -87,7 +87,7 @@
 - 阶段 1 已新增真实 WiSig frozen embeddings 上的 IGCD strict 前端对比入口：`tools/stage1_wisig_igcd_frontend_compare.py` 与 `slurm/stage1_wisig_igcd_frontend_compare.sbatch`。
 - Slurm Job `44422703` 已完成 RADCIL ratio/weight 细化矩阵；`results/stage1/STAGE1_RADCIL_RATIO_WEIGHT_REPORT.md` 显示 `ratio_3p0_replay_3p0` 当前 R3 Overall 最优，`ratio_2p0_replay_3p0` 遗忘率最低且 Overall 几乎持平。
 - Slurm Job `44422704` 已完成真实 WiSig frozen embeddings 上的 IGCD strict 前端对比；`results/stage1/STAGE1_WISIG_IGCD_FRONTEND_COMPARE_REPORT.md` 显示 IGCD-minimal 可作为 strict baseline，但仍弱于 MV-ACC。
-- 已新增客户汇报用总进度文档 `PROJECT_PROGRESS_REPORT.md`，集中记录项目目标、详细执行计划、当前进展、关键实验结果、风险和下一步行动清单。
+- 已将客户汇报用进度内容合并进 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`；`PROJECT_PROGRESS_REPORT.md` 仅保留跳转说明，避免两份正文分叉。
 
 ## Recent Changes
 
@@ -114,7 +114,7 @@
 - 2026-07-27：提交并完成 Slurm Job `44422380`，同步 7 个 WiSig RADCIL 后端二阶变体结果，新增 `results/stage1/STAGE1_RADCIL_BACKEND_MATRIX_REPORT.md`；当前结论支持围绕旧/新 batch 配比继续细化，而非优先叠加 KD 或 feature distill。
 - 2026-07-27：新增 RADCIL old:new ratio / replay weight 细化矩阵脚本和 Slurm 入口，并新增真实 WiSig frozen embeddings 上的 IGCD strict 前端对比脚本和 Slurm 入口；本地 `py_compile` 通过。
 - 2026-07-27：提交并完成 Slurm Job `44422703` 与 `44422704`，同步 RADCIL ratio/weight 细化矩阵和 IGCD WiSig 前端对比原始结果，并新增两份阶段报告。
-- 2026-07-27：新增 `PROJECT_PROGRESS_REPORT.md`，作为客户进度沟通和内部阶段跟踪的主入口。
+- 2026-07-27：新增 `PROJECT_PROGRESS_REPORT.md` 后又按用户要求将其正文合并回 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`，后者同时作为执行计划、项目进度总表和客户汇报主入口。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
@@ -134,7 +134,7 @@
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
 - 围绕 `ratio_3p0_replay_3p0` 与 `ratio_2p0_replay_3p0` 做 RADCIL 多种子确认，并记录 Overall/Old/New/Forgetting 的折中。
 - 将 IGCD-minimal 纳入 strict baseline 表，但正式主前端继续优先使用 MV-ACC 或稳定 Deep-HDBSCAN。
-- 后续每完成关键 Slurm job、阶段报告或客户可汇报结论时，同步更新 `PROJECT_PROGRESS_REPORT.md`。
+- 后续每完成关键 Slurm job、阶段报告或客户可汇报结论时，同步更新 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 的当前状态、关键结果、风险和下一步行动清单。
 - 后续 WiSig 短实验优先使用 MV-ACC 或稳定 Deep-HDBSCAN 前端；SimGCD-style 保留为学习式发现 baseline，不作为阶段 1 主前端。
 - 在 WiSig 单种子短实验前，基于 `tools/stage0_strict_loader_audit.py` 的输出确认后续实验入口统一使用可移植数据路径。
 - 明确 ManyRx 当前正式入口：恢复受维护的 runner，或同步修改 `experiments/README_MAIN_EXPERIMENTS.md`，避免引用不存在的脚本。
@@ -164,7 +164,7 @@
 ## Architecture Decisions
 
 - RecallLoom 使用隐藏存储模式和 `zh-CN` 工作区语言，由 helper 管理并通过 `.git/info/exclude` 排除；禁止手工修改 `.recallloom/config.json`、`.recallloom/state.json` 及其他托管状态标记。
-- `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 是新一轮方法实施的唯一计划来源；偏离算法、协议、标签边界、baseline 或验收标准前必须先更新计划并说明原因。
+- `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 是新一轮方法实施、项目进度跟踪和客户汇报的唯一主入口；偏离算法、协议、标签边界、baseline、验收标准或客户可汇报结论前必须先更新计划并说明原因。
 - 原 MV-ACC、CF-LCG、HDBSCAN 和原型注册链路完整保留为 baseline，但不再约束新主方法结构；新主方法可重新设计深度表征、未知检测、类别发现、可靠伪标签和真实网络增量训练，经典特征仅用于旧方法对照与消融。
 - 正式实验必须包含固定旧前端配新后端、新前端配原型注册和完整新方法三组组合，分离类别发现与增量后端的贡献，并补充至少 1–2 个可公平复现的近年 SOTA 对照。
 - 主实验优先 WiSig 10+10×3 和 ADS-B 90+10×3；LoRa25 默认 10+5×3，ManyTx/ManyRx 沿用现有协议作为补充验证。

@@ -1,15 +1,43 @@
-# OpenSet Incremental SEI 实施计划
+# OpenSet Incremental SEI 实施计划与项目进度总表
 
 - 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成 WiSig 表征、后端、发现前端短实验、IGCD strict 最小入口、RADCIL 后端二阶验证、ratio/weight 细化矩阵和真实 WiSig IGCD 前端对比，下一步做 RADCIL 多种子确认并锁定主前端/后端组合
 - 版本：1.1
-- 日期：2026-07-26
+- 创建日期：2026-07-26
+- 最近更新：2026-07-27
 - 预计周期：3–4 周；前 5–7 天完成方案筛选和可运行初版
+- 用途：本文件同时作为项目执行计划、进度总表和客户汇报主入口；原 `PROJECT_PROGRESS_REPORT.md` 仅保留跳转说明，避免两份正文分叉。
 
 ## 1. 项目目标
 
 在现有射频设备识别代码基础上，实现真正的开集类别增量学习：模型遇到训练阶段未见过的新设备时，先完成未知检测和聚类，再用可靠伪标签重新训练网络，使模型获得新类别识别能力，同时尽量保持旧类别识别能力。
 
 本次保留现有数据加载、严格划分、评估和可视化能力，但新主方法不再受原有 MV-ACC、CF-LCG、HDBSCAN 或原型注册结构约束。可以重新设计深度表征、未知检测、聚类/类别发现、可靠伪标签和网络增量学习链路；原有完整方法只作为可复现 baseline 保留。新主方法暂称 RADCIL（Reliability-Aware Domain-Consistent Incremental Learning）。
+
+## 1.1 当前总体状态
+
+| 模块 | 当前状态 | 说明 |
+| --- | --- | --- |
+| 数据与环境 | 已完成阶段 0 | WiSig、ADS-B、ManyTx、ManyRx 大数据哈希和结构已校验；WiSig/ADS-B strict loader 审计已通过 |
+| WiSig 阶段 1 | 已完成多轮短实验 | 已比较表征、发现前端、后端消融、RADCIL ratio/weight 和 IGCD strict baseline |
+| ADS-B | 数据与 strict loader 已通过 | 后续进入阶段 4，重点是长序列表征和发现前端 |
+| LoRa | 数据来源已确认 | 使用 LoRa RFFP Dataset - Different Days Indoor Scenario，后续按需下载或切分必要子集 |
+| ManyTx/ManyRx | 作为补充实验 | 完整压缩包已收到并校验结构，后续按补充实验需要展开 |
+| 项目记忆与交接 | 已维护 | `AGENTS.md`、`PROJECT_HANDOFF.md`、RecallLoom rolling summary 均已同步最新状态 |
+
+## 1.2 面向客户的阶段性结论
+
+可以稳定汇报：
+- 数据、服务器环境和 WiSig/ADS-B 严格协议已经打通，主实验基础可靠。
+- 已经复盘并验证客户提到的可靠伪标签、回放和蒸馏问题；当前证据显示不能简单把这些组件组合成新方法贡献。
+- WiSig 当前发现前端质量较高，MV-ACC 仍强；阶段 1 最大瓶颈转为网络增量后的旧类遗忘。
+- RADCIL 后端细化已经取得阶段性提升，R3 Overall 从上一轮锚点 0.5589 提升到 0.5772，遗忘率最低组合达到 0.3000。
+- SimGCD-style 和 IGCD-minimal 都已按 strict 协议接入真实 WiSig 特征，但结果弱于 MV-ACC，因此会作为 baseline 和边界分析，而不是包装成主方法。
+
+需要谨慎表述：
+- 当前 WiSig 后端结论仍是单种子短实验，还不能作为最终正式结果。
+- IGCD-minimal 是最小严格适配，不是完整 IGCD 论文复现。
+- ADS-B 主方法尚未正式迁移，需要后续阶段解决长序列表征和发现质量。
+- LoRa 完整数据尚未下载或切分，但不阻塞 WiSig/ADS-B 主线。
 
 ## 2. 已锁定的实施原则
 
@@ -25,13 +53,13 @@
 
 ## 3. 数据与增量协议
 
-| 数据集 | 优先级 | 默认协议 | 数据状态 |
+| 数据集 | 优先级 | 默认协议 | 当前进展 |
 | --- | --- | --- | --- |
-| WiSig | 主实验 | 初始 10 类，3 个增量轮次，每轮 10 类，最终 40 类 | 根目录完整 PKL 已有 |
-| ADS-B | 主实验 | 初始 90 类，剩余 30 类分 3 轮，每轮 10 类 | `数据集/ADS-B.rar` 已包含所需 NPY |
-| LoRa25 | 跨体制验证 | 初始 10 类，3 个增量轮次，每轮 5 类，最终 25 类 | 使用 Comprehensive LoRa RF Datasets for Device Fingerprinting Using Deep Learning 中的 LoRa RFFP Dataset - Different Days Indoor Scenario；当前有紧凑版，完整数据较大，后续可只下载/切分 Setup 1 子集 |
-| ManyTx | 补充实验 | 沿用现有 10 类初始、3 轮增量协议 | 完整 PKL 压缩包已收到 |
-| ManyRx | 补充实验 | 严格沿用现有 `manyrx_protocol_manifest.json` 的 4 类初始、3 轮固定跨接收机协议 | 完整 PKL 和紧凑版均已有 |
+| WiSig | 主实验 | 初始 10 类，3 个增量轮次，每轮 10 类，最终 40 类 | 根目录完整 PKL 已有；阶段 0 审计通过；阶段 1 短实验已完成 |
+| ADS-B | 主实验 | 初始 90 类，剩余 30 类分 3 轮，每轮 10 类 | `数据集/ADS-B.rar` 已包含所需 NPY；已在 Slurm 解压并通过 strict loader 审计 |
+| LoRa25 / LoRa RFFP | 跨体制验证 | 初始 10 类，3 个增量轮次，每轮 5 类，最终 25 类 | 来源确认为 Comprehensive LoRa RF Datasets for Device Fingerprinting Using Deep Learning 中的 LoRa RFFP Dataset - Different Days Indoor Scenario；当前有紧凑版，完整数据较大，后续可只下载或切分 Setup 1 子集 |
+| ManyTx | 补充实验 | 沿用现有 10 类初始、3 轮增量协议 | 完整 PKL 压缩包已收到并校验结构，按需展开 |
+| ManyRx | 补充实验 | 严格沿用现有 `manyrx_protocol_manifest.json` 的 4 类初始、3 轮固定跨接收机协议 | 完整 PKL 和紧凑版均已有；正式 runner 需后续恢复或文档修正 |
 
 所有数据集均保持训练、验证、发现/注册和最终评估隔离。WiSig 主协议继续采用整体 60% 初始训练、10% 验证、30% 最终评估；其他数据集优先复用各自 strict loader 的隔离协议，并输出独立完整性审计。
 
@@ -155,6 +183,12 @@
 - [x] 运行真实 WiSig IGCD strict 前端对比 Job `44422704`；结果见 `results/stage1/STAGE1_WISIG_IGCD_FRONTEND_COMPARE_REPORT.md`，IGCD-minimal 可作为 strict baseline，但不替代 MV-ACC。
 - [ ] 根据验证集结果锁定新主方法前端与 RADCIL 后端组合，不使用未知轮次评估真值。
 
+当前阶段 1 判断：
+- WiSig 的发现前端不是当前最大瓶颈，MV-ACC 仍强于 SimGCD-style 和 IGCD-minimal。
+- R3 主要风险来自旧类遗忘，重点应放在 RADCIL 后端的旧类 batch 配比和 replay 强度。
+- KD 与 feature distill 当前没有显示稳定收益，暂不进入主矩阵。
+- 下一步应对 `ratio_3p0_replay_3p0` 和 `ratio_2p0_replay_3p0` 做多种子确认。
+
 ### 阶段 2：共享框架与 WiSig 初版，3–4 天
 
 - [ ] 提取共享的深度表征、未知发现、可靠伪标签和 RADCIL 后端模块。
@@ -201,6 +235,55 @@
 8. 输出完整指标、t-SNE、baseline、消融和复现脚本，不只报告单个最佳种子。
 9. LoRa 至少跑通相同算法链路并给出完整结果；如果效果未达到主数据集水平，应作为跨体制局限分析，不使用真值调参掩盖问题。
 
+## 8.1 当前关键结果
+
+### WiSig 发现前端
+
+| 方法 | R3 簇数 | R3 NMI | R3 ARI | R3 Purity | R3 Hungarian Acc |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Deep-HDBSCAN | 11 | 0.8974 | 0.8251 | 0.9007 | 0.8348 |
+| MV-ACC | 10 | 0.9253 | 0.8745 | 0.9319 | 0.9319 |
+| SimGCD-style | 10 | 0.8938 | 0.8034 | 0.8705 | 0.8338 |
+| IGCD-minimal | 10 | 0.8938 | 0.8034 | 0.8705 | 0.8338 |
+
+判断：MV-ACC 仍是当前最强 WiSig 前端。SimGCD-style 和 IGCD-minimal 均可作为严格适配 baseline，但暂不作为主前端。
+
+### WiSig RADCIL 后端
+
+| 变体 | R3 Overall | R3 Old | R3 New | Forgetting | Macro F1 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `ratio_3p0_replay_3p0` | 0.5772 | 0.4993 | 0.8111 | 0.3322 | 0.5223 |
+| `ratio_2p0_replay_3p0` | 0.5767 | 0.5041 | 0.7944 | 0.3000 | 0.5164 |
+| `ratio_2p0_replay_2p5` | 0.5708 | 0.4870 | 0.8222 | 0.3211 | 0.5096 |
+| `balanced_old_new_batch` / `ratio_2p0_replay_2p0` | 0.5589 | 0.4689 | 0.8289 | 0.3611 | 0.4971 |
+| `replay_x2_confirm` | 0.5103 | 0.4204 | 0.7800 | 0.4611 | 0.4520 |
+
+判断：RADCIL 细化后端已比上一轮 `balanced_old_new_batch` 进一步提升。当前应围绕 Overall 最优和 Forgetting 最优两个候选做多种子确认。
+
+## 8.2 当前风险与应对
+
+| 风险 | 影响 | 当前应对 |
+| --- | --- | --- |
+| RADCIL 当前结果仍是单种子 | 可能存在随机种子波动 | 下一步运行两个候选后端的多种子确认 |
+| IGCD-minimal 不是完整复现 | 客户或论文审稿可能质疑 SOTA 公平性 | 明确标注为 minimal strict adaptation，必要时后续补齐更完整适配 |
+| ADS-B 历史闭集和发现质量偏弱 | 主实验第二数据集可能拖慢 | 阶段 4 优先处理 ADS-B 长序列表征 |
+| ManyRx 正式 runner 缺失 | 补充实验入口不清晰 | 后续恢复 runner 或修正文档引用 |
+| Slurm 端保留多份大数据分片 | 占用存储 | 未经确认不删除，后续只做保留策略建议 |
+
+## 8.3 下一步行动清单
+
+短期优先级：
+1. 准备并运行 RADCIL `ratio_3p0_replay_3p0` 与 `ratio_2p0_replay_3p0` 的多种子 Slurm 矩阵。
+2. 根据多种子结果锁定 WiSig 主后端。
+3. 将 IGCD-minimal 和 SimGCD-style 放入 strict baseline 表，并明确适配级别。
+4. 抽取共享模块，准备阶段 2 WiSig 单种子完整主流程。
+
+中期优先级：
+1. 完成 WiSig 3 种子正式实验。
+2. 迁移到 ADS-B 并解决长序列表征瓶颈。
+3. 构建 LoRa Different Days Indoor Scenario 子集协议。
+4. 恢复或修正 ManyRx 补充实验入口。
+
 ## 9. 代码与变更控制
 
 - 旧 MV-ACC、CF-LCG 和 strict 实验保留，作为复现和 baseline，不直接覆盖其默认行为。
@@ -218,3 +301,25 @@
 - Baseline、消融、指标 CSV、模型、回放记忆和 t-SNE 图。
 - 中文论文“方法”和“实验”章节草稿。
 - 简洁的本地运行与复现说明。
+- 客户汇报版总结和技术细节版报告。
+
+## 11. 产物索引
+
+关键计划与交接：
+- `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
+- `PROJECT_HANDOFF.md`
+- `AGENTS.md`
+
+阶段 0：
+- `results/stage0/`
+- `tools/stage0_env_data_check.py`
+- `tools/stage0_strict_loader_audit.py`
+
+阶段 1：
+- `STAGE1_METHOD_REVIEW.md`
+- `results/stage1/STAGE1_WISIG_SHORT_REPORT.md`
+- `results/stage1/STAGE1_BACKEND_ABLATION_REPORT.md`
+- `results/stage1/STAGE1_WISIG_FRONTEND_COMPARE_REPORT.md`
+- `results/stage1/STAGE1_RADCIL_BACKEND_MATRIX_REPORT.md`
+- `results/stage1/STAGE1_RADCIL_RATIO_WEIGHT_REPORT.md`
+- `results/stage1/STAGE1_WISIG_IGCD_FRONTEND_COMPARE_REPORT.md`
