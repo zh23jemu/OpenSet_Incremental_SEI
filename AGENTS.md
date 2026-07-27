@@ -85,6 +85,8 @@
 - Slurm Job `44422380` 已完成 RADCIL 后端二阶矩阵并同步结果；`results/stage1/STAGE1_RADCIL_BACKEND_MATRIX_REPORT.md` 显示 `balanced_old_new_batch` 当前最佳，R3 Overall 0.5589、Old 0.4689、New 0.8289、Forgetting 0.3611。
 - 阶段 1 已新增 RADCIL ratio/weight 细化矩阵和 Slurm 入口：`tools/stage1_radcil_ratio_weight_matrix.py`、`results/stage1/stage1_radcil_ratio_weight_matrix.json`、`slurm/stage1_wisig_radcil_ratio_weight_matrix.sbatch`。
 - 阶段 1 已新增真实 WiSig frozen embeddings 上的 IGCD strict 前端对比入口：`tools/stage1_wisig_igcd_frontend_compare.py` 与 `slurm/stage1_wisig_igcd_frontend_compare.sbatch`。
+- Slurm Job `44422703` 已完成 RADCIL ratio/weight 细化矩阵；`results/stage1/STAGE1_RADCIL_RATIO_WEIGHT_REPORT.md` 显示 `ratio_3p0_replay_3p0` 当前 R3 Overall 最优，`ratio_2p0_replay_3p0` 遗忘率最低且 Overall 几乎持平。
+- Slurm Job `44422704` 已完成真实 WiSig frozen embeddings 上的 IGCD strict 前端对比；`results/stage1/STAGE1_WISIG_IGCD_FRONTEND_COMPARE_REPORT.md` 显示 IGCD-minimal 可作为 strict baseline，但仍弱于 MV-ACC。
 
 ## Recent Changes
 
@@ -110,6 +112,7 @@
 - 2026-07-27：更新 WiSig strict CIL 训练入口，新增 RADCIL 二阶后端参数，并刷新 `tools/stage1_radcil_backend_matrix.py`、`results/stage1/stage1_radcil_backend_matrix.json` 和 `slurm/stage1_wisig_radcil_backend_matrix.sbatch`；本地 `py_compile` 通过，端到端需 Slurm 环境验证。
 - 2026-07-27：提交并完成 Slurm Job `44422380`，同步 7 个 WiSig RADCIL 后端二阶变体结果，新增 `results/stage1/STAGE1_RADCIL_BACKEND_MATRIX_REPORT.md`；当前结论支持围绕旧/新 batch 配比继续细化，而非优先叠加 KD 或 feature distill。
 - 2026-07-27：新增 RADCIL old:new ratio / replay weight 细化矩阵脚本和 Slurm 入口，并新增真实 WiSig frozen embeddings 上的 IGCD strict 前端对比脚本和 Slurm 入口；本地 `py_compile` 通过。
+- 2026-07-27：提交并完成 Slurm Job `44422703` 与 `44422704`，同步 RADCIL ratio/weight 细化矩阵和 IGCD WiSig 前端对比原始结果，并新增两份阶段报告。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
@@ -127,8 +130,8 @@
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
-- 提交并运行 Slurm RADCIL ratio/weight 细化矩阵。
-- 提交并运行 Slurm IGCD strict 真实 WiSig 前端对比。
+- 围绕 `ratio_3p0_replay_3p0` 与 `ratio_2p0_replay_3p0` 做 RADCIL 多种子确认，并记录 Overall/Old/New/Forgetting 的折中。
+- 将 IGCD-minimal 纳入 strict baseline 表，但正式主前端继续优先使用 MV-ACC 或稳定 Deep-HDBSCAN。
 - 后续 WiSig 短实验优先使用 MV-ACC 或稳定 Deep-HDBSCAN 前端；SimGCD-style 保留为学习式发现 baseline，不作为阶段 1 主前端。
 - 在 WiSig 单种子短实验前，基于 `tools/stage0_strict_loader_audit.py` 的输出确认后续实验入口统一使用可移植数据路径。
 - 明确 ManyRx 当前正式入口：恢复受维护的 runner，或同步修改 `experiments/README_MAIN_EXPERIMENTS.md`，避免引用不存在的脚本。
@@ -145,7 +148,8 @@
 - Slurm `.venv` 当前安装的是 2026-07-26 可用的较新依赖组合，尚未通过旧版端到端实验验证；如出现兼容问题，应基于成功环境生成锁文件后做最小范围降级。
 - ADS-B 已在 Slurm 解压并通过 strict loader 审计；ManyTx/ManyRx 完整 ZIP 结构有效但未解压，后续仅在补充实验需要时按需展开，不作为阶段 1 阻塞风险。
 - SimGCD-style 最小适配器在 WiSig frozen embeddings 上弱于 MV-ACC；学习式发现头直接迁移到 RF 特征的收益不足，后续若继续改进需证明稳定超过 Deep-HDBSCAN/MV-ACC。
-- RADCIL 二阶参数已通过 Slurm Job `44422380` 端到端短验证；但结果仍是单种子短实验，需要进一步细化矩阵和多种子确认。
+- RADCIL ratio/weight 细化矩阵已通过 Slurm Job `44422703` 端到端短验证；但结论仍是单种子，需要对 `ratio_3p0_replay_3p0` 与 `ratio_2p0_replay_3p0` 做多种子确认。
+- IGCD-minimal 已接入真实 WiSig frozen embeddings 并完成 Job `44422704`，但当前仍是 minimal strict adaptation，不是完整 IGCD 论文复现。
 - `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`。
 - 部分 ADS-B 结果清单和报告保存了开发者机器绝对数据路径，虽未发现认证令牌，但跨机器复现需要显式覆盖数据根目录。
 - 实验脚本体量较大且 WiSig/ManyTx 多版本之间存在明显重复，当前不做无关重构；后续修改须谨慎同步公共逻辑。

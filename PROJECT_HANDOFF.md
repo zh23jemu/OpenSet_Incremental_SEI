@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-27
-- 当前阶段：实施计划 1.1，阶段 1 已完成既有后端复盘、SOTA 初筛、WiSig 表征短实验、后端消融、SimGCD 式发现头最小适配、真实 WiSig frozen embeddings 前端对比、IGCD strict 最小入口和 RADCIL 后端二阶 Slurm 验证，下一步细化 old:new batch 后端并接入真实 WiSig IGCD
+- 当前阶段：实施计划 1.1，阶段 1 已完成既有后端复盘、SOTA 初筛、WiSig 表征短实验、后端消融、SimGCD 式发现头最小适配、真实 WiSig frozen embeddings 前端对比、IGCD strict 最小入口、RADCIL 后端二阶验证、ratio/weight 细化矩阵和真实 WiSig IGCD 前端对比，下一步做 RADCIL 多种子确认并锁定主前端/后端组合
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -57,6 +57,8 @@ GitHub Release `datasets-2026-07-26` 已包含 WiSig、ADS-B、ManyRx 和 ManyTx
 - Slurm Job `44422380` 已完成 RADCIL 后端二阶矩阵，结果已同步；新增 `results/stage1/STAGE1_RADCIL_BACKEND_MATRIX_REPORT.md`。当前最佳折中为 `balanced_old_new_batch`，R3 Overall 0.5589、Old 0.4689、New 0.8289、Forgetting 0.3611；KD 与 feature distill 变体仍未带来收益。
 - 新增 `tools/stage1_radcil_ratio_weight_matrix.py`、`results/stage1/stage1_radcil_ratio_weight_matrix.json` 和 `slurm/stage1_wisig_radcil_ratio_weight_matrix.sbatch`：围绕 `balanced_old_new_batch` 生成 old:new ratio 1.5/2.0/3.0 与 replay weight 2.0/2.5/3.0 的细化矩阵。
 - 新增 `tools/stage1_wisig_igcd_frontend_compare.py` 和 `slurm/stage1_wisig_igcd_frontend_compare.sbatch`：将 IGCD strict 最小入口接入真实 WiSig frozen embeddings，并与 Deep-HDBSCAN/MV-ACC 做同轮次前端对比。
+- Slurm Job `44422703` 已完成 RADCIL ratio/weight 细化矩阵，结果已同步；新增 `results/stage1/STAGE1_RADCIL_RATIO_WEIGHT_REPORT.md`。当前 `ratio_3p0_replay_3p0` R3 Overall 0.5772 最优，`ratio_2p0_replay_3p0` 遗忘率 0.3000 最低且 Overall 0.5767 几乎持平。
+- Slurm Job `44422704` 已完成真实 WiSig IGCD strict 前端对比，结果已同步；新增 `results/stage1/STAGE1_WISIG_IGCD_FRONTEND_COMPARE_REPORT.md`。IGCD-minimal 三轮 coverage 为 1.0 且无真值/评估泄漏，但整体仍弱于 MV-ACC。
 - `requirements.txt` 已补充 pandas、hdbscan、umap-learn。
 - 新增 `tools/stage0_env_data_check.py`：检查依赖、CUDA、GPU 张量计算、大数据哈希、ZIP 结构、紧凑 NPZ 和 ADS-B 解压状态。
 - 新增 `slurm/stage0_env_data_check.sbatch`：使用 `gpuHz`、`shortjobs`、1 张 GPU 运行阶段 0 检查。
@@ -102,7 +104,7 @@ Strict loader 审计：
 - ManyTx、ManyRx 完整数据尚未按补充实验需要解压；这是按需展开项，主实验阶段不应因此延迟 WiSig/ADS-B 阶段 1。
 - 可移植数据路径模板和审计入口已建立；部分旧脚本仍包含开发者绝对路径，后续新入口必须继续使用命令行参数或配置覆盖。
 - 当前 Slurm `.venv` 使用较新依赖版本，尚未通过旧主实验端到端验证；出现兼容问题时应先记录错误，再做最小范围版本调整。
-- 阶段 1 已完成文档级复盘、SOTA 初筛、WiSig CE/SupCon 表征短实验、后端消融、SimGCD/IGCD 适配契约、Python 接口骨架、SimGCD 式最小适配器、WiSig 前端对比、IGCD strict 最小入口和 RADCIL 后端二阶 Slurm 验证；R3 旧类遗忘的当前证据指向旧类 batch 配比与 replay 强度不足，KD/feature distill 暂未显示正收益。
+- 阶段 1 已完成文档级复盘、SOTA 初筛、WiSig CE/SupCon 表征短实验、后端消融、SimGCD/IGCD 适配契约、Python 接口骨架、SimGCD 式最小适配器、WiSig 前端对比、IGCD strict 最小入口、RADCIL 后端二阶验证、ratio/weight 细化矩阵和真实 WiSig IGCD 前端对比；R3 旧类遗忘的当前证据指向旧类 batch 配比与 replay 强度不足，KD/feature distill 暂未显示正收益。
 - SimGCD-style 已验证为可运行学习式发现 baseline，但真实 WiSig 前端质量低于 MV-ACC；阶段 1 短期主线应保留 MV-ACC 或稳定 Deep-HDBSCAN 前端，避免把弱前端误锁为新主方法。
 - Slurm 端同时保留 ManyTx 的 6 个分片和合并 ZIP，存在约 2.63 GB 重复占用；未取得明确清理指令前不要删除。
 - 阶段 0 两个 Slurm job 的 JSON/stdout/stderr 已同步回本地；后续不要再把本地缺失误判为实验未运行。
@@ -110,8 +112,8 @@ Strict loader 审计：
 
 ## 7. 下一步执行顺序
 
-1. 提交并运行 Slurm RADCIL ratio/weight 细化矩阵。
-2. 提交并运行 Slurm IGCD strict 真实 WiSig 前端对比。
+1. 围绕 `ratio_3p0_replay_3p0` 与 `ratio_2p0_replay_3p0` 做 RADCIL 多种子确认。
+2. 将 IGCD-minimal 纳入 strict baseline 表，标注为 minimal strict adaptation，不写成完整论文复现。
 3. 后续 WiSig 短实验优先使用 MV-ACC 或稳定 Deep-HDBSCAN 前端，SimGCD-style 只作为学习式发现 baseline。
 4. 根据后端消融结论更新新主方法组合实验，避免把默认可靠伪标签、回放和 KD 简单包装为贡献。
 5. 设计新主方法入口时统一使用 `configs/data_paths.example.json` 的路径结构或等价命令行参数，避免写入开发者绝对路径。
