@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划与项目进度总表
 
-- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成方法筛选和 RADCIL 后端多种子确认；阶段 2 已跑通 WiSig 单种子完整三轮主流程；阶段 3 已准备 WiSig 正式三种子主实验入口，下一步提交 Slurm 并汇总均值/标准差
+- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成方法筛选和 RADCIL 后端多种子确认；阶段 2 已跑通 WiSig 单种子完整三轮主流程；阶段 3 已完成 WiSig 正式三种子主实验，下一步补齐同协议 baseline/消融并准备 ADS-B 迁移
 - 版本：1.1
 - 创建日期：2026-07-26
 - 最近更新：2026-07-27
@@ -205,7 +205,7 @@
 ### 阶段 3：WiSig 正式实验，3–4 天
 
 - [x] 准备 WiSig 正式三种子主实验计划、汇总报告脚本和 Slurm 入口：`tools/stage3_wisig_main_multiseed_plan.py`、`tools/stage3_wisig_main_multiseed_report.py`、`results/stage3/stage3_wisig_main_multiseed_plan.json`、`slurm/stage3_wisig_main_multiseed.sbatch`。
-- [ ] 运行 WiSig seed 7/13/31 正式主流程，生成 `results/stage3/STAGE3_WISIG_MAIN_MULTISEED_REPORT_<jobid>.md`。
+- [x] 运行 WiSig seed 7/13/31 正式主流程 Job `44440345`，生成 `results/stage3/STAGE3_WISIG_MAIN_MULTISEED_REPORT_44440345.md`；R3 Overall `0.6088±0.0415`、Old `0.5516±0.0453`、New `0.7804±0.0461`、Forgetting `0.2285±0.0948`。
 - [ ] 完成核心 baseline、增量 baseline 和必做消融。
 - [ ] 完成 3 个正式随机种子。
 - [ ] 输出聚类、整体准确率、新类准确率、旧类准确率和遗忘指标。
@@ -283,11 +283,19 @@
 
 判断：阶段 2 首个 WiSig 主流程已跑通完整 10+10x3 协议，相比阶段 1 seed7 短训练同后端的 R3 Overall 0.5767、Old 0.5041、Forgetting 0.3000 有明显改善。该结果仍是单种子，不能替代阶段 3 正式三种子均值和标准差。
 
+### WiSig 阶段 3 正式三种子主流程
+
+| 配置 | Seeds | R3 Overall 均值 | R3 Overall 标准差 | R3 Old 均值 | R3 Old 标准差 | R3 New 均值 | R3 New 标准差 | Forgetting 均值 | Forgetting 标准差 | Macro F1 均值 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| MV-ACC + `ratio_2p0_replay_3p0` | 7/13/31 | 0.6088 | 0.0415 | 0.5516 | 0.0453 | 0.7804 | 0.0461 | 0.2285 | 0.0948 | 0.5710 |
+
+判断：WiSig 正式三种子主结果已补齐，Seed 13 仍是最难样本，R3 Overall 0.5608、Forgetting 0.3278；三种子平均遗忘为 0.2285，低于阶段 1 主候选短实验均值 0.3119。该结果可进入客户进度汇报，后续需补齐同协议 baseline/消融表，避免只报告主方法。
+
 ## 8.2 当前风险与应对
 
 | 风险                  | 影响                    | 当前应对                                         |
 | ------------------- | --------------------- | -------------------------------------------- |
-| RADCIL 正式结果尚未多种子确认  | 阶段 3 入口已准备，但还没有 seed 7/13/31 运行指标 | 提交 `slurm/stage3_wisig_main_multiseed.sbatch` 并同步正式三种子报告 |
+| WiSig 主方法仍缺同协议 baseline/消融表 | 当前已有正式三种子主结果，但缺少完整对照支撑 | 补齐核心 baseline、增量 baseline 和 high-replay 对照的同协议汇总 |
 | IGCD-minimal 不是完整复现 | 客户或论文审稿可能质疑 SOTA 公平性  | 明确标注为 minimal strict adaptation，必要时后续补齐更完整适配 |
 | ADS-B 历史闭集和发现质量偏弱   | 主实验第二数据集可能拖慢          | 阶段 4 优先处理 ADS-B 长序列表征                        |
 | ManyRx 正式 runner 缺失 | 补充实验入口不清晰             | 后续恢复 runner 或修正文档引用                          |
@@ -297,10 +305,9 @@
 
 短期优先级：
 
-1. 提交阶段 3 WiSig 正式三种子 Slurm job。
-2. 同步 `results/stage3/wisig_main_ratio_2p0_replay_3p0_seed{7,13,31}_<jobid>` 与正式三种子报告。
-3. 将 IGCD-minimal 和 SimGCD-style 放入 strict baseline 表，并明确适配级别。
-4. 保留 `ratio_3p0_replay_3p0` 作为 high-replay 后端对照。
+1. 为 WiSig 正式结果补齐核心 baseline、增量 baseline 和 high-replay 后端对照汇总。
+2. 将 IGCD-minimal 和 SimGCD-style 放入 strict baseline 表，并明确适配级别。
+3. 准备 ADS-B 阶段 4 主流程入口，先复用阶段 0 strict loader 审计和 ADS-B 长序列表征设置。
 
 中期优先级：
 

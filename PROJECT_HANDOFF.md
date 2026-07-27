@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-27
-- 当前阶段：实施计划 1.1，阶段 1 已完成方法筛选和 RADCIL 后端多种子确认；阶段 2 已跑通 WiSig 单种子完整三轮主流程；阶段 3 已准备 WiSig 正式三种子主实验入口
+- 当前阶段：实施计划 1.1，阶段 1 已完成方法筛选和 RADCIL 后端多种子确认；阶段 2 已跑通 WiSig 单种子完整三轮主流程；阶段 3 已完成 WiSig 正式三种子主实验
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -108,6 +108,7 @@ Strict loader 审计：
 - 阶段 2 已新增 `utils/radcil_config.py`、`tools/stage2_wisig_main_plan.py`、`tools/stage2_wisig_main_report.py` 和 `slurm/stage2_wisig_main_single_seed.sbatch`，首个 WiSig 主组合固定为 MV-ACC 前端 + `ratio_2p0_replay_3p0` 后端，计划 JSON 为 `results/stage2/stage2_wisig_main_single_seed_plan.json`。
 - Slurm Job `44433946` 已完成阶段 2 WiSig 单种子完整三轮主流程；报告为 `results/stage2/STAGE2_WISIG_MAIN_SINGLE_SEED_REPORT_44433946.md`，R3 Overall 0.6328、Old 0.5874、New 0.7689、Forgetting 0.1389、Macro F1 0.5918。
 - 阶段 3 已新增 `tools/stage3_wisig_main_multiseed_plan.py`、`tools/stage3_wisig_main_multiseed_report.py` 和 `slurm/stage3_wisig_main_multiseed.sbatch`，用于固定 MV-ACC + `ratio_2p0_replay_3p0` 跑 seed 7/13/31 并汇总均值/标准差。
+- Slurm Job `44440345` 已完成阶段 3 WiSig 正式三种子主实验；报告为 `results/stage3/STAGE3_WISIG_MAIN_MULTISEED_REPORT_44440345.md`，R3 Overall `0.6088±0.0415`、Old `0.5516±0.0453`、New `0.7804±0.0461`、Forgetting `0.2285±0.0948`。
 - SimGCD-style 已验证为可运行学习式发现 baseline，但真实 WiSig 前端质量低于 MV-ACC；阶段 1 短期主线应保留 MV-ACC 或稳定 Deep-HDBSCAN 前端，避免把弱前端误锁为新主方法。
 - Slurm 端同时保留 ManyTx 的 6 个分片和合并 ZIP，存在约 2.63 GB 重复占用；未取得明确清理指令前不要删除。
 - 阶段 0 两个 Slurm job 的 JSON/stdout/stderr 已同步回本地；后续不要再把本地缺失误判为实验未运行。
@@ -115,10 +116,9 @@ Strict loader 审计：
 
 ## 7. 下一步执行顺序
 
-1. 提交并跟踪 `slurm/stage3_wisig_main_multiseed.sbatch`。
-2. 同步 `results/stage3/` 正式三种子运行目录和 `STAGE3_WISIG_MAIN_MULTISEED_REPORT_<jobid>.md`，特别关注 Seed 13 是否仍明显困难。
-3. 将 IGCD-minimal 纳入 strict baseline 表，标注为 minimal strict adaptation，不写成完整论文复现。
-4. 后续 WiSig 正式实验报告必须包含多种子均值和标准差，Seed 13 明显更难，不能只报告 seed 7。
+1. 为 WiSig 正式结果补齐核心 baseline、增量 baseline 和 high-replay 后端对照汇总，避免只报告主方法。
+2. 将 IGCD-minimal 纳入 strict baseline 表，标注为 minimal strict adaptation，不写成完整论文复现。
+3. 准备 ADS-B 阶段 4 主流程入口，先复用阶段 0 strict loader 审计和 ADS-B 长序列表征设置。
 5. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 6. 若后续补充实验需要 LoRa 完整数据或 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压或下载；LoRa 可优先只取 Different Days Indoor Scenario 的必要子集，不删除 Release 分片或原压缩包。
 

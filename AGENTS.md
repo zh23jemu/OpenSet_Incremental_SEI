@@ -91,7 +91,7 @@
 - Slurm Job `44426767` 已完成 RADCIL 多种子确认；`results/stage1/STAGE1_RADCIL_MULTISEED_REPORT.md` 显示两个候选 Overall 基本持平，`ratio_2p0_replay_3p0` 遗忘更低、Old Acc 更高，适合作为阶段 2 主后端候选。
 - 已将客户汇报用进度内容合并进 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`；用户已手动删除 `PROJECT_PROGRESS_REPORT.md`，后续只维护实施计划这一份主文档。
 - Slurm Job `44433946` 已完成阶段 2 WiSig 单种子完整三轮主流程；`results/stage2/STAGE2_WISIG_MAIN_SINGLE_SEED_REPORT_44433946.md` 显示 R3 Overall 0.6328、Old 0.5874、New 0.7689、Forgetting 0.1389、Macro F1 0.5918，阶段 2 主流程已跑通。
-- 阶段 3 已新增 WiSig 正式三种子主实验计划、汇总报告脚本和 Slurm 入口，固定 MV-ACC + `ratio_2p0_replay_3p0` 跑 seed 7/13/31，并输出均值/标准差报告。
+- Slurm Job `44440345` 已完成阶段 3 WiSig 正式三种子主实验；`results/stage3/STAGE3_WISIG_MAIN_MULTISEED_REPORT_44440345.md` 显示 R3 Overall `0.6088±0.0415`、Old `0.5516±0.0453`、New `0.7804±0.0461`、Forgetting `0.2285±0.0948`、Macro F1 `0.5710±0.0420`。
 
 ## Recent Changes
 
@@ -124,6 +124,7 @@
 - 2026-07-27：新增 `utils/radcil_config.py`、`tools/stage2_wisig_main_plan.py`、`tools/stage2_wisig_main_report.py`、`results/stage2/stage2_wisig_main_single_seed_plan.json` 和 `slurm/stage2_wisig_main_single_seed.sbatch`，将阶段 2 首个 WiSig 主组合固化为 MV-ACC 前端 + `ratio_2p0_replay_3p0` 后端；本地 `py_compile`、计划生成和报告 smoke test 通过。
 - 2026-07-27：提交并完成 Slurm Job `44433946`，同步阶段 2 WiSig 单种子主流程结果、checkpoint、回放记忆、报告和 Slurm 日志；R3 Overall 0.6328，Forgetting 0.1389。
 - 2026-07-27：新增 `tools/stage3_wisig_main_multiseed_plan.py`、`tools/stage3_wisig_main_multiseed_report.py`、`results/stage3/stage3_wisig_main_multiseed_plan.json` 和 `slurm/stage3_wisig_main_multiseed.sbatch`，准备阶段 3 WiSig 正式三种子主实验；本地 `py_compile`、计划生成和聚合 smoke test 通过。
+- 2026-07-27：提交并完成 Slurm Job `44440345`，同步 WiSig seed 7/13/31 正式主流程结果、checkpoint、回放记忆、三种子汇总报告和 Slurm 日志；Seed 13 仍明显更难，但正式三种子主结果已可汇报。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
@@ -141,7 +142,7 @@
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
-- 提交并跟踪阶段 3 WiSig 正式三种子 Slurm job，完成后同步 `results/stage3/` 运行目录和正式三种子报告。
+- 为 WiSig 正式结果补齐核心 baseline、增量 baseline 和 high-replay 后端对照汇总；随后准备 ADS-B 阶段 4 主流程入口。
 - 将 IGCD-minimal 纳入 strict baseline 表，但正式主前端继续优先使用 MV-ACC 或稳定 Deep-HDBSCAN。
 - 后续每完成关键 Slurm job、阶段报告或客户可汇报结论时，同步更新 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 的当前状态、关键结果、风险和下一步行动清单。
 - 后续 WiSig 短实验优先使用 MV-ACC 或稳定 Deep-HDBSCAN 前端；SimGCD-style 保留为学习式发现 baseline，不作为阶段 1 主前端。
@@ -160,7 +161,7 @@
 - Slurm `.venv` 当前安装的是 2026-07-26 可用的较新依赖组合，尚未通过旧版端到端实验验证；如出现兼容问题，应基于成功环境生成锁文件后做最小范围降级。
 - ADS-B 已在 Slurm 解压并通过 strict loader 审计；ManyTx/ManyRx 完整 ZIP 结构有效但未解压，后续仅在补充实验需要时按需展开，不作为阶段 1 阻塞风险。
 - SimGCD-style 最小适配器在 WiSig frozen embeddings 上弱于 MV-ACC；学习式发现头直接迁移到 RF 特征的收益不足，后续若继续改进需证明稳定超过 Deep-HDBSCAN/MV-ACC。
-- 阶段 3 WiSig 正式三种子入口已准备，但当前尚未取得 seed 7/13/31 完整运行指标。
+- WiSig 主方法已有正式三种子结果，但同协议 baseline/消融汇总尚未补齐；不能只用主方法表作为最终论文/客户结论。
 - IGCD-minimal 已接入真实 WiSig frozen embeddings 并完成 Job `44422704`，但当前仍是 minimal strict adaptation，不是完整 IGCD 论文复现。
 - `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`。
 - 部分 ADS-B 结果清单和报告保存了开发者机器绝对数据路径，虽未发现认证令牌，但跨机器复现需要显式覆盖数据根目录。
