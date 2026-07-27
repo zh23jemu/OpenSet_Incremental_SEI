@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划与项目进度总表
 
-- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成 WiSig 表征、后端、发现前端短实验、IGCD strict 最小入口、RADCIL 后端二阶验证、ratio/weight 细化矩阵、真实 WiSig IGCD 前端对比和 RADCIL 多种子确认，下一步进入阶段 2 共享框架与 WiSig 单种子主流程
+- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成 WiSig 表征、后端、发现前端短实验、IGCD strict 最小入口、RADCIL 后端二阶验证、ratio/weight 细化矩阵、真实 WiSig IGCD 前端对比和 RADCIL 多种子确认；阶段 2 已准备 WiSig 单种子主流程配置、审计计划和 Slurm 入口，等待运行结果
 - 版本：1.1
 - 创建日期：2026-07-26
 - 最近更新：2026-07-27
@@ -196,8 +196,9 @@
 
 ### 阶段 2：共享框架与 WiSig 初版，3–4 天
 
-- [ ] 提取共享的深度表征、未知发现、可靠伪标签和 RADCIL 后端模块，并优先接入 `ratio_2p0_replay_3p0`。
-- [ ] 保留旧实验入口默认行为，新增明确的新方法入口或开关。
+- [x] 新增阶段 2 RADCIL 主配置模块 `utils/radcil_config.py`，将 MV-ACC 前端和 `ratio_2p0_replay_3p0` 后端锁定为首个 WiSig 主组合。
+- [x] 新增阶段 2 WiSig 单种子主流程计划和 Slurm 入口：`tools/stage2_wisig_main_plan.py`、`results/stage2/stage2_wisig_main_single_seed_plan.json`、`slurm/stage2_wisig_main_single_seed.sbatch`。
+- [x] 保留旧实验入口默认行为，阶段 2 通过独立配置和 Slurm 入口接入新方法参数。
 - [ ] 在 WiSig 单种子短训练上跑通 3 轮完整流程。
 - [ ] 验证模型参数在每轮确实更新，新类别进入分类头和回放记忆。
 
@@ -276,7 +277,7 @@
 
 | 风险                  | 影响                   | 当前应对                                         |
 | ------------------- | -------------------- | -------------------------------------------- |
-| RADCIL 正式结果尚未进入完整主流程 | 阶段 1 已锁定候选，但还不是最终正式结果 | 阶段 2 用 `ratio_2p0_replay_3p0` 跑通 WiSig 单种子完整主流程 |
+| RADCIL 正式结果尚未进入完整主流程 | 阶段 2 入口已准备，但还没有 Slurm 运行指标 | 提交 `slurm/stage2_wisig_main_single_seed.sbatch`，同步并汇总 R1/R2/R3 指标 |
 | IGCD-minimal 不是完整复现 | 客户或论文审稿可能质疑 SOTA 公平性 | 明确标注为 minimal strict adaptation，必要时后续补齐更完整适配 |
 | ADS-B 历史闭集和发现质量偏弱   | 主实验第二数据集可能拖慢         | 阶段 4 优先处理 ADS-B 长序列表征                        |
 | ManyRx 正式 runner 缺失 | 补充实验入口不清晰            | 后续恢复 runner 或修正文档引用                          |
@@ -286,8 +287,8 @@
 
 短期优先级：
 
-1. 抽取共享模块，准备阶段 2 WiSig 单种子完整主流程。
-2. 以前端 MV-ACC 或稳定 Deep-HDBSCAN、后端 `ratio_2p0_replay_3p0` 作为首个主组合。
+1. 提交阶段 2 WiSig 单种子主流程 Slurm job，并同步 `results/stage2/wisig_main_ratio_2p0_replay_3p0_seed7_<jobid>`。
+2. 根据阶段 2 单种子结果生成 `results/stage2/STAGE2_WISIG_MAIN_SINGLE_SEED_REPORT.md`。
 3. 将 IGCD-minimal 和 SimGCD-style 放入 strict baseline 表，并明确适配级别。
 4. 保留 `ratio_3p0_replay_3p0` 作为 high-replay 后端对照。
 
