@@ -1,0 +1,16 @@
+
+[Train-v2] classes=10 | train=1800 | validation=300 | validation_fraction=0.142857
+[Train-v2] RF augmentation=False | SupCon projection=64
+Epoch 001/008 | train_loss=1.8781 | train_acc=0.6099 | val_acc=0.4967 | val_loss=1.4837
+Epoch 002/008 | train_loss=0.7918 | train_acc=0.9068 | val_acc=0.9633 | val_loss=0.3311
+Epoch 003/008 | train_loss=0.4474 | train_acc=0.9955 | val_acc=0.8700 | val_loss=0.2671
+Epoch 004/008 | train_loss=0.3568 | train_acc=0.9989 | val_acc=1.0000 | val_loss=0.0144
+Epoch 005/008 | train_loss=0.3389 | train_acc=0.9994 | val_acc=1.0000 | val_loss=0.0078
+Epoch 006/008 | train_loss=0.3331 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0032
+Epoch 007/008 | train_loss=0.3299 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0019
+Epoch 008/008 | train_loss=0.3293 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0016
+[Train-v2] best_val_acc=1.0000 | best_val_loss=0.0016 | saved=results/stage1/wisig_igcd_frontend_compare_44422704/closedset_rx2_day1_10known.pth
+[Load] checkpoint=results/stage1/wisig_igcd_frontend_compare_44422704/closedset_rx2_day1_10known.pth
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+阶段 1 WiSig IGCD 前端对比 CSV：results/stage1/wisig_igcd_frontend_compare_44422704/frontend_comparison.csv
+阶段 1 WiSig IGCD 前端对比 JSON：results/stage1/wisig_igcd_frontend_compare_44422704/frontend_comparison_summary.json
