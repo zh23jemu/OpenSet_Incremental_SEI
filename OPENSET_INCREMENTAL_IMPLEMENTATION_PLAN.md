@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划与项目进度总表
 
-- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成方法筛选和 RADCIL 后端多种子确认；阶段 2 已跑通 WiSig 单种子完整三轮主流程；阶段 3 已完成 WiSig 正式三种子主实验和 high-replay 同协议消融，下一步补齐核心/增量 baseline 并准备 ADS-B 迁移
+- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成方法筛选和 RADCIL 后端多种子确认；阶段 2 已跑通 WiSig 单种子完整三轮主流程；阶段 3 已完成 WiSig 正式三种子主实验、high-replay 同协议消融、CIL baseline 三种子表、strict baseline 总表和强后端/混合后端消融计划；阶段 4 ADS-B 单种子主流程入口已准备
 - 版本：1.1
 - 创建日期：2026-07-26
 - 最近更新：2026-07-27
@@ -19,7 +19,7 @@
 | ------------- | --------------------- | --------------------------------------------------------------------- |
 | 数据与环境         | 已完成阶段 0               | WiSig、ADS-B、ManyTx、ManyRx 大数据哈希和结构已校验；WiSig/ADS-B strict loader 审计已通过 |
 | WiSig 阶段 1    | 已完成多轮短实验              | 已比较表征、发现前端、后端消融、RADCIL ratio/weight、多种子确认和 IGCD strict baseline       |
-| ADS-B         | 数据与 strict loader 已通过 | 后续进入阶段 4，重点是长序列表征和发现前端                                                |
+| ADS-B         | 阶段 4 入口已准备 | 已生成 legacy strict 单种子计划和 Slurm 入口；正式多种子前仍需迁移 long-sequence backbone 与 RADCIL old:new ratio |
 | LoRa          | 数据来源已确认               | 使用 LoRa RFFP Dataset - Different Days Indoor Scenario，后续按需下载或切分必要子集   |
 | ManyTx/ManyRx | 作为补充实验                | 完整压缩包已收到并校验结构，后续按补充实验需要展开                                             |
 | 项目记忆与交接       | 已维护                   | `AGENTS.md`、`PROJECT_HANDOFF.md`、RecallLoom rolling summary 均已同步最新状态  |
@@ -207,13 +207,16 @@
 - [x] 准备 WiSig 正式三种子主实验计划、汇总报告脚本和 Slurm 入口：`tools/stage3_wisig_main_multiseed_plan.py`、`tools/stage3_wisig_main_multiseed_report.py`、`results/stage3/stage3_wisig_main_multiseed_plan.json`、`slurm/stage3_wisig_main_multiseed.sbatch`。
 - [x] 运行 WiSig seed 7/13/31 正式主流程 Job `44440345`，生成 `results/stage3/STAGE3_WISIG_MAIN_MULTISEED_REPORT_44440345.md`；R3 Overall `0.6088±0.0415`、Old `0.5516±0.0453`、New `0.7804±0.0461`、Forgetting `0.2285±0.0948`。
 - [x] 运行 WiSig high-replay 同协议正式消融 Job `44448692`，生成 `results/stage3/STAGE3_WISIG_HIGH_REPLAY_MULTISEED_REPORT_44448692.md` 和 `results/stage3/STAGE3_WISIG_RADCIL_ABLATION_COMPARE.md`；R3 Overall `0.6030±0.0473`、Old `0.5421±0.0456`、New `0.7856±0.0571`、Forgetting `0.2344±0.0899`。
-- [ ] 完成核心 baseline、增量 baseline 和必做消融。
+- [x] 运行 WiSig CIL baseline 三种子正式实验 Job `44453416`，生成 `results/stage3/STAGE3_WISIG_CIL_BASELINES_MULTISEED_REPORT_44453416.md`；共享 MV-ACC 伪标签后端 baseline 中 DOI-style R3 Overall `0.6579±0.0350`，端到端 Deep-HDBSCAN + DOI-style R3 Overall `0.5314±0.0417`。
+- [x] 完成 IGCD-minimal/SimGCD-style strict baseline 总表标注：`tools/stage3_wisig_strict_baseline_table.py`、`results/stage3/STAGE3_WISIG_STRICT_BASELINE_TABLE.md` 和 `results/stage3/stage3_wisig_strict_baseline_table.json`。
+- [x] 设计 DOI/iCaRL/TPCIL 强后端吸收或混合消融：`tools/stage3_wisig_strong_backend_plan.py`、`results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md` 和 `results/stage3/stage3_wisig_strong_backend_plan.json`。
 - [ ] 完成 3 个正式随机种子。
 - [ ] 输出聚类、整体准确率、新类准确率、旧类准确率和遗忘指标。
 - [ ] 输出每轮 t-SNE 聚类图。
 
 ### 阶段 4：ADS-B 主实验，3–5 天
 
+- [x] 准备 ADS-B legacy strict 单种子主流程计划和 Slurm 入口：`tools/stage4_adsb_main_plan.py`、`results/stage4/stage4_adsb_main_single_seed_plan.json`、`slurm/stage4_adsb_main_single_seed.sbatch`。
 - [ ] 使用 ADS-B 长序列骨干接入同一发现和增量后端。
 - [ ] 先验证 90 类初始闭集表征，再运行 3 轮增量。
 - [ ] 完成核心 baseline、必要消融和 3 个正式随机种子。
@@ -300,13 +303,32 @@
 
 判断：high-replay 对照与主方法完全同协议，只将 old:new batch ratio 从 2.0 提高到 3.0。对比 `results/stage3/STAGE3_WISIG_RADCIL_ABLATION_COMPARE.md` 显示 high-replay 的 R3 New Acc 高 `+0.0052`，但 Overall 低 `-0.0058`、Old 低 `-0.0095`、Forgetting 高 `+0.0059`、Macro F1 低 `-0.0033`。因此阶段 3 正式消融支持继续选择 `ratio_2p0_replay_3p0` 作为主后端，`ratio_3p0_replay_3p0` 保留为 high-replay 对照。
 
+### WiSig 阶段 3 CIL baseline 正式三种子表
+
+| 对照类型 | 最佳 baseline | Seeds | R3 Overall | R3 Old | R3 New | R3 Forgetting | R3 Macro F1 | 与 MV-ACC-CIL R3 Overall 差值 |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 共享 MV-ACC 伪标签后端 baseline | `DOI-style` | 7/13/31 | 0.6579 | 0.5721 | 0.9152 | 0.1959 | 0.6262 | +0.0491 |
+| Deep-HDBSCAN 端到端 baseline | `Deep-HDBSCAN + DOI-style` | 7/13/31 | 0.5314 | 0.4664 | 0.7263 | 0.2593 | 0.5058 | -0.0774 |
+
+判断：正式 baseline 表已补齐。端到端比较中 MV-ACC-CIL 仍优于 Deep-HDBSCAN + 常规 CIL baseline，说明当前 MV-ACC 前端和整体链路有效；但在共享 MV-ACC 伪标签的后端隔离比较中，DOI-style、iCaRL 和 TPCIL-style 均超过当前网络式 RADCIL 后端。这说明当前后端不是后端上限，后续应把 DOI-style/iCaRL/TPCIL-style 作为强后端候选或混合后端消融，不能只强调当前网络后端。
+
+### WiSig 阶段 3 strict baseline 总表与强后端计划
+
+已生成 `results/stage3/STAGE3_WISIG_STRICT_BASELINE_TABLE.md`，将 Deep-HDBSCAN、MV-ACC、SimGCD-style 和 IGCD-minimal 放入同一 strict 前端 baseline 表，并明确 SimGCD-style 是 learning-style adaptation、IGCD-minimal 是 minimal strict adaptation，二者均不能写成完整论文复现。表中 MV-ACC 三轮平均 NMI `0.9164`、ARI `0.8642`、Hungarian Acc `0.9010`，仍是正式主前端。
+
+已生成 `results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md`，把共享发现后端风险收束为三组 reference 和三组待实现 hybrid 候选：`RADCIL + DOI-style`、`RADCIL + iCaRL`、`RADCIL + TPCIL-style`。执行门槛为先跑 seed 7 短验证，若 R3 Overall 不低于当前 MV-ACC-CIL 且 Old Acc 或 Forgetting 接近强后端 reference，再扩展三种子。
+
+### ADS-B 阶段 4 legacy strict 单种子入口
+
+已生成 `results/stage4/stage4_adsb_main_single_seed_plan.json` 和 `slurm/stage4_adsb_main_single_seed.sbatch`。该入口用于先确认 ADS-B strict 90+10×3 在 Slurm 当前 `.venv` 和解压路径下能完整跑完；它仍是 legacy strict 入口，不等同于 WiSig 阶段 3 主后端已完整迁移。正式 ADS-B 多种子前，需要把 `ADS-BLongClosedSet` 或等价长序列表征合入 `experiments/exp_adsb_mvacc_cil_strict.py`，并补齐 WiSig RADCIL 的 old:new batch ratio 参数。
+
 ## 8.2 当前风险与应对
 
 | 风险                  | 影响                    | 当前应对                                         |
 | ------------------- | --------------------- | -------------------------------------------- |
-| WiSig 主方法仍缺完整同协议 baseline 表 | 当前已有正式三种子主结果和 high-replay 正式消融，但核心/增量 baseline 仍不完整 | 继续补齐核心 baseline、增量 baseline，并把 IGCD-minimal/SimGCD-style 标注为 strict/minimal 适配对照 |
+| WiSig 共享发现后端 baseline 强于当前网络后端 | DOI-style/iCaRL/TPCIL-style 在共享 MV-ACC 伪标签下 R3 Overall 高于 MV-ACC-CIL，说明当前网络后端不是上限 | 已生成 strict baseline 总表和强后端/混合后端计划；下一步实现 hybrid RADCIL 候选并先跑 seed 7 短验证 |
 | IGCD-minimal 不是完整复现 | 客户或论文审稿可能质疑 SOTA 公平性  | 明确标注为 minimal strict adaptation，必要时后续补齐更完整适配 |
-| ADS-B 历史闭集和发现质量偏弱   | 主实验第二数据集可能拖慢          | 阶段 4 优先处理 ADS-B 长序列表征                        |
+| ADS-B 历史闭集和发现质量偏弱   | 主实验第二数据集可能拖慢          | 已准备 legacy strict 单种子入口；正式多种子前优先迁移 ADS-B 长序列骨干和 RADCIL old:new ratio |
 | ManyRx 正式 runner 缺失 | 补充实验入口不清晰             | 后续恢复 runner 或修正文档引用                          |
 | Slurm 端保留多份大数据分片    | 占用存储                  | 未经确认不删除，后续只做保留策略建议                           |
 
@@ -314,9 +336,9 @@
 
 短期优先级：
 
-1. 为 WiSig 正式结果补齐核心 baseline 和增量 baseline；high-replay 后端正式消融已完成。
-2. 将 IGCD-minimal 和 SimGCD-style 放入 strict baseline 表，并明确适配级别。
-3. 准备 ADS-B 阶段 4 主流程入口，先复用阶段 0 strict loader 审计和 ADS-B 长序列表征设置。
+1. 实现 `hybrid_radcil_doi_memory_alignment` 或最小 late-fusion 版本，并先跑 WiSig seed 7 短验证。
+2. 将 ADS-B long-sequence backbone 和 WiSig RADCIL old:new batch ratio 参数迁入 `experiments/exp_adsb_mvacc_cil_strict.py`。
+3. 提交 ADS-B 阶段 4 legacy strict 单种子 Slurm smoke test，确认路径、依赖、协议产物和三轮评估完整。
 
 中期优先级：
 
