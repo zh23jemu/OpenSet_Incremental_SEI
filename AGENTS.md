@@ -87,7 +87,7 @@
 - 阶段 1 已新增真实 WiSig frozen embeddings 上的 IGCD strict 前端对比入口：`tools/stage1_wisig_igcd_frontend_compare.py` 与 `slurm/stage1_wisig_igcd_frontend_compare.sbatch`。
 - Slurm Job `44422703` 已完成 RADCIL ratio/weight 细化矩阵；`results/stage1/STAGE1_RADCIL_RATIO_WEIGHT_REPORT.md` 显示 `ratio_3p0_replay_3p0` 当前 R3 Overall 最优，`ratio_2p0_replay_3p0` 遗忘率最低且 Overall 几乎持平。
 - Slurm Job `44422704` 已完成真实 WiSig frozen embeddings 上的 IGCD strict 前端对比；`results/stage1/STAGE1_WISIG_IGCD_FRONTEND_COMPARE_REPORT.md` 显示 IGCD-minimal 可作为 strict baseline，但仍弱于 MV-ACC。
-- 已将客户汇报用进度内容合并进 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`；`PROJECT_PROGRESS_REPORT.md` 仅保留跳转说明，避免两份正文分叉。
+- 已将客户汇报用进度内容合并进 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`；用户已手动删除 `PROJECT_PROGRESS_REPORT.md`，后续只维护实施计划这一份主文档。
 
 ## Recent Changes
 
@@ -114,7 +114,7 @@
 - 2026-07-27：提交并完成 Slurm Job `44422380`，同步 7 个 WiSig RADCIL 后端二阶变体结果，新增 `results/stage1/STAGE1_RADCIL_BACKEND_MATRIX_REPORT.md`；当前结论支持围绕旧/新 batch 配比继续细化，而非优先叠加 KD 或 feature distill。
 - 2026-07-27：新增 RADCIL old:new ratio / replay weight 细化矩阵脚本和 Slurm 入口，并新增真实 WiSig frozen embeddings 上的 IGCD strict 前端对比脚本和 Slurm 入口；本地 `py_compile` 通过。
 - 2026-07-27：提交并完成 Slurm Job `44422703` 与 `44422704`，同步 RADCIL ratio/weight 细化矩阵和 IGCD WiSig 前端对比原始结果，并新增两份阶段报告。
-- 2026-07-27：新增 `PROJECT_PROGRESS_REPORT.md` 后又按用户要求将其正文合并回 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`，后者同时作为执行计划、项目进度总表和客户汇报主入口。
+- 2026-07-27：新增 `PROJECT_PROGRESS_REPORT.md` 后又按用户要求将其正文合并回 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`；用户随后手动删除独立进度报告，实施计划同时作为执行计划、项目进度总表和客户汇报主入口。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
