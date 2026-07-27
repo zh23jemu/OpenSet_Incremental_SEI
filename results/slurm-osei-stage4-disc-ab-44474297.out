@@ -1,0 +1,227 @@
+ADS-B 发现消融计划：results/stage4/stage4_adsb_discovery_ablation_plan_44474297.json
+运行 ADS-B 发现消融：baseline_locked
+
+========== Strict ADS-B 90-Known 3-Round MV-ACC-CIL Experiment ==========
+Dataset root: 数据集/ADS-B/Dataset
+Save dir: results/stage4/adsb_discovery_ablation_seed31_baseline_locked_44474297
+Device: cuda
+Backbone: adsb_long
+Protocol: 90 known + 10 novel R1 + 10 novel R2 + 10 novel R3
+Receiver setting: receiver metadata unavailable; treated as one acquisition domain
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Base-class protocol: 60% backbone train + 10% validation + 30% stored-order held-out evaluation
+Novel-class protocol: provided train file for discovery/training; provided test file for evaluation only
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.03, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Base development 70%: (14388, 2, 4800), classes=90, labels=0-89
+Initial eval 30%:     (6178, 2, 4800), classes=90, labels=0-89, day=ADS-B known-pool held-out partition
+Novel R1 train file: (3081, 2, 4800), classes=10, labels=90-99, source=ADS-B novel pool group 0-9
+After R1 held-out eval: (7178, 2, 4800), classes=100, labels=0-99, source=ADS-B held-out evaluation after round 1
+Novel R2 train file: (2911, 2, 4800), classes=10, labels=100-109, source=ADS-B novel pool group 10-19
+After R2 held-out eval: (8178, 2, 4800), classes=110, labels=0-109, source=ADS-B held-out evaluation after round 2
+Novel R3 train file: (2448, 2, 4800), classes=10, labels=110-119, source=ADS-B novel pool group 20-29
+After R3 held-out eval: (9178, 2, 4800), classes=120, labels=0-119, source=ADS-B held-out evaluation after round 3
+[Integrity] exact IQ overlap across every development/test boundary: 0
+[Load] checkpoint=results/stage4/adsb_main_long_radcil_seed31_44467424/closedset_adsb_90known_strict.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.112 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc  Label-free Silhouette  Cluster Size Min  Cluster Size Median  Cluster Size Max  Cluster Size CV  Raw HDBSCAN Confidence Mean      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples
+MV-ACC-CIL discovery    R1         Day 2                10     3081                     10                   10                    0                    1.0        10    0.0 0.867646 0.799199 0.893216       0.893216               0.334866               107                325.5               560         0.468237                     0.760988 fixed_alpha    0.7                 12                        0                  0.74                        186               186                  1.0               0.772630              0.598092                False                     0                        1.75                                  0.3                             NaN                      92                     0.03                  5
+MV-ACC-CIL discovery    R2         Day 3                10     2911                     11                   10                    0                    1.0        10    0.0 0.790875 0.646846 0.807283       0.763999               0.287921               128                261.5               682         0.501662                     0.679889 fixed_alpha    0.7                 12                        1                  0.74                        703               703                  1.0               0.721524              0.492432                False                     0                        1.75                                  0.3                             NaN                      87                     0.03                  5
+MV-ACC-CIL discovery    R3         Day 4                10     2448                      7                    7                    3                    0.7         7    0.0 0.753925 0.530997 0.666258       0.615196               0.264564               127                388.0               633         0.461598                     0.866629 fixed_alpha    0.7                 12                        0                  0.74                        132               132                  1.0               0.660086              0.549955                False                     0                        1.75                                  0.3                             NaN                      73                     0.03                  5
+Saved: results/stage4/adsb_discovery_ablation_seed31_baseline_locked_44474297/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage                                Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.605212 0.605212      NaN           0.605212         0.000000  0.553677
+MV-ACC-CIL After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  10                10          7178     0.555587 0.512625    0.821           0.512625         0.092587  0.523013
+MV-ACC-CIL After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  10                10          8178     0.540352 0.519783    0.688           0.497734         0.107478  0.513895
+MV-ACC-CIL After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   7                 7          9178     0.488669 0.495598    0.432           0.481386         0.123826  0.469821
+Saved: results/stage4/adsb_discovery_ablation_seed31_baseline_locked_44474297/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1             10                                10                    0         1.000000 0.893216 0.867646 0.799199       0.893216     0.555587 0.821000         0.092587
+MV-ACC-CIL    R2             10                                10                    0         1.000000 0.807283 0.790875 0.646846       0.763999     0.540352 0.688000         0.107478
+MV-ACC-CIL    R3              7                                 7                    3         1.000000 0.666258 0.753925 0.530997       0.615196     0.488669 0.432000         0.123826
+Saved: results/stage4/adsb_discovery_ablation_seed31_baseline_locked_44474297/per_round_summary_results.csv
+运行 ADS-B 发现消融：density_ratio_0p02
+
+========== Strict ADS-B 90-Known 3-Round MV-ACC-CIL Experiment ==========
+Dataset root: 数据集/ADS-B/Dataset
+Save dir: results/stage4/adsb_discovery_ablation_seed31_density_ratio_0p02_44474297
+Device: cuda
+Backbone: adsb_long
+Protocol: 90 known + 10 novel R1 + 10 novel R2 + 10 novel R3
+Receiver setting: receiver metadata unavailable; treated as one acquisition domain
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Base-class protocol: 60% backbone train + 10% validation + 30% stored-order held-out evaluation
+Novel-class protocol: provided train file for discovery/training; provided test file for evaluation only
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.02, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Base development 70%: (14388, 2, 4800), classes=90, labels=0-89
+Initial eval 30%:     (6178, 2, 4800), classes=90, labels=0-89, day=ADS-B known-pool held-out partition
+Novel R1 train file: (3081, 2, 4800), classes=10, labels=90-99, source=ADS-B novel pool group 0-9
+After R1 held-out eval: (7178, 2, 4800), classes=100, labels=0-99, source=ADS-B held-out evaluation after round 1
+Novel R2 train file: (2911, 2, 4800), classes=10, labels=100-109, source=ADS-B novel pool group 10-19
+After R2 held-out eval: (8178, 2, 4800), classes=110, labels=0-109, source=ADS-B held-out evaluation after round 2
+Novel R3 train file: (2448, 2, 4800), classes=10, labels=110-119, source=ADS-B novel pool group 20-29
+After R3 held-out eval: (9178, 2, 4800), classes=120, labels=0-119, source=ADS-B held-out evaluation after round 3
+[Integrity] exact IQ overlap across every development/test boundary: 0
+[Load] checkpoint=results/stage4/adsb_main_long_radcil_seed31_44467424/closedset_adsb_90known_strict.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.112 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc  Label-free Silhouette  Cluster Size Min  Cluster Size Median  Cluster Size Max  Cluster Size CV  Raw HDBSCAN Confidence Mean      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples
+MV-ACC-CIL discovery    R1         Day 2                10     3081                     12                   15                    5                    1.5        15    0.0 0.809406 0.639509 0.914314       0.685816               0.451528               119                184.0               398         0.410769                     0.766698 fixed_alpha    0.7                 12                        0                  0.74                        258               258                  1.0               0.785786              0.595411                False                     3                        1.75                                  0.3                        0.408082                      62                     0.02                  5
+MV-ACC-CIL discovery    R2         Day 3                10     2911                     15                   14                    4                    1.4        14    0.0 0.801260 0.618021 0.850910       0.653727               0.390197                92                185.0               590         0.562377                     0.714917 fixed_alpha    0.7                 12                        2                  0.74                        565               565                  1.0               0.790954              0.584635                False                     1                        1.75                                  0.3                        0.350553                      58                     0.02                  5
+MV-ACC-CIL discovery    R3         Day 4                10     2448                     10                   10                    0                    1.0        10    0.0 0.821447 0.683212 0.830065       0.734886               0.352677               117                266.0               394         0.389449                     0.800147 fixed_alpha    0.7                 12                        1                  0.74                        235               235                  1.0               0.783887              0.559970                False                     1                        1.75                                  0.3                        0.330181                      49                     0.02                  5
+Saved: results/stage4/adsb_discovery_ablation_seed31_density_ratio_0p02_44474297/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage                                Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.605212 0.605212      NaN           0.605212         0.000000  0.553677
+MV-ACC-CIL After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  15                15          7178     0.545277 0.526384    0.662           0.526384         0.078828  0.525813
+MV-ACC-CIL After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  14                14          8178     0.508682 0.497771    0.587           0.492069         0.113143  0.503312
+MV-ACC-CIL After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                  10                10          9178     0.493681 0.482514    0.585           0.480576         0.124636  0.482727
+Saved: results/stage4/adsb_discovery_ablation_seed31_density_ratio_0p02_44474297/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1             15                                15                    5         1.000000 0.914314 0.809406 0.639509       0.685816     0.545277 0.662000         0.078828
+MV-ACC-CIL    R2             14                                14                    4         1.000000 0.850910 0.801260 0.618021       0.653727     0.508682 0.587000         0.113143
+MV-ACC-CIL    R3             10                                10                    0         1.000000 0.830065 0.821447 0.683212       0.734886     0.493681 0.585000         0.124636
+Saved: results/stage4/adsb_discovery_ablation_seed31_density_ratio_0p02_44474297/per_round_summary_results.csv
+运行 ADS-B 发现消融：merge_threshold_0p86
+
+========== Strict ADS-B 90-Known 3-Round MV-ACC-CIL Experiment ==========
+Dataset root: 数据集/ADS-B/Dataset
+Save dir: results/stage4/adsb_discovery_ablation_seed31_merge_threshold_0p86_44474297
+Device: cuda
+Backbone: adsb_long
+Protocol: 90 known + 10 novel R1 + 10 novel R2 + 10 novel R3
+Receiver setting: receiver metadata unavailable; treated as one acquisition domain
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Base-class protocol: 60% backbone train + 10% validation + 30% stored-order held-out evaluation
+Novel-class protocol: provided train file for discovery/training; provided test file for evaluation only
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.03, min_samples=5, merge_th=0.86, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Base development 70%: (14388, 2, 4800), classes=90, labels=0-89
+Initial eval 30%:     (6178, 2, 4800), classes=90, labels=0-89, day=ADS-B known-pool held-out partition
+Novel R1 train file: (3081, 2, 4800), classes=10, labels=90-99, source=ADS-B novel pool group 0-9
+After R1 held-out eval: (7178, 2, 4800), classes=100, labels=0-99, source=ADS-B held-out evaluation after round 1
+Novel R2 train file: (2911, 2, 4800), classes=10, labels=100-109, source=ADS-B novel pool group 10-19
+After R2 held-out eval: (8178, 2, 4800), classes=110, labels=0-109, source=ADS-B held-out evaluation after round 2
+Novel R3 train file: (2448, 2, 4800), classes=10, labels=110-119, source=ADS-B novel pool group 20-29
+After R3 held-out eval: (9178, 2, 4800), classes=120, labels=0-119, source=ADS-B held-out evaluation after round 3
+[Integrity] exact IQ overlap across every development/test boundary: 0
+[Load] checkpoint=results/stage4/adsb_main_long_radcil_seed31_44467424/closedset_adsb_90known_strict.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.112 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc  Label-free Silhouette  Cluster Size Min  Cluster Size Median  Cluster Size Max  Cluster Size CV  Raw HDBSCAN Confidence Mean      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples
+MV-ACC-CIL discovery    R1         Day 2                10     3081                     10                   10                    0                    1.0        10    0.0 0.867646 0.799199 0.893216       0.893216               0.334866               107                325.5               560         0.468237                     0.760988 fixed_alpha    0.7                 12                        0                  0.86                        186               186                  1.0               0.772630              0.598092                False                     0                        1.75                                  0.3                             NaN                      92                     0.03                  5
+MV-ACC-CIL discovery    R2         Day 3                10     2911                     11                   11                    1                    1.1        11    0.0 0.813905 0.732224 0.870491       0.827207               0.264889               128                256.0               426         0.306105                     0.679607 fixed_alpha    0.7                 12                        0                  0.86                        705               705                  1.0               0.721841              0.492713                False                     0                        1.75                                  0.3                             NaN                      87                     0.03                  5
+MV-ACC-CIL discovery    R3         Day 4                10     2448                      8                    9                    1                    0.9         9    0.0 0.815366 0.646679 0.781454       0.683007               0.335968               124                266.0               451         0.412843                     0.912442 fixed_alpha    0.7                 12                        0                  0.86                         58                58                  1.0               0.760975              0.594318                False                     1                        1.75                                  0.3                        0.328626                      73                     0.03                  5
+Saved: results/stage4/adsb_discovery_ablation_seed31_merge_threshold_0p86_44474297/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage                                Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.605212 0.605212      NaN           0.605212         0.000000  0.553677
+MV-ACC-CIL After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  10                10          7178     0.555587 0.512625    0.821           0.512625         0.092587  0.523013
+MV-ACC-CIL After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  11                11          8178     0.553925 0.524241    0.767           0.501457         0.103755  0.526259
+MV-ACC-CIL After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   9                 9          9178     0.507845 0.505503    0.527           0.486403         0.118809  0.489985
+Saved: results/stage4/adsb_discovery_ablation_seed31_merge_threshold_0p86_44474297/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1             10                                10                    0         1.000000 0.893216 0.867646 0.799199       0.893216     0.555587 0.821000         0.092587
+MV-ACC-CIL    R2             11                                11                    1         1.000000 0.870491 0.813905 0.732224       0.827207     0.553925 0.767000         0.103755
+MV-ACC-CIL    R3              9                                 9                    1         1.000000 0.781454 0.815366 0.646679       0.683007     0.507845 0.527000         0.118809
+Saved: results/stage4/adsb_discovery_ablation_seed31_merge_threshold_0p86_44474297/per_round_summary_results.csv
+运行 ADS-B 发现消融：split_relaxed
+
+========== Strict ADS-B 90-Known 3-Round MV-ACC-CIL Experiment ==========
+Dataset root: 数据集/ADS-B/Dataset
+Save dir: results/stage4/adsb_discovery_ablation_seed31_split_relaxed_44474297
+Device: cuda
+Backbone: adsb_long
+Protocol: 90 known + 10 novel R1 + 10 novel R2 + 10 novel R3
+Receiver setting: receiver metadata unavailable; treated as one acquisition domain
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Base-class protocol: 60% backbone train + 10% validation + 30% stored-order held-out evaluation
+Novel-class protocol: provided train file for discovery/training; provided test file for evaluation only
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.03, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.5, split_sil=0.2, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Base development 70%: (14388, 2, 4800), classes=90, labels=0-89
+Initial eval 30%:     (6178, 2, 4800), classes=90, labels=0-89, day=ADS-B known-pool held-out partition
+Novel R1 train file: (3081, 2, 4800), classes=10, labels=90-99, source=ADS-B novel pool group 0-9
+After R1 held-out eval: (7178, 2, 4800), classes=100, labels=0-99, source=ADS-B held-out evaluation after round 1
+Novel R2 train file: (2911, 2, 4800), classes=10, labels=100-109, source=ADS-B novel pool group 10-19
+After R2 held-out eval: (8178, 2, 4800), classes=110, labels=0-109, source=ADS-B held-out evaluation after round 2
+Novel R3 train file: (2448, 2, 4800), classes=10, labels=110-119, source=ADS-B novel pool group 20-29
+After R3 held-out eval: (9178, 2, 4800), classes=120, labels=0-119, source=ADS-B held-out evaluation after round 3
+[Integrity] exact IQ overlap across every development/test boundary: 0
+[Load] checkpoint=results/stage4/adsb_main_long_radcil_seed31_44467424/closedset_adsb_90known_strict.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.112 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc  Label-free Silhouette  Cluster Size Min  Cluster Size Median  Cluster Size Max  Cluster Size CV  Raw HDBSCAN Confidence Mean      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples
+MV-ACC-CIL discovery    R1         Day 2                10     3081                     10                   18                    8                    1.8        18    0.0 0.788388 0.562099 0.915612       0.583252               0.442475               107                166.5               272         0.283998                     0.760988 fixed_alpha    0.7                 12                        0                  0.74                        186               186                  1.0               0.772630              0.598092                False                     8                         1.5                                  0.2                        0.354817                      92                     0.03                  5
+MV-ACC-CIL discovery    R2         Day 3                10     2911                     11                   12                    2                    1.2        12    0.0 0.795335 0.670003 0.860529       0.763655               0.271040               127                248.5               386         0.283877                     0.656513 fixed_alpha    0.7                 12                        1                  0.74                        820               820                  1.0               0.731459              0.491215                False                     2                         1.5                                  0.2                        0.290230                      87                     0.03                  5
+MV-ACC-CIL discovery    R3         Day 4                10     2448                      9                   16                    6                    1.6        16    0.0 0.768862 0.530071 0.876634       0.601716               0.403637                85                160.5               232         0.268064                     0.896467 fixed_alpha    0.7                 12                        0                  0.74                         92                92                  1.0               0.740530              0.589408                False                     7                         1.5                                  0.2                        0.346713                      73                     0.03                  5
+Saved: results/stage4/adsb_discovery_ablation_seed31_split_relaxed_44474297/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage                                Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.605212 0.605212      NaN           0.605212         0.000000  0.553677
+MV-ACC-CIL After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  18                18          7178     0.534829 0.523309    0.606           0.523309         0.081904  0.525163
+MV-ACC-CIL After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  12                12          8178     0.519076 0.493313    0.704           0.491745         0.113467  0.514841
+MV-ACC-CIL After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                  16                16          9178     0.498366 0.491318    0.556           0.484137         0.121075  0.498915
+Saved: results/stage4/adsb_discovery_ablation_seed31_split_relaxed_44474297/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1             18                                18                    8         1.000000 0.915612 0.788388 0.562099       0.583252     0.534829 0.606000         0.081904
+MV-ACC-CIL    R2             12                                12                    2         1.000000 0.860529 0.795335 0.670003       0.763655     0.519076 0.704000         0.113467
+MV-ACC-CIL    R3             16                                16                    6         1.000000 0.876634 0.768862 0.530071       0.601716     0.498366 0.556000         0.121075
+Saved: results/stage4/adsb_discovery_ablation_seed31_split_relaxed_44474297/per_round_summary_results.csv
+ADS-B 发现消融报告：results/stage4/STAGE4_ADSB_DISCOVERY_ABLATION_REPORT_44474297.md
+ADS-B 发现前端单因素消融完成：results/stage4/STAGE4_ADSB_DISCOVERY_ABLATION_REPORT_44474297.md
