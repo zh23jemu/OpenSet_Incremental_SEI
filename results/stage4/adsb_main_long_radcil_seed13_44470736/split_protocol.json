@@ -1,0 +1,13 @@
+{
+  "split_level": "base stored-order block; novel corpus-provided train/test (capture metadata unavailable)",
+  "seed": 13,
+  "base_backbone_train_samples": 12338,
+  "base_validation_samples": 2050,
+  "base_heldout_evaluation_samples": 6178,
+  "development_ratio": 0.7,
+  "frozen_before_unknown_rounds": [
+    "checkpoint",
+    "CF-LCG",
+    "MV-ACC parameters"
+  ]
+}
