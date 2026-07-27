@@ -1,0 +1,93 @@
+ADS-B 阶段 4 单种子计划：/mnt/users/xj62kv/OpenSet_Incremental_SEI/results/stage4/stage4_adsb_main_single_seed_plan_44467424.json
+运行阶段 4 ADS-B strict 单种子流程：seed=31, save_dir=results/stage4/adsb_main_long_radcil_seed31_44467424
+
+========== Strict ADS-B 90-Known 3-Round MV-ACC-CIL Experiment ==========
+Dataset root: 数据集/ADS-B/Dataset
+Save dir: results/stage4/adsb_main_long_radcil_seed31_44467424
+Device: cuda
+Backbone: adsb_long
+Protocol: 90 known + 10 novel R1 + 10 novel R2 + 10 novel R3
+Receiver setting: receiver metadata unavailable; treated as one acquisition domain
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Base-class protocol: 60% backbone train + 10% validation + 30% stored-order held-out evaluation
+Novel-class protocol: provided train file for discovery/training; provided test file for evaluation only
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Base development 70%: (14388, 2, 4800), classes=90, labels=0-89
+Initial eval 30%:     (6178, 2, 4800), classes=90, labels=0-89, day=ADS-B known-pool held-out partition
+Novel R1 train file: (3081, 2, 4800), classes=10, labels=90-99, source=ADS-B novel pool group 0-9
+After R1 held-out eval: (7178, 2, 4800), classes=100, labels=0-99, source=ADS-B held-out evaluation after round 1
+Novel R2 train file: (2911, 2, 4800), classes=10, labels=100-109, source=ADS-B novel pool group 10-19
+After R2 held-out eval: (8178, 2, 4800), classes=110, labels=0-109, source=ADS-B held-out evaluation after round 2
+Novel R3 train file: (2448, 2, 4800), classes=10, labels=110-119, source=ADS-B novel pool group 20-29
+After R3 held-out eval: (9178, 2, 4800), classes=120, labels=0-119, source=ADS-B held-out evaluation after round 3
+[Integrity] exact IQ overlap across every development/test boundary: 0
+
+[Train-v2] classes=90 | train=12338 | validation=2050 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/030 | train_loss=3.2325 | train_acc=0.2417 | val_acc=0.3624 | val_loss=2.1790
+Epoch 002/030 | train_loss=2.2516 | train_acc=0.4052 | val_acc=0.3863 | val_loss=1.9403
+Epoch 003/030 | train_loss=1.8370 | train_acc=0.4998 | val_acc=0.5137 | val_loss=1.4924
+Epoch 004/030 | train_loss=1.5768 | train_acc=0.5671 | val_acc=0.5478 | val_loss=1.3224
+Epoch 005/030 | train_loss=1.4145 | train_acc=0.6169 | val_acc=0.5746 | val_loss=1.2674
+Epoch 006/030 | train_loss=1.2847 | train_acc=0.6498 | val_acc=0.5390 | val_loss=1.3933
+Epoch 007/030 | train_loss=1.1781 | train_acc=0.6799 | val_acc=0.6341 | val_loss=1.0998
+Epoch 008/030 | train_loss=1.1014 | train_acc=0.6997 | val_acc=0.6659 | val_loss=0.9916
+Epoch 009/030 | train_loss=1.0043 | train_acc=0.7340 | val_acc=0.6683 | val_loss=0.9492
+Epoch 010/030 | train_loss=0.9693 | train_acc=0.7423 | val_acc=0.6863 | val_loss=0.9592
+Epoch 011/030 | train_loss=0.8768 | train_acc=0.7740 | val_acc=0.7122 | val_loss=0.8558
+Epoch 012/030 | train_loss=0.8357 | train_acc=0.7883 | val_acc=0.6644 | val_loss=1.0124
+Epoch 013/030 | train_loss=0.8112 | train_acc=0.7949 | val_acc=0.7166 | val_loss=0.8571
+Epoch 014/030 | train_loss=0.7361 | train_acc=0.8241 | val_acc=0.7180 | val_loss=0.8568
+Epoch 015/030 | train_loss=0.7133 | train_acc=0.8311 | val_acc=0.7054 | val_loss=0.8748
+Epoch 016/030 | train_loss=0.6583 | train_acc=0.8464 | val_acc=0.7146 | val_loss=0.8420
+Epoch 017/030 | train_loss=0.6199 | train_acc=0.8647 | val_acc=0.7161 | val_loss=0.8851
+Epoch 018/030 | train_loss=0.5938 | train_acc=0.8682 | val_acc=0.6961 | val_loss=0.9280
+Epoch 019/030 | train_loss=0.5576 | train_acc=0.8844 | val_acc=0.7151 | val_loss=0.9210
+Epoch 020/030 | train_loss=0.5077 | train_acc=0.9025 | val_acc=0.7127 | val_loss=1.0084
+Epoch 021/030 | train_loss=0.4691 | train_acc=0.9123 | val_acc=0.7132 | val_loss=0.9505
+Epoch 022/030 | train_loss=0.4406 | train_acc=0.9249 | val_acc=0.7122 | val_loss=0.9828
+Epoch 023/030 | train_loss=0.4379 | train_acc=0.9255 | val_acc=0.6849 | val_loss=1.1719
+Epoch 024/030 | train_loss=0.4178 | train_acc=0.9301 | val_acc=0.7171 | val_loss=1.0261
+Epoch 025/030 | train_loss=0.3903 | train_acc=0.9417 | val_acc=0.7244 | val_loss=1.0072
+Epoch 026/030 | train_loss=0.3466 | train_acc=0.9551 | val_acc=0.7215 | val_loss=1.0609
+Epoch 027/030 | train_loss=0.3368 | train_acc=0.9587 | val_acc=0.7400 | val_loss=1.0212
+Epoch 028/030 | train_loss=0.3197 | train_acc=0.9653 | val_acc=0.7283 | val_loss=1.0809
+Epoch 029/030 | train_loss=0.3028 | train_acc=0.9696 | val_acc=0.7141 | val_loss=1.1588
+Epoch 030/030 | train_loss=0.2975 | train_acc=0.9718 | val_acc=0.7215 | val_loss=1.1253
+[Train-v2] best_val_acc=0.7400 | best_val_loss=1.0212 | saved=results/stage4/adsb_main_long_radcil_seed31_44467424/closedset_adsb_90known_strict.pth
+[Load] checkpoint=results/stage4/adsb_main_long_radcil_seed31_44467424/closedset_adsb_90known_strict.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.112 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples
+MV-ACC-CIL discovery    R1         Day 2                10     3081                     10                   10                    0                    1.0        10    0.0 0.867646 0.799199 0.893216       0.893216 fixed_alpha    0.7                 12                        0                  0.74                        186               186                  1.0               0.772630              0.598092                False                     0                        1.75                                  0.3                             NaN                      92                     0.03                  5
+MV-ACC-CIL discovery    R2         Day 3                10     2911                     10                    9                    1                    0.9         9    0.0 0.779121 0.630739 0.763999       0.763999 fixed_alpha    0.7                 12                        1                  0.74                        610               610                  1.0               0.719438              0.498960                False                     0                        1.75                                  0.3                             NaN                      87                     0.03                  5
+MV-ACC-CIL discovery    R3         Day 4                10     2448                      8                    7                    3                    0.7         7    0.0 0.752131 0.530268 0.665850       0.614379 fixed_alpha    0.7                 12                        1                  0.74                        170               170                  1.0               0.677161              0.543907                False                     0                        1.75                                  0.3                             NaN                      73                     0.03                  5
+Saved: results/stage4/adsb_main_long_radcil_seed31_44467424/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage                                Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.605212 0.605212      NaN           0.605212         0.000000  0.553677
+MV-ACC-CIL After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  10                10          7178     0.557258 0.515215    0.817           0.515215         0.089997  0.524648
+MV-ACC-CIL After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                   9                 9          8178     0.539618 0.518668    0.690           0.496601         0.108611  0.508967
+MV-ACC-CIL After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   7                 7          9178     0.485618 0.492174    0.432           0.479443         0.125769  0.463209
+Saved: results/stage4/adsb_main_long_radcil_seed31_44467424/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1             10                                10                    0         1.000000 0.893216 0.867646 0.799199       0.893216     0.557258 0.817000         0.089997
+MV-ACC-CIL    R2              9                                 9                    1         1.000000 0.763999 0.779121 0.630739       0.763999     0.539618 0.690000         0.108611
+MV-ACC-CIL    R3              7                                 7                    3         1.000000 0.665850 0.752131 0.530268       0.614379     0.485618 0.432000         0.125769
+Saved: results/stage4/adsb_main_long_radcil_seed31_44467424/per_round_summary_results.csv
+阶段 4 ADS-B strict 单种子流程完成：/mnt/users/xj62kv/OpenSet_Incremental_SEI/results/stage4/adsb_main_long_radcil_seed31_44467424

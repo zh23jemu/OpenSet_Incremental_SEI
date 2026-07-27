@@ -1,0 +1,5 @@
+﻿left,right,left_samples,right_samples,exact_content_overlap,digest
+base_90_development,base_90_heldout_evaluation,14388,6178,0,BLAKE2b-128 over normalized float32 IQ
+novel_R1_provided_train,novel_R1_provided_test,3081,1000,0,BLAKE2b-128 over normalized float32 IQ
+novel_R2_provided_train,novel_R2_provided_test,2911,1000,0,BLAKE2b-128 over normalized float32 IQ
+novel_R3_provided_train,novel_R3_provided_test,2448,1000,0,BLAKE2b-128 over normalized float32 IQ
