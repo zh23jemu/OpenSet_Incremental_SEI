@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/mnt/users/xj62kv/OpenSet_Incremental_SEI/tools/stage1_wisig_simgcd_frontend_compare.py", line 377, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/mnt/users/xj62kv/OpenSet_Incremental_SEI/tools/stage1_wisig_simgcd_frontend_compare.py", line 315, in main
+    calibrate_mvacc_on_known_day1(train_x[val_idx], train_y[val_idx], train_z[val_idx], mvacc_args)
+  File "/mnt/users/xj62kv/OpenSet_Incremental_SEI/experiments/exp_wisig_mvacc_cil_strict.py", line 2439, in calibrate_mvacc_on_known_day1
+    for ratio in [float(x) for x in args.mvacc_calibration_ratios.split(",") if x.strip()]:
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Namespace' object has no attribute 'mvacc_calibration_ratios'
