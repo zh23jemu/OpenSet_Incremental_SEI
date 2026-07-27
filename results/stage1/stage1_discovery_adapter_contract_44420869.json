@@ -1,0 +1,70 @@
+{
+  "schema_version": "stage1_discovery_adapter_contract_v1",
+  "created_at_utc": "2026-07-27T01:44:33.860528+00:00",
+  "project_root": "/mnt/users/xj62kv/OpenSet_Incremental_SEI",
+  "shared_protocol": {
+    "primary_dataset": "WiSig RX3 strict",
+    "split": "Day1 60% train / 10% validation / 30% evaluation; each novel round uses discovery/enrollment data only for adaptation and held-out 30% only for evaluation.",
+    "known_inputs_allowed": [
+      "Day1 train IQ and known labels",
+      "Day1 validation IQ and known labels for checkpoint/model selection/calibration",
+      "Current round discovery IQ as unlabeled data",
+      "Protocol-level expected round size when already fixed before seeing unknown labels"
+    ],
+    "forbidden_inputs": [
+      "Current or future novel true labels for threshold selection, class-number selection, pseudo-label filtering, or training",
+      "Held-out evaluation IQ or labels for model selection",
+      "Posthoc Hungarian mapping except for final reporting"
+    ]
+  },
+  "adapter_interface": {
+    "fit_inputs": [
+      "known_features: float32 [N_known, D]",
+      "known_labels: int64 [N_known]",
+      "unlabeled_features: float32 [N_unlabeled, D]",
+      "validation_features: optional float32 [N_val, D]",
+      "validation_labels: optional int64 [N_val]"
+    ],
+    "fit_outputs": [
+      "adapter_state: serializable metadata and learned head parameters path",
+      "calibration: thresholds or confidence rules with source=Day1 validation or label-free criterion"
+    ],
+    "predict_outputs": [
+      "cluster_labels: int64 [N_unlabeled], dense 0..K-1 or -1 only before no-drop consolidation",
+      "confidence: float32 [N_unlabeled], label-free confidence",
+      "estimated_new_classes: int",
+      "diagnostics: JSON-safe statistics"
+    ]
+  },
+  "simgcd_minimal_adapter": {
+    "role": "learning_discovery_frontend",
+    "first_step": "Train a parametric discovery head on frozen RF/IQ embeddings using known CE plus unlabeled consistency or pseudo-cluster loss.",
+    "comparison_target": "Deep-HDBSCAN/MV-ACC discovery labels under the same frozen embeddings and same round data.",
+    "required_report_metrics": [
+      "estimated_new_classes",
+      "cluster_count_error",
+      "assignment_coverage",
+      "purity",
+      "NMI",
+      "ARI",
+      "Hungarian Acc",
+      "confidence_mean",
+      "confidence_min"
+    ],
+    "implementation_status": "contract_ready_adapter_pending"
+  },
+  "igcd_minimal_adapter": {
+    "role": "strict_candidate_baseline",
+    "first_step": "Map IGCD time-step API to project rounds R1/R2/R3 and replace image augmentations with IQ augmentations.",
+    "comparison_target": "Same 60/10/30 protocol and same initial known classes as MV-ACC-CIL.",
+    "required_report_metrics": [
+      "overall_acc",
+      "old_acc",
+      "new_acc",
+      "forgetting_rate",
+      "macro_f1",
+      "discovery_purity_if_applicable"
+    ],
+    "implementation_status": "contract_ready_adapter_pending"
+  }
+}
