@@ -142,6 +142,7 @@
 - [x] 在 WiSig 单种子短实验上比较 CE 初始骨干与 SupCon 初始表征；Job `44420671` 已完成，结果见 `results/stage1/STAGE1_WISIG_SHORT_REPORT.md`。
 - [x] 准备后端消融矩阵和 Slurm 入口：`tools/stage1_backend_ablation_plan.py` 与 `slurm/stage1_wisig_backend_ablation.sbatch`。
 - [x] 固化 SimGCD/IGCD 最小适配契约：`tools/stage1_discovery_adapter_contract.py` 与 `results/stage1/stage1_discovery_adapter_contract.json`。
+- [x] 新增发现适配器 Python 接口骨架：`utils/discovery_adapter_contract.py`，用于后续 SimGCD/IGCD 无泄漏接入。
 - [ ] 运行阶段 1 后端消融 Job，优先检查冻结/解冻策略、回放权重、KD 目标和类别头校准。
 - [ ] 比较 Deep-HDBSCAN 与 1–2 个新类别发现候选，检查聚类质量和稳定性。
 - [ ] 根据验证集结果锁定新主方法前端与 RADCIL 后端组合，不使用未知轮次评估真值。

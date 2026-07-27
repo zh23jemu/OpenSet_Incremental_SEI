@@ -76,6 +76,7 @@
 - 阶段 1 已新增 `tools/stage1_method_screen.py`、`results/stage1/stage1_method_screen.json` 和 `slurm/stage1_wisig_short_screen.sbatch`，将候选表征风险转化为可在 Slurm 运行的 CE baseline / SupCon representation WiSig 单种子短实验。
 - Slurm Job `44420671` 已完成阶段 1 WiSig CE/SupCon 表征短实验并同步结果；SupCon 改善 R1/R2 overall 与早期遗忘，但 R3 仍严重遗忘，后续应优先做 CIL 后端消融。
 - 阶段 1 已新增 `tools/stage1_backend_ablation_plan.py`、`slurm/stage1_wisig_backend_ablation.sbatch`、`tools/stage1_discovery_adapter_contract.py` 和 `results/stage1/stage1_discovery_adapter_contract.json`，将后端消融和 SimGCD/IGCD 适配边界转为可执行入口。
+- 阶段 1 已新增 `utils/discovery_adapter_contract.py`，提供学习式发现头 Python 接口骨架和输入/输出校验，供后续 SimGCD/IGCD 适配实现复用。
 
 ## Recent Changes
 
@@ -93,6 +94,7 @@
 - 2026-07-27：新增阶段 1 方法筛选脚本、JSON 报告和 WiSig 单种子 Slurm 短实验脚本；本地已用 `.venv\Scripts\python.exe` 验证脚本可运行并通过 `py_compile`。
 - 2026-07-27：提交并完成 Slurm Job `44420671`，同步 CE baseline 与 SupCon representation 两组 WiSig 短实验结果，并新增 `results/stage1/STAGE1_WISIG_SHORT_REPORT.md`。
 - 2026-07-27：新增阶段 1 后端消融矩阵生成脚本、Slurm 后端消融入口和 SimGCD/IGCD 适配契约；本地已生成 `results/stage1/stage1_backend_ablation_plan.json` 与 `results/stage1/stage1_discovery_adapter_contract.json` 并通过语法校验。
+- 2026-07-27：新增 `utils/discovery_adapter_contract.py`，定义发现适配器输入、输出、协议和校验函数；本地已通过 `py_compile`，完整导入测试需在含 numpy 的 Slurm `.venv` 中执行。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。

@@ -48,6 +48,7 @@ GitHub Release `datasets-2026-07-26` 已包含 WiSig、ADS-B、ManyRx 和 ManyTx
 - Slurm Job `44420671` 已完成阶段 1 WiSig 短实验，结果已同步回本地并生成 `results/stage1/STAGE1_WISIG_SHORT_REPORT.md`；SupCon 改善 R1/R2 overall 与早期遗忘，但 R3 仍严重遗忘。
 - 新增 `tools/stage1_backend_ablation_plan.py` 和 `slurm/stage1_wisig_backend_ablation.sbatch`：准备 KD、回放、记忆容量、head-only 和低骨干学习率后端消融矩阵。
 - 新增 `tools/stage1_discovery_adapter_contract.py` 和 `results/stage1/stage1_discovery_adapter_contract.json`：固化 SimGCD/IGCD 的无泄漏最小适配契约。
+- 新增 `utils/discovery_adapter_contract.py`：提供学习式发现头 Python 接口骨架和输入/输出校验，后续 SimGCD/IGCD 适配代码应优先复用。
 - `requirements.txt` 已补充 pandas、hdbscan、umap-learn。
 - 新增 `tools/stage0_env_data_check.py`：检查依赖、CUDA、GPU 张量计算、大数据哈希、ZIP 结构、紧凑 NPZ 和 ADS-B 解压状态。
 - 新增 `slurm/stage0_env_data_check.sbatch`：使用 `gpuHz`、`shortjobs`、1 张 GPU 运行阶段 0 检查。
@@ -93,7 +94,7 @@ Strict loader 审计：
 - ManyTx、ManyRx 完整数据尚未按补充实验需要解压；这是按需展开项，主实验阶段不应因此延迟 WiSig/ADS-B 阶段 1。
 - 可移植数据路径模板和审计入口已建立；部分旧脚本仍包含开发者绝对路径，后续新入口必须继续使用命令行参数或配置覆盖。
 - 当前 Slurm `.venv` 使用较新依赖版本，尚未通过旧主实验端到端验证；出现兼容问题时应先记录错误，再做最小范围版本调整。
-- 阶段 1 已完成文档级复盘、SOTA 初筛、WiSig CE/SupCon 表征短实验、后端消融入口准备和 SimGCD/IGCD 适配契约；R3 旧类遗忘仍需通过后端消融结果判断根因。
+- 阶段 1 已完成文档级复盘、SOTA 初筛、WiSig CE/SupCon 表征短实验、后端消融入口准备、SimGCD/IGCD 适配契约和 Python 接口骨架；R3 旧类遗忘仍需通过后端消融结果判断根因。
 - Slurm 端同时保留 ManyTx 的 6 个分片和合并 ZIP，存在约 2.63 GB 重复占用；未取得明确清理指令前不要删除。
 - 阶段 0 两个 Slurm job 的 JSON/stdout/stderr 已同步回本地；后续不要再把本地缺失误判为实验未运行。
 - RecallLoom 已通过官方 helper 路径处理初始化 receipt 缺口：先记录 recovery proposal/review，再刷新 rolling summary 和 `update_protocol.md`。结构校验、`--require-provenance --changed-only` 和 `--require-provenance --full` 均已通过；当前仍提示可升级到 0.4.8.2，但不是阻塞项。
