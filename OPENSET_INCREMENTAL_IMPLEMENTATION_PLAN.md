@@ -224,7 +224,9 @@
 - [x] 将 `ADSBLongClosedSet` 和 RADCIL old:new=2.0、replay weight=3.0 接入 strict 主入口。
 - [x] 完成 seed31 smoke Job `44467424`；初始 Acc `0.6052`，R3 Overall `0.4856`，较历史 legacy seed31 提升 `0.1583`。
 - [x] 完成正式三种子 Job `44470736`；报告为 `results/stage4/STAGE4_ADSB_MULTISEED_REPORT_44470736.md`。
-- [ ] 基于初始验证集和 discovery 训练侧诊断 R2/R3 欠聚类，不使用 held-out 评估真值调参。
+- [x] 完成 R2/R3 发现处理链路诊断；R3 初始簇为 7/6/8、最终为 7/6/7，主要损失位于 HDBSCAN 初始密度微簇形成阶段。
+- [x] 准备 seed31 单因素消融、无标签结构指标和 Slurm 入口；固定 Long-RADCIL 后端，不使用 held-out 评估真值选参。
+- [ ] 完成 seed31 发现单因素 Slurm 消融，并依据 discovery 侧结构稳定性决定是否扩展三种子。
 - [ ] 补齐 ADS-B 核心 baseline 和必要发现前端消融。
 
 ### 阶段 5：LoRa 与 WiSig 补充划分，2–4 天
@@ -330,6 +332,8 @@
 
 正式三种子 Job `44470736` 复用 seed31 并运行 seed7/13，报告为 `results/stage4/STAGE4_ADSB_MULTISEED_REPORT_44470736.md`。R3 Overall `0.4824±0.0074`、Old `0.4873±0.0079`、New `0.4427±0.0122`、Forgetting `0.1168±0.0138`、Macro F1 `0.4693±0.0100`。三种子 R3 均只发现 6–7 个簇，当前瓶颈已从骨干/后端迁移转为发现欠聚类。
 
+`results/stage4/STAGE4_ADSB_DISCOVERY_DIAGNOSIS.md` 进一步确认：R3 三种子 HDBSCAN 初始簇为 7/6/8，后处理最终为 7/6/7；自适应分裂均未触发，合并只在 seed31 额外损失 1 簇。已预注册密度比例、合并阈值和分裂条件三个 seed31 单因素变体，候选比较仅使用 discovery 侧无标签结构指标。
+
 ## 8.2 当前风险与应对
 
 | 风险                             | 影响                                                                                | 当前应对                                                                 |
@@ -344,8 +348,8 @@
 
 短期优先级：
 
-1. 对 ADS-B R2/R3 欠聚类做无泄漏诊断，优先比较冻结长序列特征下的 Deep-HDBSCAN、MV-ACC 合并关闭/收紧和过大簇分裂策略。
-2. 基于初始 90 类验证集锁定 ADS-B 发现参数，再运行单种子受控消融；不得用 R1–R3 held-out 真值选参。
+1. 提交 `slurm/stage4_adsb_discovery_ablation_seed31.sbatch`，运行预注册的密度比例、合并阈值和分裂条件单因素消融。
+2. 仅依据 discovery 侧 silhouette、HDBSCAN 置信度、簇大小 CV 与合并损失判断是否存在可扩展候选；不得用 R1–R3 held-out 真值选参。
 3. 补齐 ADS-B 同协议 baseline/消融表后，再进入 LoRa 跨体制验证。
 
 中期优先级：

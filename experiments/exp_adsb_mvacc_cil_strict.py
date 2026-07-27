@@ -417,6 +417,52 @@ def clustering_metrics(y_true, labels):
     }
 
 
+def label_free_cluster_diagnostics(features, labels, probabilities=None, seed=7):
+    """计算仅依赖 discovery 特征与聚类输出的诊断指标。
+
+    这些指标用于比较发现前端的结构稳定性，不读取真实设备标签，也不读取
+    held-out evaluation 数据。Silhouette 在样本较多时固定抽样，避免诊断本身
+    显著增加长序列实验的运行时间；簇大小统计用于识别大量碎簇或单个巨簇。
+    """
+    features = np.asarray(features)
+    labels = np.asarray(labels, dtype=np.int64)
+    valid = labels != -1
+    cluster_ids = np.unique(labels[valid])
+    sizes = np.asarray([np.sum(labels == cid) for cid in cluster_ids], dtype=np.float64)
+
+    silhouette = np.nan
+    if 1 < len(cluster_ids) < int(np.sum(valid)):
+        sample_size = min(2000, int(np.sum(valid)))
+        try:
+            silhouette = float(
+                silhouette_score(
+                    features[valid],
+                    labels[valid],
+                    sample_size=sample_size,
+                    random_state=int(seed),
+                )
+            )
+        except ValueError:
+            # 极端退化特征可能无法计算轮廓系数；保留 NaN 让报告显式暴露该风险。
+            silhouette = np.nan
+
+    confidence = np.nan
+    if probabilities is not None:
+        probabilities = np.asarray(probabilities, dtype=np.float64)
+        if probabilities.shape == labels.shape and np.any(valid):
+            confidence = float(np.nanmean(probabilities[valid]))
+
+    mean_size = float(np.mean(sizes)) if len(sizes) else np.nan
+    return {
+        "Label-free Silhouette": silhouette,
+        "Cluster Size Min": int(np.min(sizes)) if len(sizes) else 0,
+        "Cluster Size Median": float(np.median(sizes)) if len(sizes) else 0.0,
+        "Cluster Size Max": int(np.max(sizes)) if len(sizes) else 0,
+        "Cluster Size CV": float(np.std(sizes) / mean_size) if mean_size > 0 else np.nan,
+        "Raw HDBSCAN Confidence Mean": confidence,
+    }
+
+
 def run_hdbscan(features, min_cluster_size, min_samples):
     clusterer = hdbscan.HDBSCAN(
         min_cluster_size=min_cluster_size,
@@ -2664,6 +2710,12 @@ def run_discovery(method, round_name, day_name, true_new_classes, X_round, y_rou
 
     reliability_map = {int(d["cluster_id"]): float(d.get("reliability_score", 1.0)) for d in details_final}
     final_metrics = clustering_metrics(y_round, labels_for_metrics)
+    label_free_metrics = label_free_cluster_diagnostics(
+        discovery_feat,
+        labels_for_metrics,
+        probabilities=probs,
+        seed=args.seed,
+    )
 
     cluster_row = {
         "Method": method,
@@ -2676,6 +2728,7 @@ def run_discovery(method, round_name, day_name, true_new_classes, X_round, y_rou
         "Cluster Count Error": int(abs(int(final_metrics["Clusters"]) - int(true_new_classes))),
         "Over-clustering Ratio": float(final_metrics["Clusters"] / max(int(true_new_classes), 1)),
         **final_metrics,
+        **label_free_metrics,
     }
 
     graph_based = base_method in [
