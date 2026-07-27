@@ -1,0 +1,31 @@
+{
+  "schema_version": "stage1_simgcd_adapter_smoke_v1",
+  "created_at_utc": "2026-07-27T02:21:18.169109+00:00",
+  "adapter": "simgcd_style_prototype_head",
+  "seed": 7,
+  "estimated_new_classes": 3,
+  "samples": 120,
+  "confidence_mean": 0.6562612056732178,
+  "confidence_min": 0.5352315902709961,
+  "nmi_posthoc": 1.0,
+  "ari_posthoc": 1.0,
+  "purity_posthoc": 1.0,
+  "diagnostics": {
+    "adapter": "simgcd_style_prototype_head",
+    "round_name": "synthetic_r1",
+    "known_classes": 4,
+    "estimated_new_classes": 3,
+    "temperature": 0.1,
+    "class_count_selection": {
+      "source": "protocol_expected_new_classes",
+      "selected_k": 3
+    },
+    "uses_unknown_true_labels": false,
+    "uses_eval_set": false,
+    "confidence_mean": 0.6562612056732178,
+    "confidence_min": 0.5352315902709961,
+    "confidence_max": 0.7927587032318115,
+    "assignment_coverage": 1.0
+  },
+  "leakage_note": "hidden labels are used only after predict for synthetic smoke metrics"
+}

@@ -82,9 +82,13 @@
 - `tools/stage1_backend_ablation_plan.py` 与 `slurm/stage1_wisig_backend_ablation.sbatch`：围绕 KD、回放权重、记忆容量、head-only 训练和低骨干学习率生成并运行后端消融矩阵。
 - `tools/stage1_discovery_adapter_contract.py` 与 `results/stage1/stage1_discovery_adapter_contract.json`：固化 SimGCD/IGCD 最小适配契约，包括允许输入、禁止输入、输出字段和必须报告的指标。
 - `utils/discovery_adapter_contract.py`：新增学习式发现头的 Python 接口骨架，定义 `DiscoveryAdapterInput`、`DiscoveryAdapterOutput`、`DiscoveryAdapter` 协议和输入/输出校验函数，供后续 SimGCD/IGCD 适配代码复用。
+- `results/stage1/STAGE1_BACKEND_ABLATION_REPORT.md`：Slurm Job `44420869` 的后端消融报告。`replay_x2` 是当前最佳变体，R3 Overall Acc 为 0.5103、Old Acc 为 0.4204、Forgetting Rate 为 0.4611；`kd_off` 优于默认后端，说明当前 KD 目标或权重可能带来负作用；`head_only` 最差，说明完全冻结骨干不可行。
+- `utils/simgcd_discovery_adapter.py` 与 `tools/stage1_simgcd_adapter_smoke.py`：新增 SimGCD 式最小发现头。当前实现使用冻结特征上的已知类原型和未标注 KMeans 新类原型构成参数化余弦 head，先验证接口、置信度和无泄漏边界；合成 smoke test 结果保存于 `results/stage1/stage1_simgcd_adapter_smoke.json`。
 
 ## 7. 当前锁定决策
 
 - 可靠伪标签、回放和蒸馏保留为已有 baseline/消融，不作为新方法核心贡献。
 - 阶段 1 的新贡献候选优先放在表征和类别发现前端，其次才是后端训练策略。
+- RADCIL 后端下一轮不沿用默认 KD/回放配置：优先强化 replay 约束，并将 KD 拆分为旧类 masked logits KD、温度/权重调度和特征蒸馏等可独立验证组件。
+- SimGCD 式发现头已具备最小可运行接口；下一步不是继续写接口，而是接入 WiSig frozen embeddings，与 Deep-HDBSCAN/MV-ACC 在同一 discovery 轮次上比较类别数、NMI/ARI、purity、Hungarian Acc 和置信度校准。
 - 严格 SOTA 候选暂定为 IGCD 与 SimGCD；SEI-specific FSCIL/CIL 论文先作为非严格参考池，待协议可公平适配后再升级为正式对照。
