@@ -1883,14 +1883,100 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
 
 
 @torch.no_grad()
-def _predict_end_to_end(model, X, batch_size, device):
+def _extract_end_to_end_outputs(model, X, batch_size, device):
+    """批量提取网络特征和分类 logits，供纯网络与混合后端共同复用。"""
     loader = DataLoader(TensorDataset(torch.as_tensor(X, dtype=torch.float32)), batch_size=int(batch_size), shuffle=False)
-    out = []
+    features, logits = [], []
     model.eval()
     for (xb,) in loader:
-        _, logits = model(xb.to(device))
-        out.append(torch.argmax(logits, dim=1).cpu().numpy())
-    return np.concatenate(out).astype(np.int64) if out else np.empty(0, dtype=np.int64)
+        feat_batch, logit_batch = model(xb.to(device))
+        features.append(feat_batch.cpu().numpy())
+        logits.append(logit_batch.cpu().numpy())
+    if not features:
+        return np.empty((0, 0), dtype=np.float32), np.empty((0, 0), dtype=np.float32)
+    return (
+        np.concatenate(features, axis=0).astype(np.float32),
+        np.concatenate(logits, axis=0).astype(np.float32),
+    )
+
+
+def _predict_end_to_end(model, X, batch_size, device):
+    """使用增量网络分类头预测伪标签类别。"""
+    _, logits = _extract_end_to_end_outputs(model, X, batch_size, device)
+    return np.argmax(logits, axis=1).astype(np.int64) if len(logits) else np.empty(0, dtype=np.int64)
+
+
+def _build_aligned_doi_prototype_bank(
+    model,
+    memory_x,
+    memory_y,
+    batch_size,
+    device,
+    previous_bank=None,
+    align_lambda=0.30,
+):
+    """从 replay IQ 记忆构建 DOI-style 对齐原型。
+
+    原型只使用训练集和逐轮伪标签记忆；held-out 评估样本及其真值不会进入
+    原型估计。历史类别使用上一轮原型与当前 replay 原型做平滑对齐，降低
+    骨干微调导致的旧类中心漂移。
+    """
+    memory_features, _ = _extract_end_to_end_outputs(model, memory_x, batch_size, device)
+    prototypes, prototype_labels = make_prototypes(memory_features, np.asarray(memory_y, dtype=np.int64))
+
+    if previous_bank is not None:
+        old_prototypes, old_labels = previous_bank
+        current_index = {int(label): index for index, label in enumerate(prototype_labels)}
+        for old_index, label in enumerate(old_labels):
+            label = int(label)
+            if label not in current_index:
+                continue
+            current_idx = current_index[label]
+            prototypes[current_idx] = (
+                (1.0 - float(align_lambda)) * old_prototypes[old_index]
+                + float(align_lambda) * prototypes[current_idx]
+            )
+
+    return l2norm(prototypes).astype(np.float32), np.asarray(prototype_labels, dtype=np.int64)
+
+
+def _predict_hybrid_radcil_doi(
+    model,
+    eval_x,
+    prototype_bank,
+    batch_size,
+    device,
+    fusion_weight=0.30,
+    prototype_temperature=0.10,
+):
+    """融合网络分类概率与 DOI-style replay 原型概率。
+
+    `fusion_weight=0` 等价于原网络分类头。原型分数按伪标签类别 ID 对齐
+    到分类头输出，网络仍承担真实增量学习，原型记忆只作为后验校正项。
+    """
+    fusion_weight = float(fusion_weight)
+    if not 0.0 <= fusion_weight <= 1.0:
+        raise ValueError("--radcil_doi_fusion_weight must be within [0, 1].")
+    if float(prototype_temperature) <= 0:
+        raise ValueError("--radcil_doi_prototype_temperature must be positive.")
+
+    eval_features, network_logits = _extract_end_to_end_outputs(model, eval_x, batch_size, device)
+    if len(network_logits) == 0 or fusion_weight <= 0 or prototype_bank is None:
+        return np.argmax(network_logits, axis=1).astype(np.int64) if len(network_logits) else np.empty(0, dtype=np.int64)
+
+    prototypes, prototype_labels = prototype_bank
+    prototype_scores = l2norm(eval_features) @ l2norm(prototypes).T
+    class_scores = np.full(network_logits.shape, -1e4, dtype=np.float32)
+    for prototype_index, label in enumerate(prototype_labels):
+        label = int(label)
+        if label < 0 or label >= class_scores.shape[1]:
+            raise ValueError(f"Prototype label {label} is outside classifier output range.")
+        class_scores[:, label] = prototype_scores[:, prototype_index] / float(prototype_temperature)
+
+    network_log_prob = F.log_softmax(torch.from_numpy(network_logits), dim=1).numpy()
+    prototype_log_prob = F.log_softmax(torch.from_numpy(class_scores), dim=1).numpy()
+    fused_log_prob = (1.0 - fusion_weight) * network_log_prob + fusion_weight * prototype_log_prob
+    return np.argmax(fused_log_prob, axis=1).astype(np.int64)
 
 
 def _prototype_predict_from_memory(memory_X, memory_y, eval_X, old_class_bonus=0.0, old_class_count=10):
@@ -2013,7 +2099,13 @@ def build_comparison_summary(baseline_df, incremental_df, proposed_source_method
 
 
 
-def build_full_end_to_end_system_comparison(end_to_end_baseline_df, incremental_df):
+def build_full_end_to_end_system_comparison(
+    end_to_end_baseline_df,
+    incremental_df,
+    proposed_source_method="MV-ACC-CIL",
+    proposed_display_name="Ours (MV-ACC)",
+    proposed_incremental_module="Network replay + distillation",
+):
     """
     Build the paper-facing end-to-end system table.
 
@@ -2093,10 +2185,10 @@ def build_full_end_to_end_system_comparison(end_to_end_baseline_df, incremental_
 
     # Proposed complete pipeline.
     add_from_incremental(
-        "MV-ACC-CIL",
-        "Ours (MV-ACC)",
+        proposed_source_method,
+        proposed_display_name,
         "SupCon deep/RF graphs + adaptive fusion + HDBSCAN",
-        "Prototype enrollment + old-class calibration",
+        proposed_incremental_module,
     )
 
     columns = [
@@ -2808,6 +2900,9 @@ def main():
     parser.add_argument("--radcil_kd_schedule", choices=["constant", "cosine", "linear_decay"], default="constant", help="Schedule for the end-to-end CIL KD weight inside each training stage.")
     parser.add_argument("--radcil_feature_distill_weight", type=float, default=0.0, help="Replay-feature distillation weight for constraining old-class backbone drift.")
     parser.add_argument("--radcil_unfreeze_scope", choices=["none", "fc", "layer3", "tail", "layer2_tail"], default="tail", help="Backbone scope unfrozen during the joint RADCIL stage.")
+    parser.add_argument("--radcil_doi_fusion_weight", type=float, default=0.0, help="DOI replay-prototype late-fusion weight; 0 keeps network-only RADCIL prediction.")
+    parser.add_argument("--radcil_doi_align_lambda", type=float, default=0.30, help="Current-round weight used to align historical and current replay prototypes.")
+    parser.add_argument("--radcil_doi_prototype_temperature", type=float, default=0.10, help="Temperature applied to cosine prototype scores before late fusion.")
     parser.add_argument("--pseudo_weight_floor", type=float, default=0.20)
 
 
@@ -3076,15 +3171,46 @@ def main():
             _, deep_info = run_discovery("Deep only", f"R{i}", f"Day {i + 1}", args.round_size, rd["X"], rd["y"], rd["Z"], args)
             deep_only_round_infos.append(deep_info)
 
-    # MV-ACC-CIL: discovery uses a frozen Teacher; only then is the Student updated.
-    print("\n[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning")
+    # MV-ACC-CIL 使用冻结 Teacher 完成发现，再更新 Student。可选 DOI-memory
+    # 后端只改变评估时的后验融合，不读取 held-out 真值，也不改变发现流程。
+    hybrid_doi_enabled = float(args.radcil_doi_fusion_weight) > 0
+    main_method_name = "MV-ACC-CIL + DOI-memory" if hybrid_doi_enabled else "MV-ACC-CIL"
+    print(f"\n[{main_method_name}] End-to-end pseudo-label class-incremental learning")
+    if hybrid_doi_enabled:
+        print(
+            "[Hybrid DOI] "
+            f"fusion_weight={args.radcil_doi_fusion_weight}, "
+            f"align_lambda={args.radcil_doi_align_lambda}, "
+            f"prototype_temperature={args.radcil_doi_prototype_temperature}"
+        )
     clustering_rows, incremental_rows, retention_rows = [], [], []
     student = copy.deepcopy(model).to(device).eval()
     pseudo_to_true = {int(c): int(c) for c in range(args.initial_known_classes)}
     memory_x, memory_y = _update_iq_memory(None, None, X_train, y_train, args.memory_per_class, args.seed)
-    initial_pred = _predict_end_to_end(student, eval_data["eval_initial"]["X"], args.test_batch_size, device)
+    doi_prototype_bank = None
+    if hybrid_doi_enabled:
+        doi_prototype_bank = _build_aligned_doi_prototype_bank(
+            student,
+            memory_x,
+            memory_y,
+            args.test_batch_size,
+            device,
+            previous_bank=None,
+            align_lambda=args.radcil_doi_align_lambda,
+        )
+        initial_pred = _predict_hybrid_radcil_doi(
+            student,
+            eval_data["eval_initial"]["X"],
+            doi_prototype_bank,
+            args.test_batch_size,
+            device,
+            args.radcil_doi_fusion_weight,
+            args.radcil_doi_prototype_temperature,
+        )
+    else:
+        initial_pred = _predict_end_to_end(student, eval_data["eval_initial"]["X"], args.test_batch_size, device)
     initial_row = _evaluate_raw_predictions(
-        "MV-ACC-CIL", "Initial", eval_data["eval_initial"]["day"], args.initial_known_classes,
+        main_method_name, "Initial", eval_data["eval_initial"]["day"], args.initial_known_classes,
         "day1_eval_initial_30pct", eval_y_dict["eval_initial"], initial_pred, pseudo_to_true,
         "-", "-", "-", args.initial_known_classes, args.round_size, None,
     )
@@ -3120,19 +3246,64 @@ def main():
         student = _train_end_to_end_cil(student, teacher, rd["X"], pseudo_y, current_w, memory_x, memory_y, old_out, args, device)
         memory_x, memory_y = _update_iq_memory(memory_x, memory_y, rd["X"], pseudo_y, args.memory_per_class, args.seed + i)
         eval_key = f"eval_r{i}"
-        pred = _predict_end_to_end(student, eval_data[eval_key]["X"], args.test_batch_size, device)
+        if hybrid_doi_enabled:
+            doi_prototype_bank = _build_aligned_doi_prototype_bank(
+                student,
+                memory_x,
+                memory_y,
+                args.test_batch_size,
+                device,
+                previous_bank=doi_prototype_bank,
+                align_lambda=args.radcil_doi_align_lambda,
+            )
+            pred = _predict_hybrid_radcil_doi(
+                student,
+                eval_data[eval_key]["X"],
+                doi_prototype_bank,
+                args.test_batch_size,
+                device,
+                args.radcil_doi_fusion_weight,
+                args.radcil_doi_prototype_temperature,
+            )
+        else:
+            pred = _predict_end_to_end(student, eval_data[eval_key]["X"], args.test_batch_size, device)
         incremental_rows.append(_evaluate_raw_predictions(
-            "MV-ACC-CIL", f"After R{i}", eval_data[eval_key]["day"], args.initial_known_classes + i * args.round_size,
+            main_method_name, f"After R{i}", eval_data[eval_key]["day"], args.initial_known_classes + i * args.round_size,
             f"{eval_key}_30pct_{args.initial_known_classes + i * args.round_size}_seen", eval_y_dict[eval_key], pred,
             pseudo_to_true, args.round_size, info["discovered_clusters"], len(cluster_ids),
             args.initial_known_classes, args.round_size, initial_reference_acc,
         ))
-        fixed_pred = _predict_end_to_end(student, eval_data["eval_initial"]["X"], args.test_batch_size, device)
+        if hybrid_doi_enabled:
+            fixed_pred = _predict_hybrid_radcil_doi(
+                student,
+                eval_data["eval_initial"]["X"],
+                doi_prototype_bank,
+                args.test_batch_size,
+                device,
+                args.radcil_doi_fusion_weight,
+                args.radcil_doi_prototype_temperature,
+            )
+        else:
+            fixed_pred = _predict_end_to_end(student, eval_data["eval_initial"]["X"], args.test_batch_size, device)
         fixed_true = eval_y_dict["eval_initial"]
         fixed_mapped = np.asarray([pseudo_to_true.get(int(p), int(p)) for p in fixed_pred], dtype=np.int64)
         retention_rows.append({"Round": f"R{i}", "Fixed Day1 Old-Class Acc": float(np.mean(fixed_true == fixed_mapped))})
-        torch.save({"model_state": student.state_dict(), "round": i, "num_outputs": int(student.classifier.out_features)}, os.path.join(args.save_dir, f"mvacc_cil_after_r{i}.pth"))
+        torch.save({
+            "model_state": student.state_dict(),
+            "round": i,
+            "num_outputs": int(student.classifier.out_features),
+            "method": main_method_name,
+            "radcil_doi_fusion_weight": float(args.radcil_doi_fusion_weight),
+            "radcil_doi_align_lambda": float(args.radcil_doi_align_lambda),
+            "radcil_doi_prototype_temperature": float(args.radcil_doi_prototype_temperature),
+        }, os.path.join(args.save_dir, f"mvacc_cil_after_r{i}.pth"))
         np.savez_compressed(os.path.join(args.save_dir, f"replay_memory_after_r{i}.npz"), X=memory_x, y=memory_y)
+        if hybrid_doi_enabled:
+            np.savez_compressed(
+                os.path.join(args.save_dir, f"hybrid_doi_prototype_bank_after_r{i}.npz"),
+                prototypes=doi_prototype_bank[0],
+                labels=doi_prototype_bank[1],
+            )
 
     clustering_df = save_csv(clustering_rows, os.path.join(args.save_dir, "clustering_results.csv"))
     incremental_df = save_csv(incremental_rows, os.path.join(args.save_dir, "incremental_results.csv"))
@@ -3140,12 +3311,12 @@ def main():
     per_round_summary_df = build_per_round_summary(clustering_df, incremental_df)
     if not clustering_df.empty and "MV-ACC-CIL discovery" in set(clustering_df["Method"].astype(str)):
         c = clustering_df[clustering_df["Method"].astype(str) == "MV-ACC-CIL discovery"].set_index("Round")
-        inc = incremental_df[incremental_df["Method"].astype(str) == "MV-ACC-CIL"].copy()
+        inc = incremental_df[incremental_df["Method"].astype(str) == main_method_name].copy()
         cil_rows = []
         for _, r in inc[inc["Stage"].astype(str).str.startswith("After R")].iterrows():
             rnd = str(r["Stage"]).replace("After ", "")
             d = c.loc[rnd]
-            cil_rows.append({"Method":"MV-ACC-CIL", "Round":rnd, "Cluster Count":int(d["Final Cluster Count"]), "Incremental Pseudo-label Classes":int(r["Enrolled Clusters"]), "Cluster Count Error":int(d["Cluster Count Error"]), "Sample Coverage":float(d["Assignment Coverage"]), "Purity":float(d["Purity"]), "NMI":float(d["NMI"]), "ARI":float(d["ARI"]), "Hungarian Acc":float(d["Hungarian Acc"]), "Overall Acc":float(r["Overall Acc"]), "New Acc":float(r["New Acc"]), "Forgetting Rate":float(r["Forgetting Rate"])})
+            cil_rows.append({"Method":main_method_name, "Round":rnd, "Cluster Count":int(d["Final Cluster Count"]), "Incremental Pseudo-label Classes":int(r["Enrolled Clusters"]), "Cluster Count Error":int(d["Cluster Count Error"]), "Sample Coverage":float(d["Assignment Coverage"]), "Purity":float(d["Purity"]), "NMI":float(d["NMI"]), "ARI":float(d["ARI"]), "Hungarian Acc":float(d["Hungarian Acc"]), "Overall Acc":float(r["Overall Acc"]), "New Acc":float(r["New Acc"]), "Forgetting Rate":float(r["Forgetting Rate"])})
         per_round_summary_df = pd.DataFrame(cil_rows)
     save_csv(per_round_summary_df.to_dict("records"), os.path.join(args.save_dir, "per_round_summary_results.csv"))
 
@@ -3180,8 +3351,8 @@ def main():
             shared_comparison_df = build_comparison_summary(
                 shared_baseline_df,
                 incremental_df,
-                proposed_source_method="MV-ACC-CIL",
-                proposed_name="Ours (MV-ACC)",
+                proposed_source_method=main_method_name,
+                proposed_name=main_method_name,
             )
             save_csv(shared_comparison_df.to_dict("records"), os.path.join(args.save_dir, "shared_discovery_comparison_results.csv"))
 
@@ -3214,14 +3385,22 @@ def main():
             end_to_end_comparison_df = build_comparison_summary(
                 end_to_end_baseline_df,
                 incremental_df,
-                proposed_source_method="MV-ACC-CIL",
-                proposed_name="Ours (MV-ACC)",
+                proposed_source_method=main_method_name,
+                proposed_name=main_method_name,
             )
             save_csv(end_to_end_comparison_df.to_dict("records"), os.path.join(args.save_dir, "end_to_end_comparison_results.csv"))
 
             # Paper-facing main table: discovery quality + incremental learning quality.
             full_system_comparison_df = build_full_end_to_end_system_comparison(
-                end_to_end_baseline_df, incremental_df
+                end_to_end_baseline_df,
+                incremental_df,
+                proposed_source_method=main_method_name,
+                proposed_display_name=main_method_name,
+                proposed_incremental_module=(
+                    "Network replay + DOI-memory late fusion"
+                    if hybrid_doi_enabled
+                    else "Network replay + distillation"
+                ),
             )
             save_csv(
                 full_system_comparison_df.to_dict("records"),

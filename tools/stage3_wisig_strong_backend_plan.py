@@ -70,9 +70,9 @@ def build_candidate_matrix(summary: list[dict[str, Any]]) -> list[dict[str, Any]
         [
             {
                 "variant": "hybrid_radcil_doi_memory_alignment",
-                "status": "requires_code_change",
+                "status": "ready_for_seed7",
                 "backend_source": "RADCIL + DOI-style",
-                "run_requirement": "新增 DOI 原型记忆对齐/旧类原型校正后运行 seed 7 短验证；若超过 MV-ACC-CIL 再扩展 3 seeds。",
+                "run_requirement": "已实现 replay 原型历史对齐和 logits/prototype late fusion；运行 seed 7 短验证，达到门槛后扩展 3 seeds。",
                 "purpose": "检验 DOI-style 的旧类原型保持是否能与网络式新类学习互补。",
             },
             {
@@ -117,7 +117,7 @@ def build_plan(summary_path: Path) -> dict[str, Any]:
             "minimum_next_step": "任一混合候选 seed7 R3 Overall 不低于 MV-ACC-CIL，且 Old Acc 或 Forgetting 至少一项接近强后端 reference。",
         },
         "blocked_items": [
-            "当前 RADCIL 训练入口尚未实现 DOI/iCaRL/TPCIL 与网络 logits 的混合融合。",
+            "DOI-memory late fusion 已实现但尚未完成 Slurm seed7 结果验证；iCaRL/TPCIL hybrid 仍待实现。",
             "不能直接把共享发现 frozen-feature baseline 写成新主方法，只能作为后端上限和混合设计依据。",
         ],
     }

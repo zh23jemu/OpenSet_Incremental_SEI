@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-27
-- 当前阶段：实施计划 1.1，阶段 1 已完成方法筛选和 RADCIL 后端多种子确认；阶段 2 已跑通 WiSig 单种子完整三轮主流程；阶段 3 已完成 WiSig 正式三种子主实验、high-replay 同协议正式消融、CIL baseline 三种子表、strict baseline 总表和强后端/混合后端计划；阶段 4 ADS-B legacy strict 单种子入口已准备
+- 当前阶段：实施计划 1.1，阶段 3 已实现 hybrid RADCIL + DOI-memory 并准备 seed7 短验证；阶段 4 ADS-B legacy strict 单种子入口已准备
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -114,6 +114,8 @@ Strict loader 审计：
 - 已新增 `tools/stage3_wisig_strict_baseline_table.py` 并生成 `results/stage3/STAGE3_WISIG_STRICT_BASELINE_TABLE.md`，将 SimGCD-style 标注为 learning-style adaptation、IGCD-minimal 标注为 minimal strict adaptation，二者均不作为完整论文复现；MV-ACC 仍是正式主前端。
 - 已新增 `tools/stage3_wisig_strong_backend_plan.py` 并生成 `results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md`，把共享发现后端风险收束为 `RADCIL + DOI-style`、`RADCIL + iCaRL`、`RADCIL + TPCIL-style` 三个待实现混合候选；下一步先做 seed 7 短验证。
 - 已新增 `tools/stage4_adsb_main_plan.py` 与 `slurm/stage4_adsb_main_single_seed.sbatch`，生成 `results/stage4/stage4_adsb_main_single_seed_plan.json`；该入口是 ADS-B legacy strict 单种子 smoke test，正式多种子前仍需迁移 ADS-B 长序列骨干和 WiSig RADCIL old:new batch ratio。
+- 已在 WiSig strict 入口实现可选 DOI-memory hybrid：使用伪标签 replay 记忆构建原型、跨轮对齐历史原型，并与网络 logits 做 late fusion；默认融合权重为 0，不改变历史 RADCIL 行为。
+- 已新增 `tools/stage3_wisig_hybrid_doi_plan.py`、`tools/stage3_wisig_hybrid_doi_report.py` 和 `slurm/stage3_wisig_hybrid_doi_seed7.sbatch`；本地语法、参数入口、计划生成和合成张量 smoke test 已通过，待 Slurm seed7 验证。
 - SimGCD-style 已验证为可运行学习式发现 baseline，但真实 WiSig 前端质量低于 MV-ACC；阶段 1 短期主线应保留 MV-ACC 或稳定 Deep-HDBSCAN 前端，避免把弱前端误锁为新主方法。
 - Slurm 端同时保留 ManyTx 的 6 个分片和合并 ZIP，存在约 2.63 GB 重复占用；未取得明确清理指令前不要删除。
 - 阶段 0 两个 Slurm job 的 JSON/stdout/stderr 已同步回本地；后续不要再把本地缺失误判为实验未运行。
@@ -121,7 +123,7 @@ Strict loader 审计：
 
 ## 7. 下一步执行顺序
 
-1. 实现 `hybrid_radcil_doi_memory_alignment` 或最小 late-fusion 版本，并在 WiSig seed 7 上短验证。
+1. 提交 `slurm/stage3_wisig_hybrid_doi_seed7.sbatch` 并依据自动报告门槛判断是否扩展三种子。
 2. 将 ADS-B long-sequence backbone 和 WiSig RADCIL old:new batch ratio 参数迁入 `experiments/exp_adsb_mvacc_cil_strict.py`。
 3. 提交 ADS-B 阶段 4 legacy strict 单种子 Slurm smoke test，确认路径、依赖、协议产物和三轮评估完整。
 4. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。

@@ -96,6 +96,7 @@
 - Slurm Job `44453416` 已完成阶段 3 WiSig CIL baseline 三种子正式实验；`results/stage3/STAGE3_WISIG_CIL_BASELINES_MULTISEED_REPORT_44453416.md` 显示端到端主方法 R3 Overall 比 Deep-HDBSCAN + DOI-style 高 `0.0774`，但共享 MV-ACC 伪标签后端对照中 DOI-style R3 Overall `0.6579±0.0350`，比当前 MV-ACC-CIL 高 `0.0491`。
 - 阶段 3 strict baseline 总表和强后端/混合后端计划已生成：`results/stage3/STAGE3_WISIG_STRICT_BASELINE_TABLE.md`、`results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md`；后端上限风险已转化为三个待实现 hybrid RADCIL 候选。
 - 阶段 4 ADS-B legacy strict 单种子入口已准备：`tools/stage4_adsb_main_plan.py`、`slurm/stage4_adsb_main_single_seed.sbatch`、`results/stage4/stage4_adsb_main_single_seed_plan.json`；正式 ADS-B 多种子前仍需迁移 long-sequence backbone 与 RADCIL old:new batch ratio。
+- 阶段 3 已实现 hybrid RADCIL + DOI-memory：伪标签 replay 原型历史对齐与网络 logits/prototype late fusion；默认参数关闭以保持旧结果兼容，seed7 Slurm 短验证入口已准备。
 
 ## Recent Changes
 
@@ -134,6 +135,7 @@
 - 2026-07-27：本会话按 RecallLoom fast resume 恢复项目状态，校验 `.recallloom/rolling_summary.md`、`PROJECT_HANDOFF.md` 与实施计划一致，并确认当前下一步为强后端/混合后端消融和 ADS-B 阶段 4 准备。
 - 2026-07-27：新增 `tools/stage3_wisig_strict_baseline_table.py` 与 `tools/stage3_wisig_strong_backend_plan.py`，生成阶段 3 strict baseline 总表和强后端/混合后端消融计划，将后端上限风险收束为可执行候选。
 - 2026-07-27：新增 `tools/stage4_adsb_main_plan.py` 与 `slurm/stage4_adsb_main_single_seed.sbatch`，生成 ADS-B 阶段 4 legacy strict 单种子计划；本地 `py_compile` 和计划生成通过。
+- 2026-07-27：实现 WiSig hybrid RADCIL + DOI-memory，并新增 seed7 计划、自动对比报告和 Slurm 入口；本地 `.venv` 语法、CLI、计划生成和合成张量 smoke test 通过。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
@@ -151,7 +153,7 @@
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
-- 实现 `hybrid_radcil_doi_memory_alignment` 或最小 late-fusion 版本，并在 WiSig seed 7 上短验证；若达到门槛再扩展三种子。
+- 提交 hybrid DOI seed7 Slurm 短验证；若 R3 Overall 不低于 seed7 主方法且 Old/Forgetting 接近 DOI-style reference，再扩展三种子。
 - 将 ADS-B long-sequence backbone 和 WiSig RADCIL old:new batch ratio 参数迁入 `experiments/exp_adsb_mvacc_cil_strict.py`，随后提交阶段 4 ADS-B 单种子 Slurm smoke test。
 - 将 IGCD-minimal 纳入 strict baseline 表，但正式主前端继续优先使用 MV-ACC 或稳定 Deep-HDBSCAN。
 - 后续每完成关键 Slurm job、阶段报告或客户可汇报结论时，同步更新 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 的当前状态、关键结果、风险和下一步行动清单。
@@ -171,7 +173,7 @@
 - Slurm `.venv` 当前安装的是 2026-07-26 可用的较新依赖组合，尚未通过旧版端到端实验验证；如出现兼容问题，应基于成功环境生成锁文件后做最小范围降级。
 - ADS-B 已在 Slurm 解压并通过 strict loader 审计；ManyTx/ManyRx 完整 ZIP 结构有效但未解压，后续仅在补充实验需要时按需展开，不作为阶段 1 阻塞风险。
 - SimGCD-style 最小适配器在 WiSig frozen embeddings 上弱于 MV-ACC；学习式发现头直接迁移到 RF 特征的收益不足，后续若继续改进需证明稳定超过 Deep-HDBSCAN/MV-ACC。
-- WiSig 核心/增量 baseline 表已补齐，且已生成 strict baseline 总表和强后端/混合后端计划；当前剩余风险是 hybrid RADCIL 尚未实现，不能直接把 frozen-feature 强后端 reference 写成新主方法。
+- WiSig DOI-memory hybrid 已实现但尚未完成 Slurm seed7 实证；在结果通过门槛前，不能把 frozen-feature 强后端 reference 或 hybrid 设计写成已验证的新主方法贡献。
 - ADS-B 阶段 4 legacy strict 单种子入口已准备，但正式主实验仍需迁移 ADS-B long-sequence backbone 和 WiSig RADCIL old:new batch ratio，否则只能作为 smoke test。
 - IGCD-minimal 已接入真实 WiSig frozen embeddings 并完成 Job `44422704`，但当前仍是 minimal strict adaptation，不是完整 IGCD 论文复现。
 - `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`。
@@ -189,6 +191,7 @@
 - 原 MV-ACC、CF-LCG、HDBSCAN 和原型注册链路完整保留为 baseline，但不再约束新主方法结构；新主方法可重新设计深度表征、未知检测、类别发现、可靠伪标签和真实网络增量训练，经典特征仅用于旧方法对照与消融。
 - 正式实验必须包含固定旧前端配新后端、新前端配原型注册和完整新方法三组组合，分离类别发现与增量后端的贡献，并补充至少 1–2 个可公平复现的近年 SOTA 对照。
 - 阶段 2 首个 WiSig 主组合固定为 MV-ACC 前端 + `ratio_2p0_replay_3p0` 后端；该配置通过 `utils/radcil_config.py` 管理，旧 strict 实验入口默认行为保持不变。
+- DOI-memory hybrid 采用可选后验融合：网络继续执行真实伪标签增量训练，原型仅由 replay 记忆构建并跨轮对齐；融合权重默认 0，避免改变历史主方法结果。
 - 主实验优先 WiSig 10+10×3 和 ADS-B 90+10×3；LoRa25 默认 10+5×3，ManyTx/ManyRx 沿用现有协议作为补充验证。
 - LoRa 跨体制验证优先使用 LoRa RFFP Different Days Indoor Scenario；完整数据较大时只下载或切分必要 Setup 1 子集，不因完整 LoRa 全量下载延迟 WiSig/ADS-B 主线。
 - 客户补充的超大数据保留为本地压缩包并精确排除出 Git；ADS-B 统一以 `ADS-B.rar` 作为实验数据源。

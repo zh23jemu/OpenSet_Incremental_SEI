@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划与项目进度总表
 
-- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成方法筛选和 RADCIL 后端多种子确认；阶段 2 已跑通 WiSig 单种子完整三轮主流程；阶段 3 已完成 WiSig 正式三种子主实验、high-replay 同协议消融、CIL baseline 三种子表、strict baseline 总表和强后端/混合后端消融计划；阶段 4 ADS-B 单种子主流程入口已准备
+- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成方法筛选和 RADCIL 后端多种子确认；阶段 2 已跑通 WiSig 单种子完整三轮主流程；阶段 3 已实现 hybrid RADCIL + DOI-memory 并准备 seed7 短验证；阶段 4 ADS-B 单种子主流程入口已准备
 - 版本：1.1
 - 创建日期：2026-07-26
 - 最近更新：2026-07-27
@@ -210,6 +210,8 @@
 - [x] 运行 WiSig CIL baseline 三种子正式实验 Job `44453416`，生成 `results/stage3/STAGE3_WISIG_CIL_BASELINES_MULTISEED_REPORT_44453416.md`；共享 MV-ACC 伪标签后端 baseline 中 DOI-style R3 Overall `0.6579±0.0350`，端到端 Deep-HDBSCAN + DOI-style R3 Overall `0.5314±0.0417`。
 - [x] 完成 IGCD-minimal/SimGCD-style strict baseline 总表标注：`tools/stage3_wisig_strict_baseline_table.py`、`results/stage3/STAGE3_WISIG_STRICT_BASELINE_TABLE.md` 和 `results/stage3/stage3_wisig_strict_baseline_table.json`。
 - [x] 设计 DOI/iCaRL/TPCIL 强后端吸收或混合消融：`tools/stage3_wisig_strong_backend_plan.py`、`results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md` 和 `results/stage3/stage3_wisig_strong_backend_plan.json`。
+- [x] 实现 `hybrid_radcil_doi_memory_alignment`：网络 logits 与伪标签 replay 原型概率 late fusion，保留历史原型对齐；新增 seed7 计划、报告和 Slurm 入口。
+- [ ] 提交并完成 hybrid DOI seed7 Slurm 短验证；达到门槛后再扩展三种子。
 - [ ] 完成 3 个正式随机种子。
 - [ ] 输出聚类、整体准确率、新类准确率、旧类准确率和遗忘指标。
 - [ ] 输出每轮 t-SNE 聚类图。
@@ -316,7 +318,7 @@
 
 已生成 `results/stage3/STAGE3_WISIG_STRICT_BASELINE_TABLE.md`，将 Deep-HDBSCAN、MV-ACC、SimGCD-style 和 IGCD-minimal 放入同一 strict 前端 baseline 表，并明确 SimGCD-style 是 learning-style adaptation、IGCD-minimal 是 minimal strict adaptation，二者均不能写成完整论文复现。表中 MV-ACC 三轮平均 NMI `0.9164`、ARI `0.8642`、Hungarian Acc `0.9010`，仍是正式主前端。
 
-已生成 `results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md`，把共享发现后端风险收束为三组 reference 和三组待实现 hybrid 候选：`RADCIL + DOI-style`、`RADCIL + iCaRL`、`RADCIL + TPCIL-style`。执行门槛为先跑 seed 7 短验证，若 R3 Overall 不低于当前 MV-ACC-CIL 且 Old Acc 或 Forgetting 接近强后端 reference，再扩展三种子。
+已生成 `results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md`。其中 `RADCIL + DOI-style` 已实现为 replay 原型历史对齐与 logits/prototype late fusion，默认参数关闭以保持旧实验兼容；seed7 短验证入口为 `slurm/stage3_wisig_hybrid_doi_seed7.sbatch`。只有 R3 Overall 不低于当前 MV-ACC-CIL 且 Old Acc 或 Forgetting 接近 DOI-style reference 时才扩展三种子。
 
 ### ADS-B 阶段 4 legacy strict 单种子入口
 
@@ -326,7 +328,7 @@
 
 | 风险                  | 影响                    | 当前应对                                         |
 | ------------------- | --------------------- | -------------------------------------------- |
-| WiSig 共享发现后端 baseline 强于当前网络后端 | DOI-style/iCaRL/TPCIL-style 在共享 MV-ACC 伪标签下 R3 Overall 高于 MV-ACC-CIL，说明当前网络后端不是上限 | 已生成 strict baseline 总表和强后端/混合后端计划；下一步实现 hybrid RADCIL 候选并先跑 seed 7 短验证 |
+| WiSig 共享发现后端 baseline 强于当前网络后端 | DOI-style/iCaRL/TPCIL-style 在共享 MV-ACC 伪标签下 R3 Overall 高于 MV-ACC-CIL，说明当前网络后端不是上限 | DOI-memory hybrid 已实现并通过本地 smoke test；待运行 seed7 Slurm 短验证后决定是否扩展三种子 |
 | IGCD-minimal 不是完整复现 | 客户或论文审稿可能质疑 SOTA 公平性  | 明确标注为 minimal strict adaptation，必要时后续补齐更完整适配 |
 | ADS-B 历史闭集和发现质量偏弱   | 主实验第二数据集可能拖慢          | 已准备 legacy strict 单种子入口；正式多种子前优先迁移 ADS-B 长序列骨干和 RADCIL old:new ratio |
 | ManyRx 正式 runner 缺失 | 补充实验入口不清晰             | 后续恢复 runner 或修正文档引用                          |
@@ -336,7 +338,7 @@
 
 短期优先级：
 
-1. 实现 `hybrid_radcil_doi_memory_alignment` 或最小 late-fusion 版本，并先跑 WiSig seed 7 短验证。
+1. 提交 `slurm/stage3_wisig_hybrid_doi_seed7.sbatch`，依据自动报告门槛决定是否扩展三种子。
 2. 将 ADS-B long-sequence backbone 和 WiSig RADCIL old:new batch ratio 参数迁入 `experiments/exp_adsb_mvacc_cil_strict.py`。
 3. 提交 ADS-B 阶段 4 legacy strict 单种子 Slurm smoke test，确认路径、依赖、协议产物和三轮评估完整。
 
