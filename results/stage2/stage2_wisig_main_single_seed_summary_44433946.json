@@ -1,0 +1,125 @@
+{
+  "plan": {
+    "schema_version": "stage2_wisig_main_single_seed_plan_v1",
+    "created_at_utc": "2026-07-27T07:52:15.334217+00:00",
+    "project_root": "/mnt/users/xj62kv/OpenSet_Incremental_SEI",
+    "stage": "stage2",
+    "dataset": "WiSig",
+    "task": "10 known + 10 x 3 open-set class-incremental SEI",
+    "strict_protocol": "Day1 70% development split into 60% train and 10% validation; 30% held-out evaluation remains isolated.",
+    "locked_main_config": {
+      "variant": "ratio_2p0_replay_3p0",
+      "frontend": "MV-ACC",
+      "seed": 7,
+      "cil_replay_weight": 3.0,
+      "old_new_batch_ratio": 2.0,
+      "initial_known_classes": 10,
+      "round_size": 10,
+      "num_rounds": 3,
+      "selected_rx_list": "2",
+      "closedset_epochs": 20,
+      "cil_head_warmup_epochs": 2,
+      "cil_joint_epochs": 8,
+      "supcon_weight": 0.1
+    },
+    "selection_basis": {
+      "source_report": "results/stage1/STAGE1_RADCIL_MULTISEED_REPORT.md",
+      "source_job": "44426767",
+      "decision": "`ratio_2p0_replay_3p0` 与 high-replay 对照 Overall 基本持平，但旧类准确率更高、遗忘率更低，因此按 tie-break 规则进入阶段 2。"
+    },
+    "run": {
+      "run_name": "wisig_main_ratio_2p0_replay_3p0_seed7",
+      "dataset_path": "数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl",
+      "save_dir": "results/stage2/wisig_main_ratio_2p0_replay_3p0_seed7_44433946",
+      "experiment_entry": "experiments/exp_wisig_mvacc_cil_strict.py",
+      "argv": [
+        "--dataset_path",
+        "数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl",
+        "--save_dir",
+        "results/stage2/wisig_main_ratio_2p0_replay_3p0_seed7_44433946",
+        "--selected_rx_list",
+        "2",
+        "--initial_known_classes",
+        "10",
+        "--round_size",
+        "10",
+        "--num_rounds",
+        "3",
+        "--seed",
+        "7",
+        "--train_closedset",
+        "--epochs",
+        "20",
+        "--batch_size",
+        "128",
+        "--test_batch_size",
+        "256",
+        "--disable_cil_baselines",
+        "--use_supcon",
+        "--supcon_weight",
+        "0.1",
+        "--cil_head_warmup_epochs",
+        "2",
+        "--cil_joint_epochs",
+        "8",
+        "--cil_replay_weight",
+        "3.0",
+        "--radcil_old_new_batch_ratio",
+        "2.0"
+      ]
+    },
+    "acceptance_metrics": [
+      "clustering_results.csv: MV-ACC discovery cluster count, NMI, ARI, purity, Hungarian Acc",
+      "incremental_results.csv: R1/R2/R3 Overall Acc, Old Acc, New Acc, Forgetting Rate, Macro F1",
+      "per_round_summary_results.csv: round-level strict protocol summary"
+    ],
+    "risk_controls": [
+      "不读取未知轮次评估真值参与阈值、聚类或伪标签筛选。",
+      "保留 IGCD-minimal 和 SimGCD-style 为 strict/minimal baseline，不作为阶段 2 主前端。",
+      "本次只跑单种子完整三轮主流程，正式结论仍需后续三种子均值和标准差。"
+    ]
+  },
+  "metrics": {
+    "rounds": [
+      {
+        "round": "R1",
+        "cluster_count": 10.0,
+        "nmi": 0.9407874574512328,
+        "ari": 0.9300003169213094,
+        "purity": 0.9666666666666667,
+        "hungarian_acc": 0.9666666666666667,
+        "overall_acc": 0.8533333333333334,
+        "old_acc": 0.9033333333333333,
+        "new_acc": 0.8033333333333333,
+        "forgetting_rate": 0.09333333333333338,
+        "macro_f1": 0.8365614288936427
+      },
+      {
+        "round": "R2",
+        "cluster_count": 10.0,
+        "nmi": 0.9324585522053018,
+        "ari": 0.8865848734024285,
+        "purity": 0.9357142857142857,
+        "hungarian_acc": 0.9357142857142857,
+        "overall_acc": 0.7718518518518519,
+        "old_acc": 0.8033333333333333,
+        "new_acc": 0.7088888888888889,
+        "forgetting_rate": 0.13111111111111118,
+        "macro_f1": 0.7492788886376602
+      },
+      {
+        "round": "R3",
+        "cluster_count": 10.0,
+        "nmi": 0.9692828783345807,
+        "ari": 0.9683303189797823,
+        "purity": 0.9852380952380952,
+        "hungarian_acc": 0.9852380952380952,
+        "overall_acc": 0.6327777777777778,
+        "old_acc": 0.5874074074074074,
+        "new_acc": 0.7688888888888888,
+        "forgetting_rate": 0.13888888888888895,
+        "macro_f1": 0.591772033599172
+      }
+    ]
+  }
+}
