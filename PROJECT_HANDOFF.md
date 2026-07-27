@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-27
-- 当前阶段：实施计划 1.1，阶段 1 已完成既有后端复盘、SOTA 初筛和 WiSig 短实验入口准备，准备在 Slurm 运行短实验
+- 当前阶段：实施计划 1.1，阶段 1 已完成既有后端复盘、SOTA 初筛和 WiSig 表征短实验，准备做后端消融与 SimGCD 前端适配
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -45,6 +45,7 @@ GitHub Release `datasets-2026-07-26` 已包含 WiSig、ADS-B、ManyRx 和 ManyTx
 - 实施计划已更新到 1.1，允许重新设计完整新主方法，并增加 SOTA 与前后端拆分对照。
 - 新增 `STAGE1_METHOD_REVIEW.md`：复盘现有可靠伪标签、旧类回放和知识蒸馏后端效果，锁定 IGCD 与 SimGCD 为严格 SOTA 候选，SEI-specific FSCIL/CIL 方法暂列非严格参考池。
 - 新增 `tools/stage1_method_screen.py`、`results/stage1/stage1_method_screen.json` 和 `slurm/stage1_wisig_short_screen.sbatch`：生成阶段 1 方法筛选报告，并提供 WiSig CE baseline / SupCon representation 单种子短实验入口。
+- Slurm Job `44420671` 已完成阶段 1 WiSig 短实验，结果已同步回本地并生成 `results/stage1/STAGE1_WISIG_SHORT_REPORT.md`；SupCon 改善 R1/R2 overall 与早期遗忘，但 R3 仍严重遗忘。
 - `requirements.txt` 已补充 pandas、hdbscan、umap-learn。
 - 新增 `tools/stage0_env_data_check.py`：检查依赖、CUDA、GPU 张量计算、大数据哈希、ZIP 结构、紧凑 NPZ 和 ADS-B 解压状态。
 - 新增 `slurm/stage0_env_data_check.sbatch`：使用 `gpuHz`、`shortjobs`、1 张 GPU 运行阶段 0 检查。
@@ -90,17 +91,16 @@ Strict loader 审计：
 - ManyTx、ManyRx 完整数据尚未按补充实验需要解压；这是按需展开项，主实验阶段不应因此延迟 WiSig/ADS-B 阶段 1。
 - 可移植数据路径模板和审计入口已建立；部分旧脚本仍包含开发者绝对路径，后续新入口必须继续使用命令行参数或配置覆盖。
 - 当前 Slurm `.venv` 使用较新依赖版本，尚未通过旧主实验端到端验证；出现兼容问题时应先记录错误，再做最小范围版本调整。
-- 阶段 1 已完成文档级复盘、SOTA 初筛和短实验入口准备；候选表征、候选发现前端和 RADCIL 组合仍需通过 WiSig 单种子短实验锁定。
+- 阶段 1 已完成文档级复盘、SOTA 初筛和 WiSig CE/SupCon 表征短实验；结果显示发现质量不是主要瓶颈，R3 旧类遗忘仍需通过后端消融解决。
 - Slurm 端同时保留 ManyTx 的 6 个分片和合并 ZIP，存在约 2.63 GB 重复占用；未取得明确清理指令前不要删除。
 - 阶段 0 两个 Slurm job 的 JSON/stdout/stderr 已同步回本地；后续不要再把本地缺失误判为实验未运行。
 - RecallLoom 已通过官方 helper 路径处理初始化 receipt 缺口：先记录 recovery proposal/review，再刷新 rolling summary 和 `update_protocol.md`。结构校验、`--require-provenance --changed-only` 和 `--require-provenance --full` 均已通过；当前仍提示可升级到 0.4.8.2，但不是阻塞项。
 
 ## 7. 下一步执行顺序
 
-1. 将最新分支同步到 Slurm 后提交 `slurm/stage1_wisig_short_screen.sbatch`，比较 CE baseline 与 SupCon representation 两个 WiSig 单种子短实验变体。
-2. 根据短实验结果判断旧类遗忘是否主要来自表征漂移或后端训练策略。
-3. 比较 Deep-HDBSCAN/MV-ACC 与 SimGCD 式学习发现头，检查聚类质量、类别数误差和伪标签 purity。
-4. 为 IGCD 适配本项目 60/10/30 协议设计最小接口草图，确认能否作为严格 baseline。
+1. 基于 Job `44420671` 的 WiSig 短实验结果做后端消融：优先检查 KD、回放权重、`memory_per_class`、冻结/解冻层范围和类别头校准。
+2. 比较 Deep-HDBSCAN/MV-ACC 与 SimGCD 式学习发现头，检查聚类质量、类别数误差和伪标签 purity。
+3. 为 IGCD 适配本项目 60/10/30 协议设计最小接口草图，确认能否作为严格 baseline。
 5. 设计新主方法入口时统一使用 `configs/data_paths.example.json` 的路径结构或等价命令行参数，避免写入开发者绝对路径。
 6. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 7. 若后续补充实验需要 LoRa 完整数据或 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压或下载；LoRa 可优先只取 Different Days Indoor Scenario 的必要子集，不删除 Release 分片或原压缩包。

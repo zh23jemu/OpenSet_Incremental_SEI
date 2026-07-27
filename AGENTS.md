@@ -74,6 +74,7 @@
 - 用户反馈项目中后期已尝试可靠伪标签筛选、旧类回放和知识蒸馏，但效果一般；阶段 1 需要复盘已有实现和瓶颈，不能把这些已有后端组件简单组合成新贡献。
 - 阶段 1 已新增 `STAGE1_METHOD_REVIEW.md`，完成既有 CIL 后端效果复盘和 SOTA 初筛；严格候选暂定 IGCD 与 SimGCD，SEI-specific FSCIL/CIL 方法先作为非严格参考池。
 - 阶段 1 已新增 `tools/stage1_method_screen.py`、`results/stage1/stage1_method_screen.json` 和 `slurm/stage1_wisig_short_screen.sbatch`，将候选表征风险转化为可在 Slurm 运行的 CE baseline / SupCon representation WiSig 单种子短实验。
+- Slurm Job `44420671` 已完成阶段 1 WiSig CE/SupCon 表征短实验并同步结果；SupCon 改善 R1/R2 overall 与早期遗忘，但 R3 仍严重遗忘，后续应优先做 CIL 后端消融。
 
 ## Recent Changes
 
@@ -89,6 +90,7 @@
 - 2026-07-27：根据用户反馈补充 LoRa 数据集正式名称和子集来源，并记录可靠伪标签筛选、旧类回放、知识蒸馏已尝试且效果一般，阶段 1 需避免重复包装。
 - 2026-07-27：新增 `STAGE1_METHOD_REVIEW.md`，复盘 WiSig/ManyTx/ADS-B 既有 MV-ACC-CIL 结果，确认可靠伪标签、回放和蒸馏应保留为 baseline/消融而不是新方法核心，并初筛 IGCD、SimGCD 作为严格 SOTA 候选。
 - 2026-07-27：新增阶段 1 方法筛选脚本、JSON 报告和 WiSig 单种子 Slurm 短实验脚本；本地已用 `.venv\Scripts\python.exe` 验证脚本可运行并通过 `py_compile`。
+- 2026-07-27：提交并完成 Slurm Job `44420671`，同步 CE baseline 与 SupCon representation 两组 WiSig 短实验结果，并新增 `results/stage1/STAGE1_WISIG_SHORT_REPORT.md`。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
@@ -106,8 +108,7 @@
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
-- 将最新分支同步到 Slurm 后提交 `slurm/stage1_wisig_short_screen.sbatch`，比较 CE baseline 与 SupCon representation 两个 WiSig 单种子短实验变体。
-- 根据 WiSig 短实验结果判断旧类遗忘是否主要来自表征漂移或后端训练策略。
+- 基于 Job `44420671` 的 WiSig 短实验结果做后端消融，优先检查 KD、回放权重、`memory_per_class`、冻结/解冻层范围和类别头校准。
 - 比较 Deep-HDBSCAN/MV-ACC 与 SimGCD 式学习发现头，检查聚类质量、类别数误差和伪标签 purity。
 - 为 IGCD 适配本项目 60/10/30 协议设计最小接口草图，确认能否作为严格 baseline。
 - 在 WiSig 单种子短实验前，基于 `tools/stage0_strict_loader_audit.py` 的输出确认后续实验入口统一使用可移植数据路径。

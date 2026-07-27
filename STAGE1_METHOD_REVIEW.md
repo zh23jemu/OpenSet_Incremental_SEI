@@ -78,6 +78,7 @@
 - `tools/stage1_method_screen.py`：汇总既有 WiSig/ManyTx/ADS-B MV-ACC-CIL 结果、IGCD/SimGCD 适配边界和 WiSig 短实验矩阵，输出 JSON 报告。
 - `results/stage1/stage1_method_screen.json`：本地生成的阶段 1 筛选报告，当前包含 `ce_baseline` 与 `supcon_representation` 两个 WiSig 单种子短实验变体。
 - `slurm/stage1_wisig_short_screen.sbatch`：服务器侧短实验入口，使用 `gpuHz` + `shortjobs`，在相同 WiSig strict 协议下依次运行 CE baseline 与 SupCon representation 变体。
+- `results/stage1/STAGE1_WISIG_SHORT_REPORT.md`：Slurm Job `44420671` 的结果报告。短实验显示 SupCon 能改善 R1/R2 overall 和早期遗忘，但 R3 仍严重遗忘，因此下一步应优先做 CIL 后端消融。
 
 ## 7. 当前锁定决策
 

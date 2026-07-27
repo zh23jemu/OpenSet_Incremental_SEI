@@ -139,7 +139,8 @@
 - [x] 复盘已有可靠伪标签筛选、旧类回放和知识蒸馏实现及结果，明确效果一般的原因，避免重复包装已有后端；详见 `STAGE1_METHOD_REVIEW.md`。
 - [x] 初筛至少 1–2 个可公平复现的近年 SOTA 对照，暂定严格候选为 IGCD 和 SimGCD，SEI-specific FSCIL/CIL 方法先作为非严格参考池。
 - [x] 生成阶段 1 可执行筛选入口：`tools/stage1_method_screen.py`、`results/stage1/stage1_method_screen.json` 和 `slurm/stage1_wisig_short_screen.sbatch`。
-- [ ] 在 WiSig 单种子短实验上比较现有骨干与候选深度表征。
+- [x] 在 WiSig 单种子短实验上比较 CE 初始骨干与 SupCon 初始表征；Job `44420671` 已完成，结果见 `results/stage1/STAGE1_WISIG_SHORT_REPORT.md`。
+- [ ] 基于 WiSig 短实验结果追加后端消融，优先检查冻结/解冻策略、回放权重、KD 目标和类别头校准。
 - [ ] 比较 Deep-HDBSCAN 与 1–2 个新类别发现候选，检查聚类质量和稳定性。
 - [ ] 根据验证集结果锁定新主方法前端与 RADCIL 后端组合，不使用未知轮次评估真值。
 
