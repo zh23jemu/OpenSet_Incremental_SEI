@@ -218,13 +218,19 @@ def build_report(job_id: str, seeds: tuple[int, ...], output_prefix: str, rows: 
 
     if main is not None and best_shared is not None:
         delta = float(main["overall_mean"]) - float(best_shared["overall_mean"])
+        relation = "高" if delta >= 0 else "低"
         lines.append(
-            f"- 在共享发现后端对照中，主方法 R3 Overall 比最佳 baseline `{best_shared['method']}` 高 `{delta:+.4f}`。"
+            f"- 在共享发现后端对照中，主方法 R3 Overall 比最佳 baseline `{best_shared['method']}` {relation} `{abs(delta):.4f}`。"
         )
     if main is not None and best_e2e is not None:
         delta = float(main["overall_mean"]) - float(best_e2e["overall_mean"])
+        relation = "高" if delta >= 0 else "低"
         lines.append(
-            f"- 在 Deep-HDBSCAN 端到端对照中，主方法 R3 Overall 比最佳 baseline `{best_e2e['method']}` 高 `{delta:+.4f}`。"
+            f"- 在 Deep-HDBSCAN 端到端对照中，主方法 R3 Overall 比最佳 baseline `{best_e2e['method']}` {relation} `{abs(delta):.4f}`。"
+        )
+    if main is not None and best_shared is not None and float(main["overall_mean"]) < float(best_shared["overall_mean"]):
+        lines.append(
+            "- 共享发现表说明当前网络式 RADCIL 后端不是后端上限；后续应把 DOI-style/iCaRL/TPCIL-style 作为强后端候选或混合后端消融，而不是只强调当前网络后端。"
         )
     lines.extend(
         [
