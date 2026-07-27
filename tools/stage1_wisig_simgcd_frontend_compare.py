@@ -91,6 +91,8 @@ def make_mvacc_namespace(args: argparse.Namespace) -> argparse.Namespace:
         mvacc_min_samples=int(args.mvacc_min_samples),
         mvacc_merge_rounds=int(args.mvacc_merge_rounds),
         mvacc_merge_threshold=float(args.mvacc_merge_threshold),
+        mvacc_calibration_ratios=str(args.mvacc_calibration_ratios),
+        mvacc_calibration_thresholds=str(args.mvacc_calibration_thresholds),
         mvacc_lambda_deep=float(args.mvacc_lambda_deep),
         mvacc_lambda_rf=float(args.mvacc_lambda_rf),
         mvacc_lambda_graph=float(args.mvacc_lambda_graph),
