@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划与项目进度总表
 
-- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成方法筛选和 RADCIL 后端多种子确认；阶段 2 已跑通 WiSig 单种子完整三轮主流程；阶段 3 已完成 WiSig 正式三种子主实验，下一步补齐同协议 baseline/消融并准备 ADS-B 迁移
+- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成方法筛选和 RADCIL 后端多种子确认；阶段 2 已跑通 WiSig 单种子完整三轮主流程；阶段 3 已完成 WiSig 正式三种子主实验和 high-replay 同协议消融，下一步补齐核心/增量 baseline 并准备 ADS-B 迁移
 - 版本：1.1
 - 创建日期：2026-07-26
 - 最近更新：2026-07-27
@@ -206,6 +206,7 @@
 
 - [x] 准备 WiSig 正式三种子主实验计划、汇总报告脚本和 Slurm 入口：`tools/stage3_wisig_main_multiseed_plan.py`、`tools/stage3_wisig_main_multiseed_report.py`、`results/stage3/stage3_wisig_main_multiseed_plan.json`、`slurm/stage3_wisig_main_multiseed.sbatch`。
 - [x] 运行 WiSig seed 7/13/31 正式主流程 Job `44440345`，生成 `results/stage3/STAGE3_WISIG_MAIN_MULTISEED_REPORT_44440345.md`；R3 Overall `0.6088±0.0415`、Old `0.5516±0.0453`、New `0.7804±0.0461`、Forgetting `0.2285±0.0948`。
+- [x] 运行 WiSig high-replay 同协议正式消融 Job `44448692`，生成 `results/stage3/STAGE3_WISIG_HIGH_REPLAY_MULTISEED_REPORT_44448692.md` 和 `results/stage3/STAGE3_WISIG_RADCIL_ABLATION_COMPARE.md`；R3 Overall `0.6030±0.0473`、Old `0.5421±0.0456`、New `0.7856±0.0571`、Forgetting `0.2344±0.0899`。
 - [ ] 完成核心 baseline、增量 baseline 和必做消融。
 - [ ] 完成 3 个正式随机种子。
 - [ ] 输出聚类、整体准确率、新类准确率、旧类准确率和遗忘指标。
@@ -291,11 +292,19 @@
 
 判断：WiSig 正式三种子主结果已补齐，Seed 13 仍是最难样本，R3 Overall 0.5608、Forgetting 0.3278；三种子平均遗忘为 0.2285，低于阶段 1 主候选短实验均值 0.3119。该结果可进入客户进度汇报，后续需补齐同协议 baseline/消融表，避免只报告主方法。
 
+### WiSig 阶段 3 high-replay 正式消融
+
+| 配置 | Seeds | R3 Overall | R3 Overall Std | R3 Old | R3 Old Std | R3 New | R3 New Std | R3 Forgetting | R3 Forgetting Std | R3 Macro F1 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| MV-ACC + `ratio_3p0_replay_3p0` | 7/13/31 | 0.6030 | 0.0473 | 0.5421 | 0.0456 | 0.7856 | 0.0571 | 0.2344 | 0.0899 | 0.5676 |
+
+判断：high-replay 对照与主方法完全同协议，只将 old:new batch ratio 从 2.0 提高到 3.0。对比 `results/stage3/STAGE3_WISIG_RADCIL_ABLATION_COMPARE.md` 显示 high-replay 的 R3 New Acc 高 `+0.0052`，但 Overall 低 `-0.0058`、Old 低 `-0.0095`、Forgetting 高 `+0.0059`、Macro F1 低 `-0.0033`。因此阶段 3 正式消融支持继续选择 `ratio_2p0_replay_3p0` 作为主后端，`ratio_3p0_replay_3p0` 保留为 high-replay 对照。
+
 ## 8.2 当前风险与应对
 
 | 风险                  | 影响                    | 当前应对                                         |
 | ------------------- | --------------------- | -------------------------------------------- |
-| WiSig 主方法仍缺同协议 baseline/消融表 | 当前已有正式三种子主结果，但缺少完整对照支撑 | 补齐核心 baseline、增量 baseline 和 high-replay 对照的同协议汇总 |
+| WiSig 主方法仍缺完整同协议 baseline 表 | 当前已有正式三种子主结果和 high-replay 正式消融，但核心/增量 baseline 仍不完整 | 继续补齐核心 baseline、增量 baseline，并把 IGCD-minimal/SimGCD-style 标注为 strict/minimal 适配对照 |
 | IGCD-minimal 不是完整复现 | 客户或论文审稿可能质疑 SOTA 公平性  | 明确标注为 minimal strict adaptation，必要时后续补齐更完整适配 |
 | ADS-B 历史闭集和发现质量偏弱   | 主实验第二数据集可能拖慢          | 阶段 4 优先处理 ADS-B 长序列表征                        |
 | ManyRx 正式 runner 缺失 | 补充实验入口不清晰             | 后续恢复 runner 或修正文档引用                          |
@@ -305,7 +314,7 @@
 
 短期优先级：
 
-1. 为 WiSig 正式结果补齐核心 baseline、增量 baseline 和 high-replay 后端对照汇总。
+1. 为 WiSig 正式结果补齐核心 baseline 和增量 baseline；high-replay 后端正式消融已完成。
 2. 将 IGCD-minimal 和 SimGCD-style 放入 strict baseline 表，并明确适配级别。
 3. 准备 ADS-B 阶段 4 主流程入口，先复用阶段 0 strict loader 审计和 ADS-B 长序列表征设置。
 
