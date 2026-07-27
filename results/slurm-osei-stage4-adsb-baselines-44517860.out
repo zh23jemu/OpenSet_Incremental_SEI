@@ -1,0 +1,356 @@
+运行 ADS-B strict baseline：seed=7, save_dir=results/stage4/adsb_cil_baselines_seed7_44517860
+
+========== Strict ADS-B 90-Known 3-Round MV-ACC-CIL Experiment ==========
+Dataset root: 数据集/ADS-B/Dataset
+Save dir: results/stage4/adsb_cil_baselines_seed7_44517860
+Device: cuda
+Backbone: adsb_long
+Protocol: 90 known + 10 novel R1 + 10 novel R2 + 10 novel R3
+Receiver setting: receiver metadata unavailable; treated as one acquisition domain
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Base-class protocol: 60% backbone train + 10% validation + 30% stored-order held-out evaluation
+Novel-class protocol: provided train file for discovery/training; provided test file for evaluation only
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.03, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Base development 70%: (14388, 2, 4800), classes=90, labels=0-89
+Initial eval 30%:     (6178, 2, 4800), classes=90, labels=0-89, day=ADS-B known-pool held-out partition
+Novel R1 train file: (3081, 2, 4800), classes=10, labels=90-99, source=ADS-B novel pool group 0-9
+After R1 held-out eval: (7178, 2, 4800), classes=100, labels=0-99, source=ADS-B held-out evaluation after round 1
+Novel R2 train file: (2911, 2, 4800), classes=10, labels=100-109, source=ADS-B novel pool group 10-19
+After R2 held-out eval: (8178, 2, 4800), classes=110, labels=0-109, source=ADS-B held-out evaluation after round 2
+Novel R3 train file: (2448, 2, 4800), classes=10, labels=110-119, source=ADS-B novel pool group 20-29
+After R3 held-out eval: (9178, 2, 4800), classes=120, labels=0-119, source=ADS-B held-out evaluation after round 3
+[Integrity] exact IQ overlap across every development/test boundary: 0
+[Load] checkpoint=results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.111 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Representative Class-Incremental Baselines: Shared Graph-fusion pseudo-labels ==========
+
+========== Representative Class-Incremental Baselines: End-to-end with neutral Deep-HDBSCAN discovery ==========
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc  Label-free Silhouette  Cluster Size Min  Cluster Size Median  Cluster Size Max  Cluster Size CV  Small Cluster Fraction  Raw HDBSCAN Confidence Mean      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples  MVACC Adaptive Density Enabled  MVACC Selected Density Ratio
+MV-ACC-CIL discovery    R1         Day 2                10     3081                      9                   12                    2                    1.2        12    0.0 0.809611 0.609684 0.819215       0.645570               0.331575               108                197.0               832         0.721790                0.000000                     0.831610 fixed_alpha    0.7                 12                        0                  0.74                        184               184                  1.0               0.767426              0.549627                False                     3                        1.75                                  0.3                           0.388                      92                     0.03                  5                           False                          0.03
+MV-ACC-CIL discovery    R2         Day 3                10     2911                     10                    9                    1                    0.9         9    0.0 0.773915 0.633538 0.729303       0.669529               0.243615               184                270.0               584         0.430906                0.000000                     0.668640 fixed_alpha    0.7                 12                        1                  0.74                        777               777                  1.0               0.667754              0.467129                False                     0                        1.75                                  0.3                             NaN                      87                     0.03                  5                           False                          0.03
+MV-ACC-CIL discovery    R3         Day 4                10     2448                      7                    7                    3                    0.7         7    0.0 0.784787 0.596725 0.709150       0.661356               0.250558               125                296.0               756         0.564053                0.142857                     0.860107 fixed_alpha    0.7                 12                        0                  0.74                        115               115                  1.0               0.776532              0.543151                False                     0                        1.75                                  0.3                             NaN                      73                     0.03                  5                           False                          0.03
+Saved: results/stage4/adsb_cil_baselines_seed7_44517860/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage                                Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.599709 0.599709      NaN           0.599709         0.000000  0.546687
+MV-ACC-CIL After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  12                12          7178     0.537894 0.524603    0.620           0.524603         0.075105  0.524684
+MV-ACC-CIL After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                   9                 9          8178     0.510883 0.507384    0.536           0.507122         0.092587  0.502073
+MV-ACC-CIL After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   7                 7          9178     0.472870 0.477011    0.439           0.496115         0.103593  0.462824
+Saved: results/stage4/adsb_cil_baselines_seed7_44517860/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1             12                                12                    2         1.000000 0.819215 0.809611 0.609684       0.645570     0.537894 0.620000         0.075105
+MV-ACC-CIL    R2              9                                 9                    1         1.000000 0.729303 0.773915 0.633538       0.669529     0.510883 0.536000         0.092587
+MV-ACC-CIL    R3              7                                 7                    3         1.000000 0.709150 0.784787 0.596725       0.661356     0.472870 0.439000         0.103593
+Saved: results/stage4/adsb_cil_baselines_seed7_44517860/per_round_summary_results.csv
+
+========== Table 4: Shared-Discovery Baseline Details ==========
+     Method    Stage                                Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+     Ft-CNN  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.565717 0.565717      NaN           0.565717         0.000000  0.458572
+        LwF  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.565717 0.565717      NaN           0.565717         0.000000  0.458572
+       EEIL  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.565717 0.565717      NaN           0.565717         0.000000  0.458572
+      iCaRL  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.547912 0.547912      NaN           0.547912         0.000000  0.500324
+TPCIL-style  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.549207 0.549207      NaN           0.549207         0.000000  0.501556
+  DOI-style  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.547912 0.547912      NaN           0.547912         0.000000  0.500324
+     Ft-CNN After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  12                12          7178     0.487740 0.564098 0.016000           0.564098         0.001619  0.384833
+        LwF After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  12                12          7178     0.487740 0.565879 0.005000           0.565879        -0.000162  0.385932
+      iCaRL After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  12                12          7178     0.498189 0.510521 0.422000           0.510521         0.037391  0.471411
+       EEIL After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  12                12          7178     0.523126 0.597928 0.061000           0.597928        -0.032211  0.454140
+TPCIL-style After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  12                12          7178     0.499582 0.512140 0.422000           0.512140         0.037067  0.472841
+  DOI-style After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  12                12          7178     0.499443 0.509712 0.436000           0.509712         0.038200  0.472437
+     Ft-CNN After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                   9                 9          8178     0.432257 0.473252 0.138000           0.549369         0.016348  0.333360
+        LwF After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                   9                 9          8178     0.436048 0.482307 0.104000           0.559728         0.005989  0.338014
+      iCaRL After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                   9                 9          8178     0.470898 0.487880 0.349000           0.500000         0.047912  0.442088
+       EEIL After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                   9                 9          8178     0.486427 0.526748 0.197000           0.589673        -0.023956  0.427004
+TPCIL-style After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                   9                 9          8178     0.471631 0.488716 0.349000           0.501133         0.048074  0.442662
+  DOI-style After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                   9                 9          8178     0.471020 0.489133 0.341000           0.499676         0.048236  0.441888
+     Ft-CNN After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   7                 7          9178     0.379930 0.401321 0.205000           0.524118         0.041599  0.287324
+        LwF After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   7                 7          9178     0.387775 0.417828 0.142000           0.544351         0.021366  0.295081
+      iCaRL After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   7                 7          9178     0.435171 0.462827 0.209000           0.495792         0.052120  0.404893
+       EEIL After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   7                 7          9178     0.444105 0.484104 0.117000           0.564260         0.001457  0.393284
+TPCIL-style After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   7                 7          9178     0.435280 0.463438 0.205000           0.496601         0.052606  0.405004
+  DOI-style After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   7                 7          9178     0.433101 0.461482 0.201000           0.494173         0.053739  0.403269
+Saved: results/stage4/adsb_cil_baselines_seed7_44517860/shared_discovery_baseline_results.csv
+
+========== Table 5: Shared-Discovery Controlled Comparison ==========
+     Method   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Ft-CNN 0.487740       0.001619 0.432257       0.016348 0.379930       0.041599 0.433309        0.019855
+        LwF 0.487740      -0.000162 0.436048       0.005989 0.387775       0.021366 0.437188        0.009064
+      iCaRL 0.498189       0.037391 0.470898       0.047912 0.435171       0.052120 0.468086        0.045808
+       EEIL 0.523126      -0.032211 0.486427      -0.023956 0.444105       0.001457 0.484553       -0.018237
+TPCIL-style 0.499582       0.037067 0.471631       0.048074 0.435280       0.052606 0.468831        0.045916
+  DOI-style 0.499443       0.038200 0.471020       0.048236 0.433101       0.053739 0.467854        0.046725
+Saved: results/stage4/adsb_cil_baselines_seed7_44517860/shared_discovery_comparison_results.csv
+
+========== Table 6: End-to-End Open-Set Incremental Comparison ==========
+                    Method   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Deep-HDBSCAN + Ft-CNN 0.493452       0.002752 0.425654       0.012625 0.376662       0.016510 0.431923        0.010629
+        Deep-HDBSCAN + LwF 0.494009       0.002104 0.427733       0.009874 0.379277       0.012625 0.433673        0.008201
+      Deep-HDBSCAN + iCaRL 0.521872       0.031725 0.493519       0.048559 0.465025       0.057786 0.493472        0.046024
+       Deep-HDBSCAN + EEIL 0.520479      -0.022499 0.467718      -0.022985 0.423077      -0.009550 0.470425       -0.018345
+Deep-HDBSCAN + TPCIL-style 0.521594       0.032373 0.493275       0.048883 0.465352       0.057786 0.493407        0.046347
+  Deep-HDBSCAN + DOI-style 0.523962       0.033506 0.497554       0.048883 0.470582       0.059081 0.497366        0.047157
+Saved: results/stage4/adsb_cil_baselines_seed7_44517860/end_to_end_comparison_results.csv
+
+========== Table 7: Full End-to-End System Comparison (Main Table) ==========
+                    Method         Discovery Module                            Incremental Module   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Deep-HDBSCAN + Ft-CNN Deep embedding + HDBSCAN                                   Fine-tuning 0.493452       0.002752 0.425654       0.012625 0.376662       0.016510 0.431923        0.010629
+        Deep-HDBSCAN + LwF Deep embedding + HDBSCAN                        Knowledge distillation 0.494009       0.002104 0.427733       0.009874 0.379277       0.012625 0.433673        0.008201
+      Deep-HDBSCAN + iCaRL Deep embedding + HDBSCAN        Exemplar replay + prototype classifier 0.521872       0.031725 0.493519       0.048559 0.465025       0.057786 0.493472        0.046024
+       Deep-HDBSCAN + EEIL Deep embedding + HDBSCAN                         Replay + distillation 0.520479      -0.022499 0.467718      -0.022985 0.423077      -0.009550 0.470425       -0.018345
+Deep-HDBSCAN + TPCIL-style Deep embedding + HDBSCAN            Topology-aware prototype smoothing 0.521594       0.032373 0.493275       0.048883 0.465352       0.057786 0.493407        0.046347
+  Deep-HDBSCAN + DOI-style Deep embedding + HDBSCAN DOI-inspired prototype preservation/alignment 0.523962       0.033506 0.497554       0.048883 0.470582       0.059081 0.497366        0.047157
+Saved: results/stage4/adsb_cil_baselines_seed7_44517860/end_to_end_system_comparison.csv
+运行 ADS-B strict baseline：seed=13, save_dir=results/stage4/adsb_cil_baselines_seed13_44517860
+
+========== Strict ADS-B 90-Known 3-Round MV-ACC-CIL Experiment ==========
+Dataset root: 数据集/ADS-B/Dataset
+Save dir: results/stage4/adsb_cil_baselines_seed13_44517860
+Device: cuda
+Backbone: adsb_long
+Protocol: 90 known + 10 novel R1 + 10 novel R2 + 10 novel R3
+Receiver setting: receiver metadata unavailable; treated as one acquisition domain
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Base-class protocol: 60% backbone train + 10% validation + 30% stored-order held-out evaluation
+Novel-class protocol: provided train file for discovery/training; provided test file for evaluation only
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.03, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Base development 70%: (14388, 2, 4800), classes=90, labels=0-89
+Initial eval 30%:     (6178, 2, 4800), classes=90, labels=0-89, day=ADS-B known-pool held-out partition
+Novel R1 train file: (3081, 2, 4800), classes=10, labels=90-99, source=ADS-B novel pool group 0-9
+After R1 held-out eval: (7178, 2, 4800), classes=100, labels=0-99, source=ADS-B held-out evaluation after round 1
+Novel R2 train file: (2911, 2, 4800), classes=10, labels=100-109, source=ADS-B novel pool group 10-19
+After R2 held-out eval: (8178, 2, 4800), classes=110, labels=0-109, source=ADS-B held-out evaluation after round 2
+Novel R3 train file: (2448, 2, 4800), classes=10, labels=110-119, source=ADS-B novel pool group 20-29
+After R3 held-out eval: (9178, 2, 4800), classes=120, labels=0-119, source=ADS-B held-out evaluation after round 3
+[Integrity] exact IQ overlap across every development/test boundary: 0
+[Load] checkpoint=results/stage4/adsb_main_long_radcil_seed13_44470736/closedset_adsb_90known_strict.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.115 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Representative Class-Incremental Baselines: Shared Graph-fusion pseudo-labels ==========
+
+========== Representative Class-Incremental Baselines: End-to-end with neutral Deep-HDBSCAN discovery ==========
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc  Label-free Silhouette  Cluster Size Min  Cluster Size Median  Cluster Size Max  Cluster Size CV  Small Cluster Fraction  Raw HDBSCAN Confidence Mean      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples  MVACC Adaptive Density Enabled  MVACC Selected Density Ratio
+MV-ACC-CIL discovery    R1         Day 2                10     3081                     10                   11                    1                    1.1        11    0.0 0.821143 0.643332 0.813697       0.691009               0.322212               104                208.0               809         0.661192                0.000000                     0.824551 fixed_alpha    0.7                 12                        0                  0.74                        221               221                  1.0               0.742009              0.525250                False                     1                        1.75                                  0.3                        0.353998                      92                     0.03                  5                           False                          0.03
+MV-ACC-CIL discovery    R2         Day 3                10     2911                     12                   13                    3                    1.3        13    0.0 0.861375 0.770685 0.929921       0.789763               0.427381               130                207.0               379         0.343426                0.000000                     0.797524 fixed_alpha    0.7                 12                        0                  0.74                        362               362                  1.0               0.753440              0.566547                False                     1                        1.75                                  0.3                        0.443299                      87                     0.03                  5                           False                          0.03
+MV-ACC-CIL discovery    R3         Day 4                10     2448                      6                    6                    4                    0.6         6    0.0 0.764178 0.587418 0.675654       0.675654               0.191450               160                377.5               756         0.441759                0.166667                     0.749687 fixed_alpha    0.7                 12                        0                  0.74                        307               307                  1.0               0.659077              0.490100                False                     0                        1.75                                  0.3                             NaN                      73                     0.03                  5                           False                          0.03
+Saved: results/stage4/adsb_cil_baselines_seed13_44517860/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage                                Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.612820 0.612820      NaN           0.612820         0.000000  0.573877
+MV-ACC-CIL After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  11                11          7178     0.537894 0.524442    0.621           0.524442         0.088378  0.524416
+MV-ACC-CIL After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  13                13          8178     0.535828 0.509055    0.728           0.510683         0.102137  0.526951
+MV-ACC-CIL After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   6                 6          9178     0.487470 0.491440    0.455           0.492392         0.120427  0.480232
+Saved: results/stage4/adsb_cil_baselines_seed13_44517860/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1             11                                11                    1         1.000000 0.813697 0.821143 0.643332       0.691009     0.537894 0.621000         0.088378
+MV-ACC-CIL    R2             13                                13                    3         1.000000 0.929921 0.861375 0.770685       0.789763     0.535828 0.728000         0.102137
+MV-ACC-CIL    R3              6                                 6                    4         1.000000 0.675654 0.764178 0.587418       0.675654     0.487470 0.455000         0.120427
+Saved: results/stage4/adsb_cil_baselines_seed13_44517860/per_round_summary_results.csv
+
+========== Table 4: Shared-Discovery Baseline Details ==========
+     Method    Stage                                Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+     Ft-CNN  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.581580 0.581580      NaN           0.581580         0.000000  0.487761
+        LwF  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.581580 0.581580      NaN           0.581580         0.000000  0.487761
+       EEIL  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.581580 0.581580      NaN           0.581580         0.000000  0.487761
+      iCaRL  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.548883 0.548883      NaN           0.548883         0.000000  0.506628
+TPCIL-style  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.549369 0.549369      NaN           0.549369         0.000000  0.506599
+  DOI-style  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.548883 0.548883      NaN           0.548883         0.000000  0.506628
+     Ft-CNN After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  11                11          7178     0.500975 0.580609 0.009000           0.580609         0.000971  0.410561
+        LwF After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  11                11          7178     0.500557 0.580447 0.007000           0.580447         0.001133  0.411171
+      iCaRL After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  11                11          7178     0.498885 0.512625 0.414000           0.512625         0.036258  0.473725
+       EEIL After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  11                11          7178     0.528838 0.598576 0.098000           0.598576        -0.016996  0.464952
+TPCIL-style After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  11                11          7178     0.499025 0.513111 0.412000           0.513111         0.036258  0.473706
+  DOI-style After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  11                11          7178     0.501115 0.512787 0.429000           0.512787         0.036096  0.475971
+     Ft-CNN After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  13                13          8178     0.449621 0.489133 0.166000           0.567012         0.014568  0.361606
+        LwF After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  13                13          8178     0.451577 0.497492 0.122000           0.576886         0.004694  0.366635
+      iCaRL After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  13                13          8178     0.495109 0.486208 0.559000           0.500647         0.048236  0.472035
+       EEIL After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  13                13          8178     0.491440 0.523683 0.260000           0.579314         0.002266  0.440191
+TPCIL-style After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  13                13          8178     0.494131 0.485093 0.559000           0.499838         0.049531  0.470816
+  DOI-style After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  13                13          8178     0.500856 0.485651 0.610000           0.499029         0.049854  0.478135
+     Ft-CNN After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   6                 6          9178     0.401830 0.419907 0.254000           0.535610         0.045970  0.319775
+        LwF After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   6                 6          9178     0.403138 0.426632 0.211000           0.551473         0.030107  0.325918
+      iCaRL After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   6                 6          9178     0.456962 0.486672 0.214000           0.495792         0.053092  0.432332
+       EEIL After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   6                 6          9178     0.447810 0.481169 0.175000           0.553415         0.028164  0.403897
+TPCIL-style After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   6                 6          9178     0.455982 0.486305 0.208000           0.495630         0.053739  0.431177
+  DOI-style After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   6                 6          9178     0.466006 0.492663 0.248000           0.496115         0.052768  0.440960
+Saved: results/stage4/adsb_cil_baselines_seed13_44517860/shared_discovery_baseline_results.csv
+
+========== Table 5: Shared-Discovery Controlled Comparison ==========
+     Method   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Ft-CNN 0.500975       0.000971 0.449621       0.014568 0.401830       0.045970 0.450809        0.020503
+        LwF 0.500557       0.001133 0.451577       0.004694 0.403138       0.030107 0.451758        0.011978
+      iCaRL 0.498885       0.036258 0.495109       0.048236 0.456962       0.053092 0.483652        0.045862
+       EEIL 0.528838      -0.016996 0.491440       0.002266 0.447810       0.028164 0.489363        0.004478
+TPCIL-style 0.499025       0.036258 0.494131       0.049531 0.455982       0.053739 0.483046        0.046509
+  DOI-style 0.501115       0.036096 0.500856       0.049854 0.466006       0.052768 0.489325        0.046239
+Saved: results/stage4/adsb_cil_baselines_seed13_44517860/shared_discovery_comparison_results.csv
+
+========== Table 6: End-to-End Open-Set Incremental Comparison ==========
+                    Method   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Deep-HDBSCAN + Ft-CNN 0.501254       0.006475 0.440205       0.006151 0.387884       0.012787 0.443114        0.008471
+        Deep-HDBSCAN + LwF 0.503901       0.003399 0.442896       0.002590 0.392678       0.005827 0.446492        0.003939
+      Deep-HDBSCAN + iCaRL 0.499582       0.014730 0.495598       0.027355 0.456962       0.036581 0.484047        0.026222
+       Deep-HDBSCAN + EEIL 0.524241      -0.018776 0.462338      -0.009064 0.417956       0.008255 0.468178       -0.006529
+Deep-HDBSCAN + TPCIL-style 0.499164       0.014892 0.494497       0.027841 0.455982       0.036581 0.483214        0.026438
+  Deep-HDBSCAN + DOI-style 0.502229       0.015701 0.500000       0.030107 0.462410       0.039009 0.488213        0.028272
+Saved: results/stage4/adsb_cil_baselines_seed13_44517860/end_to_end_comparison_results.csv
+
+========== Table 7: Full End-to-End System Comparison (Main Table) ==========
+                    Method         Discovery Module                            Incremental Module   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Deep-HDBSCAN + Ft-CNN Deep embedding + HDBSCAN                                   Fine-tuning 0.501254       0.006475 0.440205       0.006151 0.387884       0.012787 0.443114        0.008471
+        Deep-HDBSCAN + LwF Deep embedding + HDBSCAN                        Knowledge distillation 0.503901       0.003399 0.442896       0.002590 0.392678       0.005827 0.446492        0.003939
+      Deep-HDBSCAN + iCaRL Deep embedding + HDBSCAN        Exemplar replay + prototype classifier 0.499582       0.014730 0.495598       0.027355 0.456962       0.036581 0.484047        0.026222
+       Deep-HDBSCAN + EEIL Deep embedding + HDBSCAN                         Replay + distillation 0.524241      -0.018776 0.462338      -0.009064 0.417956       0.008255 0.468178       -0.006529
+Deep-HDBSCAN + TPCIL-style Deep embedding + HDBSCAN            Topology-aware prototype smoothing 0.499164       0.014892 0.494497       0.027841 0.455982       0.036581 0.483214        0.026438
+  Deep-HDBSCAN + DOI-style Deep embedding + HDBSCAN DOI-inspired prototype preservation/alignment 0.502229       0.015701 0.500000       0.030107 0.462410       0.039009 0.488213        0.028272
+Saved: results/stage4/adsb_cil_baselines_seed13_44517860/end_to_end_system_comparison.csv
+运行 ADS-B strict baseline：seed=31, save_dir=results/stage4/adsb_cil_baselines_seed31_44517860
+
+========== Strict ADS-B 90-Known 3-Round MV-ACC-CIL Experiment ==========
+Dataset root: 数据集/ADS-B/Dataset
+Save dir: results/stage4/adsb_cil_baselines_seed31_44517860
+Device: cuda
+Backbone: adsb_long
+Protocol: 90 known + 10 novel R1 + 10 novel R2 + 10 novel R3
+Receiver setting: receiver metadata unavailable; treated as one acquisition domain
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Base-class protocol: 60% backbone train + 10% validation + 30% stored-order held-out evaluation
+Novel-class protocol: provided train file for discovery/training; provided test file for evaluation only
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.03, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Base development 70%: (14388, 2, 4800), classes=90, labels=0-89
+Initial eval 30%:     (6178, 2, 4800), classes=90, labels=0-89, day=ADS-B known-pool held-out partition
+Novel R1 train file: (3081, 2, 4800), classes=10, labels=90-99, source=ADS-B novel pool group 0-9
+After R1 held-out eval: (7178, 2, 4800), classes=100, labels=0-99, source=ADS-B held-out evaluation after round 1
+Novel R2 train file: (2911, 2, 4800), classes=10, labels=100-109, source=ADS-B novel pool group 10-19
+After R2 held-out eval: (8178, 2, 4800), classes=110, labels=0-109, source=ADS-B held-out evaluation after round 2
+Novel R3 train file: (2448, 2, 4800), classes=10, labels=110-119, source=ADS-B novel pool group 20-29
+After R3 held-out eval: (9178, 2, 4800), classes=120, labels=0-119, source=ADS-B held-out evaluation after round 3
+[Integrity] exact IQ overlap across every development/test boundary: 0
+[Load] checkpoint=results/stage4/adsb_main_long_radcil_seed31_44467424/closedset_adsb_90known_strict.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.112 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Representative Class-Incremental Baselines: Shared Graph-fusion pseudo-labels ==========
+
+========== Representative Class-Incremental Baselines: End-to-end with neutral Deep-HDBSCAN discovery ==========
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc  Label-free Silhouette  Cluster Size Min  Cluster Size Median  Cluster Size Max  Cluster Size CV  Small Cluster Fraction  Raw HDBSCAN Confidence Mean      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples  MVACC Adaptive Density Enabled  MVACC Selected Density Ratio
+MV-ACC-CIL discovery    R1         Day 2                10     3081                     10                   10                    0                    1.0        10    0.0 0.867646 0.799199 0.893216       0.893216               0.334866               107                325.5               560         0.468237                0.200000                     0.760988 fixed_alpha    0.7                 12                        0                  0.74                        186               186                  1.0               0.772630              0.598092                False                     0                        1.75                                  0.3                             NaN                      92                     0.03                  5                           False                          0.03
+MV-ACC-CIL discovery    R2         Day 3                10     2911                     11                   10                    0                    1.0        10    0.0 0.791290 0.646883 0.807283       0.763999               0.287896               128                261.5               683         0.502799                0.100000                     0.679654 fixed_alpha    0.7                 12                        1                  0.74                        704               704                  1.0               0.721691              0.492387                False                     0                        1.75                                  0.3                             NaN                      87                     0.03                  5                           False                          0.03
+MV-ACC-CIL discovery    R3         Day 4                10     2448                      7                    7                    3                    0.7         7    0.0 0.753925 0.530997 0.666258       0.615196               0.264634               127                388.0               633         0.461598                0.285714                     0.866087 fixed_alpha    0.7                 12                        0                  0.74                        133               133                  1.0               0.660688              0.549713                False                     0                        1.75                                  0.3                             NaN                      73                     0.03                  5                           False                          0.03
+Saved: results/stage4/adsb_cil_baselines_seed31_44517860/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage                                Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.605212 0.605212      NaN           0.605212         0.000000  0.553677
+MV-ACC-CIL After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  10                10          7178     0.555587 0.512625    0.821           0.512625         0.092587  0.523013
+MV-ACC-CIL After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  10                10          8178     0.540352 0.519783    0.688           0.497734         0.107478  0.513902
+MV-ACC-CIL After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   7                 7          9178     0.489104 0.496087    0.432           0.481547         0.123665  0.470225
+Saved: results/stage4/adsb_cil_baselines_seed31_44517860/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1             10                                10                    0         1.000000 0.893216 0.867646 0.799199       0.893216     0.555587 0.821000         0.092587
+MV-ACC-CIL    R2             10                                10                    0         1.000000 0.807283 0.791290 0.646883       0.763999     0.540352 0.688000         0.107478
+MV-ACC-CIL    R3              7                                 7                    3         1.000000 0.666258 0.753925 0.530997       0.615196     0.489104 0.432000         0.123665
+Saved: results/stage4/adsb_cil_baselines_seed31_44517860/per_round_summary_results.csv
+
+========== Table 4: Shared-Discovery Baseline Details ==========
+     Method    Stage                                Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+     Ft-CNN  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.581904 0.581904      NaN           0.581904         0.000000  0.483533
+        LwF  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.581904 0.581904      NaN           0.581904         0.000000  0.483533
+       EEIL  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.581904 0.581904      NaN           0.581904         0.000000  0.483533
+      iCaRL  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.571059 0.571059      NaN           0.571059         0.000000  0.520080
+TPCIL-style  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.572354 0.572354      NaN           0.572354         0.000000  0.521762
+  DOI-style  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.571059 0.571059      NaN           0.571059         0.000000  0.520080
+     Ft-CNN After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  10                10          7178     0.498885 0.579152 0.003000           0.579152         0.002752  0.401545
+        LwF After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  10                10          7178     0.499303 0.579961 0.001000           0.579961         0.001942  0.403141
+      iCaRL After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  10                10          7178     0.543048 0.540142 0.561000           0.540142         0.030916  0.503411
+       EEIL After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  10                10          7178     0.532739 0.602137 0.104000           0.602137        -0.020233  0.464256
+TPCIL-style After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  10                10          7178     0.544441 0.541599 0.562000           0.541599         0.030754  0.504941
+  DOI-style After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  10                10          7178     0.544023 0.536581 0.590000           0.536581         0.034477  0.504313
+     Ft-CNN After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  10                10          8178     0.449376 0.488576 0.168000           0.567659         0.014244  0.358960
+        LwF After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  10                10          8178     0.446931 0.495960 0.095000           0.576238         0.005665  0.358726
+      iCaRL After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  10                10          8178     0.525312 0.522151 0.548000           0.520719         0.050340  0.487227
+       EEIL After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  10                10          8178     0.501712 0.536918 0.249000           0.587731        -0.005827  0.441899
+TPCIL-style After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  10                10          8178     0.526412 0.523683 0.546000           0.522499         0.049854  0.488448
+  DOI-style After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  10                10          8178     0.526901 0.521733 0.564000           0.516510         0.054548  0.489069
+     Ft-CNN After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   7                 7          9178     0.401613 0.418073 0.267000           0.543380         0.038524  0.311868
+        LwF After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   7                 7          9178     0.404119 0.422230 0.256000           0.553739         0.028164  0.315111
+      iCaRL After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   7                 7          9178     0.483548 0.513084 0.242000           0.515539         0.055520  0.446629
+       EEIL After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   7                 7          9178     0.464698 0.492786 0.235000           0.563127         0.018776  0.412414
+TPCIL-style After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   7                 7          9178     0.484201 0.514062 0.240000           0.517320         0.055034  0.447331
+  DOI-style After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                   7                 7          9178     0.487252 0.515407 0.257000           0.512302         0.058757  0.450005
+Saved: results/stage4/adsb_cil_baselines_seed31_44517860/shared_discovery_baseline_results.csv
+
+========== Table 5: Shared-Discovery Controlled Comparison ==========
+     Method   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Ft-CNN 0.498885       0.002752 0.449376       0.014244 0.401613       0.038524 0.449958        0.018507
+        LwF 0.499303       0.001942 0.446931       0.005665 0.404119       0.028164 0.450118        0.011924
+      iCaRL 0.543048       0.030916 0.525312       0.050340 0.483548       0.055520 0.517303        0.045592
+       EEIL 0.532739      -0.020233 0.501712      -0.005827 0.464698       0.018776 0.499716       -0.002428
+TPCIL-style 0.544441       0.030754 0.526412       0.049854 0.484201       0.055034 0.518352        0.045214
+  DOI-style 0.544023       0.034477 0.526901       0.054548 0.487252       0.058757 0.519392        0.049261
+Saved: results/stage4/adsb_cil_baselines_seed31_44517860/shared_discovery_comparison_results.csv
+
+========== Table 6: End-to-End Open-Set Incremental Comparison ==========
+                    Method   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Deep-HDBSCAN + Ft-CNN 0.498607       0.002914 0.433725       0.008255 0.382872       0.013920 0.438401        0.008363
+        Deep-HDBSCAN + LwF 0.499303       0.002104 0.436782       0.004208 0.385814       0.009550 0.440633        0.005288
+      Deep-HDBSCAN + iCaRL 0.549178       0.031402 0.520665       0.047426 0.492809       0.057138 0.520884        0.045322
+       Deep-HDBSCAN + EEIL 0.519365      -0.020071 0.468574      -0.015215 0.438549      -0.007931 0.475496       -0.014406
+Deep-HDBSCAN + TPCIL-style 0.548064       0.031240 0.519809       0.046779 0.492482       0.055843 0.520118        0.044621
+  Deep-HDBSCAN + DOI-style 0.549317       0.036258 0.521888       0.050664 0.494661       0.061023 0.521955        0.049315
+Saved: results/stage4/adsb_cil_baselines_seed31_44517860/end_to_end_comparison_results.csv
+
+========== Table 7: Full End-to-End System Comparison (Main Table) ==========
+                    Method         Discovery Module                            Incremental Module   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Deep-HDBSCAN + Ft-CNN Deep embedding + HDBSCAN                                   Fine-tuning 0.498607       0.002914 0.433725       0.008255 0.382872       0.013920 0.438401        0.008363
+        Deep-HDBSCAN + LwF Deep embedding + HDBSCAN                        Knowledge distillation 0.499303       0.002104 0.436782       0.004208 0.385814       0.009550 0.440633        0.005288
+      Deep-HDBSCAN + iCaRL Deep embedding + HDBSCAN        Exemplar replay + prototype classifier 0.549178       0.031402 0.520665       0.047426 0.492809       0.057138 0.520884        0.045322
+       Deep-HDBSCAN + EEIL Deep embedding + HDBSCAN                         Replay + distillation 0.519365      -0.020071 0.468574      -0.015215 0.438549      -0.007931 0.475496       -0.014406
+Deep-HDBSCAN + TPCIL-style Deep embedding + HDBSCAN            Topology-aware prototype smoothing 0.548064       0.031240 0.519809       0.046779 0.492482       0.055843 0.520118        0.044621
+  Deep-HDBSCAN + DOI-style Deep embedding + HDBSCAN DOI-inspired prototype preservation/alignment 0.549317       0.036258 0.521888       0.050664 0.494661       0.061023 0.521955        0.049315
+Saved: results/stage4/adsb_cil_baselines_seed31_44517860/end_to_end_system_comparison.csv
+ADS-B strict baseline 三种子报告：results/stage4/STAGE4_ADSB_STRICT_BASELINE_TABLE_44517860.md
+ADS-B strict baseline 三种子完成：results/stage4/STAGE4_ADSB_STRICT_BASELINE_TABLE_44517860.md

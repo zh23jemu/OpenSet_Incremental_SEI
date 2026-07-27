@@ -1,0 +1,431 @@
+{
+  "plan": {
+    "schema_version": "stage4_adsb_adaptive_density_plan_v1",
+    "created_at_utc": "2026-07-27T22:50:40.727262+00:00",
+    "job_id": "44517848",
+    "seeds": [
+      7,
+      13,
+      31
+    ],
+    "selection_boundary": "每轮只使用 discovery 聚类的 silhouette、HDBSCAN 置信度、簇大小 CV、小簇比例、候选间 ARI 和相对新增簇数；真实标签与 held-out 指标仅事后审计。",
+    "anchor_ratio": 0.03,
+    "candidate_ratio": 0.02,
+    "locked_backend": {
+      "backbone": "adsb_long",
+      "old_new_batch_ratio": 2.0,
+      "replay_weight": 3.0
+    },
+    "runs": [
+      {
+        "seed": 7,
+        "save_dir": "results/stage4/adsb_adaptive_density_seed7_44517848",
+        "baseline_dir": "results/stage4/adsb_density_multiseed_seed7_baseline_locked_44474381",
+        "checkpoint": "results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth",
+        "argv": [
+          "--data_root",
+          "数据集/ADS-B/Dataset",
+          "--save_dir",
+          "results/stage4/adsb_adaptive_density_seed7_44517848",
+          "--checkpoint",
+          "results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth",
+          "--initial_known_classes",
+          "90",
+          "--round_size",
+          "10",
+          "--num_rounds",
+          "3",
+          "--seed",
+          "7",
+          "--backbone",
+          "adsb_long",
+          "--batch_size",
+          "128",
+          "--test_batch_size",
+          "256",
+          "--disable_cil_baselines",
+          "--use_supcon",
+          "--supcon_weight",
+          "0.1",
+          "--cil_head_warmup_epochs",
+          "2",
+          "--cil_joint_epochs",
+          "8",
+          "--cil_replay_weight",
+          "3.0",
+          "--radcil_old_new_batch_ratio",
+          "2.0",
+          "--disable_mvacc_calibration",
+          "--mvacc_min_cluster_ratio",
+          "0.03",
+          "--mvacc_merge_threshold",
+          "0.74",
+          "--mvacc_split_size_factor",
+          "1.75",
+          "--mvacc_split_silhouette",
+          "0.30",
+          "--enable_mvacc_adaptive_density",
+          "--mvacc_adaptive_candidate_ratio",
+          "0.02",
+          "--mvacc_adaptive_max_added_clusters",
+          "2",
+          "--mvacc_adaptive_min_silhouette_gain",
+          "0.04",
+          "--mvacc_adaptive_max_confidence_drop",
+          "0.03",
+          "--mvacc_adaptive_max_cv_increase",
+          "0.10",
+          "--mvacc_adaptive_max_small_fraction_increase",
+          "0.10",
+          "--mvacc_adaptive_min_partition_agreement",
+          "0.50",
+          "--disable_visualization"
+        ]
+      },
+      {
+        "seed": 13,
+        "save_dir": "results/stage4/adsb_adaptive_density_seed13_44517848",
+        "baseline_dir": "results/stage4/adsb_density_multiseed_seed13_baseline_locked_44474381",
+        "checkpoint": "results/stage4/adsb_main_long_radcil_seed13_44470736/closedset_adsb_90known_strict.pth",
+        "argv": [
+          "--data_root",
+          "数据集/ADS-B/Dataset",
+          "--save_dir",
+          "results/stage4/adsb_adaptive_density_seed13_44517848",
+          "--checkpoint",
+          "results/stage4/adsb_main_long_radcil_seed13_44470736/closedset_adsb_90known_strict.pth",
+          "--initial_known_classes",
+          "90",
+          "--round_size",
+          "10",
+          "--num_rounds",
+          "3",
+          "--seed",
+          "13",
+          "--backbone",
+          "adsb_long",
+          "--batch_size",
+          "128",
+          "--test_batch_size",
+          "256",
+          "--disable_cil_baselines",
+          "--use_supcon",
+          "--supcon_weight",
+          "0.1",
+          "--cil_head_warmup_epochs",
+          "2",
+          "--cil_joint_epochs",
+          "8",
+          "--cil_replay_weight",
+          "3.0",
+          "--radcil_old_new_batch_ratio",
+          "2.0",
+          "--disable_mvacc_calibration",
+          "--mvacc_min_cluster_ratio",
+          "0.03",
+          "--mvacc_merge_threshold",
+          "0.74",
+          "--mvacc_split_size_factor",
+          "1.75",
+          "--mvacc_split_silhouette",
+          "0.30",
+          "--enable_mvacc_adaptive_density",
+          "--mvacc_adaptive_candidate_ratio",
+          "0.02",
+          "--mvacc_adaptive_max_added_clusters",
+          "2",
+          "--mvacc_adaptive_min_silhouette_gain",
+          "0.04",
+          "--mvacc_adaptive_max_confidence_drop",
+          "0.03",
+          "--mvacc_adaptive_max_cv_increase",
+          "0.10",
+          "--mvacc_adaptive_max_small_fraction_increase",
+          "0.10",
+          "--mvacc_adaptive_min_partition_agreement",
+          "0.50",
+          "--disable_visualization"
+        ]
+      },
+      {
+        "seed": 31,
+        "save_dir": "results/stage4/adsb_adaptive_density_seed31_44517848",
+        "baseline_dir": "results/stage4/adsb_discovery_ablation_seed31_baseline_locked_44474297",
+        "checkpoint": "results/stage4/adsb_main_long_radcil_seed31_44467424/closedset_adsb_90known_strict.pth",
+        "argv": [
+          "--data_root",
+          "数据集/ADS-B/Dataset",
+          "--save_dir",
+          "results/stage4/adsb_adaptive_density_seed31_44517848",
+          "--checkpoint",
+          "results/stage4/adsb_main_long_radcil_seed31_44467424/closedset_adsb_90known_strict.pth",
+          "--initial_known_classes",
+          "90",
+          "--round_size",
+          "10",
+          "--num_rounds",
+          "3",
+          "--seed",
+          "31",
+          "--backbone",
+          "adsb_long",
+          "--batch_size",
+          "128",
+          "--test_batch_size",
+          "256",
+          "--disable_cil_baselines",
+          "--use_supcon",
+          "--supcon_weight",
+          "0.1",
+          "--cil_head_warmup_epochs",
+          "2",
+          "--cil_joint_epochs",
+          "8",
+          "--cil_replay_weight",
+          "3.0",
+          "--radcil_old_new_batch_ratio",
+          "2.0",
+          "--disable_mvacc_calibration",
+          "--mvacc_min_cluster_ratio",
+          "0.03",
+          "--mvacc_merge_threshold",
+          "0.74",
+          "--mvacc_split_size_factor",
+          "1.75",
+          "--mvacc_split_silhouette",
+          "0.30",
+          "--enable_mvacc_adaptive_density",
+          "--mvacc_adaptive_candidate_ratio",
+          "0.02",
+          "--mvacc_adaptive_max_added_clusters",
+          "2",
+          "--mvacc_adaptive_min_silhouette_gain",
+          "0.04",
+          "--mvacc_adaptive_max_confidence_drop",
+          "0.03",
+          "--mvacc_adaptive_max_cv_increase",
+          "0.10",
+          "--mvacc_adaptive_max_small_fraction_increase",
+          "0.10",
+          "--mvacc_adaptive_min_partition_agreement",
+          "0.50",
+          "--disable_visualization"
+        ]
+      }
+    ]
+  },
+  "per_seed": [
+    {
+      "seed": 7,
+      "rounds": [
+        {
+          "round": "R1",
+          "selected_ratio": 0.03,
+          "selected_source": "anchor",
+          "rejected_by": "adds_limited_clusters;silhouette_improves",
+          "partition_agreement_ari": 1.0,
+          "adaptive_clusters": 12,
+          "baseline_clusters": 12,
+          "adaptive_silhouette": 0.3315747380256653,
+          "baseline_silhouette": 0.3315747380256653
+        },
+        {
+          "round": "R2",
+          "selected_ratio": 0.02,
+          "selected_source": "candidate",
+          "rejected_by": "",
+          "partition_agreement_ari": 0.8622734513976414,
+          "adaptive_clusters": 11,
+          "baseline_clusters": 9,
+          "adaptive_silhouette": 0.3424481153488159,
+          "baseline_silhouette": 0.24389781057834625
+        },
+        {
+          "round": "R3",
+          "selected_ratio": 0.03,
+          "selected_source": "anchor",
+          "rejected_by": "silhouette_improves;confidence_preserved;small_cluster_fraction_preserved",
+          "partition_agreement_ari": 0.9603084683426544,
+          "adaptive_clusters": 7,
+          "baseline_clusters": 7,
+          "adaptive_silhouette": 0.2496941238641739,
+          "baseline_silhouette": 0.2509262263774872
+        }
+      ],
+      "adaptive_r3": {
+        "overall": 0.4874700370451079,
+        "old": 0.4933969185619956,
+        "new": 0.439,
+        "forgetting": 0.10456458400776947,
+        "macro_f1": 0.4772646252471413
+      },
+      "baseline_r3": {
+        "overall": 0.47232512529962956,
+        "old": 0.4759109806798728,
+        "new": 0.443,
+        "forgetting": 0.10407898996438975,
+        "macro_f1": 0.46233830607159254
+      }
+    },
+    {
+      "seed": 13,
+      "rounds": [
+        {
+          "round": "R1",
+          "selected_ratio": 0.03,
+          "selected_source": "anchor",
+          "rejected_by": "adds_limited_clusters;silhouette_improves",
+          "partition_agreement_ari": 1.0,
+          "adaptive_clusters": 11,
+          "baseline_clusters": 11,
+          "adaptive_silhouette": 0.32221221923828125,
+          "baseline_silhouette": 0.32221221923828125
+        },
+        {
+          "round": "R2",
+          "selected_ratio": 0.03,
+          "selected_source": "anchor",
+          "rejected_by": "cluster_balance_preserved;small_cluster_fraction_preserved",
+          "partition_agreement_ari": 0.963456403409646,
+          "adaptive_clusters": 13,
+          "baseline_clusters": 12,
+          "adaptive_silhouette": 0.4274282455444336,
+          "baseline_silhouette": 0.4093942940235138
+        },
+        {
+          "round": "R3",
+          "selected_ratio": 0.03,
+          "selected_source": "anchor",
+          "rejected_by": "cluster_balance_preserved",
+          "partition_agreement_ari": 0.9173993327609715,
+          "adaptive_clusters": 6,
+          "baseline_clusters": 8,
+          "adaptive_silhouette": 0.19135215878486633,
+          "baseline_silhouette": 0.1914001703262329
+        }
+      ],
+      "adaptive_r3": {
+        "overall": 0.4870342122466768,
+        "old": 0.49070677427243825,
+        "new": 0.457,
+        "forgetting": 0.1205891874393008,
+        "macro_f1": 0.47983951654305773
+      },
+      "baseline_r3": {
+        "overall": 0.5001089561996077,
+        "old": 0.49523110785033014,
+        "new": 0.54,
+        "forgetting": 0.12026545807704764,
+        "macro_f1": 0.49051049821811044
+      }
+    },
+    {
+      "seed": 31,
+      "rounds": [
+        {
+          "round": "R1",
+          "selected_ratio": 0.03,
+          "selected_source": "anchor",
+          "rejected_by": "adds_limited_clusters",
+          "partition_agreement_ari": 0.7421386001870408,
+          "adaptive_clusters": 10,
+          "baseline_clusters": 10,
+          "adaptive_silhouette": 0.33486640453338623,
+          "baseline_silhouette": 0.33486640453338623
+        },
+        {
+          "round": "R2",
+          "selected_ratio": 0.03,
+          "selected_source": "anchor",
+          "rejected_by": "adds_limited_clusters",
+          "partition_agreement_ari": 0.8313542225912397,
+          "adaptive_clusters": 10,
+          "baseline_clusters": 10,
+          "adaptive_silhouette": 0.28786712884902954,
+          "baseline_silhouette": 0.28792136907577515
+        },
+        {
+          "round": "R3",
+          "selected_ratio": 0.03,
+          "selected_source": "anchor",
+          "rejected_by": "adds_limited_clusters;confidence_preserved",
+          "partition_agreement_ari": 0.7677273896254017,
+          "adaptive_clusters": 7,
+          "baseline_clusters": 7,
+          "adaptive_silhouette": 0.26440107822418213,
+          "baseline_silhouette": 0.2645641565322876
+        }
+      ],
+      "adaptive_r3": {
+        "overall": 0.4886685552407932,
+        "old": 0.4955979457079971,
+        "new": 0.432,
+        "forgetting": 0.1238264810618323,
+        "macro_f1": 0.4697820540337337
+      },
+      "baseline_r3": {
+        "overall": 0.4886685552407932,
+        "old": 0.4955979457079971,
+        "new": 0.432,
+        "forgetting": 0.1238264810618323,
+        "macro_f1": 0.46982064143829205
+      }
+    }
+  ],
+  "summary": {
+    "job_id": "44517848",
+    "candidate_selected_rounds": 1,
+    "total_rounds": 9,
+    "adaptive_r3": {
+      "overall": {
+        "mean": 0.48772426817752595,
+        "std": 0.0006910110260202253
+      },
+      "old": {
+        "mean": 0.49323387951414366,
+        "std": 0.0020001376288229147
+      },
+      "new": {
+        "mean": 0.44266666666666665,
+        "std": 0.010530379332620885
+      },
+      "forgetting": {
+        "mean": 0.11632675083630085,
+        "std": 0.008421458459446477
+      },
+      "macro_f1": {
+        "mean": 0.4756287319413109,
+        "std": 0.004265774506672085
+      }
+    },
+    "baseline_r3": {
+      "overall": {
+        "mean": 0.4870342122466768,
+        "std": 0.01140142162587509
+      },
+      "old": {
+        "mean": 0.4889133447460667,
+        "std": 0.009195279440591302
+      },
+      "new": {
+        "mean": 0.4716666666666667,
+        "std": 0.0485271974143252
+      },
+      "forgetting": {
+        "mean": 0.11605697636775657,
+        "std": 0.008593576666478727
+      },
+      "macro_f1": {
+        "mean": 0.47422314857599834,
+        "std": 0.011915106781120267
+      }
+    },
+    "r3_delta": {
+      "overall": 0.0006900559308491427,
+      "old": 0.004320534768076978,
+      "new": -0.029000000000000026,
+      "forgetting": 0.0002697744685442871,
+      "macro_f1": 0.001405583365312546
+    }
+  }
+}
