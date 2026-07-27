@@ -75,6 +75,7 @@
 - 阶段 1 已新增 `STAGE1_METHOD_REVIEW.md`，完成既有 CIL 后端效果复盘和 SOTA 初筛；严格候选暂定 IGCD 与 SimGCD，SEI-specific FSCIL/CIL 方法先作为非严格参考池。
 - 阶段 1 已新增 `tools/stage1_method_screen.py`、`results/stage1/stage1_method_screen.json` 和 `slurm/stage1_wisig_short_screen.sbatch`，将候选表征风险转化为可在 Slurm 运行的 CE baseline / SupCon representation WiSig 单种子短实验。
 - Slurm Job `44420671` 已完成阶段 1 WiSig CE/SupCon 表征短实验并同步结果；SupCon 改善 R1/R2 overall 与早期遗忘，但 R3 仍严重遗忘，后续应优先做 CIL 后端消融。
+- 阶段 1 已新增 `tools/stage1_backend_ablation_plan.py`、`slurm/stage1_wisig_backend_ablation.sbatch`、`tools/stage1_discovery_adapter_contract.py` 和 `results/stage1/stage1_discovery_adapter_contract.json`，将后端消融和 SimGCD/IGCD 适配边界转为可执行入口。
 
 ## Recent Changes
 
@@ -91,6 +92,7 @@
 - 2026-07-27：新增 `STAGE1_METHOD_REVIEW.md`，复盘 WiSig/ManyTx/ADS-B 既有 MV-ACC-CIL 结果，确认可靠伪标签、回放和蒸馏应保留为 baseline/消融而不是新方法核心，并初筛 IGCD、SimGCD 作为严格 SOTA 候选。
 - 2026-07-27：新增阶段 1 方法筛选脚本、JSON 报告和 WiSig 单种子 Slurm 短实验脚本；本地已用 `.venv\Scripts\python.exe` 验证脚本可运行并通过 `py_compile`。
 - 2026-07-27：提交并完成 Slurm Job `44420671`，同步 CE baseline 与 SupCon representation 两组 WiSig 短实验结果，并新增 `results/stage1/STAGE1_WISIG_SHORT_REPORT.md`。
+- 2026-07-27：新增阶段 1 后端消融矩阵生成脚本、Slurm 后端消融入口和 SimGCD/IGCD 适配契约；本地已生成 `results/stage1/stage1_backend_ablation_plan.json` 与 `results/stage1/stage1_discovery_adapter_contract.json` 并通过语法校验。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
@@ -108,9 +110,10 @@
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
-- 基于 Job `44420671` 的 WiSig 短实验结果做后端消融，优先检查 KD、回放权重、`memory_per_class`、冻结/解冻层范围和类别头校准。
-- 比较 Deep-HDBSCAN/MV-ACC 与 SimGCD 式学习发现头，检查聚类质量、类别数误差和伪标签 purity。
-- 为 IGCD 适配本项目 60/10/30 协议设计最小接口草图，确认能否作为严格 baseline。
+- 提交并推送阶段 1 后端消融入口后，在 Slurm 上运行 `slurm/stage1_wisig_backend_ablation.sbatch`。
+- 根据后端消融结果判断 R3 遗忘主要来自 KD、回放容量、骨干漂移还是类别头校准。
+- 基于 `results/stage1/stage1_discovery_adapter_contract.json` 实现 SimGCD 式发现头的最小适配。
+- 为 IGCD 适配本项目 60/10/30 协议设计最小运行入口，确认能否作为严格 baseline。
 - 在 WiSig 单种子短实验前，基于 `tools/stage0_strict_loader_audit.py` 的输出确认后续实验入口统一使用可移植数据路径。
 - 明确 ManyRx 当前正式入口：恢复受维护的 runner，或同步修改 `experiments/README_MAIN_EXPERIMENTS.md`，避免引用不存在的脚本。
 - 为核心工具与严格协议增加轻量级单元测试/数据完整性测试；当前仓库未发现独立测试目录。

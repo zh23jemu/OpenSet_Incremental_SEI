@@ -79,6 +79,8 @@
 - `results/stage1/stage1_method_screen.json`：本地生成的阶段 1 筛选报告，当前包含 `ce_baseline` 与 `supcon_representation` 两个 WiSig 单种子短实验变体。
 - `slurm/stage1_wisig_short_screen.sbatch`：服务器侧短实验入口，使用 `gpuHz` + `shortjobs`，在相同 WiSig strict 协议下依次运行 CE baseline 与 SupCon representation 变体。
 - `results/stage1/STAGE1_WISIG_SHORT_REPORT.md`：Slurm Job `44420671` 的结果报告。短实验显示 SupCon 能改善 R1/R2 overall 和早期遗忘，但 R3 仍严重遗忘，因此下一步应优先做 CIL 后端消融。
+- `tools/stage1_backend_ablation_plan.py` 与 `slurm/stage1_wisig_backend_ablation.sbatch`：围绕 KD、回放权重、记忆容量、head-only 训练和低骨干学习率生成并运行后端消融矩阵。
+- `tools/stage1_discovery_adapter_contract.py` 与 `results/stage1/stage1_discovery_adapter_contract.json`：固化 SimGCD/IGCD 最小适配契约，包括允许输入、禁止输入、输出字段和必须报告的指标。
 
 ## 7. 当前锁定决策
 
