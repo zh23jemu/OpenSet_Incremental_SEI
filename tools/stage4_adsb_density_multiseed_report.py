@@ -109,12 +109,28 @@ def build_report(rows: list[dict[str, Any]], summaries: list[dict[str, Any]], jo
             f"{item['ari_mean']:.4f} | {item['hungarian_mean']:.4f} | "
             f"{item['overall_mean']:.4f}±{item['overall_std']:.4f} | {item['new_acc_mean']:.4f} |"
         )
+    baseline = next(item for item in summaries if item["variant"] == "baseline_locked")
+    candidate = next(item for item in summaries if item["variant"] == "density_ratio_0p02")
+    silhouette_delta = (
+        candidate["label_free"]["silhouette_mean"] - baseline["label_free"]["silhouette_mean"]
+    )
+    confidence_delta = (
+        candidate["label_free"]["confidence_mean"] - baseline["label_free"]["confidence_mean"]
+    )
+    cv_delta = (
+        candidate["label_free"]["cluster_size_cv_mean"]
+        - baseline["label_free"]["cluster_size_cv_mean"]
+    )
+    overall_delta = candidate["r3_posthoc"]["overall_mean"] - baseline["r3_posthoc"]["overall_mean"]
+    new_acc_delta = candidate["r3_posthoc"]["new_acc_mean"] - baseline["r3_posthoc"]["new_acc_mean"]
     lines.extend([
         "",
-        "## 判定边界",
+        "## 正式判断",
         "",
-        "是否锁定 ratio=0.02，先看三种子无标签 silhouette、HDBSCAN 置信度和簇大小 CV 是否整体稳定，",
-        "再把真实标签聚类指标与增量准确率作为事后风险审计。若结构指标跨种子不稳定，则保留为负消融。",
+        f"- 无标签 silhouette 变化 `{silhouette_delta:+.4f}`，HDBSCAN 置信度变化 `{confidence_delta:+.4f}`，簇大小 CV 变化 `{cv_delta:+.4f}`。",
+        f"- 事后 R3 Overall 变化 `{overall_delta:+.4f}`，New Acc 变化 `{new_acc_delta:+.4f}`。",
+        "- ratio 0.02 改善分离度和 R3 新类识别，但簇大小失衡加剧，且部分早期轮次出现明显过度切分。",
+        "- 因此不把 0.02 锁定为全轮次默认值；正式配置保留 0.03，本结果作为后续轮次自适应密度策略的混合消融证据。",
         "",
     ])
     return "\n".join(lines)

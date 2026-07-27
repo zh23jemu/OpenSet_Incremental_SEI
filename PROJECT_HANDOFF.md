@@ -117,6 +117,7 @@ Strict loader 审计：
 - `results/stage4/STAGE4_ADSB_DISCOVERY_DIAGNOSIS.md` 已定位 R3 欠聚类：三种子初始簇为 7/6/8，最终为 7/6/7，主要损失位于 HDBSCAN 初始密度形成而非后处理合并。
 - 已新增 `slurm/stage4_adsb_discovery_ablation_seed31.sbatch`，复用 seed31 长序列 checkpoint，固定 Long-RADCIL 后端，预注册密度、合并和分裂三个单因素变体。
 - Job `44474297` 已完成；density ratio 0.02 的无标签 silhouette 与簇均衡性优于 baseline，split relaxed 出现过度切分。已新增 `slurm/stage4_adsb_density_multiseed.sbatch` 做唯一候选的配对三种子确认。
+- Job `44474381` 已完成配对三种子确认；ratio 0.02 提升 silhouette 与 R3 New Acc，但簇大小 CV 变差且部分早期轮次过度切分，正式全轮次默认继续使用 ratio 0.03。
 - 已新增 `tools/stage3_wisig_strict_baseline_table.py` 并生成 `results/stage3/STAGE3_WISIG_STRICT_BASELINE_TABLE.md`，将 SimGCD-style 标注为 learning-style adaptation、IGCD-minimal 标注为 minimal strict adaptation，二者均不作为完整论文复现；MV-ACC 仍是正式主前端。
 - 已新增 `tools/stage3_wisig_strong_backend_plan.py` 并生成 `results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md`，把共享发现后端风险收束为 `RADCIL + DOI-style`、`RADCIL + iCaRL`、`RADCIL + TPCIL-style` 三个待实现混合候选；下一步先做 seed 7 短验证。
 - ADS-B strict 主入口已使用 `ADSBLongClosedSet`，并支持 RADCIL old:new batch ratio；阶段 4 单种子和正式三种子计划、报告、Slurm 入口均已同步。
@@ -129,8 +130,8 @@ Strict loader 审计：
 
 ## 7. 下一步执行顺序
 
-1. 提交 `slurm/stage4_adsb_density_multiseed.sbatch`，完成 ratio 0.03/0.02 配对三种子确认。
-2. 只依据 discovery 侧无标签结构指标决定是否锁定 ratio 0.02；真实标签聚类指标和增量准确率仅事后报告。
+1. 将固定 ratio 0.02 归档为混合消融，不替换 ADS-B 正式 ratio 0.03。
+2. 若继续优化发现前端，优先设计基于 discovery 无标签稳定性的轮次自适应密度策略，再补 ADS-B strict baseline。
 3. 补齐 ADS-B 同协议 baseline/消融表；后端保持 Long-RADCIL 配置，不再同时改动骨干和后端。
 4. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 5. 若后续补充实验需要 LoRa 完整数据或 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压或下载；LoRa 可优先只取 Different Days Indoor Scenario 的必要子集，不删除 Release 分片或原压缩包。

@@ -228,7 +228,7 @@
 - [x] 准备 seed31 单因素消融、无标签结构指标和 Slurm 入口；固定 Long-RADCIL 后端，不使用 held-out 评估真值选参。
 - [x] 完成 seed31 Job `44474297`；density ratio 0.02 的无标签结构指标改善，split relaxed 出现过度切分风险。
 - [x] 准备 ratio 0.03/0.02 的配对三种子计划、报告和 Slurm 入口。
-- [ ] 完成 density ratio 配对三种子确认，并依据 discovery 侧结构稳定性决定是否锁定参数。
+- [x] 完成 Job `44474381` 配对三种子确认；ratio 0.02 改善 R3，但簇大小 CV 变差且早期轮次存在过度切分，不锁定为全轮次默认值。
 - [ ] 补齐 ADS-B 核心 baseline 和必要发现前端消融。
 
 ### 阶段 5：LoRa 与 WiSig 补充划分，2–4 天
@@ -338,6 +338,8 @@
 
 Job `44474297` 的 seed31 单因素结果显示，density ratio 0.02 的无标签 silhouette `0.3981` 高于 baseline `0.2958`，簇大小 CV 由 `0.4772` 降至 `0.4542`；merge threshold 0.86 仅温和改善，split relaxed 三轮相对初始簇净增加 16，存在明显过度切分。下一步只扩展 density ratio 0.02，与 baseline 做配对三种子确认。
 
+Job `44474381` 的配对三种子结果显示，ratio 0.02 的无标签 silhouette 从 `0.2930` 提升到 `0.3534`，HDBSCAN 置信度基本不变，但簇大小 CV 从 `0.4947` 变差到 `0.5292`。事后 R3 Overall 从 `0.4870±0.0140` 提升到 `0.4940±0.0043`、New Acc 从 `0.4717` 提升到 `0.5203`，同时 seed31 R1/R2 出现 15/14 簇并拖累早期表现。因此 ratio 0.02 记录为混合消融，不替换正式全轮次 ratio 0.03。
+
 ## 8.2 当前风险与应对
 
 | 风险                             | 影响                                                                                | 当前应对                                                                 |
@@ -352,8 +354,8 @@ Job `44474297` 的 seed31 单因素结果显示，density ratio 0.02 的无标�
 
 短期优先级：
 
-1. 提交 `slurm/stage4_adsb_density_multiseed.sbatch`，运行 ratio 0.03/0.02 配对三种子确认。
-2. 仅依据 discovery 侧 silhouette、HDBSCAN 置信度、簇大小 CV 与净簇数变化决定是否锁定 ratio 0.02；不得用 R1–R3 held-out 真值选参。
+1. 保留 ADS-B 正式 ratio 0.03，将固定 ratio 0.02 归档为“R3 改善但早期过切分”的混合消融。
+2. 若继续优化发现前端，设计只依赖 discovery 稳定性信号的轮次自适应密度策略；不得用 R1–R3 held-out 真值选参。
 3. 补齐 ADS-B 同协议 baseline/消融表后，再进入 LoRa 跨体制验证。
 
 中期优先级：
