@@ -3287,6 +3287,40 @@ def main():
         eval_Z_dict[key], eval_y_dict[key] = extract_deep_features(model, ed["X"], ed["y"], args.test_batch_size, device)
         eval_X_dict[key] = ed["X"]
 
+    # CIL baseline 只使用初始闭集 backbone 的冻结表征。这样共享发现后端对照和
+    # Deep-HDBSCAN 端到端对照不会受到主方法 Student 逐轮更新的影响；held-out
+    # evaluation 特征仅用于最终评估，不参与聚类、校准或训练统计量拟合。
+    proto_bank = build_proto_feature_bank(
+        Z_train,
+        X_train,
+        [rd["Z"] for rd in round_data],
+        [rd["X"] for rd in round_data],
+        eval_Z_dict,
+        eval_X_dict,
+        args,
+        cflcg_mode="MV-ACC",
+    )
+    graph_fusion_round_infos = []
+    deep_only_round_infos = []
+    deep_hdbscan_clustering_rows = []
+    if not args.disable_cil_baselines:
+        # 中性前端使用同一初始 backbone 的 deep embedding；真实标签只在发现完成
+        # 后做离线审计和 pseudo ID 映射，不进入 HDBSCAN 或后续 CIL 训练。
+        for i, rd in enumerate(round_data, start=1):
+            deep_row, deep_info = run_discovery(
+                "Deep only",
+                f"R{i}",
+                f"Day {i + 1}",
+                args.round_size,
+                rd["X"],
+                rd["y"],
+                rd["Z"],
+                args,
+            )
+            deep_row["Method"] = "Deep-HDBSCAN discovery"
+            deep_hdbscan_clustering_rows.append(deep_row)
+            deep_only_round_infos.append(deep_info)
+
     # MV-ACC-CIL: discovery uses a frozen Teacher; only then is the Student updated.
     print("\n[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning")
     clustering_rows, incremental_rows, retention_rows = [], [], []
@@ -3312,6 +3346,7 @@ def main():
         row, info = run_discovery("MV-ACC", f"R{i}", f"Day {i + 1}", args.round_size, rd["X"], rd["y"], rd["Z"], args)
         row["Method"] = "MV-ACC-CIL discovery"
         clustering_rows.append(row)
+        graph_fusion_round_infos.append(info)
         adaptive_density_rows.extend(info.get("adaptive_density_audit", []))
         labels = np.asarray(info["labels"], dtype=np.int64)
         if np.any(labels < 0):
@@ -3349,6 +3384,11 @@ def main():
     clustering_df = save_csv(clustering_rows, os.path.join(args.save_dir, "clustering_results.csv"))
     incremental_df = save_csv(incremental_rows, os.path.join(args.save_dir, "incremental_results.csv"))
     save_csv(retention_rows, os.path.join(args.save_dir, "fixed_day1_retention.csv"))
+    if not args.disable_cil_baselines:
+        save_csv(
+            deep_hdbscan_clustering_rows,
+            os.path.join(args.save_dir, "deep_hdbscan_clustering_results.csv"),
+        )
     if args.enable_mvacc_adaptive_density:
         save_csv(
             adaptive_density_rows,
