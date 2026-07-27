@@ -2093,7 +2093,7 @@ def build_full_end_to_end_system_comparison(end_to_end_baseline_df, incremental_
 
     # Proposed complete pipeline.
     add_from_incremental(
-        "MV-ACC",
+        "MV-ACC-CIL",
         "Ours (MV-ACC)",
         "SupCon deep/RF graphs + adaptive fusion + HDBSCAN",
         "Prototype enrollment + old-class calibration",
@@ -3053,6 +3053,29 @@ def main():
         eval_Z_dict[key], eval_y_dict[key] = extract_deep_features(model, ed["X"], ed["y"], args.test_batch_size, device)
         eval_X_dict[key] = ed["X"]
 
+    # Baseline feature bank is built from the initial closed-set backbone only.
+    # 这样 CIL baseline 使用同一套冻结表征与同一套 strict split，不会被后续
+    # MV-ACC-CIL student 的逐轮更新影响；评估集特征只用于最终评估，不参与
+    # 聚类、阈值校准或训练统计量拟合。
+    proto_bank = build_proto_feature_bank(
+        Z_train,
+        X_train,
+        [rd["Z"] for rd in round_data],
+        [rd["X"] for rd in round_data],
+        eval_Z_dict,
+        eval_X_dict,
+        args,
+        cflcg_mode="MV-ACC",
+    )
+    graph_fusion_round_infos = []
+    deep_only_round_infos = []
+    if not args.disable_cil_baselines:
+        # Deep-HDBSCAN 端到端 baseline 使用同一初始 backbone 的 deep embedding，
+        # 并按每轮未知数据独立发现新类；这里不读取 held-out eval 真值。
+        for i, rd in enumerate(round_data, start=1):
+            _, deep_info = run_discovery("Deep only", f"R{i}", f"Day {i + 1}", args.round_size, rd["X"], rd["y"], rd["Z"], args)
+            deep_only_round_infos.append(deep_info)
+
     # MV-ACC-CIL: discovery uses a frozen Teacher; only then is the Student updated.
     print("\n[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning")
     clustering_rows, incremental_rows, retention_rows = [], [], []
@@ -3077,6 +3100,7 @@ def main():
         row, info = run_discovery("MV-ACC", f"R{i}", f"Day {i + 1}", args.round_size, rd["X"], rd["y"], rd["Z"], args)
         row["Method"] = "MV-ACC-CIL discovery"
         clustering_rows.append(row)
+        graph_fusion_round_infos.append(info)
         labels = np.asarray(info["labels"], dtype=np.int64)
         if np.any(labels < 0):
             raise RuntimeError("MV-ACC-CIL requires no-drop labels; found an unassigned noise sample.")
@@ -3156,7 +3180,7 @@ def main():
             shared_comparison_df = build_comparison_summary(
                 shared_baseline_df,
                 incremental_df,
-                proposed_source_method="MV-ACC",
+                proposed_source_method="MV-ACC-CIL",
                 proposed_name="Ours (MV-ACC)",
             )
             save_csv(shared_comparison_df.to_dict("records"), os.path.join(args.save_dir, "shared_discovery_comparison_results.csv"))
@@ -3190,7 +3214,7 @@ def main():
             end_to_end_comparison_df = build_comparison_summary(
                 end_to_end_baseline_df,
                 incremental_df,
-                proposed_source_method="MV-ACC",
+                proposed_source_method="MV-ACC-CIL",
                 proposed_name="Ours (MV-ACC)",
             )
             save_csv(end_to_end_comparison_df.to_dict("records"), os.path.join(args.save_dir, "end_to_end_comparison_results.csv"))
