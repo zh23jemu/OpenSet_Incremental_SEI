@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划
 
-- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成，补充数据按需解压待后续阶段继续
+- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成 WiSig 表征、后端和发现前端短实验，下一步优先推进 IGCD 最小入口与 RADCIL 后端二阶矩阵
 - 版本：1.1
 - 日期：2026-07-26
 - 预计周期：3–4 周；前 5–7 天完成方案筛选和可运行初版
@@ -145,7 +145,7 @@
 - [x] 新增发现适配器 Python 接口骨架：`utils/discovery_adapter_contract.py`，用于后续 SimGCD/IGCD 无泄漏接入。
 - [x] 运行阶段 1 后端消融 Job `44420869`，结果见 `results/stage1/STAGE1_BACKEND_ABLATION_REPORT.md`；`replay_x2` 当前最佳，`kd_off` 优于默认，说明下一轮 RADCIL 应优先强化回放约束并重做 KD 目标/权重。
 - [x] 实现 SimGCD 式发现头最小适配器：`utils/simgcd_discovery_adapter.py`，并通过 `tools/stage1_simgcd_adapter_smoke.py` 生成合成 smoke test 报告 `results/stage1/stage1_simgcd_adapter_smoke.json`。
-- [ ] 比较 Deep-HDBSCAN 与 1–2 个新类别发现候选，检查聚类质量和稳定性。
+- [x] 比较 Deep-HDBSCAN、MV-ACC 与 SimGCD 式学习发现头，检查聚类质量和稳定性；Job `44422110` 结果见 `results/stage1/STAGE1_WISIG_FRONTEND_COMPARE_REPORT.md`，当前 SimGCD-style 低于 MV-ACC，暂不作为正式主前端。
 - [ ] 根据验证集结果锁定新主方法前端与 RADCIL 后端组合，不使用未知轮次评估真值。
 
 ### 阶段 2：共享框架与 WiSig 初版，3–4 天

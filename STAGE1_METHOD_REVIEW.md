@@ -50,7 +50,8 @@
 - 代码：https://github.com/CVMI-Lab/SimGCD
 - 选择理由：代码可用，且论文主张 parametric classifier 在 GCD 中可作为强 baseline；可用于替代当前 Deep-HDBSCAN/MV-ACC 的类别发现前端，评估“学习式发现头”是否优于手工密度聚类。
 - 适配方式：每轮只使用已知类训练集、验证集和当前 discovery 未标注样本；禁止使用未知真值选择类别数或阈值。RF 侧输入统一走项目骨干特征。
-- 风险：标准 GCD 通常是一次性未标注集合分类，不天然处理多轮增量遗忘；适合作为发现前端候选，不应单独声称解决完整 CIL。
+- 当前证据：已在 WiSig frozen embeddings 上完成阶段 1 前端对比，结果见 `results/stage1/STAGE1_WISIG_FRONTEND_COMPARE_REPORT.md`。SimGCD-style prototype head 三轮均输出 10 类并保持 100% coverage，但 R1/R2/R3 的 NMI、ARI 和 Hungarian Acc 均低于 MV-ACC，暂不能作为正式主前端。
+- 风险：标准 GCD 通常是一次性未标注集合分类，不天然处理多轮增量遗忘；当前最小适配器更适合作为学习式发现接口 baseline，不应单独声称解决完整 CIL。
 
 ### 4.3 非严格参考：SEI-specific CIL/FSCIL 方法
 
@@ -69,7 +70,7 @@
 ## 5. 阶段 1 推荐实验顺序
 
 1. WiSig 单种子短实验：固定现有 MV-ACC 发现前端，只调整已有 CIL 后端的冻结/解冻层、回放权重、KD 权重和伪标签权重下限，确认旧后端上限。
-2. WiSig 单种子短实验：固定现有骨干特征，比较 Deep-HDBSCAN/MV-ACC 与 SimGCD 式学习发现头，观察聚类 NMI/ARI、类别数误差和伪标签 purity。
+2. WiSig 单种子短实验：固定现有骨干特征，比较 Deep-HDBSCAN/MV-ACC 与 SimGCD 式学习发现头，观察聚类 NMI/ARI、类别数误差和伪标签 purity。该项已由 Job `44422110` 完成，结论是 SimGCD-style 可作为 baseline，但不替代 MV-ACC。
 3. ADS-B 表征短实验：先复核 `results/adsb_closedset_long_dev_seed41/ADSB_PHASE1_CLOSEDSET_REPORT.md` 的长序列骨干方向，避免在弱初始模型上反复调 CIL。
 4. IGCD 适配评估：先做伪实现方案和接口草图，不直接大规模训练；确认它能按本项目 60/10/30 协议运行后再纳入正式 baseline。
 
@@ -84,11 +85,13 @@
 - `utils/discovery_adapter_contract.py`：新增学习式发现头的 Python 接口骨架，定义 `DiscoveryAdapterInput`、`DiscoveryAdapterOutput`、`DiscoveryAdapter` 协议和输入/输出校验函数，供后续 SimGCD/IGCD 适配代码复用。
 - `results/stage1/STAGE1_BACKEND_ABLATION_REPORT.md`：Slurm Job `44420869` 的后端消融报告。`replay_x2` 是当前最佳变体，R3 Overall Acc 为 0.5103、Old Acc 为 0.4204、Forgetting Rate 为 0.4611；`kd_off` 优于默认后端，说明当前 KD 目标或权重可能带来负作用；`head_only` 最差，说明完全冻结骨干不可行。
 - `utils/simgcd_discovery_adapter.py` 与 `tools/stage1_simgcd_adapter_smoke.py`：新增 SimGCD 式最小发现头。当前实现使用冻结特征上的已知类原型和未标注 KMeans 新类原型构成参数化余弦 head，先验证接口、置信度和无泄漏边界；合成 smoke test 结果保存于 `results/stage1/stage1_simgcd_adapter_smoke.json`。
+- `tools/stage1_wisig_simgcd_frontend_compare.py`、`slurm/stage1_wisig_simgcd_frontend_compare.sbatch` 与 `results/stage1/STAGE1_WISIG_FRONTEND_COMPARE_REPORT.md`：将 SimGCD-style 接入真实 WiSig frozen embeddings，并与 Deep-HDBSCAN/MV-ACC 做同轮次发现质量对比。Job `44422110` 显示 MV-ACC 仍是当前最强前端。
 
 ## 7. 当前锁定决策
 
 - 可靠伪标签、回放和蒸馏保留为已有 baseline/消融，不作为新方法核心贡献。
 - 阶段 1 的新贡献候选优先放在表征和类别发现前端，其次才是后端训练策略。
 - RADCIL 后端下一轮不沿用默认 KD/回放配置：优先强化 replay 约束，并将 KD 拆分为旧类 masked logits KD、温度/权重调度和特征蒸馏等可独立验证组件。
-- SimGCD 式发现头已具备最小可运行接口；下一步不是继续写接口，而是接入 WiSig frozen embeddings，与 Deep-HDBSCAN/MV-ACC 在同一 discovery 轮次上比较类别数、NMI/ARI、purity、Hungarian Acc 和置信度校准。
+- SimGCD 式发现头已接入 WiSig frozen embeddings；当前结果低于 MV-ACC，后续只保留为学习式发现 baseline，不作为阶段 1 主前端锁定对象。
+- 下一步优先设计 IGCD 60/10/30 strict 最小入口，并推进 `replay_x2` 起点的 RADCIL 后端二阶矩阵。
 - 严格 SOTA 候选暂定为 IGCD 与 SimGCD；SEI-specific FSCIL/CIL 论文先作为非严格参考池，待协议可公平适配后再升级为正式对照。
