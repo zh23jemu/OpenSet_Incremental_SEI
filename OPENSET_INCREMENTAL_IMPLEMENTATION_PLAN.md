@@ -183,6 +183,8 @@
 - [x] 准备真实 WiSig frozen embeddings 上的 IGCD strict 前端对比入口：`tools/stage1_wisig_igcd_frontend_compare.py` 与 `slurm/stage1_wisig_igcd_frontend_compare.sbatch`。
 - [x] 运行 RADCIL ratio/weight 细化矩阵 Job `44422703`；结果见 `results/stage1/STAGE1_RADCIL_RATIO_WEIGHT_REPORT.md`，当前 `ratio_3p0_replay_3p0` Overall 最优，`ratio_2p0_replay_3p0` 遗忘最低。
 - [x] 运行真实 WiSig IGCD strict 前端对比 Job `44422704`；结果见 `results/stage1/STAGE1_WISIG_IGCD_FRONTEND_COMPARE_REPORT.md`，IGCD-minimal 可作为 strict baseline，但不替代 MV-ACC。
+- [x] 准备 RADCIL 多种子确认计划和 Slurm 入口：`tools/stage1_radcil_multiseed_plan.py`、`results/stage1/stage1_radcil_multiseed_plan.json`、`slurm/stage1_wisig_radcil_multiseed.sbatch`；候选为 `ratio_3p0_replay_3p0` 与 `ratio_2p0_replay_3p0`，种子为 7、13、31。
+- [ ] 运行 RADCIL 多种子确认 Slurm 短实验，并汇总 3 种子 R3 Overall、Old、New、Forgetting 和 Macro F1 的均值与标准差。
 - [ ] 根据验证集结果锁定新主方法前端与 RADCIL 后端组合，不使用未知轮次评估真值。
 
 当前阶段 1 判断：
@@ -277,8 +279,8 @@
 
 短期优先级：
 
-1. 准备并运行 RADCIL `ratio_3p0_replay_3p0` 与 `ratio_2p0_replay_3p0` 的多种子 Slurm 矩阵。
-2. 根据多种子结果锁定 WiSig 主后端。
+1. 提交并运行 `slurm/stage1_wisig_radcil_multiseed.sbatch`，确认 RADCIL `ratio_3p0_replay_3p0` 与 `ratio_2p0_replay_3p0` 的 3 种子表现。
+2. 根据多种子均值、标准差和 R3 Old/New/Forgetting 折中锁定 WiSig 主后端。
 3. 将 IGCD-minimal 和 SimGCD-style 放入 strict baseline 表，并明确适配级别。
 4. 抽取共享模块，准备阶段 2 WiSig 单种子完整主流程。
 
