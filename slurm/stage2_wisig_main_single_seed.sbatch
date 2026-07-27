@@ -66,4 +66,11 @@ echo "运行阶段 2 WiSig 主流程：seed=${SEED}, save_dir=${SAVE_DIR}"
     --cil_replay_weight 3.0 \
     --radcil_old_new_batch_ratio 2.0
 
+"${PYTHON_BIN}" tools/stage2_wisig_main_report.py \
+    --save-dir "${SAVE_DIR}" \
+    --plan "${PLAN_PATH}" \
+    --job-id "${JOB_ID}" \
+    --output "results/stage2/STAGE2_WISIG_MAIN_SINGLE_SEED_REPORT_${JOB_ID}.md" \
+    --summary-json "results/stage2/stage2_wisig_main_single_seed_summary_${JOB_ID}.json"
+
 echo "阶段 2 WiSig RADCIL 单种子主流程完成：${PROJECT_ROOT}/${SAVE_DIR}"

@@ -105,7 +105,7 @@ Strict loader 审计：
 - 可移植数据路径模板和审计入口已建立；部分旧脚本仍包含开发者绝对路径，后续新入口必须继续使用命令行参数或配置覆盖。
 - 当前 Slurm `.venv` 使用较新依赖版本，尚未通过旧主实验端到端验证；出现兼容问题时应先记录错误，再做最小范围版本调整。
 - 阶段 1 已完成文档级复盘、SOTA 初筛、WiSig CE/SupCon 表征短实验、后端消融、SimGCD/IGCD 适配契约、Python 接口骨架、SimGCD 式最小适配器、WiSig 前端对比、IGCD strict 最小入口、RADCIL 后端二阶验证、ratio/weight 细化矩阵、真实 WiSig IGCD 前端对比和 RADCIL 多种子确认；R3 旧类遗忘的当前证据指向旧类 batch 配比与 replay 强度不足，KD/feature distill 暂未显示正收益。
-- 阶段 2 已新增 `utils/radcil_config.py`、`tools/stage2_wisig_main_plan.py` 和 `slurm/stage2_wisig_main_single_seed.sbatch`，首个 WiSig 主组合固定为 MV-ACC 前端 + `ratio_2p0_replay_3p0` 后端，计划 JSON 为 `results/stage2/stage2_wisig_main_single_seed_plan.json`。
+- 阶段 2 已新增 `utils/radcil_config.py`、`tools/stage2_wisig_main_plan.py`、`tools/stage2_wisig_main_report.py` 和 `slurm/stage2_wisig_main_single_seed.sbatch`，首个 WiSig 主组合固定为 MV-ACC 前端 + `ratio_2p0_replay_3p0` 后端，计划 JSON 为 `results/stage2/stage2_wisig_main_single_seed_plan.json`。
 - SimGCD-style 已验证为可运行学习式发现 baseline，但真实 WiSig 前端质量低于 MV-ACC；阶段 1 短期主线应保留 MV-ACC 或稳定 Deep-HDBSCAN 前端，避免把弱前端误锁为新主方法。
 - Slurm 端同时保留 ManyTx 的 6 个分片和合并 ZIP，存在约 2.63 GB 重复占用；未取得明确清理指令前不要删除。
 - 阶段 0 两个 Slurm job 的 JSON/stdout/stderr 已同步回本地；后续不要再把本地缺失误判为实验未运行。
@@ -113,8 +113,8 @@ Strict loader 审计：
 
 ## 7. 下一步执行顺序
 
-1. 提交并跟踪 `slurm/stage2_wisig_main_single_seed.sbatch`，完成后同步 `results/stage2/wisig_main_ratio_2p0_replay_3p0_seed7_<jobid>`。
-2. 生成 `results/stage2/STAGE2_WISIG_MAIN_SINGLE_SEED_REPORT.md`，汇总 R1/R2/R3 discovery 与 incremental 指标。
+1. 跟踪 Slurm Job `44433946`，完成后同步 `results/stage2/wisig_main_ratio_2p0_replay_3p0_seed7_44433946` 和阶段 2 报告。
+2. 检查 `results/stage2/STAGE2_WISIG_MAIN_SINGLE_SEED_REPORT_44433946.md`，汇总 R1/R2/R3 discovery 与 incremental 指标。
 3. 将 IGCD-minimal 纳入 strict baseline 表，标注为 minimal strict adaptation，不写成完整论文复现。
 4. 后续 WiSig 正式实验报告必须包含多种子均值和标准差，Seed 13 明显更难，不能只报告 seed 7。
 5. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。

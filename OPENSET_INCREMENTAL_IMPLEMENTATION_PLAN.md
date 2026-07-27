@@ -197,7 +197,7 @@
 ### 阶段 2：共享框架与 WiSig 初版，3–4 天
 
 - [x] 新增阶段 2 RADCIL 主配置模块 `utils/radcil_config.py`，将 MV-ACC 前端和 `ratio_2p0_replay_3p0` 后端锁定为首个 WiSig 主组合。
-- [x] 新增阶段 2 WiSig 单种子主流程计划和 Slurm 入口：`tools/stage2_wisig_main_plan.py`、`results/stage2/stage2_wisig_main_single_seed_plan.json`、`slurm/stage2_wisig_main_single_seed.sbatch`。
+- [x] 新增阶段 2 WiSig 单种子主流程计划、报告生成器和 Slurm 入口：`tools/stage2_wisig_main_plan.py`、`tools/stage2_wisig_main_report.py`、`results/stage2/stage2_wisig_main_single_seed_plan.json`、`slurm/stage2_wisig_main_single_seed.sbatch`。
 - [x] 保留旧实验入口默认行为，阶段 2 通过独立配置和 Slurm 入口接入新方法参数。
 - [ ] 在 WiSig 单种子短训练上跑通 3 轮完整流程。
 - [ ] 验证模型参数在每轮确实更新，新类别进入分类头和回放记忆。
@@ -288,7 +288,7 @@
 短期优先级：
 
 1. 提交阶段 2 WiSig 单种子主流程 Slurm job，并同步 `results/stage2/wisig_main_ratio_2p0_replay_3p0_seed7_<jobid>`。
-2. 根据阶段 2 单种子结果生成 `results/stage2/STAGE2_WISIG_MAIN_SINGLE_SEED_REPORT.md`。
+2. 根据阶段 2 单种子结果生成 `results/stage2/STAGE2_WISIG_MAIN_SINGLE_SEED_REPORT_<jobid>.md` 并同步回本地。
 3. 将 IGCD-minimal 和 SimGCD-style 放入 strict baseline 表，并明确适配级别。
 4. 保留 `ratio_3p0_replay_3p0` 作为 high-replay 后端对照。
 

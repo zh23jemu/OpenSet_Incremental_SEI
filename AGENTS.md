@@ -90,7 +90,7 @@
 - 阶段 1 已新增 RADCIL 多种子确认计划和 Slurm 入口：`tools/stage1_radcil_multiseed_plan.py`、`results/stage1/stage1_radcil_multiseed_plan.json`、`slurm/stage1_wisig_radcil_multiseed.sbatch`，用于比较 `ratio_3p0_replay_3p0` 与 `ratio_2p0_replay_3p0` 在 seed 7/13/31 下的稳定性。
 - Slurm Job `44426767` 已完成 RADCIL 多种子确认；`results/stage1/STAGE1_RADCIL_MULTISEED_REPORT.md` 显示两个候选 Overall 基本持平，`ratio_2p0_replay_3p0` 遗忘更低、Old Acc 更高，适合作为阶段 2 主后端候选。
 - 已将客户汇报用进度内容合并进 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`；用户已手动删除 `PROJECT_PROGRESS_REPORT.md`，后续只维护实施计划这一份主文档。
-- 阶段 2 已新增 RADCIL 主配置、WiSig 单种子主流程审计计划和 Slurm 入口，锁定 MV-ACC 前端 + `ratio_2p0_replay_3p0` 后端，准备提交首个完整三轮主流程。
+- 阶段 2 已新增 RADCIL 主配置、WiSig 单种子主流程审计计划、报告生成器和 Slurm 入口，锁定 MV-ACC 前端 + `ratio_2p0_replay_3p0` 后端；Slurm Job `44433946` 已提交，当前等待 GPU 资源。
 
 ## Recent Changes
 
@@ -120,7 +120,7 @@
 - 2026-07-27：新增 RADCIL 多种子确认计划脚本、JSON 审计计划和 Slurm 入口；本地 `py_compile` 通过。
 - 2026-07-27：提交并完成 Slurm Job `44426767`，同步 RADCIL 两个候选后端三种子结果，并新增 `results/stage1/STAGE1_RADCIL_MULTISEED_REPORT.md`。
 - 2026-07-27：新增 `PROJECT_PROGRESS_REPORT.md` 后又按用户要求将其正文合并回 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`；用户随后手动删除独立进度报告，实施计划同时作为执行计划、项目进度总表和客户汇报主入口。
-- 2026-07-27：新增 `utils/radcil_config.py`、`tools/stage2_wisig_main_plan.py`、`results/stage2/stage2_wisig_main_single_seed_plan.json` 和 `slurm/stage2_wisig_main_single_seed.sbatch`，将阶段 2 首个 WiSig 主组合固化为 MV-ACC 前端 + `ratio_2p0_replay_3p0` 后端；本地 `py_compile` 和计划生成通过。
+- 2026-07-27：新增 `utils/radcil_config.py`、`tools/stage2_wisig_main_plan.py`、`tools/stage2_wisig_main_report.py`、`results/stage2/stage2_wisig_main_single_seed_plan.json` 和 `slurm/stage2_wisig_main_single_seed.sbatch`，将阶段 2 首个 WiSig 主组合固化为 MV-ACC 前端 + `ratio_2p0_replay_3p0` 后端；本地 `py_compile`、计划生成和报告 smoke test 通过。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
