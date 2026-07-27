@@ -1,0 +1,67 @@
+{
+  "accepted_case": {
+    "selected_ratio": 0.02,
+    "selected_source": "candidate",
+    "candidate_accepted": true,
+    "rejected_by": [],
+    "cluster_count_delta": 1,
+    "silhouette_delta": 0.09000000000000002,
+    "confidence_delta": -0.010000000000000009,
+    "cluster_size_cv_delta": 0.04999999999999999,
+    "small_cluster_fraction_delta": 0.0,
+    "partition_agreement_ari": 0.8495575221238938,
+    "checks": {
+      "adds_limited_clusters": true,
+      "silhouette_improves": true,
+      "confidence_preserved": true,
+      "cluster_balance_preserved": true,
+      "small_cluster_fraction_preserved": true,
+      "partition_agreement_preserved": true
+    }
+  },
+  "fragmentation_rejection": {
+    "selected_ratio": 0.03,
+    "selected_source": "anchor",
+    "candidate_accepted": false,
+    "rejected_by": [
+      "adds_limited_clusters",
+      "partition_agreement_preserved"
+    ],
+    "cluster_count_delta": 15,
+    "silhouette_delta": 0.35,
+    "confidence_delta": 0.020000000000000018,
+    "cluster_size_cv_delta": -0.10000000000000003,
+    "small_cluster_fraction_delta": 0.0,
+    "partition_agreement_ari": 0.0,
+    "checks": {
+      "adds_limited_clusters": false,
+      "silhouette_improves": true,
+      "confidence_preserved": true,
+      "cluster_balance_preserved": true,
+      "small_cluster_fraction_preserved": true,
+      "partition_agreement_preserved": false
+    }
+  },
+  "weak_gain_rejection": {
+    "selected_ratio": 0.03,
+    "selected_source": "anchor",
+    "candidate_accepted": false,
+    "rejected_by": [
+      "silhouette_improves"
+    ],
+    "cluster_count_delta": 1,
+    "silhouette_delta": 0.020000000000000018,
+    "confidence_delta": -0.010000000000000009,
+    "cluster_size_cv_delta": 0.04999999999999999,
+    "small_cluster_fraction_delta": 0.0,
+    "partition_agreement_ari": 0.8495575221238938,
+    "checks": {
+      "adds_limited_clusters": true,
+      "silhouette_improves": false,
+      "confidence_preserved": true,
+      "cluster_balance_preserved": true,
+      "small_cluster_fraction_preserved": true,
+      "partition_agreement_preserved": true
+    }
+  }
+}

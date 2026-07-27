@@ -86,6 +86,10 @@ from utils.improved_closedset_training import (
     stratified_train_validation_split,
     train_closedset_with_validation,
 )
+from utils.mvacc_adaptive_density import (
+    AdaptiveDensityThresholds,
+    select_adaptive_density_candidate,
+)
 from datasets.adsb_90known_strict_loader import load_adsb_90known_3round
 
 
@@ -453,12 +457,19 @@ def label_free_cluster_diagnostics(features, labels, probabilities=None, seed=7)
             confidence = float(np.nanmean(probabilities[valid]))
 
     mean_size = float(np.mean(sizes)) if len(sizes) else np.nan
+    median_size = float(np.median(sizes)) if len(sizes) else 0.0
+    # 小簇比例用于识别“轮廓系数看似提高、实际把已有设备切成碎片”的情况。
+    # 阈值相对本轮中位簇大小定义，不依赖协议中的真实新类数量。
+    small_cluster_fraction = (
+        float(np.mean(sizes < 0.5 * median_size)) if median_size > 0 else 0.0
+    )
     return {
         "Label-free Silhouette": silhouette,
         "Cluster Size Min": int(np.min(sizes)) if len(sizes) else 0,
-        "Cluster Size Median": float(np.median(sizes)) if len(sizes) else 0.0,
+        "Cluster Size Median": median_size,
         "Cluster Size Max": int(np.max(sizes)) if len(sizes) else 0,
         "Cluster Size CV": float(np.std(sizes) / mean_size) if mean_size > 0 else np.nan,
+        "Small Cluster Fraction": small_cluster_fraction,
         "Raw HDBSCAN Confidence Mean": confidence,
     }
 
@@ -2564,6 +2575,104 @@ def get_split(splits, name, fallback=None):
     raise KeyError(f"Missing split: {name}")
 
 
+def _run_mvacc_density_candidate(discovery_feat, feats, args, ratio):
+    """运行单个 MV-ACC 密度候选，不读取任何真实设备标签。"""
+
+    minimum = max(10, int(round(float(ratio) * len(discovery_feat))))
+    raw_labels, probabilities = run_hdbscan(
+        discovery_feat,
+        minimum,
+        int(args.mvacc_min_samples),
+    )
+    initial_cluster_count = int(len([cid for cid in np.unique(raw_labels) if cid != -1]))
+
+    # 每个候选复用完全相同的多视图融合、噪声归属、合并和分裂参数，
+    # 确保候选之间唯一变化是 HDBSCAN 的 min-cluster-size ratio。
+    candidate_args = copy.copy(args)
+    candidate_args.iter_merge_lambda_deep = float(args.mvacc_lambda_deep)
+    candidate_args.iter_merge_lambda_rf = float(args.mvacc_lambda_rf)
+    candidate_args.iter_merge_lambda_graph = float(args.mvacc_lambda_graph)
+    candidate_args.nodrop_assign_lambda_deep = float(args.mvacc_lambda_deep)
+    candidate_args.nodrop_assign_lambda_rf = float(args.mvacc_lambda_rf)
+    candidate_args.nodrop_assign_lambda_graph = float(args.mvacc_lambda_graph)
+    candidate_args.no_mutual_nearest = False
+
+    labels, assignment_stats = assign_noise_samples_no_drop(raw_labels, feats, candidate_args)
+    labels, merge_stats = iterative_merge_clusters_no_drop(
+        labels,
+        feats,
+        candidate_args,
+        max_rounds=args.mvacc_merge_rounds,
+        threshold=args.mvacc_merge_threshold,
+    )
+    labels, split_stats = adaptive_split_large_clusters_no_drop(labels, feats, candidate_args)
+    diagnostics = label_free_cluster_diagnostics(
+        discovery_feat,
+        labels,
+        probabilities=probabilities,
+        seed=args.seed,
+    )
+    cluster_count = int(len(np.unique(labels)))
+    return {
+        "ratio": float(ratio),
+        "minimum": int(minimum),
+        "raw_labels": np.asarray(raw_labels, dtype=np.int64),
+        "probabilities": np.asarray(
+            probabilities if probabilities is not None else np.ones(len(labels)),
+            dtype=np.float32,
+        ),
+        "labels": np.asarray(labels, dtype=np.int64),
+        "initial_cluster_count": initial_cluster_count,
+        "cluster_count": cluster_count,
+        "silhouette": float(diagnostics["Label-free Silhouette"]),
+        "confidence": float(diagnostics["Raw HDBSCAN Confidence Mean"]),
+        "cluster_size_cv": float(diagnostics["Cluster Size CV"]),
+        "small_cluster_fraction": float(diagnostics["Small Cluster Fraction"]),
+        "diagnostics": diagnostics,
+        "stats": {
+            **merge_stats,
+            **assignment_stats,
+            **split_stats,
+            "MVACC Min Cluster Size": int(minimum),
+            "MVACC Min Cluster Ratio": float(ratio),
+            "MVACC Min Samples": int(args.mvacc_min_samples),
+        },
+    }
+
+
+def _adaptive_density_audit_rows(round_name, anchor, candidate, decision):
+    """把候选选择展开为两行 CSV 审计记录，便于复核每轮拒绝原因。"""
+
+    common = {
+        "Round": round_name,
+        "Selected Ratio": float(decision["selected_ratio"]),
+        "Selected Source": decision["selected_source"],
+        "Candidate Accepted": bool(decision["candidate_accepted"]),
+        "Rejected By": ";".join(decision["rejected_by"]),
+        "Cluster Count Delta": int(decision["cluster_count_delta"]),
+        "Silhouette Delta": float(decision["silhouette_delta"]),
+        "Confidence Delta": float(decision["confidence_delta"]),
+        "Cluster Size CV Delta": float(decision["cluster_size_cv_delta"]),
+        "Small Cluster Fraction Delta": float(decision["small_cluster_fraction_delta"]),
+        "Partition Agreement ARI": float(decision["partition_agreement_ari"]),
+    }
+    rows = []
+    for source, result in (("anchor", anchor), ("candidate", candidate)):
+        rows.append({
+            **common,
+            "Source": source,
+            "Ratio": float(result["ratio"]),
+            "Min Cluster Size": int(result["minimum"]),
+            "Initial Cluster Count": int(result["initial_cluster_count"]),
+            "Final Cluster Count": int(result["cluster_count"]),
+            "Label-free Silhouette": float(result["silhouette"]),
+            "Raw HDBSCAN Confidence Mean": float(result["confidence"]),
+            "Cluster Size CV": float(result["cluster_size_cv"]),
+            "Small Cluster Fraction": float(result["small_cluster_fraction"]),
+        })
+    return rows
+
+
 def run_discovery(method, round_name, day_name, true_new_classes, X_round, y_round, Z_round, args, full_method=False, iarc_method=False):
     cflcg_mode = cflcg_mode_for_method(method)
     feats = build_round_features(X_round, Z_round, args, cflcg_mode=cflcg_mode)
@@ -2581,25 +2690,22 @@ def run_discovery(method, round_name, day_name, true_new_classes, X_round, y_rou
         proto_feat_type = "hybrid"
 
     mv_acc_method = base_method in {"No CF-LCG (MV-ACC)", "Global CF-LCG (MV-ACC)", "MV-ACC"}
-    if mv_acc_method:
-        # Scale the density prior with batch size.  The ratio and the remaining
-        # hyperparameters are calibrated on Day1 known-class validation data,
-        # then frozen before any unknown-round labels are evaluated.
-        discovery_min_cluster_size = max(
-            10, int(round(float(args.mvacc_min_cluster_ratio) * len(discovery_feat)))
-        )
-        discovery_min_samples = int(args.mvacc_min_samples)
-    else:
+    if not mv_acc_method:
         discovery_min_cluster_size = int(args.min_cluster_size)
         discovery_min_samples = int(args.min_samples)
-
-    raw_labels, probs = run_hdbscan(
-        discovery_feat, discovery_min_cluster_size, discovery_min_samples
-    )
-    raw_metrics = clustering_metrics(y_round, raw_labels)
-    raw_cluster_count = raw_metrics["Clusters"]
-    initial_cluster_count = int(raw_cluster_count)
+        raw_labels, probs = run_hdbscan(
+            discovery_feat, discovery_min_cluster_size, discovery_min_samples
+        )
+        raw_metrics = clustering_metrics(y_round, raw_labels)
+        raw_cluster_count = raw_metrics["Clusters"]
+        initial_cluster_count = int(raw_cluster_count)
+    else:
+        raw_labels = np.empty(0, dtype=np.int64)
+        probs = None
+        raw_cluster_count = 0
+        initial_cluster_count = 0
     iarc_stats = {}
+    adaptive_density_audit = []
 
     iter_merge_method = base_method.startswith("IterMerge")
     nodrop_full_method = base_method == "No-drop consolidation (ablation)"
@@ -2610,36 +2716,41 @@ def run_discovery(method, round_name, day_name, true_new_classes, X_round, y_rou
         #   2) every noise sample is assigned by deep/RF/graph consensus;
         #   3) mutually-nearest micro-clusters are iteratively consolidated.
         # No sample or cluster is rejected.
-        mvacc_args = copy.copy(args)
-        mvacc_args.iter_merge_lambda_deep = float(args.mvacc_lambda_deep)
-        mvacc_args.iter_merge_lambda_rf = float(args.mvacc_lambda_rf)
-        mvacc_args.iter_merge_lambda_graph = float(args.mvacc_lambda_graph)
-        mvacc_args.nodrop_assign_lambda_deep = float(args.mvacc_lambda_deep)
-        mvacc_args.nodrop_assign_lambda_rf = float(args.mvacc_lambda_rf)
-        mvacc_args.nodrop_assign_lambda_graph = float(args.mvacc_lambda_graph)
-        mvacc_args.no_mutual_nearest = False
+        anchor = _run_mvacc_density_candidate(
+            discovery_feat, feats, args, float(args.mvacc_min_cluster_ratio)
+        )
+        selected = anchor
+        if args.enable_mvacc_adaptive_density:
+            candidate = _run_mvacc_density_candidate(
+                discovery_feat, feats, args, float(args.mvacc_adaptive_candidate_ratio)
+            )
+            thresholds = AdaptiveDensityThresholds(
+                max_added_clusters=args.mvacc_adaptive_max_added_clusters,
+                min_silhouette_gain=args.mvacc_adaptive_min_silhouette_gain,
+                max_confidence_drop=args.mvacc_adaptive_max_confidence_drop,
+                max_cv_increase=args.mvacc_adaptive_max_cv_increase,
+                max_small_cluster_fraction_increase=args.mvacc_adaptive_max_small_fraction_increase,
+                min_partition_agreement=args.mvacc_adaptive_min_partition_agreement,
+            )
+            decision = select_adaptive_density_candidate(anchor, candidate, thresholds)
+            if decision["candidate_accepted"]:
+                selected = candidate
+            adaptive_density_audit = _adaptive_density_audit_rows(
+                round_name, anchor, candidate, decision
+            )
+            print(
+                f"[MV-ACC adaptive density] {round_name}: selected={decision['selected_ratio']:.3f}, "
+                f"clusters={selected['cluster_count']}, rejected_by={decision['rejected_by']}"
+            )
 
-        labels_for_metrics, assignment_stats = assign_noise_samples_no_drop(
-            raw_labels, feats, mvacc_args
-        )
-        labels_for_metrics, merge_stats = iterative_merge_clusters_no_drop(
-            labels_for_metrics,
-            feats,
-            mvacc_args,
-            max_rounds=args.mvacc_merge_rounds,
-            threshold=args.mvacc_merge_threshold,
-        )
-        labels_for_metrics, split_stats = adaptive_split_large_clusters_no_drop(
-            labels_for_metrics, feats, mvacc_args
-        )
-        iarc_stats = {
-            **merge_stats,
-            **assignment_stats,
-            **split_stats,
-            "MVACC Min Cluster Size": int(discovery_min_cluster_size),
-            "MVACC Min Cluster Ratio": float(args.mvacc_min_cluster_ratio),
-            "MVACC Min Samples": int(discovery_min_samples),
-        }
+        raw_labels = selected["raw_labels"]
+        probs = selected["probabilities"]
+        labels_for_metrics = selected["labels"]
+        initial_cluster_count = int(selected["initial_cluster_count"])
+        raw_cluster_count = int(initial_cluster_count)
+        iarc_stats = dict(selected["stats"])
+        iarc_stats["MVACC Adaptive Density Enabled"] = bool(args.enable_mvacc_adaptive_density)
+        iarc_stats["MVACC Selected Density Ratio"] = float(selected["ratio"])
         enrolled_ids, details_final = all_non_noise_as_accepted(labels_for_metrics)
         merge_rows = []
     elif full_method:
@@ -2784,6 +2895,7 @@ def run_discovery(method, round_name, day_name, true_new_classes, X_round, y_rou
         "merge_count": int(iarc_stats.get("Iter Merge Total Merges", len(merge_rows))),
         "iarc_stats": iarc_stats,
         "reliability_map": reliability_map,
+        "adaptive_density_audit": adaptive_density_audit,
     }
 
     info["discovery_features"] = discovery_feat
@@ -2904,6 +3016,18 @@ def main():
     parser.add_argument("--mvacc_split_size_factor", type=float, default=1.75, help="Split-test clusters larger than this multiple of the median cluster size.")
     parser.add_argument("--mvacc_split_min_part_ratio", type=float, default=0.30, help="Minimum child size relative to the median cluster size.")
     parser.add_argument("--mvacc_split_silhouette", type=float, default=0.30, help="Minimum internal silhouette required to retain an adaptive split.")
+    parser.add_argument(
+        "--enable_mvacc_adaptive_density",
+        action="store_true",
+        help="启用严格无标签轮次自适应密度；默认关闭以保持历史正式配置不变。",
+    )
+    parser.add_argument("--mvacc_adaptive_candidate_ratio", type=float, default=0.02, help="相对正式锚点尝试的较低密度比例。")
+    parser.add_argument("--mvacc_adaptive_max_added_clusters", type=int, default=2, help="候选相对锚点最多允许新增的簇数。")
+    parser.add_argument("--mvacc_adaptive_min_silhouette_gain", type=float, default=0.04, help="采用候选所需的最小无标签 silhouette 增益。")
+    parser.add_argument("--mvacc_adaptive_max_confidence_drop", type=float, default=0.03, help="候选允许的最大 HDBSCAN 置信度下降。")
+    parser.add_argument("--mvacc_adaptive_max_cv_increase", type=float, default=0.10, help="候选允许的最大簇大小 CV 增量。")
+    parser.add_argument("--mvacc_adaptive_max_small_fraction_increase", type=float, default=0.10, help="候选允许的最大小簇比例增量。")
+    parser.add_argument("--mvacc_adaptive_min_partition_agreement", type=float, default=0.50, help="候选与锚点分区之间的最小 ARI 一致性。")
 
     parser.add_argument("--enable_visualization", action="store_true", default=True, help="Save 2D discovery visualizations. Default: enabled.")
     parser.add_argument("--disable_visualization", action="store_true", help="Disable visualization output.")
@@ -2913,6 +3037,13 @@ def main():
     args = parser.parse_args()
     if args.disable_visualization:
         args.enable_visualization = False
+    if args.enable_mvacc_adaptive_density:
+        if not 0.0 < args.mvacc_adaptive_candidate_ratio < args.mvacc_min_cluster_ratio:
+            raise ValueError(
+                "自适应密度候选 ratio 必须大于 0 且严格小于正式锚点 ratio。"
+            )
+        if args.mvacc_adaptive_max_added_clusters < 1:
+            raise ValueError("自适应密度至少应允许候选新增 1 个簇。")
     set_seed(args.seed)
     ensure_dir(args.save_dir)
 
@@ -2951,6 +3082,13 @@ def main():
         f"split_factor={args.mvacc_split_size_factor}, split_sil={args.mvacc_split_silhouette}, "
         f"coverage=100%, strict_alignment=Hungarian"
     )
+    if args.enable_mvacc_adaptive_density:
+        print(
+            "MV-ACC adaptive density: "
+            f"anchor={args.mvacc_min_cluster_ratio}, candidate={args.mvacc_adaptive_candidate_ratio}, "
+            f"max_added_clusters={args.mvacc_adaptive_max_added_clusters}, "
+            f"min_silhouette_gain={args.mvacc_adaptive_min_silhouette_gain}"
+        )
 
     splits = load_adsb_90known_3round(
         data_root=args.data_root,
@@ -3038,7 +3176,7 @@ def main():
         "receiver_metadata": "unavailable; one acquisition domain assumed",
         "capture_session_metadata_available": False,
         "exact_content_overlap_gate": "BLAKE2b-128, required zero",
-        "hyperparameter_policy": "all CLI values fixed before test evaluation; no ADS-B test-driven retry or selection",
+        "hyperparameter_policy": "all CLI values fixed before test evaluation; adaptive density may use discovery-only unlabeled diagnostics; no ADS-B test-driven retry or selection",
         "hungarian_policy": "discovery hidden labels only, frozen mapping, offline scoring only; evaluation labels never fit mapping",
         "true_labels_forbidden_from": [
             "feature extraction",
@@ -3152,6 +3290,7 @@ def main():
     # MV-ACC-CIL: discovery uses a frozen Teacher; only then is the Student updated.
     print("\n[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning")
     clustering_rows, incremental_rows, retention_rows = [], [], []
+    adaptive_density_rows = []
     student = copy.deepcopy(model).to(device).eval()
     pseudo_to_true = {int(c): int(c) for c in range(args.initial_known_classes)}
     memory_x, memory_y = _update_iq_memory(None, None, X_train, y_train, args.memory_per_class, args.seed)
@@ -3173,6 +3312,7 @@ def main():
         row, info = run_discovery("MV-ACC", f"R{i}", f"Day {i + 1}", args.round_size, rd["X"], rd["y"], rd["Z"], args)
         row["Method"] = "MV-ACC-CIL discovery"
         clustering_rows.append(row)
+        adaptive_density_rows.extend(info.get("adaptive_density_audit", []))
         labels = np.asarray(info["labels"], dtype=np.int64)
         if np.any(labels < 0):
             raise RuntimeError("MV-ACC-CIL requires no-drop labels; found an unassigned noise sample.")
@@ -3209,6 +3349,11 @@ def main():
     clustering_df = save_csv(clustering_rows, os.path.join(args.save_dir, "clustering_results.csv"))
     incremental_df = save_csv(incremental_rows, os.path.join(args.save_dir, "incremental_results.csv"))
     save_csv(retention_rows, os.path.join(args.save_dir, "fixed_day1_retention.csv"))
+    if args.enable_mvacc_adaptive_density:
+        save_csv(
+            adaptive_density_rows,
+            os.path.join(args.save_dir, "mvacc_adaptive_density_audit.csv"),
+        )
     per_round_summary_df = build_per_round_summary(clustering_df, incremental_df)
     if not clustering_df.empty and "MV-ACC-CIL discovery" in set(clustering_df["Method"].astype(str)):
         c = clustering_df[clustering_df["Method"].astype(str) == "MV-ACC-CIL discovery"].set_index("Round")
