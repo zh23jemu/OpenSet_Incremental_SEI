@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划与项目进度总表
 
-- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成 WiSig 表征、后端、发现前端短实验、IGCD strict 最小入口、RADCIL 后端二阶验证、ratio/weight 细化矩阵、真实 WiSig IGCD 前端对比和 RADCIL 多种子确认；阶段 2 已准备 WiSig 单种子主流程配置、审计计划和 Slurm 入口，等待运行结果
+- 状态：实施中；阶段 0 主实验环境、ADS-B 解压和 WiSig/ADS-B strict loader 审计已完成；阶段 1 已完成 WiSig 表征、后端、发现前端短实验、IGCD strict 最小入口、RADCIL 后端二阶验证、ratio/weight 细化矩阵、真实 WiSig IGCD 前端对比和 RADCIL 多种子确认；阶段 2 已跑通 WiSig 单种子完整三轮主流程，下一步扩展正式多种子
 - 版本：1.1
 - 创建日期：2026-07-26
 - 最近更新：2026-07-27
@@ -199,8 +199,8 @@
 - [x] 新增阶段 2 RADCIL 主配置模块 `utils/radcil_config.py`，将 MV-ACC 前端和 `ratio_2p0_replay_3p0` 后端锁定为首个 WiSig 主组合。
 - [x] 新增阶段 2 WiSig 单种子主流程计划、报告生成器和 Slurm 入口：`tools/stage2_wisig_main_plan.py`、`tools/stage2_wisig_main_report.py`、`results/stage2/stage2_wisig_main_single_seed_plan.json`、`slurm/stage2_wisig_main_single_seed.sbatch`。
 - [x] 保留旧实验入口默认行为，阶段 2 通过独立配置和 Slurm 入口接入新方法参数。
-- [ ] 在 WiSig 单种子短训练上跑通 3 轮完整流程。
-- [ ] 验证模型参数在每轮确实更新，新类别进入分类头和回放记忆。
+- [x] 运行 WiSig 单种子完整三轮主流程 Job `44433946`，结果见 `results/stage2/STAGE2_WISIG_MAIN_SINGLE_SEED_REPORT_44433946.md`；R3 Overall 0.6328、Old 0.5874、New 0.7689、Forgetting 0.1389。
+- [x] 验证每轮产出模型 checkpoint 与回放记忆：`mvacc_cil_after_r1/r2/r3.pth` 和 `replay_memory_after_r1/r2/r3.npz` 已同步到 `results/stage2/wisig_main_ratio_2p0_replay_3p0_seed7_44433946/`。
 
 ### 阶段 3：WiSig 正式实验，3–4 天
 
@@ -273,11 +273,19 @@
 
 判断：RADCIL 细化后端已比上一轮 `balanced_old_new_batch` 进一步提升。三种子确认中两个候选 Overall 基本持平，`ratio_2p0_replay_3p0` 的旧类保持和遗忘率更优，因此作为阶段 2 主后端候选；`ratio_3p0_replay_3p0` 保留为 high-replay 对照。
 
+### WiSig 阶段 2 单种子主流程
+
+| 配置 | Seed | R3 Overall | R3 Old | R3 New | R3 Forgetting | R3 Macro F1 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| MV-ACC + `ratio_2p0_replay_3p0` | 7 | 0.6328 | 0.5874 | 0.7689 | 0.1389 | 0.5918 |
+
+判断：阶段 2 首个 WiSig 主流程已跑通完整 10+10x3 协议，相比阶段 1 seed7 短训练同后端的 R3 Overall 0.5767、Old 0.5041、Forgetting 0.3000 有明显改善。该结果仍是单种子，不能替代阶段 3 正式三种子均值和标准差。
+
 ## 8.2 当前风险与应对
 
 | 风险                  | 影响                   | 当前应对                                         |
 | ------------------- | -------------------- | -------------------------------------------- |
-| RADCIL 正式结果尚未进入完整主流程 | 阶段 2 入口已准备，但还没有 Slurm 运行指标 | 提交 `slurm/stage2_wisig_main_single_seed.sbatch`，同步并汇总 R1/R2/R3 指标 |
+| RADCIL 正式结果尚未多种子确认 | 阶段 2 单种子已跑通，但还不是正式主结果 | 扩展 WiSig 3 种子正式主实验，报告均值和标准差 |
 | IGCD-minimal 不是完整复现 | 客户或论文审稿可能质疑 SOTA 公平性 | 明确标注为 minimal strict adaptation，必要时后续补齐更完整适配 |
 | ADS-B 历史闭集和发现质量偏弱   | 主实验第二数据集可能拖慢         | 阶段 4 优先处理 ADS-B 长序列表征                        |
 | ManyRx 正式 runner 缺失 | 补充实验入口不清晰            | 后续恢复 runner 或修正文档引用                          |
@@ -287,8 +295,8 @@
 
 短期优先级：
 
-1. 提交阶段 2 WiSig 单种子主流程 Slurm job，并同步 `results/stage2/wisig_main_ratio_2p0_replay_3p0_seed7_<jobid>`。
-2. 根据阶段 2 单种子结果生成 `results/stage2/STAGE2_WISIG_MAIN_SINGLE_SEED_REPORT_<jobid>.md` 并同步回本地。
+1. 基于阶段 2 主配置生成 WiSig 3 种子正式主实验 Slurm 入口。
+2. 跑 WiSig seed 7/13/31 正式主流程并汇总均值、标准差。
 3. 将 IGCD-minimal 和 SimGCD-style 放入 strict baseline 表，并明确适配级别。
 4. 保留 `ratio_3p0_replay_3p0` 作为 high-replay 后端对照。
 
