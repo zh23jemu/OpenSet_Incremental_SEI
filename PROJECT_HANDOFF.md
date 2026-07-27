@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
-- 更新时间：2026-07-27
-- 当前阶段：实施计划 1.1，阶段 3 WiSig 正式实验与 hybrid 负消融已完成；阶段 4 ADS-B Long-RADCIL 正式三种子已完成，下一步诊断 R2/R3 发现欠聚类
+- 更新时间：2026-07-28
+- 当前阶段：实施计划 1.1，阶段 4 固定密度消融已完成；严格无标签自适应密度与 ADS-B baseline 执行链路已实现并本地提交，待推送和 Slurm 验证
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -118,6 +118,8 @@ Strict loader 审计：
 - 已新增 `slurm/stage4_adsb_discovery_ablation_seed31.sbatch`，复用 seed31 长序列 checkpoint，固定 Long-RADCIL 后端，预注册密度、合并和分裂三个单因素变体。
 - Job `44474297` 已完成；density ratio 0.02 的无标签 silhouette 与簇均衡性优于 baseline，split relaxed 出现过度切分。已新增 `slurm/stage4_adsb_density_multiseed.sbatch` 做唯一候选的配对三种子确认。
 - Job `44474381` 已完成配对三种子确认；ratio 0.02 提升 silhouette 与 R3 New Acc，但簇大小 CV 变差且部分早期轮次过度切分，正式全轮次默认继续使用 ratio 0.03。
+- 已实现以 ratio 0.03 为锚点、0.02 为候选的严格无标签轮次自适应密度门控；本地提交为 `bc5f979`，三种子入口为 `slurm/stage4_adsb_adaptive_density_multiseed.sbatch`。
+- 已修复 ADS-B baseline 分支的冻结特征银行和发现信息未初始化问题；本地提交为 `90bac09`，三种子入口为 `slurm/stage4_adsb_cil_baselines_multiseed.sbatch`。
 - 已新增 `tools/stage3_wisig_strict_baseline_table.py` 并生成 `results/stage3/STAGE3_WISIG_STRICT_BASELINE_TABLE.md`，将 SimGCD-style 标注为 learning-style adaptation、IGCD-minimal 标注为 minimal strict adaptation，二者均不作为完整论文复现；MV-ACC 仍是正式主前端。
 - 已新增 `tools/stage3_wisig_strong_backend_plan.py` 并生成 `results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md`，把共享发现后端风险收束为 `RADCIL + DOI-style`、`RADCIL + iCaRL`、`RADCIL + TPCIL-style` 三个待实现混合候选；下一步先做 seed 7 短验证。
 - ADS-B strict 主入口已使用 `ADSBLongClosedSet`，并支持 RADCIL old:new batch ratio；阶段 4 单种子和正式三种子计划、报告、Slurm 入口均已同步。
@@ -130,9 +132,9 @@ Strict loader 审计：
 
 ## 7. 下一步执行顺序
 
-1. 将固定 ratio 0.02 归档为混合消融，不替换 ADS-B 正式 ratio 0.03。
-2. 若继续优化发现前端，优先设计基于 discovery 无标签稳定性的轮次自适应密度策略，再补 ADS-B strict baseline。
-3. 补齐 ADS-B 同协议 baseline/消融表；后端保持 Long-RADCIL 配置，不再同时改动骨干和后端。
+1. 保持固定 ratio 0.03 为正式锚点；获得明确推送授权后推送当前分支，并先提交自适应密度三种子短作业。
+2. 自适应密度若跨种子稳定，再更新正式结论；否则记录为负消融并停止继续调密度阈值。
+3. 提交 ADS-B strict baseline 三种子正式作业，生成共享发现后端、Deep-HDBSCAN 端到端和前端消融总表。
 4. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 5. 若后续补充实验需要 LoRa 完整数据或 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压或下载；LoRa 可优先只取 Different Days Indoor Scenario 的必要子集，不删除 Release 分片或原压缩包。
 
@@ -140,6 +142,8 @@ Strict loader 审计：
 
 最近关键提交：
 
+- `90bac09 fix: 补齐ADS-B strict baseline执行链路`
+- `bc5f979 feat: 增加ADS-B无标签自适应密度门控`
 - `950a050 test: 保存阶段零strict加载器审计产物`
 - `ab4ce96 test: 增加阶段零strict加载器审计`
 - `33cc713 build: 增加Slurm阶段零自检任务`
