@@ -100,6 +100,7 @@
 - ADS-B 正式三种子 R3 Overall `0.4824±0.0074`、Old `0.4873±0.0079`、New `0.4427±0.0122`、Forgetting `0.1168±0.0138`；三种子 R3 仅发现 6–7 簇，当前主风险为发现欠聚类。
 - 阶段 4 ADS-B 发现链路诊断已完成：R3 初始簇为 7/6/8，最终为 7/6/7，自适应分裂均未触发，确认主要损失发生在 HDBSCAN 初始密度微簇形成阶段。
 - 已新增 seed31 发现前端预注册单因素消融入口，复用 Job `44467424` 长序列 checkpoint，固定 Long-RADCIL 后端，只比较密度比例、合并阈值和分裂条件。
+- Slurm Job `44474297` 已完成 seed31 单因素消融；`density_ratio_0p02` 的无标签 silhouette 从 `0.2958` 提升到 `0.3981`、簇大小 CV 从 `0.4772` 降到 `0.4542`，已准备 baseline/density 配对三种子入口。
 
 ## Recent Changes
 
@@ -143,6 +144,7 @@
 - 2026-07-27：将 ADS-B long-sequence backbone 与 RADCIL old:new ratio 接入 strict 主入口，完成 seed31 Job `44467424`，R3 Overall 较历史 legacy seed31 提升 `0.1583`。
 - 2026-07-27：新增 ADS-B 正式三种子计划、报告和 Slurm 入口，完成 Job `44470736`；正式报告确认 Long-RADCIL 稳定运行，剩余瓶颈为 R2/R3 欠聚类。
 - 2026-07-27：新增 ADS-B 发现欠聚类诊断、无标签簇结构指标、seed31 单因素计划/报告与 Slurm 入口；本地语法、诊断生成、计划生成和合成指标 smoke test 通过。
+- 2026-07-27：完成 ADS-B seed31 发现单因素 Job `44474297`；排除过强分裂，将 density ratio 0.02 作为唯一跨种子候选，并新增配对三种子计划、报告和 Slurm 入口。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
@@ -160,8 +162,8 @@
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
-- 提交 `slurm/stage4_adsb_discovery_ablation_seed31.sbatch`，完成固定 Long-RADCIL 后端的 seed31 发现前端单因素消融。
-- 只依据 discovery 侧 silhouette、HDBSCAN 置信度、簇大小 CV 与合并损失筛选跨种子候选；真实标签指标仅事后报告。
+- 提交 `slurm/stage4_adsb_density_multiseed.sbatch`，完成 ratio 0.03/0.02 的配对三种子确认。
+- 只依据 discovery 侧 silhouette、HDBSCAN 置信度、簇大小 CV 与净簇数变化判断是否锁定 ratio 0.02；真实标签指标仅事后报告。
 - 将 IGCD-minimal 纳入 strict baseline 表，但正式主前端继续优先使用 MV-ACC 或稳定 Deep-HDBSCAN。
 - 后续每完成关键 Slurm job、阶段报告或客户可汇报结论时，同步更新 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 的当前状态、关键结果、风险和下一步行动清单。
 - 后续 WiSig 短实验优先使用 MV-ACC 或稳定 Deep-HDBSCAN 前端；SimGCD-style 保留为学习式发现 baseline，不作为阶段 1 主前端。
