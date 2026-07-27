@@ -70,7 +70,7 @@ def build_contract(project_root: Path) -> dict[str, Any]:
                 "confidence_mean",
                 "confidence_min",
             ],
-            "implementation_status": "contract_ready_adapter_pending",
+            "implementation_status": "minimal_adapter_and_wisig_frontend_compare_done",
         },
         "igcd_minimal_adapter": {
             "role": "strict_candidate_baseline",
@@ -84,7 +84,7 @@ def build_contract(project_root: Path) -> dict[str, Any]:
                 "macro_f1",
                 "discovery_purity_if_applicable",
             ],
-            "implementation_status": "contract_ready_adapter_pending",
+            "implementation_status": "minimal_strict_entry_smoke_done",
         },
     }
 

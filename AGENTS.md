@@ -80,6 +80,8 @@
 - Slurm Job `44420869` 已完成阶段 1 WiSig 后端消融并同步结果；`results/stage1/STAGE1_BACKEND_ABLATION_REPORT.md` 显示 `replay_x2` 当前最佳、`kd_off` 优于默认、`head_only` 最差，R3 遗忘风险已定位到默认回放约束不足与 KD 目标/权重不稳。
 - 阶段 1 已新增 `utils/simgcd_discovery_adapter.py` 和 `tools/stage1_simgcd_adapter_smoke.py`，完成 SimGCD 式发现头最小适配；合成 smoke test 已生成 `results/stage1/stage1_simgcd_adapter_smoke.json` 并通过输出契约校验。
 - Slurm Job `44422110` 已完成阶段 1 WiSig 前端对比并同步结果；`results/stage1/STAGE1_WISIG_FRONTEND_COMPARE_REPORT.md` 显示 SimGCD-style 可运行且覆盖完整，但三轮 NMI、ARI 和 Hungarian Acc 均低于 MV-ACC，当前不作为正式主前端。
+- 阶段 1 已新增 `utils/igcd_minimal_adapter.py` 和 `tools/stage1_igcd_strict_entry.py`，完成 IGCD strict 最小入口；合成三轮 smoke test 已生成 `results/stage1/stage1_igcd_strict_entry.json` 并通过输出契约校验。
+- 阶段 1 已在 `experiments/exp_wisig_mvacc_cil_strict.py` 中补齐 RADCIL 后端二阶参数支持：旧/新 batch 配比、masked KD、KD schedule、replay 特征蒸馏和 joint 解冻范围；`results/stage1/stage1_radcil_backend_matrix.json` 已更新为可执行矩阵，Slurm 入口为 `slurm/stage1_wisig_radcil_backend_matrix.sbatch`。
 
 ## Recent Changes
 
@@ -101,6 +103,8 @@
 - 2026-07-27：提交并完成 Slurm Job `44420869`，同步 6 个 WiSig 后端消融变体结果，新增 `results/stage1/STAGE1_BACKEND_ABLATION_REPORT.md`；当前结论支持以更强 replay 约束和重做 KD 目标/权重作为下一轮 RADCIL 后端方向。
 - 2026-07-27：新增 SimGCD 式最小发现适配器和合成 smoke test；本地 `.venv` 已补齐 numpy/scikit-learn，`py_compile` 和 `tools/stage1_simgcd_adapter_smoke.py` 均通过。
 - 2026-07-27：提交并完成 Slurm Job `44422110`，同步 WiSig frozen embeddings 上 Deep-HDBSCAN/MV-ACC/SimGCD-style 前端对比结果，新增 `results/stage1/STAGE1_WISIG_FRONTEND_COMPARE_REPORT.md`；当前结论是不将 SimGCD-style 锁定为主前端。
+- 2026-07-27：新增 IGCD strict 最小适配器和三轮合成 smoke test；本地 `.venv\Scripts\python.exe -m py_compile` 与 `tools/stage1_igcd_strict_entry.py` 均通过。
+- 2026-07-27：更新 WiSig strict CIL 训练入口，新增 RADCIL 二阶后端参数，并刷新 `tools/stage1_radcil_backend_matrix.py`、`results/stage1/stage1_radcil_backend_matrix.json` 和 `slurm/stage1_wisig_radcil_backend_matrix.sbatch`；本地 `py_compile` 通过，端到端需 Slurm 环境验证。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
@@ -118,8 +122,8 @@
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
-- 为 IGCD 适配本项目 60/10/30 协议设计最小运行入口，确认能否作为严格 baseline。
-- 设计下一轮 RADCIL 后端：以 `replay_x2` 为起点，比较 replay loss 权重、旧类 batch 配比、masked KD、特征蒸馏和末端层解冻。
+- 提交 Slurm 短实验验证 RADCIL 二阶矩阵：`replay_x2` 锚点、old:new batch、masked KD、KD schedule、特征蒸馏和解冻范围。
+- 将 IGCD strict 最小入口接入真实 WiSig frozen embeddings，确认能否作为严格 baseline。
 - 后续 WiSig 短实验优先使用 MV-ACC 或稳定 Deep-HDBSCAN 前端；SimGCD-style 保留为学习式发现 baseline，不作为阶段 1 主前端。
 - 在 WiSig 单种子短实验前，基于 `tools/stage0_strict_loader_audit.py` 的输出确认后续实验入口统一使用可移植数据路径。
 - 明确 ManyRx 当前正式入口：恢复受维护的 runner，或同步修改 `experiments/README_MAIN_EXPERIMENTS.md`，避免引用不存在的脚本。
@@ -136,6 +140,7 @@
 - Slurm `.venv` 当前安装的是 2026-07-26 可用的较新依赖组合，尚未通过旧版端到端实验验证；如出现兼容问题，应基于成功环境生成锁文件后做最小范围降级。
 - ADS-B 已在 Slurm 解压并通过 strict loader 审计；ManyTx/ManyRx 完整 ZIP 结构有效但未解压，后续仅在补充实验需要时按需展开，不作为阶段 1 阻塞风险。
 - SimGCD-style 最小适配器在 WiSig frozen embeddings 上弱于 MV-ACC；学习式发现头直接迁移到 RF 特征的收益不足，后续若继续改进需证明稳定超过 Deep-HDBSCAN/MV-ACC。
+- RADCIL 二阶参数已通过本地语法验证，但本地 `.venv` 缺 pandas 等训练依赖，尚未执行端到端 argparse/训练 smoke；完整验证应在已配好依赖的 Slurm `.venv` 中完成。
 - `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`。
 - 部分 ADS-B 结果清单和报告保存了开发者机器绝对数据路径，虽未发现认证令牌，但跨机器复现需要显式覆盖数据根目录。
 - 实验脚本体量较大且 WiSig/ManyTx 多版本之间存在明显重复，当前不做无关重构；后续修改须谨慎同步公共逻辑。

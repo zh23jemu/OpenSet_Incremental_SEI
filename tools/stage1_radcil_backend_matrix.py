@@ -6,10 +6,9 @@
 - `head_only` 最差，说明完全冻结骨干不可行。
 
 本脚本把这些结论转成下一轮可执行矩阵，重点比较 replay loss 权重、
-旧类 batch 约束、masked KD、特征蒸馏和末端层解冻。当前项目的旧
-WiSig strict 入口尚未全部支持这些新参数，因此矩阵会显式标记
-`requires_code_support`，供下一步实现 RADCIL 后端模块和 Slurm 脚本时
-逐项落地。
+旧类 batch 约束、masked KD、特征蒸馏和末端层解冻。WiSig strict
+入口已经支持这些阶段 1 参数，因此矩阵中的 `requires_code_support`
+应为空；后续 Slurm 脚本可以直接按 `args` 字段提交短实验。
 """
 
 from __future__ import annotations
@@ -38,7 +37,6 @@ BASE_ARGS = [
     "--supcon_weight 0.1",
     "--cil_head_warmup_epochs 1",
     "--cil_joint_epochs 3",
-    "--cil_replay_weight 2.0",
 ]
 
 
@@ -48,7 +46,7 @@ def build_matrix() -> list[dict[str, Any]]:
         {
             "variant": "replay_x2_confirm",
             "purpose": "复现阶段 1 最佳短实验，作为二阶矩阵锚点。",
-            "args": BASE_ARGS,
+            "args": BASE_ARGS + ["--cil_replay_weight 2.0"],
             "requires_code_support": [],
         },
         {
@@ -60,41 +58,43 @@ def build_matrix() -> list[dict[str, Any]]:
         {
             "variant": "balanced_old_new_batch",
             "purpose": "固定每个增量 batch 的旧类/新类样本比例，避免 replay loss 权重大但采样不足。",
-            "args": BASE_ARGS + ["--radcil_old_new_batch_ratio 1.0"],
-            "requires_code_support": ["radcil_old_new_batch_ratio"],
+            "args": BASE_ARGS + ["--cil_replay_weight 2.0", "--radcil_old_new_batch_ratio 2.0"],
+            "requires_code_support": [],
         },
         {
             "variant": "masked_kd_low",
             "purpose": "只对旧类 logits 做 masked KD，低权重验证 KD 是否可在去除新类干扰后恢复收益。",
-            "args": BASE_ARGS + ["--cil_kd_weight 0.25", "--radcil_masked_kd"],
-            "requires_code_support": ["radcil_masked_kd"],
+            "args": BASE_ARGS + ["--cil_replay_weight 2.0", "--cil_kd_weight 0.25", "--radcil_masked_kd"],
+            "requires_code_support": [],
         },
         {
             "variant": "masked_kd_schedule",
             "purpose": "旧类 masked KD 使用随轮次衰减/升温调度，避免默认 KD 在伪标签噪声下压制新类。",
             "args": BASE_ARGS + [
                 "--cil_kd_weight 0.5",
+                "--cil_replay_weight 2.0",
                 "--radcil_masked_kd",
                 "--radcil_kd_schedule cosine",
                 "--cil_temperature 3.0",
             ],
-            "requires_code_support": ["radcil_masked_kd", "radcil_kd_schedule"],
+            "requires_code_support": [],
         },
         {
             "variant": "feature_distill_tail",
             "purpose": "加入 teacher/student 末端特征蒸馏，直接约束骨干漂移。",
-            "args": BASE_ARGS + ["--radcil_feature_distill_weight 0.5"],
-            "requires_code_support": ["radcil_feature_distill_weight"],
+            "args": BASE_ARGS + ["--cil_replay_weight 2.0", "--radcil_feature_distill_weight 0.5"],
+            "requires_code_support": [],
         },
         {
             "variant": "tail_unfreeze_plus_feature_distill",
             "purpose": "保留末端层适应能力，同时用特征蒸馏降低旧类表征漂移。",
             "args": BASE_ARGS + [
                 "--cil_backbone_lr 5e-6",
+                "--cil_replay_weight 2.0",
                 "--radcil_feature_distill_weight 0.5",
                 "--radcil_unfreeze_scope tail",
             ],
-            "requires_code_support": ["radcil_feature_distill_weight", "radcil_unfreeze_scope"],
+            "requires_code_support": [],
         },
     ]
 
@@ -118,6 +118,17 @@ def build_report(project_root: Path) -> dict[str, Any]:
             "优先选择 R3 Old Acc 更高且 Forgetting Rate 更低的变体；"
             "若 New Acc 明显下降，则降低 replay/KD 权重或改用调度。"
         ),
+        "code_support_status": {
+            "entry": "experiments/exp_wisig_mvacc_cil_strict.py",
+            "supported_parameters": [
+                "radcil_old_new_batch_ratio",
+                "radcil_masked_kd",
+                "radcil_kd_schedule",
+                "radcil_feature_distill_weight",
+                "radcil_unfreeze_scope",
+            ],
+            "default_behavior": "默认参数保持旧 WiSig strict CIL 训练逻辑。",
+        },
         "required_metrics": [
             "Overall Acc",
             "Old Acc",

@@ -1755,38 +1755,80 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
     current_w = np.asarray(current_w, dtype=np.float32)
     memory_x = np.asarray(memory_x, dtype=np.float32)
     memory_y = np.asarray(memory_y, dtype=np.int64)
+    # 默认保持旧实现：当前伪标签 batch 和 replay batch 使用相同大小。
+    # 若显式设置 old:new batch 比例，则只调整 replay loader 的 batch size，
+    # 便于独立验证“采样配比”和“replay loss 权重”的贡献。
+    current_batch_size = int(args.incremental_batch_size)
+    if float(args.radcil_old_new_batch_ratio) > 0:
+        memory_batch_size = max(1, int(round(current_batch_size * float(args.radcil_old_new_batch_ratio))))
+    else:
+        memory_batch_size = current_batch_size
     cur_loader = DataLoader(
         TensorDataset(torch.as_tensor(current_x), torch.as_tensor(current_y), torch.as_tensor(current_w)),
-        batch_size=int(args.incremental_batch_size), shuffle=True, drop_last=False, num_workers=0,
+        batch_size=current_batch_size, shuffle=True, drop_last=False, num_workers=0,
     )
     mem_loader = DataLoader(
         TensorDataset(torch.as_tensor(memory_x), torch.as_tensor(memory_y)),
-        batch_size=int(args.incremental_batch_size), shuffle=True, drop_last=False, num_workers=0,
+        batch_size=memory_batch_size, shuffle=True, drop_last=False, num_workers=0,
     )
     teacher = copy.deepcopy(teacher).to(device).eval()
     for p in teacher.parameters():
         p.requires_grad_(False)
+
+    def trainable_backbone_parameters():
+        """按 RADCIL 消融参数选择需要解冻的骨干末端范围。"""
+        scope = str(args.radcil_unfreeze_scope).lower()
+        if scope == "none":
+            return []
+        if scope == "fc":
+            return list(student.backbone.fc.parameters())
+        if scope == "layer3":
+            return list(student.backbone.layer3.parameters())
+        if scope == "tail":
+            return list(student.backbone.layer3.parameters()) + list(student.backbone.fc.parameters())
+        if scope == "layer2_tail":
+            return (
+                list(student.backbone.layer2.parameters())
+                + list(student.backbone.layer3.parameters())
+                + list(student.backbone.fc.parameters())
+            )
+        raise ValueError(f"Unsupported --radcil_unfreeze_scope: {args.radcil_unfreeze_scope}")
+
+    def scheduled_kd_weight(epoch_index, total_epochs):
+        """计算当前 epoch 的 KD 权重，默认 constant 与旧实现完全一致。"""
+        base = float(args.cil_kd_weight)
+        schedule = str(args.radcil_kd_schedule).lower()
+        if base <= 0:
+            return 0.0
+        if schedule == "constant":
+            return base
+        progress = 0.0 if total_epochs <= 1 else float(epoch_index) / float(total_epochs - 1)
+        if schedule == "cosine":
+            return base * 0.5 * (1.0 + float(np.cos(np.pi * progress)))
+        if schedule == "linear_decay":
+            return base * (1.0 - progress)
+        raise ValueError(f"Unsupported --radcil_kd_schedule: {args.radcil_kd_schedule}")
 
     def configure(stage):
         for p in student.backbone.parameters():
             p.requires_grad_(False)
         for p in student.classifier.parameters():
             p.requires_grad_(True)
+        backbone_params = []
         if stage == "joint":
-            for p in student.backbone.layer3.parameters():
-                p.requires_grad_(True)
-            for p in student.backbone.fc.parameters():
+            backbone_params = trainable_backbone_parameters()
+            for p in backbone_params:
                 p.requires_grad_(True)
         groups = [{"params": student.classifier.parameters(), "lr": float(args.cil_classifier_lr)}]
-        if stage == "joint":
-            groups.append({"params": itertools.chain(student.backbone.layer3.parameters(), student.backbone.fc.parameters()), "lr": float(args.cil_backbone_lr)})
+        if stage == "joint" and len(backbone_params) > 0:
+            groups.append({"params": backbone_params, "lr": float(args.cil_backbone_lr)})
         return torch.optim.AdamW(groups, weight_decay=float(args.cil_weight_decay))
 
     for stage, epochs in (("head", int(args.cil_head_warmup_epochs)), ("joint", int(args.cil_joint_epochs))):
         if epochs <= 0:
             continue
         opt = configure(stage)
-        for _ in range(epochs):
+        for epoch_index in range(epochs):
             student.train()
             mem_iter = itertools.cycle(mem_loader)
             for xc, yc, wc in cur_loader:
@@ -1799,17 +1841,39 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                 ce_current = (F.cross_entropy(logits_c, yc, reduction="none") * wc).sum() / (wc.sum() + 1e-8)
                 ce_memory = F.cross_entropy(logits_m, ym)
                 with torch.no_grad():
-                    _, teacher_logits = teacher(xm)
-                kd = F.kl_div(
-                    F.log_softmax(logits_m[:, :old_out_dim] / float(args.cil_temperature), dim=1),
-                    F.softmax(teacher_logits[:, :old_out_dim] / float(args.cil_temperature), dim=1),
-                    reduction="batchmean",
-                ) * (float(args.cil_temperature) ** 2)
+                    teacher_feat_m, teacher_logits = teacher(xm)
+                # masked KD 只约束 teacher 已有输出维度，避免新类伪标签噪声
+                # 通过蒸馏目标反向压制当前轮新类别学习。
+                if bool(args.radcil_masked_kd):
+                    kd_mask = ym < int(old_out_dim)
+                else:
+                    kd_mask = torch.ones_like(ym, dtype=torch.bool)
+                if torch.any(kd_mask):
+                    kd = F.kl_div(
+                        F.log_softmax(logits_m[kd_mask, :old_out_dim] / float(args.cil_temperature), dim=1),
+                        F.softmax(teacher_logits[kd_mask, :old_out_dim] / float(args.cil_temperature), dim=1),
+                        reduction="batchmean",
+                    ) * (float(args.cil_temperature) ** 2)
+                else:
+                    kd = logits_m.sum() * 0.0
+                if float(args.radcil_feature_distill_weight) > 0:
+                    # 特征蒸馏只施加在 replay 样本上，用来约束旧类表征漂移；
+                    # 当前轮伪标签样本不参与该项，避免把 teacher 的旧空间强加给新类。
+                    feature_distill = F.mse_loss(F.normalize(feat[len(xc):], dim=1), F.normalize(teacher_feat_m, dim=1))
+                else:
+                    feature_distill = logits_m.sum() * 0.0
                 high = wc >= float(args.cil_supcon_threshold)
                 feat_con = torch.cat([feat[:len(xc)][high], feat[len(xc):]], dim=0)
                 y_con = torch.cat([yc[high], ym], dim=0)
                 con = _supcon_incremental(feat_con, y_con, args.supcon_temperature)
-                loss = ce_current + float(args.cil_replay_weight) * ce_memory + float(args.cil_kd_weight) * kd + float(args.cil_supcon_weight) * con
+                kd_weight = scheduled_kd_weight(epoch_index, epochs)
+                loss = (
+                    ce_current
+                    + float(args.cil_replay_weight) * ce_memory
+                    + kd_weight * kd
+                    + float(args.radcil_feature_distill_weight) * feature_distill
+                    + float(args.cil_supcon_weight) * con
+                )
                 opt.zero_grad()
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(student.parameters(), max_norm=5.0)
@@ -2739,6 +2803,11 @@ def main():
     parser.add_argument("--cil_temperature", type=float, default=2.0)
     parser.add_argument("--cil_supcon_weight", type=float, default=0.05)
     parser.add_argument("--cil_supcon_threshold", type=float, default=0.60)
+    parser.add_argument("--radcil_old_new_batch_ratio", type=float, default=0.0, help="RADCIL replay old:new batch ratio; 0 keeps the legacy equal batch-size behavior.")
+    parser.add_argument("--radcil_masked_kd", action="store_true", help="Apply KD only on replay samples whose labels are inside the teacher output range.")
+    parser.add_argument("--radcil_kd_schedule", choices=["constant", "cosine", "linear_decay"], default="constant", help="Schedule for the end-to-end CIL KD weight inside each training stage.")
+    parser.add_argument("--radcil_feature_distill_weight", type=float, default=0.0, help="Replay-feature distillation weight for constraining old-class backbone drift.")
+    parser.add_argument("--radcil_unfreeze_scope", choices=["none", "fc", "layer3", "tail", "layer2_tail"], default="tail", help="Backbone scope unfrozen during the joint RADCIL stage.")
     parser.add_argument("--pseudo_weight_floor", type=float, default=0.20)
 
 

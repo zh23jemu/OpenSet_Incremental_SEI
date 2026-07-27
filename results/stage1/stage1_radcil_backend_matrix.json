@@ -1,6 +1,6 @@
 {
   "schema_version": "stage1_radcil_backend_matrix_v1",
-  "created_at_utc": "2026-07-27T02:56:40.218961+00:00",
+  "created_at_utc": "2026-07-27T05:33:25.704653+00:00",
   "project_root": "C:\\Coding\\OpenSet_Incremental_SEI",
   "basis": {
     "source_report": "results/stage1/STAGE1_BACKEND_ABLATION_REPORT.md",
@@ -52,7 +52,6 @@
         "--supcon_weight 0.1",
         "--cil_head_warmup_epochs 1",
         "--cil_joint_epochs 3",
-        "--cil_replay_weight 2.0",
         "--cil_replay_weight 3.0"
       ],
       "requires_code_support": []
@@ -78,11 +77,9 @@
         "--cil_head_warmup_epochs 1",
         "--cil_joint_epochs 3",
         "--cil_replay_weight 2.0",
-        "--radcil_old_new_batch_ratio 1.0"
+        "--radcil_old_new_batch_ratio 2.0"
       ],
-      "requires_code_support": [
-        "radcil_old_new_batch_ratio"
-      ]
+      "requires_code_support": []
     },
     {
       "variant": "masked_kd_low",
@@ -108,9 +105,7 @@
         "--cil_kd_weight 0.25",
         "--radcil_masked_kd"
       ],
-      "requires_code_support": [
-        "radcil_masked_kd"
-      ]
+      "requires_code_support": []
     },
     {
       "variant": "masked_kd_schedule",
@@ -132,16 +127,13 @@
         "--supcon_weight 0.1",
         "--cil_head_warmup_epochs 1",
         "--cil_joint_epochs 3",
-        "--cil_replay_weight 2.0",
         "--cil_kd_weight 0.5",
+        "--cil_replay_weight 2.0",
         "--radcil_masked_kd",
         "--radcil_kd_schedule cosine",
         "--cil_temperature 3.0"
       ],
-      "requires_code_support": [
-        "radcil_masked_kd",
-        "radcil_kd_schedule"
-      ]
+      "requires_code_support": []
     },
     {
       "variant": "feature_distill_tail",
@@ -166,9 +158,7 @@
         "--cil_replay_weight 2.0",
         "--radcil_feature_distill_weight 0.5"
       ],
-      "requires_code_support": [
-        "radcil_feature_distill_weight"
-      ]
+      "requires_code_support": []
     },
     {
       "variant": "tail_unfreeze_plus_feature_distill",
@@ -190,18 +180,26 @@
         "--supcon_weight 0.1",
         "--cil_head_warmup_epochs 1",
         "--cil_joint_epochs 3",
-        "--cil_replay_weight 2.0",
         "--cil_backbone_lr 5e-6",
+        "--cil_replay_weight 2.0",
         "--radcil_feature_distill_weight 0.5",
         "--radcil_unfreeze_scope tail"
       ],
-      "requires_code_support": [
-        "radcil_feature_distill_weight",
-        "radcil_unfreeze_scope"
-      ]
+      "requires_code_support": []
     }
   ],
   "primary_selection_rule": "优先选择 R3 Old Acc 更高且 Forgetting Rate 更低的变体；若 New Acc 明显下降，则降低 replay/KD 权重或改用调度。",
+  "code_support_status": {
+    "entry": "experiments/exp_wisig_mvacc_cil_strict.py",
+    "supported_parameters": [
+      "radcil_old_new_batch_ratio",
+      "radcil_masked_kd",
+      "radcil_kd_schedule",
+      "radcil_feature_distill_weight",
+      "radcil_unfreeze_scope"
+    ],
+    "default_behavior": "默认参数保持旧 WiSig strict CIL 训练逻辑。"
+  },
   "required_metrics": [
     "Overall Acc",
     "Old Acc",
