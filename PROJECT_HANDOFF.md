@@ -120,6 +120,8 @@ Strict loader 审计：
 - Job `44474381` 已完成配对三种子确认；ratio 0.02 提升 silhouette 与 R3 New Acc，但簇大小 CV 变差且部分早期轮次过度切分，正式全轮次默认继续使用 ratio 0.03。
 - 已实现以 ratio 0.03 为锚点、0.02 为候选的严格无标签轮次自适应密度门控；本地提交为 `bc5f979`，三种子入口为 `slurm/stage4_adsb_adaptive_density_multiseed.sbatch`。
 - 已修复 ADS-B baseline 分支的冻结特征银行和发现信息未初始化问题；本地提交为 `90bac09`，三种子入口为 `slurm/stage4_adsb_cil_baselines_multiseed.sbatch`。
+- Job `44517848` 已完成自适应密度三种子验证；候选仅在 seed7 R2 通过门控，R3 Overall `+0.0007`、New Acc `-0.0290`、Forgetting `+0.0003`，正式记录为负消融并保持 ratio 0.03。
+- Job `44517860` 已完成 ADS-B strict baseline 三种子实验；MV-ACC-CIL R3 Overall `0.4831±0.0089`，高于共享发现 DOI-style `0.4621±0.0273` 和 Deep-HDBSCAN + DOI-style `0.4759±0.0168`，但 Forgetting 高于 DOI-style。
 - 已新增 `tools/stage3_wisig_strict_baseline_table.py` 并生成 `results/stage3/STAGE3_WISIG_STRICT_BASELINE_TABLE.md`，将 SimGCD-style 标注为 learning-style adaptation、IGCD-minimal 标注为 minimal strict adaptation，二者均不作为完整论文复现；MV-ACC 仍是正式主前端。
 - 已新增 `tools/stage3_wisig_strong_backend_plan.py` 并生成 `results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md`，把共享发现后端风险收束为 `RADCIL + DOI-style`、`RADCIL + iCaRL`、`RADCIL + TPCIL-style` 三个待实现混合候选；下一步先做 seed 7 短验证。
 - ADS-B strict 主入口已使用 `ADSBLongClosedSet`，并支持 RADCIL old:new batch ratio；阶段 4 单种子和正式三种子计划、报告、Slurm 入口均已同步。
@@ -132,9 +134,9 @@ Strict loader 审计：
 
 ## 7. 下一步执行顺序
 
-1. 保持固定 ratio 0.03 为正式锚点；获得明确推送授权后推送当前分支，并先提交自适应密度三种子短作业。
-2. 自适应密度若跨种子稳定，再更新正式结论；否则记录为负消融并停止继续调密度阈值。
-3. 提交 ADS-B strict baseline 三种子正式作业，生成共享发现后端、Deep-HDBSCAN 端到端和前端消融总表。
+1. ADS-B 阶段 4 已收束；固定 ratio 0.03 为正式配置，自适应密度作为负消融保留，不再继续调固定密度参数。
+2. 进入阶段 5，先复核 LoRa25 紧凑 NPZ、对齐清单和 Different Days Indoor Scenario 跨天边界，固化 10+5×3 strict 协议。
+3. 协议审计通过后准备 LoRa 单种子 Slurm smoke test，再按门槛决定是否扩展三种子。
 4. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 5. 若后续补充实验需要 LoRa 完整数据或 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压或下载；LoRa 可优先只取 Different Days Indoor Scenario 的必要子集，不删除 Release 分片或原压缩包。
 
@@ -142,6 +144,7 @@ Strict loader 审计：
 
 最近关键提交：
 
+- `36c2606 results:汇总ADS-B自适应密度与基线结果`
 - `90bac09 fix: 补齐ADS-B strict baseline执行链路`
 - `bc5f979 feat: 增加ADS-B无标签自适应密度门控`
 - `950a050 test: 保存阶段零strict加载器审计产物`

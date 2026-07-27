@@ -102,8 +102,8 @@
 - 已新增 seed31 发现前端预注册单因素消融入口，复用 Job `44467424` 长序列 checkpoint，固定 Long-RADCIL 后端，只比较密度比例、合并阈值和分裂条件。
 - Slurm Job `44474297` 已完成 seed31 单因素消融；`density_ratio_0p02` 的无标签 silhouette 从 `0.2958` 提升到 `0.3981`、簇大小 CV 从 `0.4772` 降到 `0.4542`，已准备 baseline/density 配对三种子入口。
 - Slurm Job `44474381` 已完成 ratio 0.03/0.02 配对三种子确认；0.02 的 silhouette 提升 `+0.0604`、置信度基本不变，但簇大小 CV 变差 `+0.0345`，R3 Overall 仅提升 `+0.0070`，不锁定为全轮次默认值。
-- 已实现以 ratio 0.03 为锚点的严格无标签轮次自适应密度门控；候选 0.02 只有在新增簇、silhouette、置信度、簇大小 CV、小簇比例和候选间 ARI 全部达标时才切换，默认关闭且尚待 Slurm 三种子实证。
-- 已修复 ADS-B 开启 CIL baseline 时冻结特征银行和发现信息未初始化的问题，并准备 strict baseline/Deep-HDBSCAN 前端三种子报告器与 Slurm 入口。
+- Slurm Job `44517848` 已完成严格无标签轮次自适应密度三种子验证；候选 ratio 0.02 仅在 1/9 个轮次通过门控，R3 Overall 仅 `+0.0007`、New Acc `-0.0290`、Forgetting `+0.0003`，正式记录为负消融并保持 ratio 0.03。
+- Slurm Job `44517860` 已完成 ADS-B strict baseline 与前端消融三种子实验；MV-ACC-CIL R3 Overall `0.4831±0.0089`，高于共享发现 DOI-style `0.4621±0.0273` 和 Deep-HDBSCAN + DOI-style `0.4759±0.0168`，但其遗忘率高于 DOI-style，需作为局限如实报告。
 
 ## Recent Changes
 
@@ -151,6 +151,8 @@
 - 2026-07-27：完成 ADS-B density ratio 配对三种子 Job `44474381`；结果显示 R3 有改善但早期轮次存在过度切分与簇不均衡，正式默认继续保留 ratio 0.03。
 - 2026-07-28：新增 ADS-B 严格无标签轮次自适应密度门控、选择审计、合成 smoke、三种子计划/报告和短时 Slurm 入口；本地语法、CLI、门控分支和报告构造验证通过。
 - 2026-07-28：修复 ADS-B strict baseline 分支未初始化 `proto_bank`、共享 MV-ACC 和 Deep-HDBSCAN 发现信息的问题，新增 baseline/前端消融三种子报告器与正式 Slurm 入口。
+- 2026-07-28：完成 Slurm Job `44517848`；自适应密度仅在 seed7 R2 选择 ratio 0.02，R3 New Acc 下降 `0.0290`，按预注册规则记录为负消融并停止继续调固定密度参数。
+- 2026-07-28：完成 Slurm Job `44517860`；同步 ADS-B strict baseline 三种子总表、逐种子小型审计产物与 Slurm 日志，确认 MV-ACC-CIL Overall 高于当前共享发现和端到端 baseline。
 - 2026-07-26：将实施计划更新到 1.1；原 MV-ACC/CF-LCG/HDBSCAN 流程降级为 baseline，新主方法允许重新设计深度表征、未知检测和类别发现，并新增前端/后端拆分对照及 1–2 个近年 SOTA 对照要求。
 - 2026-07-26：创建并推送 GitHub 公共仓库，发布包含 WiSig、ADS-B、ManyRx 和 ManyTx 分片的 `datasets-2026-07-26` 数据 Release。
 - 2026-07-26：通过远端 `gh repo clone` 和 `gh release download` 将项目及数据同步到 Slurm 集群；确认 `gpu`、`gpuHz`、`defq` 等分区可见，并完成 ManyTx 合并校验。
@@ -168,8 +170,8 @@
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
-- 保持 ADS-B 正式全轮次默认 ratio 0.03；明确获得推送授权后推送提交 `bc5f979`、`90bac09`，先提交 `slurm/stage4_adsb_adaptive_density_multiseed.sbatch`，再提交 `slurm/stage4_adsb_cil_baselines_multiseed.sbatch`。
-- 自适应密度三种子若未稳定改善，则记录为负消融并停止继续调固定密度阈值，直接完成 ADS-B baseline 表并进入 LoRa 跨体制验证。
+- 阶段 4 ADS-B 已完成；正式全轮次继续使用 ratio 0.03，自适应密度作为负消融归档，不再继续调固定密度参数。
+- 进入阶段 5：先复核紧凑 LoRa25 数据、现有对齐清单与跨天边界，固化不使用评估真值选参的 10+5×3 strict 协议，再准备单种子 Slurm smoke test。
 - 将 IGCD-minimal 纳入 strict baseline 表，但正式主前端继续优先使用 MV-ACC 或稳定 Deep-HDBSCAN。
 - 后续每完成关键 Slurm job、阶段报告或客户可汇报结论时，同步更新 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 的当前状态、关键结果、风险和下一步行动清单。
 - 后续 WiSig 短实验优先使用 MV-ACC 或稳定 Deep-HDBSCAN 前端；SimGCD-style 保留为学习式发现 baseline，不作为阶段 1 主前端。
@@ -190,9 +192,9 @@
 - SimGCD-style 最小适配器在 WiSig frozen embeddings 上弱于 MV-ACC；学习式发现头直接迁移到 RF 特征的收益不足，后续若继续改进需证明稳定超过 Deep-HDBSCAN/MV-ACC。
 - WiSig DOI-memory hybrid 三种子未稳定优于主方法，不能写成新主方法贡献；若继续后端研究，应更换机制而非只调 late-fusion 权重。
 - ADS-B Long-RADCIL 三种子已完成，但 R3 仅发现 6–7/10 类；后续调参不得使用 held-out evaluation 真值。
-- ADS-B R3 欠聚类已定位到初始密度形成阶段；当前仍需通过 seed31 单因素消融判断降低最小簇比例是否会引入碎簇或结构质量下降。
-- 固定 ratio 0.02 会改善 R3 但加剧部分早期轮次过度切分和簇大小失衡；当前没有可直接替换 ratio 0.03 的稳定全轮次参数。
-- 无标签轮次自适应密度和 ADS-B strict baseline 执行链路已完成本地实现，但尚未推送到远端或运行 Slurm，因此当前只有可执行解决方案，没有新的三种子实证结论。
+- ADS-B R3 欠聚类已定位到初始密度形成阶段；固定 ratio 0.02 和无标签自适应密度均未形成跨轮次稳定收益，正式配置保持 ratio 0.03，阶段 4 不再继续调密度参数。
+- ADS-B MV-ACC-CIL 的 Overall 高于当前 baseline，但 Forgetting `0.1159±0.0108` 高于共享发现 DOI-style `0.0551±0.0032`；论文表述必须同时报告整体识别优势和遗忘控制局限。
+- LoRa 当前只有紧凑对齐 NPZ 和构建工具，尚无与 WiSig/ADS-B 同协议的 strict 实验入口；阶段 5 首要风险是跨天数据边界与 10+5×3 类别顺序需先固化。
 - IGCD-minimal 已接入真实 WiSig frozen embeddings 并完成 Job `44422704`，但当前仍是 minimal strict adaptation，不是完整 IGCD 论文复现。
 - `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`。
 - 部分 ADS-B 结果清单和报告保存了开发者机器绝对数据路径，虽未发现认证令牌，但跨机器复现需要显式覆盖数据根目录。
@@ -212,6 +214,7 @@
 - DOI-memory hybrid 采用可选后验融合：网络继续执行真实伪标签增量训练，原型仅由 replay 记忆构建并跨轮对齐；融合权重默认 0，避免改变历史主方法结果。
 - ADS-B 正式主入口固定使用 `ADSBLongClosedSet` 与 `ratio_2p0_replay_3p0`；下一轮只研究发现前端，避免同时改动表征、发现和后端导致归因不清。
 - ADS-B 发现参数消融必须预注册为单因素变体；候选选择只使用 discovery 侧无标签结构指标，NMI/ARI/Hungarian 和增量准确率只用于事后审计。
+- ADS-B 自适应密度三种子验证未通过收益门槛；正式 ratio 固定为 0.03，停止继续调固定密度参数，避免在同一数据集上反复事后选参。
 - 主实验优先 WiSig 10+10×3 和 ADS-B 90+10×3；LoRa25 默认 10+5×3，ManyTx/ManyRx 沿用现有协议作为补充验证。
 - LoRa 跨体制验证优先使用 LoRa RFFP Different Days Indoor Scenario；完整数据较大时只下载或切分必要 Setup 1 子集，不因完整 LoRa 全量下载延迟 WiSig/ADS-B 主线。
 - 客户补充的超大数据保留为本地压缩包并精确排除出 Git；ADS-B 统一以 `ADS-B.rar` 作为实验数据源。
