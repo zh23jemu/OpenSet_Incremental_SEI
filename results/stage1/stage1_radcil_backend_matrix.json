@@ -1,0 +1,214 @@
+{
+  "schema_version": "stage1_radcil_backend_matrix_v1",
+  "created_at_utc": "2026-07-27T02:56:40.218961+00:00",
+  "project_root": "C:\\Coding\\OpenSet_Incremental_SEI",
+  "basis": {
+    "source_report": "results/stage1/STAGE1_BACKEND_ABLATION_REPORT.md",
+    "source_job": "44420869",
+    "diagnosis": "replay_x2 当前最佳，kd_off 优于默认，head_only 最差；下一轮应强化 replay 采样/损失约束，并重做 KD 与特征保持。"
+  },
+  "matrix": [
+    {
+      "variant": "replay_x2_confirm",
+      "purpose": "复现阶段 1 最佳短实验，作为二阶矩阵锚点。",
+      "args": [
+        "--dataset_path 数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl",
+        "--selected_rx_list 2",
+        "--initial_known_classes 10",
+        "--round_size 10",
+        "--num_rounds 3",
+        "--seed 7",
+        "--train_closedset",
+        "--epochs 8",
+        "--batch_size 128",
+        "--test_batch_size 256",
+        "--disable_visualization",
+        "--disable_cil_baselines",
+        "--use_supcon",
+        "--supcon_weight 0.1",
+        "--cil_head_warmup_epochs 1",
+        "--cil_joint_epochs 3",
+        "--cil_replay_weight 2.0"
+      ],
+      "requires_code_support": []
+    },
+    {
+      "variant": "replay_x3",
+      "purpose": "继续增强旧类 replay CE，检查 replay_x2 是否尚未达到旧类约束上限。",
+      "args": [
+        "--dataset_path 数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl",
+        "--selected_rx_list 2",
+        "--initial_known_classes 10",
+        "--round_size 10",
+        "--num_rounds 3",
+        "--seed 7",
+        "--train_closedset",
+        "--epochs 8",
+        "--batch_size 128",
+        "--test_batch_size 256",
+        "--disable_visualization",
+        "--disable_cil_baselines",
+        "--use_supcon",
+        "--supcon_weight 0.1",
+        "--cil_head_warmup_epochs 1",
+        "--cil_joint_epochs 3",
+        "--cil_replay_weight 2.0",
+        "--cil_replay_weight 3.0"
+      ],
+      "requires_code_support": []
+    },
+    {
+      "variant": "balanced_old_new_batch",
+      "purpose": "固定每个增量 batch 的旧类/新类样本比例，避免 replay loss 权重大但采样不足。",
+      "args": [
+        "--dataset_path 数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl",
+        "--selected_rx_list 2",
+        "--initial_known_classes 10",
+        "--round_size 10",
+        "--num_rounds 3",
+        "--seed 7",
+        "--train_closedset",
+        "--epochs 8",
+        "--batch_size 128",
+        "--test_batch_size 256",
+        "--disable_visualization",
+        "--disable_cil_baselines",
+        "--use_supcon",
+        "--supcon_weight 0.1",
+        "--cil_head_warmup_epochs 1",
+        "--cil_joint_epochs 3",
+        "--cil_replay_weight 2.0",
+        "--radcil_old_new_batch_ratio 1.0"
+      ],
+      "requires_code_support": [
+        "radcil_old_new_batch_ratio"
+      ]
+    },
+    {
+      "variant": "masked_kd_low",
+      "purpose": "只对旧类 logits 做 masked KD，低权重验证 KD 是否可在去除新类干扰后恢复收益。",
+      "args": [
+        "--dataset_path 数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl",
+        "--selected_rx_list 2",
+        "--initial_known_classes 10",
+        "--round_size 10",
+        "--num_rounds 3",
+        "--seed 7",
+        "--train_closedset",
+        "--epochs 8",
+        "--batch_size 128",
+        "--test_batch_size 256",
+        "--disable_visualization",
+        "--disable_cil_baselines",
+        "--use_supcon",
+        "--supcon_weight 0.1",
+        "--cil_head_warmup_epochs 1",
+        "--cil_joint_epochs 3",
+        "--cil_replay_weight 2.0",
+        "--cil_kd_weight 0.25",
+        "--radcil_masked_kd"
+      ],
+      "requires_code_support": [
+        "radcil_masked_kd"
+      ]
+    },
+    {
+      "variant": "masked_kd_schedule",
+      "purpose": "旧类 masked KD 使用随轮次衰减/升温调度，避免默认 KD 在伪标签噪声下压制新类。",
+      "args": [
+        "--dataset_path 数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl",
+        "--selected_rx_list 2",
+        "--initial_known_classes 10",
+        "--round_size 10",
+        "--num_rounds 3",
+        "--seed 7",
+        "--train_closedset",
+        "--epochs 8",
+        "--batch_size 128",
+        "--test_batch_size 256",
+        "--disable_visualization",
+        "--disable_cil_baselines",
+        "--use_supcon",
+        "--supcon_weight 0.1",
+        "--cil_head_warmup_epochs 1",
+        "--cil_joint_epochs 3",
+        "--cil_replay_weight 2.0",
+        "--cil_kd_weight 0.5",
+        "--radcil_masked_kd",
+        "--radcil_kd_schedule cosine",
+        "--cil_temperature 3.0"
+      ],
+      "requires_code_support": [
+        "radcil_masked_kd",
+        "radcil_kd_schedule"
+      ]
+    },
+    {
+      "variant": "feature_distill_tail",
+      "purpose": "加入 teacher/student 末端特征蒸馏，直接约束骨干漂移。",
+      "args": [
+        "--dataset_path 数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl",
+        "--selected_rx_list 2",
+        "--initial_known_classes 10",
+        "--round_size 10",
+        "--num_rounds 3",
+        "--seed 7",
+        "--train_closedset",
+        "--epochs 8",
+        "--batch_size 128",
+        "--test_batch_size 256",
+        "--disable_visualization",
+        "--disable_cil_baselines",
+        "--use_supcon",
+        "--supcon_weight 0.1",
+        "--cil_head_warmup_epochs 1",
+        "--cil_joint_epochs 3",
+        "--cil_replay_weight 2.0",
+        "--radcil_feature_distill_weight 0.5"
+      ],
+      "requires_code_support": [
+        "radcil_feature_distill_weight"
+      ]
+    },
+    {
+      "variant": "tail_unfreeze_plus_feature_distill",
+      "purpose": "保留末端层适应能力，同时用特征蒸馏降低旧类表征漂移。",
+      "args": [
+        "--dataset_path 数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl",
+        "--selected_rx_list 2",
+        "--initial_known_classes 10",
+        "--round_size 10",
+        "--num_rounds 3",
+        "--seed 7",
+        "--train_closedset",
+        "--epochs 8",
+        "--batch_size 128",
+        "--test_batch_size 256",
+        "--disable_visualization",
+        "--disable_cil_baselines",
+        "--use_supcon",
+        "--supcon_weight 0.1",
+        "--cil_head_warmup_epochs 1",
+        "--cil_joint_epochs 3",
+        "--cil_replay_weight 2.0",
+        "--cil_backbone_lr 5e-6",
+        "--radcil_feature_distill_weight 0.5",
+        "--radcil_unfreeze_scope tail"
+      ],
+      "requires_code_support": [
+        "radcil_feature_distill_weight",
+        "radcil_unfreeze_scope"
+      ]
+    }
+  ],
+  "primary_selection_rule": "优先选择 R3 Old Acc 更高且 Forgetting Rate 更低的变体；若 New Acc 明显下降，则降低 replay/KD 权重或改用调度。",
+  "required_metrics": [
+    "Overall Acc",
+    "Old Acc",
+    "New Acc",
+    "Initial Known Acc",
+    "Forgetting Rate",
+    "Macro F1",
+    "per-round confidence calibration if SimGCD frontend is used"
+  ]
+}
