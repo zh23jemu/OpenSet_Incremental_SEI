@@ -1,8 +1,9 @@
-"""生成阶段 3 WiSig 正式三种子主实验计划。
+"""生成阶段 3 WiSig 正式三种子主实验/后端消融计划。
 
 阶段 2 已经证明 MV-ACC + `ratio_2p0_replay_3p0` 能跑通 WiSig 完整三轮
 主流程。阶段 3 的目标不是继续调参，而是在相同配置下运行 seed 7/13/31，
-并为正式结果表提供均值和标准差。
+并为正式结果表提供均值和标准差。脚本也支持 `ratio_3p0_replay_3p0`
+作为同协议 high-replay 后端消融，除旧类 batch 配比外保持主流程预算一致。
 """
 
 from __future__ import annotations
@@ -19,21 +20,21 @@ if str(PROJECT_ROOT) not in sys.path:
     # 允许 Slurm 或本地从任意工作目录直接运行，不依赖手动 PYTHONPATH。
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from utils.radcil_config import get_stage2_wisig_main_config  # noqa: E402
+from utils.radcil_config import get_radcil_wisig_config  # noqa: E402
 
 
 DEFAULT_DATASET = "数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl"
 DEFAULT_SEEDS = (7, 13, 31)
 
 
-def build_runs(dataset_path: str, output_prefix: str, job_id: str, seeds: tuple[int, ...]) -> list[dict[str, Any]]:
+def build_runs(dataset_path: str, output_prefix: str, job_id: str, seeds: tuple[int, ...], variant: str) -> list[dict[str, Any]]:
     """展开正式三种子运行清单。
 
     每个 seed 写入独立目录，避免 checkpoint、回放记忆和 CSV 互相覆盖。
     """
     runs: list[dict[str, Any]] = []
     for seed in seeds:
-        config = get_stage2_wisig_main_config(seed)
+        config = get_radcil_wisig_config(variant=variant, seed=seed)
         save_dir = f"{output_prefix}_{config.variant}_seed{seed}_{job_id}"
         runs.append(
             {
@@ -48,8 +49,10 @@ def build_runs(dataset_path: str, output_prefix: str, job_id: str, seeds: tuple[
     return runs
 
 
-def build_plan(project_root: Path, dataset_path: str, output_prefix: str, job_id: str, seeds: tuple[int, ...]) -> dict[str, Any]:
+def build_plan(project_root: Path, dataset_path: str, output_prefix: str, job_id: str, seeds: tuple[int, ...], variant: str) -> dict[str, Any]:
     """构造阶段 3 正式主实验审计计划。"""
+    config = get_radcil_wisig_config(variant=variant)
+    is_main = variant == "ratio_2p0_replay_3p0"
     return {
         "schema_version": "stage3_wisig_main_multiseed_plan_v1",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -63,11 +66,17 @@ def build_plan(project_root: Path, dataset_path: str, output_prefix: str, job_id
             "stage2_job": "44433946",
             "decision": (
                 "阶段 2 seed7 主流程已跑通，R3 Overall 0.6328、Forgetting 0.1389；"
-                "阶段 3 固定相同配置做正式三种子统计，不在本轮继续调参。"
+                "阶段 3 固定相同训练预算做正式三种子统计，不在本轮继续调参。"
+            ),
+            "variant_role": "main" if is_main else "formal_ablation_high_replay",
+            "variant_note": (
+                "`ratio_2p0_replay_3p0` 是阶段 3 主方法。"
+                if is_main
+                else "`ratio_3p0_replay_3p0` 是同协议 high-replay 后端消融，用于检验更高旧类 batch 配比的代价。"
             ),
         },
-        "locked_config": get_stage2_wisig_main_config().to_dict(),
-        "runs": build_runs(dataset_path=dataset_path, output_prefix=output_prefix, job_id=job_id, seeds=seeds),
+        "locked_config": config.to_dict(),
+        "runs": build_runs(dataset_path=dataset_path, output_prefix=output_prefix, job_id=job_id, seeds=seeds, variant=variant),
         "aggregation": {
             "script": "tools/stage3_wisig_main_multiseed_report.py",
             "metrics": [
@@ -83,6 +92,7 @@ def build_plan(project_root: Path, dataset_path: str, output_prefix: str, job_id
             "固定阶段 2 主配置，不使用 seed 结果反向调参。",
             "正式报告必须包含 seed 7/13/31 的单种子行、均值和标准差。",
             "Seed 13 在阶段 1 已知更难，本轮特别检查其 R3 Old 与 Forgetting。",
+            "high-replay 对照只改变 old:new batch ratio，不改变前端、训练轮数、数据协议或评估集。",
         ],
     }
 
@@ -109,6 +119,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-prefix", default="results/stage3/wisig_main", help="每个 seed 输出目录前缀。")
     parser.add_argument("--job-id", default="manual", help="Slurm Job ID，用于生成唯一输出目录。")
     parser.add_argument("--seeds", default="7,13,31", help="逗号分隔的正式实验 seed 列表。")
+    parser.add_argument("--variant", default="ratio_2p0_replay_3p0", help="RADCIL WiSig 配置名。")
     parser.add_argument("--output", default="results/stage3/stage3_wisig_main_multiseed_plan.json", help="输出 JSON 路径。")
     return parser.parse_args()
 
@@ -126,6 +137,7 @@ def main() -> int:
         output_prefix=args.output_prefix,
         job_id=args.job_id,
         seeds=parse_seeds(args.seeds),
+        variant=args.variant,
     )
     output.write_text(json.dumps(plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"阶段 3 WiSig 正式三种子主实验计划：{output}")

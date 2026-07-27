@@ -1,4 +1,4 @@
-"""汇总阶段 3 WiSig 正式三种子主实验结果。
+"""汇总阶段 3 WiSig 正式三种子主实验/后端消融结果。
 
 输入为阶段 3 计划 JSON。脚本读取每个 seed 输出目录中的三份标准 CSV，
 生成单种子明细、R1/R2/R3 均值和标准差，以及客户汇报可直接引用的
@@ -139,15 +139,23 @@ def aggregate(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def build_report(plan: dict[str, Any], rows: list[dict[str, Any]], summary: list[dict[str, Any]], job_id: str) -> str:
     """生成正式三种子 Markdown 报告。"""
     locked = plan.get("locked_config", {})
+    role = plan.get("selection_basis", {}).get("variant_role", "main")
+    variant = locked.get("variant", "ratio_2p0_replay_3p0")
+    title = "阶段 3 WiSig RADCIL 正式三种子报告" if role == "main" else "阶段 3 WiSig RADCIL high-replay 正式消融报告"
+    conclusion = (
+        "- 该报告是 WiSig 正式三种子主结果，可进入客户进度汇报；后续还需要补齐 baseline/消融同协议对照。"
+        if role == "main"
+        else "- 该报告是 WiSig 正式同协议 high-replay 后端消融，用于和主配置比较旧类保持、新类吸收与遗忘代价。"
+    )
     lines = [
-        "# 阶段 3 WiSig RADCIL 正式三种子报告",
+        f"# {title}",
         "",
         f"- 生成时间 UTC：{datetime.now(timezone.utc).isoformat()}",
         f"- Slurm Job：`{job_id}`",
         f"- 主前端：`{locked.get('frontend', 'MV-ACC')}`",
-        f"- 主后端：`{locked.get('variant', 'ratio_2p0_replay_3p0')}`",
+        f"- 后端配置：`{variant}`",
         f"- Seeds：`{', '.join(str(seed) for seed in plan.get('seeds', []))}`",
-        "- 协议：WiSig strict 10+10x3，固定阶段 2 主配置，不根据 seed 结果反向调参。",
+        "- 协议：WiSig strict 10+10x3，固定阶段 2 训练预算，不根据 seed 结果反向调参。",
         "",
         "## R3 单种子明细",
         "",
@@ -186,7 +194,7 @@ def build_report(plan: dict[str, Any], rows: list[dict[str, Any]], summary: list
             "",
             f"- R3 Overall 均值：`{fmt(r3.get('overall_acc_mean'))}`，标准差：`{fmt(r3.get('overall_acc_std'))}`。",
             f"- R3 Old 均值：`{fmt(r3.get('old_acc_mean'))}`，Forgetting 均值：`{fmt(r3.get('forgetting_rate_mean'))}`。",
-            "- 该报告是 WiSig 正式三种子主结果，可进入客户进度汇报；后续还需要补齐 baseline/消融同协议对照。",
+            conclusion,
             "",
         ]
     )
