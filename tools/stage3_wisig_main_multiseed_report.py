@@ -141,12 +141,15 @@ def build_report(plan: dict[str, Any], rows: list[dict[str, Any]], summary: list
     locked = plan.get("locked_config", {})
     role = plan.get("selection_basis", {}).get("variant_role", "main")
     variant = locked.get("variant", "ratio_2p0_replay_3p0")
-    title = "阶段 3 WiSig RADCIL 正式三种子报告" if role == "main" else "阶段 3 WiSig RADCIL high-replay 正式消融报告"
-    conclusion = (
-        "- 该报告是 WiSig 正式三种子主结果，可进入客户进度汇报；后续还需要补齐 baseline/消融同协议对照。"
-        if role == "main"
-        else "- 该报告是 WiSig 正式同协议 high-replay 后端消融，用于和主配置比较旧类保持、新类吸收与遗忘代价。"
-    )
+    if role == "main":
+        title = "阶段 3 WiSig RADCIL 正式三种子报告"
+        conclusion = "- 该报告是 WiSig 正式三种子主结果，可进入客户进度汇报。"
+    elif role == "formal_hybrid_doi":
+        title = "阶段 3 WiSig Hybrid RADCIL + DOI-memory 正式三种子报告"
+        conclusion = "- 该报告用于判断 DOI-memory late fusion 是否稳定解决共享发现后端上限风险。"
+    else:
+        title = "阶段 3 WiSig RADCIL high-replay 正式消融报告"
+        conclusion = "- 该报告是 WiSig 正式同协议 high-replay 后端消融，用于比较旧类保持、新类吸收与遗忘代价。"
     lines = [
         f"# {title}",
         "",
