@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-27
-- 当前阶段：实施计划 1.1，阶段 3 已实现 hybrid RADCIL + DOI-memory 并准备 seed7 短验证；阶段 4 ADS-B legacy strict 单种子入口已准备
+- 当前阶段：实施计划 1.1，阶段 3 WiSig 正式实验与 hybrid 负消融已完成；阶段 4 ADS-B Long-RADCIL 正式三种子已完成，下一步诊断 R2/R3 发现欠聚类
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -111,9 +111,12 @@ Strict loader 审计：
 - Slurm Job `44440345` 已完成阶段 3 WiSig 正式三种子主实验；报告为 `results/stage3/STAGE3_WISIG_MAIN_MULTISEED_REPORT_44440345.md`，R3 Overall `0.6088±0.0415`、Old `0.5516±0.0453`、New `0.7804±0.0461`、Forgetting `0.2285±0.0948`。
 - Slurm Job `44448692` 已完成阶段 3 WiSig high-replay 同协议正式消融；报告为 `results/stage3/STAGE3_WISIG_HIGH_REPLAY_MULTISEED_REPORT_44448692.md`，对比报告为 `results/stage3/STAGE3_WISIG_RADCIL_ABLATION_COMPARE.md`。high-replay 的 R3 New Acc 比主配置高 `+0.0052`，但 Overall `-0.0058`、Old `-0.0095`、Forgetting `+0.0059`、Macro F1 `-0.0033`，因此继续保留 `ratio_2p0_replay_3p0` 为主后端。
 - Slurm Job `44453416` 已完成阶段 3 WiSig CIL baseline 三种子正式实验；报告为 `results/stage3/STAGE3_WISIG_CIL_BASELINES_MULTISEED_REPORT_44453416.md`。端到端主方法 R3 Overall 比 Deep-HDBSCAN + DOI-style 高 `0.0774`，说明 MV-ACC 前端和整体链路有效；但共享 MV-ACC 伪标签后端对照中 DOI-style R3 Overall `0.6579±0.0350`，比当前 MV-ACC-CIL 高 `0.0491`，说明当前网络式 RADCIL 后端不是后端上限。
+- WiSig DOI-memory hybrid seed7 Job `44465809` 达到扩展门槛，但正式三种子 Job `44465982` 的 R3 Overall `0.6088±0.0454` 与主方法相同，Old/Forgetting 未改善；该方案已记录为负消融。
+- ADS-B seed31 smoke Job `44467424` 完成长序列骨干和 old:new=2.0 迁移，R3 Overall `0.4856`，较历史 legacy seed31 `0.3273` 提升 `0.1583`。
+- ADS-B 正式三种子 Job `44470736` 已完成；`results/stage4/STAGE4_ADSB_MULTISEED_REPORT_44470736.md` 显示 R3 Overall `0.4824±0.0074`、Old `0.4873±0.0079`、New `0.4427±0.0122`、Forgetting `0.1168±0.0138`。
 - 已新增 `tools/stage3_wisig_strict_baseline_table.py` 并生成 `results/stage3/STAGE3_WISIG_STRICT_BASELINE_TABLE.md`，将 SimGCD-style 标注为 learning-style adaptation、IGCD-minimal 标注为 minimal strict adaptation，二者均不作为完整论文复现；MV-ACC 仍是正式主前端。
 - 已新增 `tools/stage3_wisig_strong_backend_plan.py` 并生成 `results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md`，把共享发现后端风险收束为 `RADCIL + DOI-style`、`RADCIL + iCaRL`、`RADCIL + TPCIL-style` 三个待实现混合候选；下一步先做 seed 7 短验证。
-- 已新增 `tools/stage4_adsb_main_plan.py` 与 `slurm/stage4_adsb_main_single_seed.sbatch`，生成 `results/stage4/stage4_adsb_main_single_seed_plan.json`；该入口是 ADS-B legacy strict 单种子 smoke test，正式多种子前仍需迁移 ADS-B 长序列骨干和 WiSig RADCIL old:new batch ratio。
+- ADS-B strict 主入口已使用 `ADSBLongClosedSet`，并支持 RADCIL old:new batch ratio；阶段 4 单种子和正式三种子计划、报告、Slurm 入口均已同步。
 - 已在 WiSig strict 入口实现可选 DOI-memory hybrid：使用伪标签 replay 记忆构建原型、跨轮对齐历史原型，并与网络 logits 做 late fusion；默认融合权重为 0，不改变历史 RADCIL 行为。
 - 已新增 `tools/stage3_wisig_hybrid_doi_plan.py`、`tools/stage3_wisig_hybrid_doi_report.py` 和 `slurm/stage3_wisig_hybrid_doi_seed7.sbatch`；本地语法、参数入口、计划生成和合成张量 smoke test 已通过，待 Slurm seed7 验证。
 - SimGCD-style 已验证为可运行学习式发现 baseline，但真实 WiSig 前端质量低于 MV-ACC；阶段 1 短期主线应保留 MV-ACC 或稳定 Deep-HDBSCAN 前端，避免把弱前端误锁为新主方法。
@@ -123,9 +126,9 @@ Strict loader 审计：
 
 ## 7. 下一步执行顺序
 
-1. 提交 `slurm/stage3_wisig_hybrid_doi_seed7.sbatch` 并依据自动报告门槛判断是否扩展三种子。
-2. 将 ADS-B long-sequence backbone 和 WiSig RADCIL old:new batch ratio 参数迁入 `experiments/exp_adsb_mvacc_cil_strict.py`。
-3. 提交 ADS-B 阶段 4 legacy strict 单种子 Slurm smoke test，确认路径、依赖、协议产物和三轮评估完整。
+1. 对 ADS-B 正式结果中的 R2/R3 欠聚类做无泄漏诊断；三种子 R3 仅发现 6–7/10 类。
+2. 在初始 90 类验证集或 discovery 训练侧稳定性指标上锁定发现参数，先做 seed31 单种子受控消融。
+3. 补齐 ADS-B 同协议 baseline/消融表；后端保持 Long-RADCIL 配置，不再同时改动骨干和后端。
 4. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 5. 若后续补充实验需要 LoRa 完整数据或 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压或下载；LoRa 可优先只取 Different Days Indoor Scenario 的必要子集，不删除 Release 分片或原压缩包。
 
