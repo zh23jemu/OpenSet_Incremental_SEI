@@ -1,0 +1,240 @@
+阶段 3 WiSig 正式三种子主实验计划：/mnt/users/xj62kv/OpenSet_Incremental_SEI/results/stage3/stage3_wisig_ratio_3p0_replay_3p0_multiseed_plan_44448692.json
+运行阶段 3 WiSig 正式流程：variant=ratio_3p0_replay_3p0, seed=7, save_dir=results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed7_44448692
+
+========== WiSig Cross-Day 10-Known 3-Round Incremental Experiment ==========
+Dataset: 数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl
+Save dir: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed7_44448692
+Device: cuda
+Protocol: 10 known + 10 unknown R1 + 10 unknown R2 + 10 unknown R3
+Receiver setting: selected_rx_list=[2] | mode=single-Rx | physical receiver=third
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train 70%: (2100, 2, 256), classes=10, labels=0-9
+Initial eval 30%:     (900, 2, 256), classes=10, labels=0-9, day=2021_03_01
+Unknown R1 70%:     (2100, 2, 256), classes=10, labels=10-19, day=2021_03_08
+After R1 eval 30%:  (1800, 2, 256), classes=20, labels=0-19, day=2021_03_08
+Unknown R2 70%:     (2100, 2, 256), classes=10, labels=20-29, day=2021_03_15
+After R2 eval 30%:  (2700, 2, 256), classes=30, labels=0-29, day=2021_03_15
+Unknown R3 70%:     (2100, 2, 256), classes=10, labels=30-39, day=2021_03_23
+After R3 eval 30%:  (3600, 2, 256), classes=40, labels=0-39, day=2021_03_23
+
+[Train-v2] classes=10 | train=1800 | validation=300 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/020 | train_loss=2.3648 | train_acc=0.2790 | val_acc=0.3000 | val_loss=1.6929
+Epoch 002/020 | train_loss=1.6322 | train_acc=0.5603 | val_acc=0.5800 | val_loss=0.8757
+Epoch 003/020 | train_loss=1.1552 | train_acc=0.7143 | val_acc=0.4267 | val_loss=1.3721
+Epoch 004/020 | train_loss=0.8552 | train_acc=0.8181 | val_acc=0.6467 | val_loss=0.6994
+Epoch 005/020 | train_loss=0.6745 | train_acc=0.8862 | val_acc=0.8467 | val_loss=0.4360
+Epoch 006/020 | train_loss=0.5604 | train_acc=0.9453 | val_acc=0.8900 | val_loss=0.2786
+Epoch 007/020 | train_loss=0.4641 | train_acc=0.9794 | val_acc=0.9800 | val_loss=0.0891
+Epoch 008/020 | train_loss=0.4012 | train_acc=0.9911 | val_acc=0.9967 | val_loss=0.0529
+Epoch 009/020 | train_loss=0.3730 | train_acc=0.9978 | val_acc=0.8367 | val_loss=0.5897
+Epoch 010/020 | train_loss=0.3694 | train_acc=0.9972 | val_acc=0.6300 | val_loss=1.0402
+Epoch 011/020 | train_loss=0.3669 | train_acc=0.9933 | val_acc=0.9767 | val_loss=0.1069
+Epoch 012/020 | train_loss=0.3438 | train_acc=0.9994 | val_acc=0.9933 | val_loss=0.0293
+Epoch 013/020 | train_loss=0.3457 | train_acc=0.9983 | val_acc=1.0000 | val_loss=0.0081
+Epoch 014/020 | train_loss=0.3420 | train_acc=0.9983 | val_acc=0.9967 | val_loss=0.0074
+Epoch 015/020 | train_loss=0.3393 | train_acc=0.9983 | val_acc=0.9967 | val_loss=0.0095
+Epoch 016/020 | train_loss=0.3360 | train_acc=0.9989 | val_acc=1.0000 | val_loss=0.0032
+Epoch 017/020 | train_loss=0.3349 | train_acc=0.9994 | val_acc=1.0000 | val_loss=0.0035
+Epoch 018/020 | train_loss=0.3322 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0030
+Epoch 019/020 | train_loss=0.3310 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0054
+Epoch 020/020 | train_loss=0.3305 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0021
+[Train-v2] best_val_acc=1.0000 | best_val_loss=0.0021 | saved=results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed7_44448692/closedset_rx2_day1_10known.pth
+[Load] checkpoint=results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed7_44448692/closedset_rx2_day1_10known.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.921 | gate_open=True
+[MV-ACC calibration] Day1 validation only: ratio=0.045, merge_threshold=0.74
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples
+MV-ACC-CIL discovery    R1         Day 2                10     2100                     10                   10                    0                    1.0        10    0.0 0.940787 0.930000 0.966667       0.966667 fixed_alpha    0.7                 12                        0                  0.74                         99                99                  1.0               0.847701              0.644402                False                     0                        1.75                                  0.3                             NaN                      94                    0.045                  5
+MV-ACC-CIL discovery    R2         Day 3                10     2100                     10                   10                    0                    1.0        10    0.0 0.932459 0.886585 0.935714       0.935714 fixed_alpha    0.7                 12                        0                  0.74                         25                25                  1.0               0.850807              0.607741                False                     0                        1.75                                  0.3                             NaN                      94                    0.045                  5
+MV-ACC-CIL discovery    R3         Day 4                10     2100                     10                   10                    0                    1.0        10    0.0 0.970268 0.967452 0.984762       0.984762 fixed_alpha    0.7                 12                        0                  0.74                         53                53                  1.0               0.811419              0.641262                False                     0                        1.75                                  0.3                             NaN                      94                    0.045                  5
+Saved: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed7_44448692/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage   Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996667
+MV-ACC-CIL After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.853333 0.903333 0.803333           0.903333         0.093333  0.836561
+MV-ACC-CIL After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  10                10          2700     0.763704 0.796667 0.697778           0.843333         0.153333  0.741051
+MV-ACC-CIL After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  10                10          3600     0.636389 0.580000 0.805556           0.846667         0.150000  0.598766
+Saved: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed7_44448692/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1             10                                10                    0         1.000000 0.966667 0.940787 0.930000       0.966667     0.853333 0.803333         0.093333
+MV-ACC-CIL    R2             10                                10                    0         1.000000 0.935714 0.932459 0.886585       0.935714     0.763704 0.697778         0.153333
+MV-ACC-CIL    R3             10                                10                    0         1.000000 0.984762 0.970268 0.967452       0.984762     0.636389 0.805556         0.150000
+Saved: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed7_44448692/per_round_summary_results.csv
+Visualizations saved under: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed7_44448692/visualizations
+Core comparison panels saved under: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed7_44448692/visualizations/core_comparison
+运行阶段 3 WiSig 正式流程：variant=ratio_3p0_replay_3p0, seed=13, save_dir=results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed13_44448692
+
+========== WiSig Cross-Day 10-Known 3-Round Incremental Experiment ==========
+Dataset: 数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl
+Save dir: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed13_44448692
+Device: cuda
+Protocol: 10 known + 10 unknown R1 + 10 unknown R2 + 10 unknown R3
+Receiver setting: selected_rx_list=[2] | mode=single-Rx | physical receiver=third
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train 70%: (2100, 2, 256), classes=10, labels=0-9
+Initial eval 30%:     (900, 2, 256), classes=10, labels=0-9, day=2021_03_01
+Unknown R1 70%:     (2100, 2, 256), classes=10, labels=10-19, day=2021_03_08
+After R1 eval 30%:  (1800, 2, 256), classes=20, labels=0-19, day=2021_03_08
+Unknown R2 70%:     (2100, 2, 256), classes=10, labels=20-29, day=2021_03_15
+After R2 eval 30%:  (2700, 2, 256), classes=30, labels=0-29, day=2021_03_15
+Unknown R3 70%:     (2100, 2, 256), classes=10, labels=30-39, day=2021_03_23
+After R3 eval 30%:  (3600, 2, 256), classes=40, labels=0-39, day=2021_03_23
+
+[Train-v2] classes=10 | train=1800 | validation=300 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/020 | train_loss=2.3712 | train_acc=0.3103 | val_acc=0.3000 | val_loss=1.6720
+Epoch 002/020 | train_loss=1.5271 | train_acc=0.6088 | val_acc=0.5600 | val_loss=1.0531
+Epoch 003/020 | train_loss=1.0889 | train_acc=0.7494 | val_acc=0.7133 | val_loss=0.7268
+Epoch 004/020 | train_loss=0.8077 | train_acc=0.8705 | val_acc=0.9333 | val_loss=0.5538
+Epoch 005/020 | train_loss=0.5794 | train_acc=0.9559 | val_acc=0.8767 | val_loss=0.4775
+Epoch 006/020 | train_loss=0.4566 | train_acc=0.9872 | val_acc=0.9800 | val_loss=0.0775
+Epoch 007/020 | train_loss=0.4016 | train_acc=0.9894 | val_acc=0.9633 | val_loss=0.1670
+Epoch 008/020 | train_loss=0.3695 | train_acc=0.9950 | val_acc=0.9067 | val_loss=0.2167
+Epoch 009/020 | train_loss=0.3595 | train_acc=0.9972 | val_acc=0.9933 | val_loss=0.0354
+Epoch 010/020 | train_loss=0.3525 | train_acc=0.9967 | val_acc=0.9933 | val_loss=0.0211
+Epoch 011/020 | train_loss=0.3488 | train_acc=0.9972 | val_acc=1.0000 | val_loss=0.0070
+Epoch 012/020 | train_loss=0.3410 | train_acc=0.9989 | val_acc=0.9933 | val_loss=0.0358
+Epoch 013/020 | train_loss=0.3384 | train_acc=0.9989 | val_acc=0.9967 | val_loss=0.0200
+Epoch 014/020 | train_loss=0.3349 | train_acc=0.9994 | val_acc=1.0000 | val_loss=0.0037
+Epoch 015/020 | train_loss=0.3343 | train_acc=0.9989 | val_acc=1.0000 | val_loss=0.0044
+Epoch 016/020 | train_loss=0.3340 | train_acc=0.9994 | val_acc=1.0000 | val_loss=0.0026
+Epoch 017/020 | train_loss=0.3312 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0129
+Epoch 018/020 | train_loss=0.3306 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0027
+Epoch 019/020 | train_loss=0.3298 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0017
+Epoch 020/020 | train_loss=0.3298 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0013
+[Train-v2] best_val_acc=1.0000 | best_val_loss=0.0013 | saved=results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed13_44448692/closedset_rx2_day1_10known.pth
+[Load] checkpoint=results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed13_44448692/closedset_rx2_day1_10known.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.900 | gate_open=True
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples
+MV-ACC-CIL discovery    R1         Day 2                10     2100                     10                   10                    0                    1.0        10    0.0 0.944562 0.935600 0.969524       0.969524 fixed_alpha    0.7                 12                        1                  0.74                         45                45                  1.0               0.784287              0.664938                False                     1                        1.75                                  0.3                        0.434726                      63                     0.03                  5
+MV-ACC-CIL discovery    R2         Day 3                10     2100                     13                   11                    1                    1.1        11    0.0 0.924713 0.913228 0.971429       0.927619 fixed_alpha    0.7                 12                        2                  0.74                        100               100                  1.0               0.856802              0.678364                False                     0                        1.75                                  0.3                             NaN                      63                     0.03                  5
+MV-ACC-CIL discovery    R3         Day 4                10     2100                     16                   12                    2                    1.2        12    0.0 0.928667 0.902226 0.967619       0.911429 fixed_alpha    0.7                 12                        5                  0.74                         85                85                  1.0               0.909144              0.700211                False                     1                        1.75                                  0.3                        0.672594                      63                     0.03                  5
+Saved: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed13_44448692/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage   Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996673
+MV-ACC-CIL After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.797222 0.848889 0.745556           0.848889         0.147778  0.767509
+MV-ACC-CIL After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  11                11          2700     0.718148 0.763889 0.626667           0.780000         0.216667  0.688661
+MV-ACC-CIL After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  12                12          3600     0.548889 0.491481 0.721111           0.667778         0.328889  0.513660
+Saved: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed13_44448692/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1             10                                10                    0         1.000000 0.969524 0.944562 0.935600       0.969524     0.797222 0.745556         0.147778
+MV-ACC-CIL    R2             11                                11                    1         1.000000 0.971429 0.924713 0.913228       0.927619     0.718148 0.626667         0.216667
+MV-ACC-CIL    R3             12                                12                    2         1.000000 0.967619 0.928667 0.902226       0.911429     0.548889 0.721111         0.328889
+Saved: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed13_44448692/per_round_summary_results.csv
+Visualizations saved under: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed13_44448692/visualizations
+Core comparison panels saved under: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed13_44448692/visualizations/core_comparison
+运行阶段 3 WiSig 正式流程：variant=ratio_3p0_replay_3p0, seed=31, save_dir=results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed31_44448692
+
+========== WiSig Cross-Day 10-Known 3-Round Incremental Experiment ==========
+Dataset: 数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl
+Save dir: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed31_44448692
+Device: cuda
+Protocol: 10 known + 10 unknown R1 + 10 unknown R2 + 10 unknown R3
+Receiver setting: selected_rx_list=[2] | mode=single-Rx | physical receiver=third
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train 70%: (2100, 2, 256), classes=10, labels=0-9
+Initial eval 30%:     (900, 2, 256), classes=10, labels=0-9, day=2021_03_01
+Unknown R1 70%:     (2100, 2, 256), classes=10, labels=10-19, day=2021_03_08
+After R1 eval 30%:  (1800, 2, 256), classes=20, labels=0-19, day=2021_03_08
+Unknown R2 70%:     (2100, 2, 256), classes=10, labels=20-29, day=2021_03_15
+After R2 eval 30%:  (2700, 2, 256), classes=30, labels=0-29, day=2021_03_15
+Unknown R3 70%:     (2100, 2, 256), classes=10, labels=30-39, day=2021_03_23
+After R3 eval 30%:  (3600, 2, 256), classes=40, labels=0-39, day=2021_03_23
+
+[Train-v2] classes=10 | train=1800 | validation=300 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/020 | train_loss=2.3843 | train_acc=0.2829 | val_acc=0.2967 | val_loss=1.6118
+Epoch 002/020 | train_loss=1.6613 | train_acc=0.5307 | val_acc=0.4400 | val_loss=1.0239
+Epoch 003/020 | train_loss=1.3029 | train_acc=0.6278 | val_acc=0.6467 | val_loss=0.8203
+Epoch 004/020 | train_loss=0.9712 | train_acc=0.8047 | val_acc=0.3933 | val_loss=1.8990
+Epoch 005/020 | train_loss=0.6942 | train_acc=0.9319 | val_acc=0.8967 | val_loss=0.2795
+Epoch 006/020 | train_loss=0.5072 | train_acc=0.9771 | val_acc=0.9833 | val_loss=0.1590
+Epoch 007/020 | train_loss=0.4328 | train_acc=0.9900 | val_acc=0.9900 | val_loss=0.1118
+Epoch 008/020 | train_loss=0.3929 | train_acc=0.9944 | val_acc=1.0000 | val_loss=0.0310
+Epoch 009/020 | train_loss=0.3674 | train_acc=0.9972 | val_acc=0.9833 | val_loss=0.0668
+Epoch 010/020 | train_loss=0.3543 | train_acc=0.9961 | val_acc=1.0000 | val_loss=0.0133
+Epoch 011/020 | train_loss=0.3555 | train_acc=0.9967 | val_acc=1.0000 | val_loss=0.0122
+Epoch 012/020 | train_loss=0.3443 | train_acc=0.9989 | val_acc=1.0000 | val_loss=0.0045
+Epoch 013/020 | train_loss=0.3432 | train_acc=0.9983 | val_acc=1.0000 | val_loss=0.0043
+Epoch 014/020 | train_loss=0.3459 | train_acc=0.9967 | val_acc=1.0000 | val_loss=0.0097
+Epoch 015/020 | train_loss=0.3376 | train_acc=0.9994 | val_acc=1.0000 | val_loss=0.0030
+Epoch 016/020 | train_loss=0.3356 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0059
+Epoch 017/020 | train_loss=0.3325 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0030
+Epoch 018/020 | train_loss=0.3317 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0013
+Epoch 019/020 | train_loss=0.3299 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0013
+Epoch 020/020 | train_loss=0.3298 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0012
+[Train-v2] best_val_acc=1.0000 | best_val_loss=0.0012 | saved=results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed31_44448692/closedset_rx2_day1_10known.pth
+[Load] checkpoint=results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed31_44448692/closedset_rx2_day1_10known.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.947 | gate_open=True
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples
+MV-ACC-CIL discovery    R1         Day 2                10     2100                     12                   10                    0                    1.0        10    0.0 0.901869 0.855943 0.920000       0.920000 fixed_alpha    0.7                 12                        2                  0.74                        207               207                  1.0               0.818778              0.610170                False                     0                        1.75                                  0.3                             NaN                      63                     0.03                  5
+MV-ACC-CIL discovery    R2         Day 3                10     2100                     12                   11                    1                    1.1        11    0.0 0.927123 0.907160 0.967143       0.931429 fixed_alpha    0.7                 12                        1                  0.74                         32                32                  1.0               0.915018              0.806034                False                     0                        1.75                                  0.3                             NaN                      63                     0.03                  5
+MV-ACC-CIL discovery    R3         Day 4                10     2100                     13                   10                    0                    1.0        10    0.0 0.979934 0.980101 0.990952       0.990952 fixed_alpha    0.7                 12                        3                  0.74                        119               119                  1.0               0.882690              0.689209                False                     0                        1.75                                  0.3                             NaN                      63                     0.03                  5
+Saved: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed31_44448692/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage   Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996667
+MV-ACC-CIL After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.805556 0.887778 0.723333           0.887778         0.108889  0.784161
+MV-ACC-CIL After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  11                11          2700     0.738148 0.769444 0.675556           0.853333         0.143333  0.708715
+MV-ACC-CIL After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  10                10          3600     0.623611 0.554815 0.830000           0.772222         0.224444  0.590473
+Saved: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed31_44448692/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1             10                                10                    0         1.000000 0.920000 0.901869 0.855943       0.920000     0.805556 0.723333         0.108889
+MV-ACC-CIL    R2             11                                11                    1         1.000000 0.967143 0.927123 0.907160       0.931429     0.738148 0.675556         0.143333
+MV-ACC-CIL    R3             10                                10                    0         1.000000 0.990952 0.979934 0.980101       0.990952     0.623611 0.830000         0.224444
+Saved: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed31_44448692/per_round_summary_results.csv
+Visualizations saved under: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed31_44448692/visualizations
+Core comparison panels saved under: results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed31_44448692/visualizations/core_comparison
+阶段 3 WiSig 三种子报告：results/stage3/STAGE3_WISIG_HIGH_REPLAY_MULTISEED_REPORT_44448692.md
+阶段 3 WiSig RADCIL 正式三种子主实验完成：/mnt/users/xj62kv/OpenSet_Incremental_SEI/results/stage3
