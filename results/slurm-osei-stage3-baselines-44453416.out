@@ -1,0 +1,434 @@
+运行阶段 3 WiSig 正式 CIL baseline：seed=7, save_dir=results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416
+
+========== WiSig Cross-Day 10-Known 3-Round Incremental Experiment ==========
+Dataset: 数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl
+Save dir: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416
+Device: cuda
+Protocol: 10 known + 10 unknown R1 + 10 unknown R2 + 10 unknown R3
+Receiver setting: selected_rx_list=[2] | mode=single-Rx | physical receiver=third
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train 70%: (2100, 2, 256), classes=10, labels=0-9
+Initial eval 30%:     (900, 2, 256), classes=10, labels=0-9, day=2021_03_01
+Unknown R1 70%:     (2100, 2, 256), classes=10, labels=10-19, day=2021_03_08
+After R1 eval 30%:  (1800, 2, 256), classes=20, labels=0-19, day=2021_03_08
+Unknown R2 70%:     (2100, 2, 256), classes=10, labels=20-29, day=2021_03_15
+After R2 eval 30%:  (2700, 2, 256), classes=30, labels=0-29, day=2021_03_15
+Unknown R3 70%:     (2100, 2, 256), classes=10, labels=30-39, day=2021_03_23
+After R3 eval 30%:  (3600, 2, 256), classes=40, labels=0-39, day=2021_03_23
+
+[Train-v2] classes=10 | train=1800 | validation=300 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/020 | train_loss=2.3648 | train_acc=0.2790 | val_acc=0.3000 | val_loss=1.6929
+Epoch 002/020 | train_loss=1.6322 | train_acc=0.5603 | val_acc=0.5800 | val_loss=0.8757
+Epoch 003/020 | train_loss=1.1552 | train_acc=0.7143 | val_acc=0.4267 | val_loss=1.3721
+Epoch 004/020 | train_loss=0.8552 | train_acc=0.8181 | val_acc=0.6467 | val_loss=0.6994
+Epoch 005/020 | train_loss=0.6745 | train_acc=0.8862 | val_acc=0.8467 | val_loss=0.4360
+Epoch 006/020 | train_loss=0.5604 | train_acc=0.9453 | val_acc=0.8900 | val_loss=0.2786
+Epoch 007/020 | train_loss=0.4641 | train_acc=0.9794 | val_acc=0.9800 | val_loss=0.0891
+Epoch 008/020 | train_loss=0.4012 | train_acc=0.9911 | val_acc=0.9967 | val_loss=0.0529
+Epoch 009/020 | train_loss=0.3730 | train_acc=0.9978 | val_acc=0.8367 | val_loss=0.5897
+Epoch 010/020 | train_loss=0.3694 | train_acc=0.9972 | val_acc=0.6300 | val_loss=1.0402
+Epoch 011/020 | train_loss=0.3669 | train_acc=0.9933 | val_acc=0.9767 | val_loss=0.1069
+Epoch 012/020 | train_loss=0.3438 | train_acc=0.9994 | val_acc=0.9933 | val_loss=0.0293
+Epoch 013/020 | train_loss=0.3457 | train_acc=0.9983 | val_acc=1.0000 | val_loss=0.0081
+Epoch 014/020 | train_loss=0.3420 | train_acc=0.9983 | val_acc=0.9967 | val_loss=0.0074
+Epoch 015/020 | train_loss=0.3393 | train_acc=0.9983 | val_acc=0.9967 | val_loss=0.0095
+Epoch 016/020 | train_loss=0.3360 | train_acc=0.9989 | val_acc=1.0000 | val_loss=0.0032
+Epoch 017/020 | train_loss=0.3349 | train_acc=0.9994 | val_acc=1.0000 | val_loss=0.0035
+Epoch 018/020 | train_loss=0.3322 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0030
+Epoch 019/020 | train_loss=0.3310 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0054
+Epoch 020/020 | train_loss=0.3305 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0021
+[Train-v2] best_val_acc=1.0000 | best_val_loss=0.0021 | saved=results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/closedset_rx2_day1_10known.pth
+[Load] checkpoint=results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/closedset_rx2_day1_10known.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.921 | gate_open=True
+[MV-ACC calibration] Day1 validation only: ratio=0.045, merge_threshold=0.74
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Representative Class-Incremental Baselines: Shared Graph-fusion pseudo-labels ==========
+
+========== Representative Class-Incremental Baselines: End-to-end with neutral Deep-HDBSCAN discovery ==========
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples
+MV-ACC-CIL discovery    R1         Day 2                10     2100                     10                   10                    0                    1.0        10    0.0 0.940787 0.930000 0.966667       0.966667 fixed_alpha    0.7                 12                        0                  0.74                         99                99                  1.0               0.847701              0.644402                False                     0                        1.75                                  0.3                             NaN                      94                    0.045                  5
+MV-ACC-CIL discovery    R2         Day 3                10     2100                     10                   10                    0                    1.0        10    0.0 0.932459 0.886585 0.935714       0.935714 fixed_alpha    0.7                 12                        0                  0.74                         25                25                  1.0               0.850807              0.607741                False                     0                        1.75                                  0.3                             NaN                      94                    0.045                  5
+MV-ACC-CIL discovery    R3         Day 4                10     2100                     10                   10                    0                    1.0        10    0.0 0.969283 0.968330 0.985238       0.985238 fixed_alpha    0.7                 12                        0                  0.74                         40                40                  1.0               0.820436              0.655775                False                     0                        1.75                                  0.3                             NaN                      94                    0.045                  5
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage   Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996667
+MV-ACC-CIL After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.853333 0.903333 0.803333           0.903333         0.093333  0.836561
+MV-ACC-CIL After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  10                10          2700     0.771852 0.803333 0.708889           0.865556         0.131111  0.749279
+MV-ACC-CIL After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  10                10          3600     0.632778 0.587407 0.768889           0.857778         0.138889  0.591772
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1             10                                10                    0         1.000000 0.966667 0.940787 0.930000       0.966667     0.853333 0.803333         0.093333
+MV-ACC-CIL    R2             10                                10                    0         1.000000 0.935714 0.932459 0.886585       0.935714     0.771852 0.708889         0.131111
+MV-ACC-CIL    R3             10                                10                    0         1.000000 0.985238 0.969283 0.968330       0.985238     0.632778 0.768889         0.138889
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/per_round_summary_results.csv
+
+========== Table 4: Shared-Discovery Baseline Details ==========
+     Method    Stage   Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+     Ft-CNN  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996673
+        LwF  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996673
+       EEIL  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996673
+      iCaRL  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996667
+TPCIL-style  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996667
+  DOI-style  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996667
+     Ft-CNN After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.612778 0.296667 0.928889           0.296667         0.700000  0.511989
+        LwF After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.633333 0.357778 0.908889           0.357778         0.638889  0.549224
+      iCaRL After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.915000 0.895556 0.934444           0.895556         0.101111  0.899745
+       EEIL After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.702222 0.482222 0.922222           0.482222         0.514444  0.631086
+TPCIL-style After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.917778 0.902222 0.933333           0.902222         0.094444  0.905179
+  DOI-style After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.922222 0.896667 0.947778           0.896667         0.100000  0.907118
+     Ft-CNN After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  10                10          2700     0.424444 0.181667 0.910000           0.236667         0.760000  0.335543
+        LwF After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  10                10          2700     0.427778 0.207778 0.867778           0.356667         0.640000  0.348577
+      iCaRL After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  10                10          2700     0.859259 0.850000 0.877778           0.845556         0.151111  0.844941
+       EEIL After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  10                10          2700     0.519259 0.360556 0.836667           0.497778         0.498889  0.439517
+TPCIL-style After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  10                10          2700     0.860741 0.852778 0.876667           0.848889         0.147778  0.847527
+  DOI-style After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  10                10          2700     0.861852 0.853889 0.877778           0.837778         0.158889  0.847481
+     Ft-CNN After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  10                10          3600     0.296944 0.077407 0.955556           0.037778         0.958889  0.173972
+        LwF After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  10                10          3600     0.310833 0.092222 0.966667           0.054444         0.942222  0.192334
+      iCaRL After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  10                10          3600     0.700000 0.621111 0.936667           0.867778         0.128889  0.667495
+       EEIL After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  10                10          3600     0.464167 0.300370 0.955556           0.374444         0.622222  0.363746
+TPCIL-style After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  10                10          3600     0.690833 0.607778 0.940000           0.862222         0.134444  0.656050
+  DOI-style After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  10                10          3600     0.698333 0.616296 0.944444           0.861111         0.135556  0.664506
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/shared_discovery_baseline_results.csv
+
+========== Table 5: Shared-Discovery Controlled Comparison ==========
+       Method   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+       Ft-CNN 0.612778       0.700000 0.424444       0.760000 0.296944       0.958889 0.444722        0.806296
+          LwF 0.633333       0.638889 0.427778       0.640000 0.310833       0.942222 0.457315        0.740370
+        iCaRL 0.915000       0.101111 0.859259       0.151111 0.700000       0.128889 0.824753        0.127037
+         EEIL 0.702222       0.514444 0.519259       0.498889 0.464167       0.622222 0.561883        0.545185
+  TPCIL-style 0.917778       0.094444 0.860741       0.147778 0.690833       0.134444 0.823117        0.125556
+    DOI-style 0.922222       0.100000 0.861852       0.158889 0.698333       0.135556 0.827469        0.131481
+Ours (MV-ACC) 0.853333       0.093333 0.771852       0.131111 0.632778       0.138889 0.752654        0.121111
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/shared_discovery_comparison_results.csv
+
+========== Table 6: End-to-End Open-Set Incremental Comparison ==========
+                    Method   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Deep-HDBSCAN + Ft-CNN 0.483333       0.670000 0.297407       0.800000 0.250000       0.947778 0.343580        0.805926
+        Deep-HDBSCAN + LwF 0.541111       0.652222 0.336296       0.601111 0.234167       0.987778 0.370525        0.747037
+      Deep-HDBSCAN + iCaRL 0.831667       0.107778 0.707778       0.172222 0.571389       0.178889 0.703611        0.152963
+       Deep-HDBSCAN + EEIL 0.522222       0.615556 0.461481       0.497778 0.392222       0.678889 0.458642        0.597407
+Deep-HDBSCAN + TPCIL-style 0.825556       0.104444 0.710370       0.157778 0.565556       0.175556 0.700494        0.145926
+  Deep-HDBSCAN + DOI-style 0.831111       0.107778 0.706296       0.172222 0.575556       0.175556 0.704321        0.151852
+             Ours (MV-ACC) 0.853333       0.093333 0.771852       0.131111 0.632778       0.138889 0.752654        0.121111
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/end_to_end_comparison_results.csv
+
+========== Table 7: Full End-to-End System Comparison (Main Table) ==========
+                    Method                                  Discovery Module                            Incremental Module   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Deep-HDBSCAN + Ft-CNN                          Deep embedding + HDBSCAN                                   Fine-tuning 0.483333       0.670000 0.297407       0.800000 0.250000       0.947778 0.343580        0.805926
+        Deep-HDBSCAN + LwF                          Deep embedding + HDBSCAN                        Knowledge distillation 0.541111       0.652222 0.336296       0.601111 0.234167       0.987778 0.370525        0.747037
+      Deep-HDBSCAN + iCaRL                          Deep embedding + HDBSCAN        Exemplar replay + prototype classifier 0.831667       0.107778 0.707778       0.172222 0.571389       0.178889 0.703611        0.152963
+       Deep-HDBSCAN + EEIL                          Deep embedding + HDBSCAN                         Replay + distillation 0.522222       0.615556 0.461481       0.497778 0.392222       0.678889 0.458642        0.597407
+Deep-HDBSCAN + TPCIL-style                          Deep embedding + HDBSCAN            Topology-aware prototype smoothing 0.825556       0.104444 0.710370       0.157778 0.565556       0.175556 0.700494        0.145926
+  Deep-HDBSCAN + DOI-style                          Deep embedding + HDBSCAN DOI-inspired prototype preservation/alignment 0.831111       0.107778 0.706296       0.172222 0.575556       0.175556 0.704321        0.151852
+             Ours (MV-ACC) SupCon deep/RF graphs + adaptive fusion + HDBSCAN  Prototype enrollment + old-class calibration 0.853333       0.093333 0.771852       0.131111 0.632778       0.138889 0.752654        0.121111
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/end_to_end_system_comparison.csv
+Visualizations saved under: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/visualizations
+Core comparison panels saved under: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/visualizations/core_comparison
+运行阶段 3 WiSig 正式 CIL baseline：seed=13, save_dir=results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416
+
+========== WiSig Cross-Day 10-Known 3-Round Incremental Experiment ==========
+Dataset: 数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl
+Save dir: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416
+Device: cuda
+Protocol: 10 known + 10 unknown R1 + 10 unknown R2 + 10 unknown R3
+Receiver setting: selected_rx_list=[2] | mode=single-Rx | physical receiver=third
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train 70%: (2100, 2, 256), classes=10, labels=0-9
+Initial eval 30%:     (900, 2, 256), classes=10, labels=0-9, day=2021_03_01
+Unknown R1 70%:     (2100, 2, 256), classes=10, labels=10-19, day=2021_03_08
+After R1 eval 30%:  (1800, 2, 256), classes=20, labels=0-19, day=2021_03_08
+Unknown R2 70%:     (2100, 2, 256), classes=10, labels=20-29, day=2021_03_15
+After R2 eval 30%:  (2700, 2, 256), classes=30, labels=0-29, day=2021_03_15
+Unknown R3 70%:     (2100, 2, 256), classes=10, labels=30-39, day=2021_03_23
+After R3 eval 30%:  (3600, 2, 256), classes=40, labels=0-39, day=2021_03_23
+
+[Train-v2] classes=10 | train=1800 | validation=300 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/020 | train_loss=2.3712 | train_acc=0.3103 | val_acc=0.3000 | val_loss=1.6720
+Epoch 002/020 | train_loss=1.5271 | train_acc=0.6088 | val_acc=0.5600 | val_loss=1.0531
+Epoch 003/020 | train_loss=1.0889 | train_acc=0.7494 | val_acc=0.7133 | val_loss=0.7268
+Epoch 004/020 | train_loss=0.8077 | train_acc=0.8705 | val_acc=0.9333 | val_loss=0.5538
+Epoch 005/020 | train_loss=0.5794 | train_acc=0.9559 | val_acc=0.8767 | val_loss=0.4775
+Epoch 006/020 | train_loss=0.4566 | train_acc=0.9872 | val_acc=0.9800 | val_loss=0.0775
+Epoch 007/020 | train_loss=0.4016 | train_acc=0.9894 | val_acc=0.9633 | val_loss=0.1670
+Epoch 008/020 | train_loss=0.3695 | train_acc=0.9950 | val_acc=0.9067 | val_loss=0.2167
+Epoch 009/020 | train_loss=0.3595 | train_acc=0.9972 | val_acc=0.9933 | val_loss=0.0354
+Epoch 010/020 | train_loss=0.3525 | train_acc=0.9967 | val_acc=0.9933 | val_loss=0.0211
+Epoch 011/020 | train_loss=0.3488 | train_acc=0.9972 | val_acc=1.0000 | val_loss=0.0070
+Epoch 012/020 | train_loss=0.3410 | train_acc=0.9989 | val_acc=0.9933 | val_loss=0.0358
+Epoch 013/020 | train_loss=0.3384 | train_acc=0.9989 | val_acc=0.9967 | val_loss=0.0200
+Epoch 014/020 | train_loss=0.3349 | train_acc=0.9994 | val_acc=1.0000 | val_loss=0.0037
+Epoch 015/020 | train_loss=0.3343 | train_acc=0.9989 | val_acc=1.0000 | val_loss=0.0044
+Epoch 016/020 | train_loss=0.3340 | train_acc=0.9994 | val_acc=1.0000 | val_loss=0.0026
+Epoch 017/020 | train_loss=0.3312 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0129
+Epoch 018/020 | train_loss=0.3306 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0027
+Epoch 019/020 | train_loss=0.3298 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0017
+Epoch 020/020 | train_loss=0.3298 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0013
+[Train-v2] best_val_acc=1.0000 | best_val_loss=0.0013 | saved=results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/closedset_rx2_day1_10known.pth
+[Load] checkpoint=results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/closedset_rx2_day1_10known.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.900 | gate_open=True
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Representative Class-Incremental Baselines: Shared Graph-fusion pseudo-labels ==========
+
+========== Representative Class-Incremental Baselines: End-to-end with neutral Deep-HDBSCAN discovery ==========
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples
+MV-ACC-CIL discovery    R1         Day 2                10     2100                     10                   10                    0                    1.0        10    0.0 0.944562 0.935600 0.969524       0.969524 fixed_alpha    0.7                 12                        1                  0.74                         45                45                  1.0               0.784287              0.664938                False                     1                        1.75                                  0.3                        0.434726                      63                     0.03                  5
+MV-ACC-CIL discovery    R2         Day 3                10     2100                     13                   11                    1                    1.1        11    0.0 0.924713 0.913228 0.971429       0.927619 fixed_alpha    0.7                 12                        2                  0.74                        100               100                  1.0               0.856802              0.678364                False                     0                        1.75                                  0.3                             NaN                      63                     0.03                  5
+MV-ACC-CIL discovery    R3         Day 4                10     2100                     15                   11                    1                    1.1        11    0.0 0.929289 0.908164 0.968571       0.934762 fixed_alpha    0.7                 12                        5                  0.74                        117               117                  1.0               0.829476              0.701190                False                     1                        1.75                                  0.3                        0.603802                      63                     0.03                  5
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage   Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996673
+MV-ACC-CIL After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.797222 0.848889 0.745556           0.848889         0.147778  0.767509
+MV-ACC-CIL After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  11                11          2700     0.696667 0.753889 0.582222           0.771111         0.225556  0.663039
+MV-ACC-CIL After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  11                11          3600     0.560833 0.500741 0.741111           0.668889         0.327778  0.522617
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1             10                                10                    0         1.000000 0.969524 0.944562 0.935600       0.969524     0.797222 0.745556         0.147778
+MV-ACC-CIL    R2             11                                11                    1         1.000000 0.971429 0.924713 0.913228       0.927619     0.696667 0.582222         0.225556
+MV-ACC-CIL    R3             11                                11                    1         1.000000 0.968571 0.929289 0.908164       0.934762     0.560833 0.741111         0.327778
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/per_round_summary_results.csv
+
+========== Table 4: Shared-Discovery Baseline Details ==========
+     Method    Stage   Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+     Ft-CNN  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996673
+        LwF  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996673
+       EEIL  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996673
+      iCaRL  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996673
+TPCIL-style  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996673
+  DOI-style  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996673
+     Ft-CNN After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.584444 0.298889 0.870000           0.298889         0.697778  0.506100
+        LwF After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.624444 0.321111 0.927778           0.321111         0.675556  0.538448
+      iCaRL After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.875000 0.857778 0.892222           0.857778         0.138889  0.861148
+       EEIL After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.690000 0.441111 0.938889           0.441111         0.555556  0.608051
+TPCIL-style After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.876667 0.857778 0.895556           0.857778         0.138889  0.863101
+  DOI-style After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.879444 0.858889 0.900000           0.858889         0.137778  0.864983
+     Ft-CNN After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  11                11          2700     0.385556 0.127222 0.902222           0.153333         0.843333  0.271958
+        LwF After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  11                11          2700     0.452593 0.237222 0.883333           0.331111         0.665556  0.392826
+      iCaRL After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  11                11          2700     0.790370 0.760000 0.851111           0.765556         0.231111  0.773827
+       EEIL After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  11                11          2700     0.503333 0.332778 0.844444           0.416667         0.580000  0.423052
+TPCIL-style After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  11                11          2700     0.783704 0.751667 0.847778           0.748889         0.247778  0.767191
+  DOI-style After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  11                11          2700     0.792963 0.763889 0.851111           0.764444         0.232222  0.775359
+     Ft-CNN After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  11                11          3600     0.303889 0.102593 0.907778           0.084444         0.912222  0.197685
+        LwF After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  11                11          3600     0.298611 0.098519 0.898889           0.090000         0.906667  0.197192
+      iCaRL After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  11                11          3600     0.633056 0.547407 0.890000           0.734444         0.262222  0.605383
+       EEIL After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  11                11          3600     0.360278 0.193704 0.860000           0.177778         0.818889  0.269342
+TPCIL-style After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  11                11          3600     0.628056 0.541852 0.886667           0.740000         0.256667  0.600821
+  DOI-style After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  11                11          3600     0.637222 0.550000 0.898889           0.730000         0.266667  0.609556
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/shared_discovery_baseline_results.csv
+
+========== Table 5: Shared-Discovery Controlled Comparison ==========
+       Method   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+       Ft-CNN 0.584444       0.697778 0.385556       0.843333 0.303889       0.912222 0.424630        0.817778
+          LwF 0.624444       0.675556 0.452593       0.665556 0.298611       0.906667 0.458549        0.749259
+        iCaRL 0.875000       0.138889 0.790370       0.231111 0.633056       0.262222 0.766142        0.210741
+         EEIL 0.690000       0.555556 0.503333       0.580000 0.360278       0.818889 0.517870        0.651481
+  TPCIL-style 0.876667       0.138889 0.783704       0.247778 0.628056       0.256667 0.762809        0.214444
+    DOI-style 0.879444       0.137778 0.792963       0.232222 0.637222       0.266667 0.769877        0.212222
+Ours (MV-ACC) 0.797222       0.147778 0.696667       0.225556 0.560833       0.327778 0.684907        0.233704
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/shared_discovery_comparison_results.csv
+
+========== Table 6: End-to-End Open-Set Incremental Comparison ==========
+                    Method   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Deep-HDBSCAN + Ft-CNN 0.470000       0.685556 0.367778       0.794444 0.233333       0.902222 0.357037        0.794074
+        Deep-HDBSCAN + LwF 0.566667       0.504444 0.376667       0.692222 0.189722       0.911111 0.377685        0.702593
+      Deep-HDBSCAN + iCaRL 0.742778       0.196667 0.671111       0.290000 0.489167       0.381111 0.634352        0.289259
+       Deep-HDBSCAN + EEIL 0.516667       0.510000 0.435185       0.527778 0.276111       0.830000 0.409321        0.622593
+Deep-HDBSCAN + TPCIL-style 0.747222       0.186667 0.670000       0.294444 0.488889       0.373333 0.635370        0.284815
+  Deep-HDBSCAN + DOI-style 0.754444       0.195556 0.675185       0.292222 0.492778       0.381111 0.640802        0.289630
+             Ours (MV-ACC) 0.797222       0.147778 0.696667       0.225556 0.560833       0.327778 0.684907        0.233704
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/end_to_end_comparison_results.csv
+
+========== Table 7: Full End-to-End System Comparison (Main Table) ==========
+                    Method                                  Discovery Module                            Incremental Module   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Deep-HDBSCAN + Ft-CNN                          Deep embedding + HDBSCAN                                   Fine-tuning 0.470000       0.685556 0.367778       0.794444 0.233333       0.902222 0.357037        0.794074
+        Deep-HDBSCAN + LwF                          Deep embedding + HDBSCAN                        Knowledge distillation 0.566667       0.504444 0.376667       0.692222 0.189722       0.911111 0.377685        0.702593
+      Deep-HDBSCAN + iCaRL                          Deep embedding + HDBSCAN        Exemplar replay + prototype classifier 0.742778       0.196667 0.671111       0.290000 0.489167       0.381111 0.634352        0.289259
+       Deep-HDBSCAN + EEIL                          Deep embedding + HDBSCAN                         Replay + distillation 0.516667       0.510000 0.435185       0.527778 0.276111       0.830000 0.409321        0.622593
+Deep-HDBSCAN + TPCIL-style                          Deep embedding + HDBSCAN            Topology-aware prototype smoothing 0.747222       0.186667 0.670000       0.294444 0.488889       0.373333 0.635370        0.284815
+  Deep-HDBSCAN + DOI-style                          Deep embedding + HDBSCAN DOI-inspired prototype preservation/alignment 0.754444       0.195556 0.675185       0.292222 0.492778       0.381111 0.640802        0.289630
+             Ours (MV-ACC) SupCon deep/RF graphs + adaptive fusion + HDBSCAN  Prototype enrollment + old-class calibration 0.797222       0.147778 0.696667       0.225556 0.560833       0.327778 0.684907        0.233704
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/end_to_end_system_comparison.csv
+Visualizations saved under: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/visualizations
+Core comparison panels saved under: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/visualizations/core_comparison
+运行阶段 3 WiSig 正式 CIL baseline：seed=31, save_dir=results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416
+
+========== WiSig Cross-Day 10-Known 3-Round Incremental Experiment ==========
+Dataset: 数据集/WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl
+Save dir: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416
+Device: cuda
+Protocol: 10 known + 10 unknown R1 + 10 unknown R2 + 10 unknown R3
+Receiver setting: selected_rx_list=[2] | mode=single-Rx | physical receiver=third
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train 70%: (2100, 2, 256), classes=10, labels=0-9
+Initial eval 30%:     (900, 2, 256), classes=10, labels=0-9, day=2021_03_01
+Unknown R1 70%:     (2100, 2, 256), classes=10, labels=10-19, day=2021_03_08
+After R1 eval 30%:  (1800, 2, 256), classes=20, labels=0-19, day=2021_03_08
+Unknown R2 70%:     (2100, 2, 256), classes=10, labels=20-29, day=2021_03_15
+After R2 eval 30%:  (2700, 2, 256), classes=30, labels=0-29, day=2021_03_15
+Unknown R3 70%:     (2100, 2, 256), classes=10, labels=30-39, day=2021_03_23
+After R3 eval 30%:  (3600, 2, 256), classes=40, labels=0-39, day=2021_03_23
+
+[Train-v2] classes=10 | train=1800 | validation=300 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/020 | train_loss=2.3843 | train_acc=0.2829 | val_acc=0.2967 | val_loss=1.6118
+Epoch 002/020 | train_loss=1.6613 | train_acc=0.5307 | val_acc=0.4400 | val_loss=1.0239
+Epoch 003/020 | train_loss=1.3029 | train_acc=0.6278 | val_acc=0.6467 | val_loss=0.8203
+Epoch 004/020 | train_loss=0.9712 | train_acc=0.8047 | val_acc=0.3933 | val_loss=1.8990
+Epoch 005/020 | train_loss=0.6942 | train_acc=0.9319 | val_acc=0.8967 | val_loss=0.2795
+Epoch 006/020 | train_loss=0.5072 | train_acc=0.9771 | val_acc=0.9833 | val_loss=0.1590
+Epoch 007/020 | train_loss=0.4328 | train_acc=0.9900 | val_acc=0.9900 | val_loss=0.1118
+Epoch 008/020 | train_loss=0.3929 | train_acc=0.9944 | val_acc=1.0000 | val_loss=0.0310
+Epoch 009/020 | train_loss=0.3674 | train_acc=0.9972 | val_acc=0.9833 | val_loss=0.0668
+Epoch 010/020 | train_loss=0.3543 | train_acc=0.9961 | val_acc=1.0000 | val_loss=0.0133
+Epoch 011/020 | train_loss=0.3555 | train_acc=0.9967 | val_acc=1.0000 | val_loss=0.0122
+Epoch 012/020 | train_loss=0.3443 | train_acc=0.9989 | val_acc=1.0000 | val_loss=0.0045
+Epoch 013/020 | train_loss=0.3432 | train_acc=0.9983 | val_acc=1.0000 | val_loss=0.0043
+Epoch 014/020 | train_loss=0.3459 | train_acc=0.9967 | val_acc=1.0000 | val_loss=0.0097
+Epoch 015/020 | train_loss=0.3376 | train_acc=0.9994 | val_acc=1.0000 | val_loss=0.0030
+Epoch 016/020 | train_loss=0.3356 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0059
+Epoch 017/020 | train_loss=0.3325 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0030
+Epoch 018/020 | train_loss=0.3317 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0013
+Epoch 019/020 | train_loss=0.3299 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0013
+Epoch 020/020 | train_loss=0.3298 | train_acc=1.0000 | val_acc=1.0000 | val_loss=0.0012
+[Train-v2] best_val_acc=1.0000 | best_val_loss=0.0012 | saved=results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/closedset_rx2_day1_10known.pth
+[Load] checkpoint=results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/closedset_rx2_day1_10known.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.947 | gate_open=True
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Representative Class-Incremental Baselines: Shared Graph-fusion pseudo-labels ==========
+
+========== Representative Class-Incremental Baselines: End-to-end with neutral Deep-HDBSCAN discovery ==========
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples
+MV-ACC-CIL discovery    R1         Day 2                10     2100                     12                   10                    0                    1.0        10    0.0 0.901869 0.855943 0.920000       0.920000 fixed_alpha    0.7                 12                        2                  0.74                        207               207                  1.0               0.818778              0.610170                False                     0                        1.75                                  0.3                             NaN                      63                     0.03                  5
+MV-ACC-CIL discovery    R2         Day 3                10     2100                     12                   11                    1                    1.1        11    0.0 0.927123 0.907160 0.967143       0.931429 fixed_alpha    0.7                 12                        1                  0.74                         32                32                  1.0               0.915018              0.806034                False                     0                        1.75                                  0.3                             NaN                      63                     0.03                  5
+MV-ACC-CIL discovery    R3         Day 4                10     2100                     13                   10                    0                    1.0        10    0.0 0.976273 0.975014 0.988571       0.988571 fixed_alpha    0.7                 12                        3                  0.74                         60                60                  1.0               0.784457              0.697824                False                     0                        1.75                                  0.3                             NaN                      63                     0.03                  5
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage   Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996667
+MV-ACC-CIL After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.805556 0.887778 0.723333           0.887778         0.108889  0.784161
+MV-ACC-CIL After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  11                11          2700     0.745926 0.775556 0.686667           0.847778         0.148889  0.715355
+MV-ACC-CIL After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  10                10          3600     0.632778 0.566667 0.831111           0.777778         0.218889  0.598521
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1             10                                10                    0         1.000000 0.920000 0.901869 0.855943       0.920000     0.805556 0.723333         0.108889
+MV-ACC-CIL    R2             11                                11                    1         1.000000 0.967143 0.927123 0.907160       0.931429     0.745926 0.686667         0.148889
+MV-ACC-CIL    R3             10                                10                    0         1.000000 0.988571 0.976273 0.975014       0.988571     0.632778 0.831111         0.218889
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/per_round_summary_results.csv
+
+========== Table 4: Shared-Discovery Baseline Details ==========
+     Method    Stage   Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+     Ft-CNN  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996667
+        LwF  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996667
+       EEIL  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996667
+      iCaRL  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996673
+TPCIL-style  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996673
+  DOI-style  Initial 2021_03_01 day1_eval_initial_30pct            10                -                   -                 -           900     0.996667 0.996667      NaN           0.996667         0.000000  0.996673
+     Ft-CNN After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.562778 0.295556 0.830000           0.295556         0.701111  0.476715
+        LwF After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.651111 0.432222 0.870000           0.432222         0.564444  0.580521
+      iCaRL After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.887222 0.882222 0.892222           0.882222         0.114444  0.868928
+       EEIL After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.659444 0.477778 0.841111           0.477778         0.518889  0.586382
+TPCIL-style After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.885000 0.881111 0.888889           0.881111         0.115556  0.867025
+  DOI-style After R1 2021_03_08   eval_r1_30pct_20_seen            20               10                  10                10          1800     0.890556 0.883333 0.897778           0.883333         0.113333  0.873191
+     Ft-CNN After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  11                11          2700     0.445185 0.205556 0.924444           0.295556         0.701111  0.360432
+        LwF After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  11                11          2700     0.477407 0.268333 0.895556           0.398889         0.597778  0.392363
+      iCaRL After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  11                11          2700     0.819630 0.791667 0.875556           0.847778         0.148889  0.804017
+       EEIL After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  11                11          2700     0.507407 0.341111 0.840000           0.462222         0.534444  0.434143
+TPCIL-style After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  11                11          2700     0.816667 0.788333 0.873333           0.833333         0.163333  0.800951
+  DOI-style After R2 2021_03_15   eval_r2_30pct_30_seen            30               10                  11                11          2700     0.830000 0.803333 0.883333           0.856667         0.140000  0.813644
+     Ft-CNN After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  10                10          3600     0.323611 0.120370 0.933333           0.110000         0.886667  0.205689
+        LwF After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  10                10          3600     0.355833 0.159259 0.945556           0.194444         0.802222  0.246369
+      iCaRL After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  10                10          3600     0.628056 0.541852 0.886667           0.801111         0.195556  0.593217
+       EEIL After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  10                10          3600     0.409444 0.225556 0.961111           0.258889         0.737778  0.302953
+TPCIL-style After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  10                10          3600     0.622500 0.536667 0.880000           0.806667         0.190000  0.586482
+  DOI-style After R3 2021_03_23   eval_r3_30pct_40_seen            40               10                  10                10          3600     0.638056 0.550000 0.902222           0.811111         0.185556  0.604547
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/shared_discovery_baseline_results.csv
+
+========== Table 5: Shared-Discovery Controlled Comparison ==========
+       Method   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+       Ft-CNN 0.562778       0.701111 0.445185       0.701111 0.323611       0.886667 0.443858        0.762963
+          LwF 0.651111       0.564444 0.477407       0.597778 0.355833       0.802222 0.494784        0.654815
+        iCaRL 0.887222       0.114444 0.819630       0.148889 0.628056       0.195556 0.778302        0.152963
+         EEIL 0.659444       0.518889 0.507407       0.534444 0.409444       0.737778 0.525432        0.597037
+  TPCIL-style 0.885000       0.115556 0.816667       0.163333 0.622500       0.190000 0.774722        0.156296
+    DOI-style 0.890556       0.113333 0.830000       0.140000 0.638056       0.185556 0.786204        0.146296
+Ours (MV-ACC) 0.805556       0.108889 0.745926       0.148889 0.632778       0.218889 0.728086        0.158889
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/shared_discovery_comparison_results.csv
+
+========== Table 6: End-to-End Open-Set Incremental Comparison ==========
+                    Method   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Deep-HDBSCAN + Ft-CNN 0.488333       0.705556 0.333704       0.753333 0.277778       0.898889 0.366605        0.785926
+        Deep-HDBSCAN + LwF 0.573333       0.502222 0.375556       0.621111 0.265278       0.798889 0.404722        0.640741
+      Deep-HDBSCAN + iCaRL 0.788333       0.126667 0.680741       0.198889 0.520278       0.224444 0.663117        0.183333
+       Deep-HDBSCAN + EEIL 0.555556       0.484444 0.440000       0.495556 0.313611       0.715556 0.436389        0.565185
+Deep-HDBSCAN + TPCIL-style 0.783889       0.126667 0.666296       0.237778 0.502778       0.245556 0.650988        0.203333
+  Deep-HDBSCAN + DOI-style 0.786111       0.125556 0.683333       0.194444 0.525833       0.221111 0.665093        0.180370
+             Ours (MV-ACC) 0.805556       0.108889 0.745926       0.148889 0.632778       0.218889 0.728086        0.158889
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/end_to_end_comparison_results.csv
+
+========== Table 7: Full End-to-End System Comparison (Main Table) ==========
+                    Method                                  Discovery Module                            Incremental Module   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Deep-HDBSCAN + Ft-CNN                          Deep embedding + HDBSCAN                                   Fine-tuning 0.488333       0.705556 0.333704       0.753333 0.277778       0.898889 0.366605        0.785926
+        Deep-HDBSCAN + LwF                          Deep embedding + HDBSCAN                        Knowledge distillation 0.573333       0.502222 0.375556       0.621111 0.265278       0.798889 0.404722        0.640741
+      Deep-HDBSCAN + iCaRL                          Deep embedding + HDBSCAN        Exemplar replay + prototype classifier 0.788333       0.126667 0.680741       0.198889 0.520278       0.224444 0.663117        0.183333
+       Deep-HDBSCAN + EEIL                          Deep embedding + HDBSCAN                         Replay + distillation 0.555556       0.484444 0.440000       0.495556 0.313611       0.715556 0.436389        0.565185
+Deep-HDBSCAN + TPCIL-style                          Deep embedding + HDBSCAN            Topology-aware prototype smoothing 0.783889       0.126667 0.666296       0.237778 0.502778       0.245556 0.650988        0.203333
+  Deep-HDBSCAN + DOI-style                          Deep embedding + HDBSCAN DOI-inspired prototype preservation/alignment 0.786111       0.125556 0.683333       0.194444 0.525833       0.221111 0.665093        0.180370
+             Ours (MV-ACC) SupCon deep/RF graphs + adaptive fusion + HDBSCAN  Prototype enrollment + old-class calibration 0.805556       0.108889 0.745926       0.148889 0.632778       0.218889 0.728086        0.158889
+Saved: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/end_to_end_system_comparison.csv
+Visualizations saved under: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/visualizations
+Core comparison panels saved under: results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/visualizations/core_comparison
+阶段 3 WiSig CIL baseline 三种子报告：results/stage3/STAGE3_WISIG_CIL_BASELINES_MULTISEED_REPORT_44453416.md
+阶段 3 WiSig CIL baseline 正式三种子实验完成：/mnt/users/xj62kv/OpenSet_Incremental_SEI/results/stage3
