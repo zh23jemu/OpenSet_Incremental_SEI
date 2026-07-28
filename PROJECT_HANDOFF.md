@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-28
-- 当前阶段：阶段 5 已实现无测试泄漏的目标簇数约束和 RADCIL/原型分组双头融合；待推送并提交 seed7 Slurm 实证
+- 当前阶段：阶段 5 分组双头 seed7 已完成；目标簇数约束有效，但新旧类权衡未解决，已归档为负消融
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -127,7 +127,7 @@ Strict loader 审计：
 - ADS-B strict 主入口已使用 `ADSBLongClosedSet`，并支持 RADCIL old:new batch ratio；阶段 4 单种子和正式三种子计划、报告、Slurm 入口均已同步。
 - LoRa 阶段 5 已新增 strict loader、协议审计和 closedset smoke 入口；Job `44559268` 协议审计 `ok=true`，Job `44572328` closedset smoke 完成，证明紧凑 LoRa NPZ 可进入现有 PyTorch 训练/发现链路。
 - LoRa seed7 正式 Job `44573179`、冻结消融 `44573200`、IQ_7-only 表征筛选 `44573249`、预选表征三轮 `44573272` 和后端矩阵 `44573278` 均完成。预选表征 RADCIL R3 Overall/Old/New 为 `0.1419/0.0798/0.3905`；DOI-style 为 `0.1676/0.1786/0.1238`。
-- LoRa 已新增协议目标簇数合并和分组双头：过聚类只按预先声明的每轮 5 类合并；旧类列使用 IQ_7-only 校准的 DOI 原型融合，当前轮新类列保留网络头。Slurm 入口为 `slurm/stage5_lora_grouped_hybrid_seed7.sbatch`，尚未提交。
+- LoRa Job `44578823` 已验证协议目标簇数合并和分组双头：R3 为 5 簇、Overall/Old/New/Forgetting=`0.1495/0.0798/0.4286/0.4357`。三轮均达到 5 簇，但 Overall 低于 DOI-style 且 Old 未改善；按预注册门槛不扩种子。
 - 已在 WiSig strict 入口实现可选 DOI-memory hybrid：使用伪标签 replay 记忆构建原型、跨轮对齐历史原型，并与网络 logits 做 late fusion；默认融合权重为 0，不改变历史 RADCIL 行为。
 - 已新增 `tools/stage3_wisig_hybrid_doi_plan.py`、`tools/stage3_wisig_hybrid_doi_report.py` 和 `slurm/stage3_wisig_hybrid_doi_seed7.sbatch`；本地语法、参数入口、计划生成和合成张量 smoke test 已通过，待 Slurm seed7 验证。
 - SimGCD-style 已验证为可运行学习式发现 baseline，但真实 WiSig 前端质量低于 MV-ACC；阶段 1 短期主线应保留 MV-ACC 或稳定 Deep-HDBSCAN 前端，避免把弱前端误锁为新主方法。
@@ -139,7 +139,7 @@ Strict loader 审计：
 
 1. ADS-B 阶段 4 已收束；固定 ratio 0.03 为正式配置，自适应密度作为负消融保留，不再继续调固定密度参数。
 2. 阶段 5 LoRa 正式 seed7 与风险诊断已完成；暂不扩种子，避免复制已知的新旧类权衡。
-3. 推送当前实现并提交 LoRa 分组双头 seed7 作业；达到聚类和新旧类权衡双门槛后再扩 seed13/31。
+3. 不扩展 LoRa 分组双头。若继续后端研究，优先设计训练期旧类表征约束，并维持 IQ_8-10 严格隔离。
 4. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 5. 若后续补充实验需要 LoRa 完整数据或 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压或下载；LoRa 可优先只取 Different Days Indoor Scenario 的必要子集，不删除 Release 分片或原压缩包。
 

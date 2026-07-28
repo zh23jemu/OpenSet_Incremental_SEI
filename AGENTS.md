@@ -109,7 +109,7 @@
 - LoRa MV-ACC-CIL seed7 正式 Job `44573179` 已完成：R3 Overall `0.1200`、Old `0.0607`、New `0.3571`、Forgetting `0.4976`；完整三轮跨体制链路已打通，但旧类遗忘严重。
 - Job `44573200` 冻结 backbone 未改善 Old/Forgetting，记录为负消融；Job `44573249` 仅按 IQ_7 选中 `supcon_rf_aug`，完整三轮 Job `44573272` 将 R3 Overall 提升到 `0.1419`、Old `0.0798`、New `0.3905`，但 Forgetting 仍为 `0.5190`。
 - Job `44573278` 在预选表征上确认 DOI-style R3 Old `0.1786`、Forgetting `0.2119`，显著优于 RADCIL，但 New 仅 `0.1238`；当前风险已收束为 RADCIL 偏新类、稳定原型后端偏旧类的后端权衡。
-- 已实现 LoRa 风险验证方案：MV-ACC 可选按协议每轮 5 类将过聚类最近原型合并至目标簇数；RADCIL 分组双头仅对旧类列融合 DOI replay 原型，当前轮新类保留网络头；融合权重仅由 IQ_7 validation 从预注册候选中选择。正式 seed7 尚未提交。
+- Slurm Job `44578823` 已完成 LoRa 分组双头 seed7 严格验证：R3 全轮均达到 5 簇，New 提升至 `0.4286`、Forgetting 降至 `0.4357`，但 Overall `0.1495` 低于 DOI-style `0.1676`，Old `0.0798` 未超过 RADCIL `0.0798`；按预注册双门槛记录为负消融，不扩展 seed13/31。
 
 ## Recent Changes
 
@@ -176,13 +176,14 @@
 - 2026-07-28：完成 LoRa strict MV-ACC-CIL seed7 正式 Job `44573179`、冻结 backbone 负消融 `44573200`、IQ_7-only 表征筛选 `44573249`、预选表征三轮 `44573272` 和后端矩阵 `44573278`。
 - 2026-07-28：确认预选表征 RADCIL 偏新类、DOI/iCaRL 偏旧类；阶段 5 暂不扩三种子，下一步转向只用 IQ_7 校准的网络/原型双头融合。
 - 2026-07-28：实现 MV-ACC 协议目标簇数合并、RADCIL/DOI 分组双头融合、IQ_7-only 权重校准、seed7 报告器与短时 Slurm 入口；本地语法、CLI 和两个合成不变量测试通过。
+- 2026-07-28：完成 Job `44578823` 并同步小型结果；IQ_7 每阶段均选择融合权重 1.0，但未形成同时改善 Overall、Old、New 与 Forgetting 的组合，正式归档为负消融。
 
 ## Next TODO
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
 - 阶段 4 ADS-B 已完成；正式全轮次继续使用 ratio 0.03，自适应密度作为负消融归档，不再继续调固定密度参数。
-- 阶段 5 下一步：推送当前实现后提交 `slurm/stage5_lora_grouped_hybrid_seed7.sbatch`；仅当目标簇数与新旧类权衡门槛同时通过时扩展 seed13/31。
+- 阶段 5：不扩展分组双头三种子。后续若继续 LoRa 后端研究，应引入能在训练中约束旧类表征漂移的机制，而不是继续调节 IQ_7 late-fusion 权重。
 - 将 IGCD-minimal 纳入 strict baseline 表，但正式主前端继续优先使用 MV-ACC 或稳定 Deep-HDBSCAN。
 - 后续每完成关键 Slurm job、阶段报告或客户可汇报结论时，同步更新 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 的当前状态、关键结果、风险和下一步行动清单。
 - 后续 WiSig 短实验优先使用 MV-ACC 或稳定 Deep-HDBSCAN 前端；SimGCD-style 保留为学习式发现 baseline，不作为阶段 1 主前端。
@@ -205,7 +206,7 @@
 - ADS-B Long-RADCIL 三种子已完成，但 R3 仅发现 6–7/10 类；后续调参不得使用 held-out evaluation 真值。
 - ADS-B R3 欠聚类已定位到初始密度形成阶段；固定 ratio 0.02 和无标签自适应密度均未形成跨轮次稳定收益，正式配置保持 ratio 0.03，阶段 4 不再继续调密度参数。
 - ADS-B MV-ACC-CIL 的 Overall 高于当前 baseline，但 Forgetting `0.1159±0.0108` 高于共享发现 DOI-style `0.0551±0.0032`；论文表述必须同时报告整体识别优势和遗忘控制局限。
-- LoRa 的过聚类和新旧类权衡已有可执行解决方案，但尚无正式 seed7 实证；IQ_7 只有初始旧类，因此只能校准旧类融合强度，不能证明增量新类收益。
+- LoRa 目标簇数约束已消除 seed7 的过聚类，但分组双头未解决新旧类权衡；IQ_7 每阶段均选择 1.0 原型权重仍无法提高 R3 Old，继续调 late-fusion 权重价值有限。
 - Slurm 端仍保留若干历史 failed smoke 日志和大型 `.pth`/`.npz` 运行产物；本次只同步成功阶段 5 小型 JSON/stdout/stderr，未删除、未提交大型产物。
 - IGCD-minimal 已接入真实 WiSig frozen embeddings 并完成 Job `44422704`，但当前仍是 minimal strict adaptation，不是完整 IGCD 论文复现。
 - `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`。
@@ -225,6 +226,7 @@
 - 阶段 2 首个 WiSig 主组合固定为 MV-ACC 前端 + `ratio_2p0_replay_3p0` 后端；该配置通过 `utils/radcil_config.py` 管理，旧 strict 实验入口默认行为保持不变。
 - DOI-memory hybrid 采用可选后验融合：网络继续执行真实伪标签增量训练，原型仅由 replay 记忆构建并跨轮对齐；融合权重默认 0，避免改变历史主方法结果。
 - LoRa 分组双头将“当前轮新类”定义为分类器扩展前后新增的输出列，而不是按样本真值路由；目标簇数来自预先声明的 10+5×3 协议。两个机制均为显式开关，保持 WiSig/ADS-B 历史默认行为不变。
+- LoRa 分组双头的 seed7 结果作为负消融保留：目标簇数约束可独立消除过聚类，但不把该后端锁定为主方法，也不据此扩展更多随机种子。
 - ADS-B 正式主入口固定使用 `ADSBLongClosedSet` 与 `ratio_2p0_replay_3p0`；下一轮只研究发现前端，避免同时改动表征、发现和后端导致归因不清。
 - ADS-B 发现参数消融必须预注册为单因素变体；候选选择只使用 discovery 侧无标签结构指标，NMI/ARI/Hungarian 和增量准确率只用于事后审计。
 - ADS-B 自适应密度三种子验证未通过收益门槛；正式 ratio 固定为 0.03，停止继续调固定密度参数，避免在同一数据集上反复事后选参。
