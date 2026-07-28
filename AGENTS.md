@@ -112,6 +112,8 @@
 - Slurm Job `44578823` 已完成 LoRa 分组双头 seed7 严格验证：R3 全轮均达到 5 簇，New 提升至 `0.4286`、Forgetting 降至 `0.4357`，但 Overall `0.1495` 低于 DOI-style `0.1676`，Old `0.0798` 未超过 RADCIL `0.0798`；按预注册双门槛记录为负消融，不扩展 seed13/31。
 - Slurm Job `44586060` 已完成训练期旧类原型锚定 seed7 矩阵：IQ_7 R3 旧类保持率为 `0.1143/0.0929/0.0857`（权重 `0/0.25/1.0`），正式选择基线 0；锚定权重均降低 Overall 和 Old，记录为负消融，不扩种子或迁移 ADS-B。
 - 只读清单 `results/stage5/slurm_artifact_inventory_44586060.json` 已确认服务器有 553 个 `.pth/.npz`、约 5.21 GB、54 个超过 50 MB，另有 9 个非空错误日志；已精确忽略本矩阵二进制，不删除任何历史产物。
+- 已新增单文件客户汇报 `CUSTOMER_PROGRESS_REPORT.html`，内嵌项目阶段图、正式指标图、发现链路图和结果表格；该文件从实施计划派生，可直接离线打开或打印为 PDF，不替代唯一事实源。
+- 阶段 5 ManyTx/ManyRx 补充稳定性验证已通过只读汇总既有 seed7 三轮结果完成：ManyTx R3 Overall `0.2700`、New `0.5600`、Forgetting `0.4267`；ManyRx R3 Overall `0.5700`、New `0.9500`、Forgetting `0.5250`。报告为 `results/stage5/STAGE5_MANYTX_MANYRX_SUPPLEMENT_REPORT.md`，阶段 5 可关闭并转入阶段 6。
 
 ## Recent Changes
 
@@ -181,18 +183,21 @@
 - 2026-07-28：完成 Job `44578823` 并同步小型结果；IQ_7 每阶段均选择融合权重 1.0，但未形成同时改善 Overall、Old、New 与 Forgetting 的组合，正式归档为负消融。
 - 2026-07-28：新增训练期 Teacher replay 类中心锚定、IQ_7 retention 审计、三权重 seed7 报告器、Slurm 矩阵和服务器产物只读清单工具；本地语法、CLI 与真实反向传播合成测试通过。
 - 2026-07-28：完成 Job `44586060` 和只读服务器产物清单；IQ_7 按规则选择权重 0，`0.25/1.0` 均退化，训练期原型锚定归档为负消融。
+- 2026-07-28：新增 `CUSTOMER_PROGRESS_REPORT.html` 单文件客户汇报，整理 WiSig/ADS-B 正式三种子结果、LoRa seed7 边界、负消融、风险和下一步；同步修正实施计划中过期的中期待办。
+- 2026-07-28：新增 `tools/stage5_manytx_manyrx_supplement_report.py`，只读汇总 ManyTx/ManyRx 既有 seed7 三轮结果，生成 `results/stage5/STAGE5_MANYTX_MANYRX_SUPPLEMENT_REPORT.md` 与 `stage5_manytx_manyrx_supplement_summary.json`，并将实施计划阶段 5 最后一项标记完成。
 
 ## Next TODO
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
 - 阶段 4 ADS-B 已完成；正式全轮次继续使用 ratio 0.03，自适应密度作为负消融归档，不再继续调固定密度参数。
-- 阶段 5：不扩展分组双头或训练期原型锚定三种子。LoRa 后端已完成两轮严格负消融，后续优先整理跨体制局限，而非继续后验/原型类调参。
+- 阶段 5 已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，后续进入阶段 6 结果整理与交付。
+- 使用 `CUSTOMER_PROGRESS_REPORT.html` 进行阶段汇报；每次关键正式结果变化后，从实施计划同步更新该派生页面并复核图表数值。
 - 将 IGCD-minimal 纳入 strict baseline 表，但正式主前端继续优先使用 MV-ACC 或稳定 Deep-HDBSCAN。
 - 后续每完成关键 Slurm job、阶段报告或客户可汇报结论时，同步更新 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 的当前状态、关键结果、风险和下一步行动清单。
 - 后续 WiSig 短实验优先使用 MV-ACC 或稳定 Deep-HDBSCAN 前端；SimGCD-style 保留为学习式发现 baseline，不作为阶段 1 主前端。
 - 在 WiSig 单种子短实验前，基于 `tools/stage0_strict_loader_audit.py` 的输出确认后续实验入口统一使用可移植数据路径。
-- 明确 ManyRx 当前正式入口：恢复受维护的 runner，或同步修改 `experiments/README_MAIN_EXPERIMENTS.md`，避免引用不存在的脚本。
+- 在阶段 6 复现说明中标明 ManyRx 历史 runner 归档位置；如需要重新运行 ManyRx，再恢复受维护入口。
 - 为核心工具与严格协议增加轻量级单元测试/数据完整性测试；当前仓库未发现独立测试目录。
 - 增加根目录用户 README，统一说明环境、数据位置、主实验入口和结果目录。
 - 评估大量 PNG、PTH、NPZ 历史结果长期使用普通 Git 的仓库体积成本；如需要远端协作，再决定是否引入 Git LFS，不能直接丢弃小型结果。
@@ -214,7 +219,7 @@
 - LoRa 旧类漂移仍未解决：训练期类中心锚定在 IQ_7 即未改善，且 held-out Old/Overall 退化；继续沿该类原型约束调权重价值有限。
 - Slurm 端仍保留若干历史 failed smoke 日志和大型 `.pth`/`.npz` 运行产物；本次只同步成功阶段 5 小型 JSON/stdout/stderr，未删除、未提交大型产物。
 - IGCD-minimal 已接入真实 WiSig frozen embeddings 并完成 Job `44422704`，但当前仍是 minimal strict adaptation，不是完整 IGCD 论文复现。
-- `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`。
+- `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；阶段 5 已用既有结果完成补充汇总，对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`，阶段 6 复现说明仍需避免误导。
 - 部分 ADS-B 结果清单和报告保存了开发者机器绝对数据路径，虽未发现认证令牌，但跨机器复现需要显式覆盖数据根目录。
 - 实验脚本体量较大且 WiSig/ManyTx 多版本之间存在明显重复，当前不做无关重构；后续修改须谨慎同步公共逻辑。
 - 仓库包含大量历史图片、模型和回放记忆；单文件目前已盘点到的最大可提交结果约 82 MB，虽低于 100 MB，首次提交和后续克隆仍可能较慢。
@@ -226,6 +231,7 @@
 
 - RecallLoom 使用隐藏存储模式和 `zh-CN` 工作区语言，由 helper 管理并通过 `.git/info/exclude` 排除；禁止手工修改 `.recallloom/config.json`、`.recallloom/state.json` 及其他托管状态标记。
 - `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 是新一轮方法实施、项目进度跟踪和客户汇报的唯一主入口；偏离算法、协议、标签边界、baseline、验收标准或客户可汇报结论前必须先更新计划并说明原因。
+- `CUSTOMER_PROGRESS_REPORT.html` 是可离线交付的客户派生摘要，允许为展示裁剪内部执行细节，但所有数值、结论和状态必须追溯到 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`，不得形成并行事实源。
 - 原 MV-ACC、CF-LCG、HDBSCAN 和原型注册链路完整保留为 baseline，但不再约束新主方法结构；新主方法可重新设计深度表征、未知检测、类别发现、可靠伪标签和真实网络增量训练，经典特征仅用于旧方法对照与消融。
 - 正式实验必须包含固定旧前端配新后端、新前端配原型注册和完整新方法三组组合，分离类别发现与增量后端的贡献，并补充至少 1–2 个可公平复现的近年 SOTA 对照。
 - 阶段 2 首个 WiSig 主组合固定为 MV-ACC 前端 + `ratio_2p0_replay_3p0` 后端；该配置通过 `utils/radcil_config.py` 管理，旧 strict 实验入口默认行为保持不变。

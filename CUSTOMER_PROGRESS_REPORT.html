@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenSet Incremental SEI 项目进度汇报</title>
+  <style>
+    :root {
+      --ink: #17212b;
+      --muted: #5e6a73;
+      --line: #d9e0e4;
+      --paper: #ffffff;
+      --canvas: #eef2f3;
+      --teal: #087f7b;
+      --teal-soft: #dff2ef;
+      --gold: #b97908;
+      --gold-soft: #fff0cf;
+      --red: #b33a32;
+      --red-soft: #fbe5e2;
+      --blue: #315b8a;
+      --blue-soft: #e5eef8;
+      --green: #3f7d4b;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--canvas);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+      letter-spacing: 0;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 24px auto;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      box-shadow: 0 8px 24px rgba(23, 33, 43, 0.08);
+    }
+
+    .masthead {
+      padding: 44px 52px 36px;
+      color: #fff;
+      background: #16353b;
+      border-bottom: 6px solid #d0a137;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: #b8dbd7;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      margin-bottom: 14px;
+      font-size: 34px;
+      line-height: 1.25;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      max-width: 780px;
+      margin-bottom: 0;
+      color: #e7f1f0;
+      font-size: 17px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 24px;
+      margin-top: 24px;
+      color: #c8d8d7;
+      font-size: 13px;
+    }
+
+    section {
+      padding: 34px 52px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    section:last-child { border-bottom: 0; }
+
+    h2 {
+      margin-bottom: 18px;
+      font-size: 23px;
+      line-height: 1.35;
+    }
+
+    h3 {
+      margin-bottom: 10px;
+      font-size: 17px;
+      line-height: 1.4;
+    }
+
+    .section-lead {
+      max-width: 900px;
+      color: var(--muted);
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .kpi {
+      min-height: 128px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-top: 4px solid var(--teal);
+      background: #fbfcfc;
+    }
+
+    .kpi:nth-child(2) { border-top-color: var(--blue); }
+    .kpi:nth-child(3) { border-top-color: var(--gold); }
+    .kpi:nth-child(4) { border-top-color: var(--red); }
+
+    .kpi strong {
+      display: block;
+      margin: 4px 0 6px;
+      font-size: 28px;
+      line-height: 1.1;
+    }
+
+    .kpi span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .callout {
+      margin-top: 18px;
+      padding: 16px 18px;
+      border-left: 4px solid var(--teal);
+      background: var(--teal-soft);
+    }
+
+    .figure-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    figure {
+      margin: 0;
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    figure svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    figcaption {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 18px;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: #fff;
+      background: #28454c;
+      font-weight: 700;
+    }
+
+    tbody tr:nth-child(even) { background: #f7f9f9; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .good { color: var(--green); font-weight: 700; }
+    .warn { color: var(--gold); font-weight: 700; }
+    .risk { color: var(--red); font-weight: 700; }
+
+    .two-column {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+    }
+
+    .plain-panel {
+      padding: 18px;
+      border: 1px solid var(--line);
+      background: #fbfcfc;
+    }
+
+    .plain-panel ul, .plain-panel ol {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    .plain-panel li + li { margin-top: 8px; }
+
+    .risk-panel { border-left: 4px solid var(--red); }
+    .next-panel { border-left: 4px solid var(--blue); }
+
+    .source-note {
+      padding: 20px 52px 26px;
+      color: var(--muted);
+      background: #f6f8f8;
+      font-size: 12px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 5px;
+      border-radius: 50%;
+    }
+
+    @media (max-width: 820px) {
+      main { width: 100%; margin: 0; border: 0; }
+      .masthead, section, .source-note { padding-left: 22px; padding-right: 22px; }
+      h1 { font-size: 28px; }
+      .kpi-grid, .figure-grid, .two-column { grid-template-columns: 1fr; }
+      .table-scroll { overflow-x: auto; }
+      table { min-width: 720px; }
+    }
+
+    @media print {
+      @page { size: A4; margin: 12mm; }
+      body { background: #fff; font-size: 10.5pt; }
+      main { width: 100%; margin: 0; border: 0; box-shadow: none; }
+      .masthead { padding: 22px 28px; print-color-adjust: exact; }
+      section { padding: 20px 28px; }
+      .source-note { padding: 14px 28px; }
+      .kpi, figure, .plain-panel, table { break-inside: avoid; }
+      h2 { break-after: avoid; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header class="masthead">
+    <p class="eyebrow">阶段性客户汇报 · 严格开放集类别增量 SEI</p>
+    <h1>OpenSet Incremental SEI 项目进度汇报</h1>
+    <p class="subtitle">项目已完成 WiSig 与 ADS-B 主实验阶段，并打通 LoRa 跨信号体制的完整三轮验证链路。当前工作重点已从“流程能否运行”转向“稳定控制旧类遗忘与跨天表征漂移”。</p>
+    <div class="meta">
+      <span>报告日期：2026-07-28</span>
+      <span>结果口径：严格训练 / 验证 / 最终评估隔离</span>
+      <span>正式主结果：WiSig、ADS-B 三随机种子</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>一、管理摘要</h2>
+    <div class="kpi-grid">
+      <div class="kpi"><span>主实验阶段</span><strong>2 / 2</strong><span>WiSig 与 ADS-B 正式三种子实验均已完成</span></div>
+      <div class="kpi"><span>WiSig R3 Overall</span><strong>0.6088</strong><span>标准差 0.0415；New Acc 0.7804</span></div>
+      <div class="kpi"><span>ADS-B R3 Overall</span><strong>0.4831</strong><span>标准差 0.0089；优于当前端到端 baseline</span></div>
+      <div class="kpi"><span>LoRa 验证状态</span><strong>Seed 7</strong><span>完整链路已打通，但跨天旧类漂移仍未解决</span></div>
+    </div>
+    <div class="callout"><strong>当前结论：</strong>数据、协议、训练环境、发现前端和增量学习链路均已形成可复现闭环。WiSig 的类别发现质量较强；ADS-B 的整体识别效果领先当前 baseline；LoRa 证明了跨体制可执行性，同时暴露出新旧类权衡和跨天漂移这一核心研究风险。</div>
+  </section>
+
+  <section>
+    <h2>二、阶段完成情况</h2>
+    <p class="section-lead">下图按项目交付链路展示当前状态。阶段 0–5 已收束，LoRa 完成单种子跨体制验证，ManyTx/ManyRx 完成补充稳定性汇总，阶段 6 正在整理客户材料、论文结果与最终复现入口。</p>
+    <figure>
+      <svg viewBox="0 0 1040 230" role="img" aria-label="项目阶段完成情况图">
+        <rect x="0" y="0" width="1040" height="230" fill="#f8faf9"/>
+        <line x1="80" y1="105" x2="960" y2="105" stroke="#a9b7bb" stroke-width="8"/>
+        <g font-family="Microsoft YaHei, Arial" text-anchor="middle">
+          <g><circle cx="80" cy="105" r="27" fill="#087f7b"/><text x="80" y="111" fill="#fff" font-size="18">0</text><text x="80" y="158" fill="#17212b" font-size="14">环境与协议</text><text x="80" y="181" fill="#3f7d4b" font-size="12">完成</text></g>
+          <g><circle cx="227" cy="105" r="27" fill="#087f7b"/><text x="227" y="111" fill="#fff" font-size="18">1</text><text x="227" y="158" fill="#17212b" font-size="14">方案筛选</text><text x="227" y="181" fill="#3f7d4b" font-size="12">完成</text></g>
+          <g><circle cx="374" cy="105" r="27" fill="#087f7b"/><text x="374" y="111" fill="#fff" font-size="18">2</text><text x="374" y="158" fill="#17212b" font-size="14">WiSig 初版</text><text x="374" y="181" fill="#3f7d4b" font-size="12">完成</text></g>
+          <g><circle cx="521" cy="105" r="27" fill="#087f7b"/><text x="521" y="111" fill="#fff" font-size="18">3</text><text x="521" y="158" fill="#17212b" font-size="14">WiSig 正式实验</text><text x="521" y="181" fill="#3f7d4b" font-size="12">完成</text></g>
+          <g><circle cx="668" cy="105" r="27" fill="#087f7b"/><text x="668" y="111" fill="#fff" font-size="18">4</text><text x="668" y="158" fill="#17212b" font-size="14">ADS-B 主实验</text><text x="668" y="181" fill="#3f7d4b" font-size="12">完成</text></g>
+          <g><circle cx="815" cy="105" r="27" fill="#b97908"/><text x="815" y="111" fill="#fff" font-size="18">5</text><text x="815" y="158" fill="#17212b" font-size="14">LoRa 跨体制</text><text x="815" y="181" fill="#b97908" font-size="12">Seed 7 完成</text></g>
+          <g><circle cx="960" cy="105" r="27" fill="#315b8a"/><text x="960" y="111" fill="#fff" font-size="18">6</text><text x="960" y="158" fill="#17212b" font-size="14">结果与交付</text><text x="960" y="181" fill="#315b8a" font-size="12">进行中</text></g>
+        </g>
+      </svg>
+      <figcaption>图 1：项目阶段状态。LoRa 当前为单种子严格验证，不与 WiSig、ADS-B 的正式三种子结果等量表述。</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>三、关键结果</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>数据集 / 配置</th><th>证据级别</th><th class="num">R3 Overall</th><th class="num">R3 Old</th><th class="num">R3 New</th><th class="num">Forgetting</th><th>阶段判断</th></tr></thead>
+        <tbody>
+          <tr><td>WiSig：MV-ACC + RADCIL</td><td>3 seeds</td><td class="num good">0.6088±0.0415</td><td class="num">0.5516</td><td class="num good">0.7804</td><td class="num">0.2285</td><td>端到端主链路稳定，发现前端贡献明确</td></tr>
+          <tr><td>WiSig：共享发现 DOI-style</td><td>3 seeds</td><td class="num good">0.6579±0.0350</td><td class="num">0.5721</td><td class="num">0.9152</td><td class="num">0.1959</td><td>证明当前网络后端仍不是性能上限</td></tr>
+          <tr><td>ADS-B：MV-ACC-CIL</td><td>3 seeds</td><td class="num good">0.4831±0.0089</td><td class="num">0.4882</td><td class="num">0.4420</td><td class="num risk">0.1159</td><td>Overall / New 领先，遗忘控制仍弱于 DOI-style</td></tr>
+          <tr><td>ADS-B：共享发现 DOI-style</td><td>3 seeds</td><td class="num">0.4621±0.0273</td><td class="num">0.4899</td><td class="num">0.2353</td><td class="num good">0.0551</td><td>遗忘更低，但整体识别性能较弱</td></tr>
+          <tr><td>LoRa：Grouped hybrid</td><td>Seed 7</td><td class="num warn">0.1495</td><td class="num">0.0798</td><td class="num">0.4286</td><td class="num risk">0.4357</td><td>过聚类已解决，但新旧类权衡门槛未通过</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="figure-grid">
+      <figure>
+        <svg viewBox="0 0 520 330" role="img" aria-label="WiSig R3 Overall 对比柱状图">
+          <rect width="520" height="330" fill="#fff"/>
+          <text x="20" y="26" font-size="16" font-weight="700" fill="#17212b">WiSig R3 Overall 对比</text>
+          <g stroke="#d9e0e4" stroke-width="1">
+            <line x1="70" y1="270" x2="500" y2="270"/><line x1="70" y1="210" x2="500" y2="210"/><line x1="70" y1="150" x2="500" y2="150"/><line x1="70" y1="90" x2="500" y2="90"/>
+          </g>
+          <g fill="#5e6a73" font-size="11" text-anchor="end"><text x="62" y="274">0.0</text><text x="62" y="214">0.2</text><text x="62" y="154">0.4</text><text x="62" y="94">0.6</text></g>
+          <rect x="105" y="87.4" width="85" height="182.6" fill="#087f7b"/><rect x="230" y="72.6" width="85" height="197.4" fill="#315b8a"/><rect x="355" y="110.6" width="85" height="159.4" fill="#b97908"/>
+          <g fill="#17212b" font-size="12" text-anchor="middle"><text x="147" y="81">0.6088</text><text x="272" y="66">0.6579</text><text x="397" y="104">0.5314</text></g>
+          <g fill="#5e6a73" font-size="11" text-anchor="middle"><text x="147" y="292">主方法</text><text x="272" y="292">共享发现 DOI</text><text x="397" y="292">Deep-HDBSCAN</text><text x="397" y="307">+ DOI</text></g>
+        </svg>
+        <figcaption>图 2：WiSig 结果说明 MV-ACC 前端有效，但共享伪标签条件下 DOI-style 后端更强，后端仍有提升空间。</figcaption>
+      </figure>
+
+      <figure>
+        <svg viewBox="0 0 520 330" role="img" aria-label="ADS-B 整体性能与遗忘对比图">
+          <rect width="520" height="330" fill="#fff"/>
+          <text x="20" y="26" font-size="16" font-weight="700" fill="#17212b">ADS-B：整体性能与遗忘控制</text>
+          <g stroke="#d9e0e4" stroke-width="1"><line x1="70" y1="270" x2="500" y2="270"/><line x1="70" y1="210" x2="500" y2="210"/><line x1="70" y1="150" x2="500" y2="150"/><line x1="70" y1="90" x2="500" y2="90"/></g>
+          <g fill="#5e6a73" font-size="11" text-anchor="end"><text x="62" y="274">0.0</text><text x="62" y="214">0.2</text><text x="62" y="154">0.4</text><text x="62" y="94">0.6</text></g>
+          <rect x="115" y="125.1" width="65" height="144.9" fill="#087f7b"/><rect x="190" y="131.4" width="65" height="138.6" fill="#a9b7bb"/>
+          <rect x="325" y="235.2" width="65" height="34.8" fill="#b33a32"/><rect x="400" y="253.5" width="65" height="16.5" fill="#3f7d4b"/>
+          <g fill="#17212b" font-size="12" text-anchor="middle"><text x="147" y="119">0.4831</text><text x="222" y="125">0.4621</text><text x="357" y="229">0.1159</text><text x="432" y="247">0.0551</text></g>
+          <g fill="#5e6a73" font-size="11" text-anchor="middle"><text x="185" y="292">R3 Overall</text><text x="395" y="292">Forgetting（越低越好）</text></g>
+          <g font-size="10"><rect x="105" y="307" width="10" height="10" fill="#087f7b"/><text x="120" y="316" fill="#5e6a73">MV-ACC-CIL</text><rect x="215" y="307" width="10" height="10" fill="#a9b7bb"/><text x="230" y="316" fill="#5e6a73">DOI-style</text></g>
+        </svg>
+        <figcaption>图 3：ADS-B 主方法的整体识别性能更高，但遗忘率仍明显高于 DOI-style，优势与局限需同时报告。</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>四、类别发现质量</h2>
+    <p class="section-lead">WiSig 的 R3 类别发现结果表明，MV-ACC 在聚类数量、NMI、ARI 和 Hungarian Accuracy 上均优于当前学习式适配 baseline，是当前主前端的可靠基础。</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>发现方法</th><th class="num">R3 簇数</th><th class="num">NMI</th><th class="num">ARI</th><th class="num">Purity</th><th class="num">Hungarian Acc</th><th>定位</th></tr></thead>
+        <tbody>
+          <tr><td>MV-ACC</td><td class="num good">10</td><td class="num good">0.9253</td><td class="num good">0.8745</td><td class="num good">0.9319</td><td class="num good">0.9319</td><td>当前正式主前端</td></tr>
+          <tr><td>Deep-HDBSCAN</td><td class="num">11</td><td class="num">0.8974</td><td class="num">0.8251</td><td class="num">0.9007</td><td class="num">0.8348</td><td>稳定端到端 baseline</td></tr>
+          <tr><td>SimGCD-style</td><td class="num">10</td><td class="num">0.8938</td><td class="num">0.8034</td><td class="num">0.8705</td><td class="num">0.8338</td><td>学习式发现 baseline</td></tr>
+          <tr><td>IGCD-minimal</td><td class="num">10</td><td class="num">0.8938</td><td class="num">0.8034</td><td class="num">0.8705</td><td class="num">0.8338</td><td>最小严格适配，非完整论文复现</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figure style="margin-top:18px">
+      <svg viewBox="0 0 1040 260" role="img" aria-label="开放集增量识别处理链路图">
+        <rect width="1040" height="260" fill="#f8faf9"/>
+        <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#728287"/></marker></defs>
+        <g font-family="Microsoft YaHei, Arial" text-anchor="middle">
+          <g><rect x="35" y="70" width="160" height="90" fill="#e5eef8" stroke="#315b8a"/><text x="115" y="105" font-size="16" font-weight="700">严格数据协议</text><text x="115" y="132" font-size="12" fill="#5e6a73">训练 / 验证 / 评估隔离</text></g>
+          <line x1="195" y1="115" x2="242" y2="115" stroke="#728287" stroke-width="2" marker-end="url(#arrow)"/>
+          <g><rect x="250" y="70" width="160" height="90" fill="#dff2ef" stroke="#087f7b"/><text x="330" y="105" font-size="16" font-weight="700">深度表征</text><text x="330" y="132" font-size="12" fill="#5e6a73">跨域 IQ 特征</text></g>
+          <line x1="410" y1="115" x2="457" y2="115" stroke="#728287" stroke-width="2" marker-end="url(#arrow)"/>
+          <g><rect x="465" y="70" width="160" height="90" fill="#fff0cf" stroke="#b97908"/><text x="545" y="105" font-size="16" font-weight="700">未知类别发现</text><text x="545" y="132" font-size="12" fill="#5e6a73">MV-ACC / baseline</text></g>
+          <line x1="625" y1="115" x2="672" y2="115" stroke="#728287" stroke-width="2" marker-end="url(#arrow)"/>
+          <g><rect x="680" y="70" width="160" height="90" fill="#fbe5e2" stroke="#b33a32"/><text x="760" y="105" font-size="16" font-weight="700">伪标签增量训练</text><text x="760" y="132" font-size="12" fill="#5e6a73">回放与旧类保持</text></g>
+          <line x1="840" y1="115" x2="887" y2="115" stroke="#728287" stroke-width="2" marker-end="url(#arrow)"/>
+          <g><rect x="895" y="70" width="110" height="90" fill="#e6f0e7" stroke="#3f7d4b"/><text x="950" y="105" font-size="16" font-weight="700">独立评估</text><text x="950" y="132" font-size="12" fill="#5e6a73">Old / New</text></g>
+        </g>
+      </svg>
+      <figcaption>图 4：当前严格实验链路。未知轮次真值仅用于事后指标，不参与聚类选择、权重校准或网络训练。</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>五、已验证但未采用的方向</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>候选方向</th><th>验证结果</th><th>项目决策</th></tr></thead>
+        <tbody>
+          <tr><td>WiSig DOI-memory 后验融合</td><td>Seed 7 有局部收益，但三种子 R3 Overall 未稳定超过主方法</td><td>作为负消融归档，不作为新方法贡献</td></tr>
+          <tr><td>ADS-B 固定低密度比例与无标签自适应密度</td><td>局部结构指标改善，但跨轮次 New Acc 与簇均衡性不稳定</td><td>正式配置保持 ratio 0.03，停止继续调固定密度参数</td></tr>
+          <tr><td>LoRa 分组双头融合</td><td>过聚类消除，New Acc 改善，但 Overall / Old 门槛未通过</td><td>不扩 seed 13/31</td></tr>
+          <tr><td>LoRa 训练期原型锚定</td><td>验证侧旧类保持率随锚定权重增加而下降，最终选择权重 0</td><td>停止原型锚定与同类 late-fusion 调参</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>六、风险与下一步</h2>
+    <div class="two-column">
+      <div class="plain-panel risk-panel">
+        <h3>当前主要风险</h3>
+        <ul>
+          <li><strong>WiSig 后端上限：</strong>共享发现条件下 DOI-style 高于当前网络后端。</li>
+          <li><strong>ADS-B 欠聚类：</strong>R3 仅发现 6–7 个簇，而协议新增类别为 10 类。</li>
+          <li><strong>ADS-B 遗忘：</strong>Overall 领先，但 Forgetting 高于 DOI-style。</li>
+          <li><strong>LoRa 跨天漂移：</strong>完整链路可执行，但旧类保持仍弱；当前仅有 seed 7。</li>
+          <li><strong>补充实验复现：</strong>ManyTx/ManyRx 已完成补充稳定性汇总；ManyRx 历史 runner 仍需在复现说明中标明归档位置。</li>
+        </ul>
+      </div>
+      <div class="plain-panel next-panel">
+        <h3>下一阶段建议</h3>
+        <ol>
+          <li>完成阶段 6：统一正式结果表、客户汇报材料、论文图和复现说明。</li>
+          <li>将 LoRa 两轮严格负消融整理为跨体制局限，不继续原型或后验融合调参。</li>
+          <li>若继续算法研究，选择不同于原型锚定 / late-fusion 的机制，并先执行 seed 7 无泄漏门控。</li>
+          <li>在复现说明中标明 ManyRx 历史 runner 归档位置，补齐轻量级协议测试和根目录用户说明。</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <div class="source-note">
+    <strong>口径说明：</strong>本 HTML 是面向客户的派生汇报，不是独立事实源。项目事实、协议边界、完整结果与变更记录仍以 <code>OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md</code> 为准。所有图表均由已归档实验指标直接绘制；未使用最终评估真值进行模型选择或参数校准。
+  </div>
+</main>
+</body>
+</html>
