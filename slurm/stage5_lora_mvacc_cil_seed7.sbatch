@@ -7,10 +7,10 @@
 # 可在提交时覆盖分区：sbatch --partition=gpuHz slurm/stage5_lora_mvacc_cil_seed7.sbatch
 
 #SBATCH --job-name=osei-stage5-lora-cil-s7
-#SBATCH --partition=gpu
+#SBATCH --partition=gpuHz
 #SBATCH --account=gpo-ifv7xx
-#SBATCH --qos=normal
-#SBATCH --time=04:00:00
+#SBATCH --qos=shortjobs
+#SBATCH --time=01:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
