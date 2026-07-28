@@ -1,0 +1,73 @@
+{
+  "schema_version": "stage5_lora_closedset_smoke_v1",
+  "created_at_utc": "2026-07-28T01:00:21.443767+00:00",
+  "ok": true,
+  "dataset": "LoRa RFFP Different Days Indoor compact aligned subset",
+  "npz_path": "datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz",
+  "seed": 7,
+  "device": "cpu",
+  "epochs": 1,
+  "batch_size": 128,
+  "protocol_boundary": "Day1 IQ_1-6 train, IQ_7 validation, IQ_8-10 held-out eval; Day2-4 IQ_1-7 discovery and IQ_8-10 held-out eval.",
+  "selection_boundary": "训练 smoke 不根据 validation/eval 或 posthoc 聚类真值调参；发现参数来自命令行固定值。",
+  "train_history": [
+    {
+      "epoch": 1.0,
+      "train_loss": 2.321250783829462,
+      "train_acc": 0.09047619047619047
+    }
+  ],
+  "day1_validation": {
+    "samples": 140,
+    "accuracy": 0.1
+  },
+  "day1_initial_eval": {
+    "samples": 420,
+    "accuracy": 0.1
+  },
+  "discovery_audit": [
+    {
+      "samples": 490,
+      "true_classes": 5,
+      "min_cluster_size": 15,
+      "min_samples": 5,
+      "clusters": 2,
+      "noise": 306,
+      "label_free_silhouette": 0.11644789576530457,
+      "posthoc_nmi": 0.00948092363906853,
+      "posthoc_ari": 0.0034890835788256545,
+      "posthoc_hungarian": 0.10204081632653061,
+      "round": 1,
+      "split": "day2_unknown_round1"
+    },
+    {
+      "samples": 490,
+      "true_classes": 5,
+      "min_cluster_size": 15,
+      "min_samples": 5,
+      "clusters": 6,
+      "noise": 334,
+      "label_free_silhouette": 0.2041819989681244,
+      "posthoc_nmi": 0.06588976855823224,
+      "posthoc_ari": 0.02220336257664738,
+      "posthoc_hungarian": 0.09183673469387756,
+      "round": 2,
+      "split": "day3_unknown_round2"
+    },
+    {
+      "samples": 490,
+      "true_classes": 5,
+      "min_cluster_size": 15,
+      "min_samples": 5,
+      "clusters": 4,
+      "noise": 337,
+      "label_free_silhouette": 0.06530104577541351,
+      "posthoc_nmi": 0.079705725394065,
+      "posthoc_ari": 0.03961947195322399,
+      "posthoc_hungarian": 0.09387755102040816,
+      "round": 3,
+      "split": "day4_unknown_round3"
+    }
+  ],
+  "next_step_if_ok": "在 Slurm 上运行同一 smoke；若资源与依赖通过，再扩展为 MV-ACC-CIL 单种子入口。"
+}
