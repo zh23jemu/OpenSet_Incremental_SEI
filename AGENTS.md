@@ -104,6 +104,8 @@
 - Slurm Job `44474381` 已完成 ratio 0.03/0.02 配对三种子确认；0.02 的 silhouette 提升 `+0.0604`、置信度基本不变，但簇大小 CV 变差 `+0.0345`，R3 Overall 仅提升 `+0.0070`，不锁定为全轮次默认值。
 - Slurm Job `44517848` 已完成严格无标签轮次自适应密度三种子验证；候选 ratio 0.02 仅在 1/9 个轮次通过门控，R3 Overall 仅 `+0.0007`、New Acc `-0.0290`、Forgetting `+0.0003`，正式记录为负消融并保持 ratio 0.03。
 - Slurm Job `44517860` 已完成 ADS-B strict baseline 与前端消融三种子实验；MV-ACC-CIL R3 Overall `0.4831±0.0089`，高于共享发现 DOI-style `0.4621±0.0273` 和 Deep-HDBSCAN + DOI-style `0.4759±0.0168`，但其遗忘率高于 DOI-style，需作为局限如实报告。
+- 阶段 5 LoRa 跨体制验证已固化 10 known + 5×3 strict 协议入口：`datasets/lora25_strict_loader.py` 将 Day1 IQ_1-6/IQ_7/IQ_8-10 固定为 60/10/30，Day2–4 使用 IQ_1-7 discovery 与 IQ_8-10 held-out evaluation。
+- Slurm Job `44559268` 已完成 LoRa strict 协议审计，`results/stage5/stage5_lora_protocol_audit_44559268.json` 显示 `ok=true`；修复 `--device auto` CPU 回落后，Job `44572328` 已完成 LoRa closedset smoke。
 
 ## Recent Changes
 
@@ -165,13 +167,15 @@
 - 2026-07-23：新增项目级 `.gitignore`，仅精确排除本地环境/缓存/密钥类文件及约 590 MB 的根目录 WiSig 原始 PKL。
 - 2026-07-23：新增本文件，记录项目目标、技术栈、架构、开发规范、进度、风险与决策。
 - 2026-07-23：完成 Git 初始化并创建基线提交 `ca50523`，纳入 1162 个现有项目文件。
+- 2026-07-28：新增 LoRa25 strict loader、协议审计、closedset smoke 和两个 Slurm 短任务入口；本地协议审计与 1 epoch CPU smoke 均通过。
+- 2026-07-28：Slurm Job `44559268` 完成 LoRa strict 协议审计；首次 Job `44559269` 暴露 `--device auto` CPU 回落缺陷，修复后 Job `44572328` 成功完成 closedset smoke。
 
 ## Next TODO
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
 - 阶段 4 ADS-B 已完成；正式全轮次继续使用 ratio 0.03，自适应密度作为负消融归档，不再继续调固定密度参数。
-- 进入阶段 5：先复核紧凑 LoRa25 数据、现有对齐清单与跨天边界，固化不使用评估真值选参的 10+5×3 strict 协议，再准备单种子 Slurm smoke test。
+- 阶段 5 下一步：基于已通过的 LoRa strict loader 和 Slurm smoke，接入正式 MV-ACC-CIL 单种子入口；先生成 seed7 报告，再决定是否扩展三种子。
 - 将 IGCD-minimal 纳入 strict baseline 表，但正式主前端继续优先使用 MV-ACC 或稳定 Deep-HDBSCAN。
 - 后续每完成关键 Slurm job、阶段报告或客户可汇报结论时，同步更新 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 的当前状态、关键结果、风险和下一步行动清单。
 - 后续 WiSig 短实验优先使用 MV-ACC 或稳定 Deep-HDBSCAN 前端；SimGCD-style 保留为学习式发现 baseline，不作为阶段 1 主前端。
@@ -194,7 +198,8 @@
 - ADS-B Long-RADCIL 三种子已完成，但 R3 仅发现 6–7/10 类；后续调参不得使用 held-out evaluation 真值。
 - ADS-B R3 欠聚类已定位到初始密度形成阶段；固定 ratio 0.02 和无标签自适应密度均未形成跨轮次稳定收益，正式配置保持 ratio 0.03，阶段 4 不再继续调密度参数。
 - ADS-B MV-ACC-CIL 的 Overall 高于当前 baseline，但 Forgetting `0.1159±0.0108` 高于共享发现 DOI-style `0.0551±0.0032`；论文表述必须同时报告整体识别优势和遗忘控制局限。
-- LoRa 当前只有紧凑对齐 NPZ 和构建工具，尚无与 WiSig/ADS-B 同协议的 strict 实验入口；阶段 5 首要风险是跨天数据边界与 10+5×3 类别顺序需先固化。
+- LoRa strict 协议入口和 smoke 已完成；当前风险转为 closedset smoke 仅 1 epoch/CPU 可执行性验证，性能很弱，不能作为正式跨体制结果，仍需接入 MV-ACC-CIL 单种子训练验证。
+- Slurm 端仍保留若干历史 failed smoke 日志和大型 `.pth`/`.npz` 运行产物；本次只同步成功阶段 5 小型 JSON/stdout/stderr，未删除、未提交大型产物。
 - IGCD-minimal 已接入真实 WiSig frozen embeddings 并完成 Job `44422704`，但当前仍是 minimal strict adaptation，不是完整 IGCD 论文复现。
 - `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`。
 - 部分 ADS-B 结果清单和报告保存了开发者机器绝对数据路径，虽未发现认证令牌，但跨机器复现需要显式覆盖数据根目录。

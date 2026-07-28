@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-28
-- 当前阶段：实施计划 1.1，阶段 4 固定密度消融已完成；严格无标签自适应密度与 ADS-B baseline 执行链路已实现并本地提交，待推送和 Slurm 验证
+- 当前阶段：实施计划 1.1，阶段 4 ADS-B 已收束；阶段 5 LoRa strict 协议入口和单种子 smoke 已通过 Slurm 验证，下一步接 LoRa MV-ACC-CIL seed7 正式入口
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -125,6 +125,7 @@ Strict loader 审计：
 - 已新增 `tools/stage3_wisig_strict_baseline_table.py` 并生成 `results/stage3/STAGE3_WISIG_STRICT_BASELINE_TABLE.md`，将 SimGCD-style 标注为 learning-style adaptation、IGCD-minimal 标注为 minimal strict adaptation，二者均不作为完整论文复现；MV-ACC 仍是正式主前端。
 - 已新增 `tools/stage3_wisig_strong_backend_plan.py` 并生成 `results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md`，把共享发现后端风险收束为 `RADCIL + DOI-style`、`RADCIL + iCaRL`、`RADCIL + TPCIL-style` 三个待实现混合候选；下一步先做 seed 7 短验证。
 - ADS-B strict 主入口已使用 `ADSBLongClosedSet`，并支持 RADCIL old:new batch ratio；阶段 4 单种子和正式三种子计划、报告、Slurm 入口均已同步。
+- LoRa 阶段 5 已新增 strict loader、协议审计和 closedset smoke 入口；Job `44559268` 协议审计 `ok=true`，Job `44572328` closedset smoke 完成，证明紧凑 LoRa NPZ 可进入现有 PyTorch 训练/发现链路。
 - 已在 WiSig strict 入口实现可选 DOI-memory hybrid：使用伪标签 replay 记忆构建原型、跨轮对齐历史原型，并与网络 logits 做 late fusion；默认融合权重为 0，不改变历史 RADCIL 行为。
 - 已新增 `tools/stage3_wisig_hybrid_doi_plan.py`、`tools/stage3_wisig_hybrid_doi_report.py` 和 `slurm/stage3_wisig_hybrid_doi_seed7.sbatch`；本地语法、参数入口、计划生成和合成张量 smoke test 已通过，待 Slurm seed7 验证。
 - SimGCD-style 已验证为可运行学习式发现 baseline，但真实 WiSig 前端质量低于 MV-ACC；阶段 1 短期主线应保留 MV-ACC 或稳定 Deep-HDBSCAN 前端，避免把弱前端误锁为新主方法。
@@ -135,8 +136,8 @@ Strict loader 审计：
 ## 7. 下一步执行顺序
 
 1. ADS-B 阶段 4 已收束；固定 ratio 0.03 为正式配置，自适应密度作为负消融保留，不再继续调固定密度参数。
-2. 进入阶段 5，先复核 LoRa25 紧凑 NPZ、对齐清单和 Different Days Indoor Scenario 跨天边界，固化 10+5×3 strict 协议。
-3. 协议审计通过后准备 LoRa 单种子 Slurm smoke test，再按门槛决定是否扩展三种子。
+2. 阶段 5 LoRa strict 协议和 Slurm smoke 已通过；当前不要把 1 epoch CPU smoke 的弱性能写成方法结论。
+3. 下一步接入 LoRa MV-ACC-CIL seed7 正式入口，生成完整增量报告后再决定是否扩展三种子。
 4. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 5. 若后续补充实验需要 LoRa 完整数据或 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压或下载；LoRa 可优先只取 Different Days Indoor Scenario 的必要子集，不删除 Release 分片或原压缩包。
 
@@ -147,6 +148,9 @@ Strict loader 审计：
 - `36c2606 results:汇总ADS-B自适应密度与基线结果`
 - `90bac09 fix: 补齐ADS-B strict baseline执行链路`
 - `bc5f979 feat: 增加ADS-B无标签自适应密度门控`
+- `8421818 feat: 新增LoRa阶段五strict smoke入口`
+- `c9c0b09 fix: 修复LoRa smoke自动设备回落`
+- `cedf4ac results: 同步LoRa阶段五Slurm smoke结果`
 - `950a050 test: 保存阶段零strict加载器审计产物`
 - `ab4ce96 test: 增加阶段零strict加载器审计`
 - `33cc713 build: 增加Slurm阶段零自检任务`
