@@ -1,0 +1,54 @@
+{
+  "job_id": "44586060",
+  "matrix_root": "results/stage5/lora_prototype_anchor_seed7_44586060",
+  "selection_source": "IQ_7 R3 old-class validation accuracy only",
+  "rows": [
+    {
+      "weight": 0.0,
+      "variant": "anchor_0p0",
+      "iq7_r3_old_acc": 0.1142857142857142,
+      "cluster_count": 5,
+      "overall": 0.1495238095238095,
+      "old": 0.0773809523809523,
+      "new": 0.4380952380952381,
+      "forgetting": 0.4928571428571429,
+      "macro_f1": 0.0846516885859989
+    },
+    {
+      "weight": 0.25,
+      "variant": "anchor_0p25",
+      "iq7_r3_old_acc": 0.0928571428571428,
+      "cluster_count": 5,
+      "overall": 0.1104761904761904,
+      "old": 0.0392857142857142,
+      "new": 0.3952380952380952,
+      "forgetting": 0.5023809523809524,
+      "macro_f1": 0.0504343588432026
+    },
+    {
+      "weight": 1.0,
+      "variant": "anchor_1p0",
+      "iq7_r3_old_acc": 0.0857142857142857,
+      "cluster_count": 5,
+      "overall": 0.1142857142857142,
+      "old": 0.0428571428571428,
+      "new": 0.4,
+      "forgetting": 0.5023809523809524,
+      "macro_f1": 0.0575598551274642
+    }
+  ],
+  "selected": {
+    "weight": 0.0,
+    "variant": "anchor_0p0",
+    "iq7_r3_old_acc": 0.1142857142857142,
+    "cluster_count": 5,
+    "overall": 0.1495238095238095,
+    "old": 0.0773809523809523,
+    "new": 0.4380952380952381,
+    "forgetting": 0.4928571428571429,
+    "macro_f1": 0.0846516885859989
+  },
+  "iq7_improved": false,
+  "heldout_tradeoff_improved": false,
+  "expand_multiseed": false
+}

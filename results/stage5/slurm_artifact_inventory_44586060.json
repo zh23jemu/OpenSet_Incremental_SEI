@@ -1,0 +1,4515 @@
+{
+  "results_root": "results",
+  "policy": {
+    "destructive_action": "none",
+    "normal_git": "small reports only; model/replay binaries remain on Slurm",
+    "large_threshold_mb": 50.0
+  },
+  "binary_summary": {
+    "count": 553,
+    "bytes": 5206015140,
+    "large_count": 54
+  },
+  "nonempty_error_log_count": 9,
+  "suffix_counts": {
+    ".csv": 727,
+    ".err": 36,
+    ".json": 261,
+    ".log": 16,
+    ".md": 33,
+    ".npz": 249,
+    ".out": 36,
+    ".png": 691,
+    ".ps1": 1,
+    ".pth": 304,
+    ".py": 1,
+    ".zip": 1
+  },
+  "suffix_bytes": {
+    ".csv": 28665939,
+    ".err": 3856,
+    ".json": 978220,
+    ".log": 127076,
+    ".md": 58217,
+    ".npz": 4491625280,
+    ".out": 750766,
+    ".png": 169079117,
+    ".ps1": 1684,
+    ".pth": 714389860,
+    ".py": 149039,
+    ".zip": 36102
+  },
+  "binary_files": [
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_split_relaxed_44474297/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 96950036,
+      "size_mb": 92.459,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_density_ratio_0p02_44474297/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 91944950,
+      "size_mb": 87.686,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed13_density_ratio_0p02_44474381/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 89820624,
+      "size_mb": 85.66,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed13_baseline_locked_44474381/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 86258340,
+      "size_mb": 82.262,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed7_density_ratio_0p02_44474381/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 86239007,
+      "size_mb": 82.244,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed13_44517860/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 85543704,
+      "size_mb": 81.581,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed13_44517848/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 85542558,
+      "size_mb": 81.58,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_split_relaxed_44474297/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 85535185,
+      "size_mb": 81.573,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_merge_threshold_0p86_44474297/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 85531043,
+      "size_mb": 81.569,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed7_44517848/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 85529338,
+      "size_mb": 81.567,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed13_44470736/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 84834245,
+      "size_mb": 80.904,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_density_ratio_0p02_44474297/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 84813288,
+      "size_mb": 80.884,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed7_44470736/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 84103536,
+      "size_mb": 80.207,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed7_baseline_locked_44474381/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 84103024,
+      "size_mb": 80.207,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed7_44517860/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 84101071,
+      "size_mb": 80.205,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_baseline_locked_44474297/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 83391548,
+      "size_mb": 79.528,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed31_44517848/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 83391073,
+      "size_mb": 79.528,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed31_44517860/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 83390962,
+      "size_mb": 79.528,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed13_density_ratio_0p02_44474381/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 82692009,
+      "size_mb": 78.861,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed31_44467424/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 82678050,
+      "size_mb": 78.848,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/adsb_90known_mvacc_cil_strict_seed31/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 81882958,
+      "size_mb": 78.09,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed13_44517860/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 81266176,
+      "size_mb": 77.501,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed13_44517848/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 81265013,
+      "size_mb": 77.5,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed13_44470736/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 80554079,
+      "size_mb": 76.822,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed13_baseline_locked_44474381/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 80549929,
+      "size_mb": 76.818,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed7_density_ratio_0p02_44474381/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 80538083,
+      "size_mb": 76.807,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed7_44517848/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 80537916,
+      "size_mb": 76.807,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed7_baseline_locked_44474381/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 79112933,
+      "size_mb": 75.448,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed7_44470736/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 79111889,
+      "size_mb": 75.447,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_merge_threshold_0p86_44474297/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 79111502,
+      "size_mb": 75.447,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed7_44517860/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 79111170,
+      "size_mb": 75.446,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed31_44517848/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 78397909,
+      "size_mb": 74.766,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_baseline_locked_44474297/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 78397909,
+      "size_mb": 74.766,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed31_44517860/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 78397329,
+      "size_mb": 74.766,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed31_44467424/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 77684571,
+      "size_mb": 74.086,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/adsb_90known_mvacc_cil_strict_seed31/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 77603157,
+      "size_mb": 74.008,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_split_relaxed_44474297/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 76980650,
+      "size_mb": 73.414,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_density_ratio_0p02_44474297/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 74836106,
+      "size_mb": 71.369,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed7_44517848/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 72695057,
+      "size_mb": 69.327,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed7_44517860/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 72695057,
+      "size_mb": 69.327,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed7_baseline_locked_44474381/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 72695057,
+      "size_mb": 69.327,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed7_44470736/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 72695057,
+      "size_mb": 69.327,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed7_density_ratio_0p02_44474381/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 72694307,
+      "size_mb": 69.327,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed13_44517848/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 71993854,
+      "size_mb": 68.659,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed13_44517860/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 71993854,
+      "size_mb": 68.659,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed13_baseline_locked_44474381/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 71993854,
+      "size_mb": 68.659,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed13_density_ratio_0p02_44474381/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 71993854,
+      "size_mb": 68.659,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed13_44470736/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 71993854,
+      "size_mb": 68.659,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed31_44517848/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 71269148,
+      "size_mb": 67.968,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed31_44517860/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 71269148,
+      "size_mb": 67.968,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_baseline_locked_44474297/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 71269148,
+      "size_mb": 67.968,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_merge_threshold_0p86_44474297/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 71269148,
+      "size_mb": 67.968,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed31_44467424/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 71269148,
+      "size_mb": 67.968,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/adsb_90known_mvacc_cil_strict_seed31/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 71192209,
+      "size_mb": 67.894,
+      "large": true,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_split_relaxed_44474297/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 7189029,
+      "size_mb": 6.856,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_density_ratio_0p02_44474297/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 7185445,
+      "size_mb": 6.853,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed13_density_ratio_0p02_44474381/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 7183909,
+      "size_mb": 6.851,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed13_baseline_locked_44474381/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 7181285,
+      "size_mb": 6.849,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed7_density_ratio_0p02_44474381/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 7181285,
+      "size_mb": 6.849,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed13_44517848/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 7180773,
+      "size_mb": 6.848,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed7_44517848/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 7180773,
+      "size_mb": 6.848,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed13_44517860/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 7180773,
+      "size_mb": 6.848,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_merge_threshold_0p86_44474297/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 7180773,
+      "size_mb": 6.848,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_split_relaxed_44474297/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 7180773,
+      "size_mb": 6.848,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_density_ratio_0p02_44474297/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 7180261,
+      "size_mb": 6.848,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed13_44470736/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 7180261,
+      "size_mb": 6.848,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed7_44517860/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 7179749,
+      "size_mb": 6.847,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed7_baseline_locked_44474381/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 7179749,
+      "size_mb": 6.847,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed7_44470736/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 7179749,
+      "size_mb": 6.847,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed31_44517848/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 7179237,
+      "size_mb": 6.847,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed31_44517860/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 7179237,
+      "size_mb": 6.847,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_baseline_locked_44474297/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 7179237,
+      "size_mb": 6.847,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed13_density_ratio_0p02_44474381/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 7178725,
+      "size_mb": 6.846,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed31_44467424/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 7178725,
+      "size_mb": 6.846,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed13_44517848/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 7177701,
+      "size_mb": 6.845,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed13_44517860/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 7177701,
+      "size_mb": 6.845,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed7_44517848/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 7177189,
+      "size_mb": 6.845,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed13_baseline_locked_44474381/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 7177189,
+      "size_mb": 6.845,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed7_density_ratio_0p02_44474381/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 7177189,
+      "size_mb": 6.845,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed13_44470736/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 7177189,
+      "size_mb": 6.845,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed7_44517860/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 7176165,
+      "size_mb": 6.844,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed7_baseline_locked_44474381/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 7176165,
+      "size_mb": 6.844,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_merge_threshold_0p86_44474297/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 7176165,
+      "size_mb": 6.844,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed7_44470736/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 7176165,
+      "size_mb": 6.844,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed31_44517848/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 7175653,
+      "size_mb": 6.843,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed31_44517860/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 7175653,
+      "size_mb": 6.843,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_baseline_locked_44474297/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 7175653,
+      "size_mb": 6.843,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed31_44467424/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 7175077,
+      "size_mb": 6.843,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_split_relaxed_44474297/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 7174565,
+      "size_mb": 6.842,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_density_ratio_0p02_44474297/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 7173029,
+      "size_mb": 6.841,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed7_44517848/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 7171493,
+      "size_mb": 6.839,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed7_44517860/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 7171493,
+      "size_mb": 6.839,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed7_baseline_locked_44474381/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 7171493,
+      "size_mb": 6.839,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed7_density_ratio_0p02_44474381/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 7171493,
+      "size_mb": 6.839,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed7_44470736/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 7171493,
+      "size_mb": 6.839,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed13_44517848/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 7170981,
+      "size_mb": 6.839,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed13_44517860/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 7170981,
+      "size_mb": 6.839,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed13_baseline_locked_44474381/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 7170981,
+      "size_mb": 6.839,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_density_multiseed_seed13_density_ratio_0p02_44474381/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 7170981,
+      "size_mb": 6.839,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed13_44470736/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 7170981,
+      "size_mb": 6.839,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_adaptive_density_seed31_44517848/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 7170469,
+      "size_mb": 6.838,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_cil_baselines_seed31_44517860/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 7170469,
+      "size_mb": 6.838,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_baseline_locked_44474297/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 7170469,
+      "size_mb": 6.838,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_discovery_ablation_seed31_merge_threshold_0p86_44474297/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 7170469,
+      "size_mb": 6.838,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed31_44467424/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 7170469,
+      "size_mb": 6.838,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed13_44470736/closedset_adsb_90known_strict.pth",
+      "suffix": ".pth",
+      "size_bytes": 7167551,
+      "size_mb": 6.836,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed31_44467424/closedset_adsb_90known_strict.pth",
+      "suffix": ".pth",
+      "size_bytes": 7167551,
+      "size_mb": 6.836,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth",
+      "suffix": ".pth",
+      "size_bytes": 7167551,
+      "size_mb": 6.836,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/adsb_closedset_long_dev_seed41/best_closedset_adsb90_validation_only.pth",
+      "suffix": ".pth",
+      "size_bytes": 7167343,
+      "size_mb": 6.835,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_memory_50_44420869/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 3772373,
+      "size_mb": 3.598,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_memory_50_44420869/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 2829638,
+      "size_mb": 2.699,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_memory_50_44420869/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 1886472,
+      "size_mb": 1.799,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed13_44448692/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1622267,
+      "size_mb": 1.547,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed13_44426767/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1584742,
+      "size_mb": 1.511,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed13_44426767/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1584686,
+      "size_mb": 1.511,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed13_44465982/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1584680,
+      "size_mb": 1.511,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1584592,
+      "size_mb": 1.511,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed13_44440345/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1584592,
+      "size_mb": 1.511,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed31_44465982/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1546975,
+      "size_mb": 1.475,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1546907,
+      "size_mb": 1.475,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed31_44440345/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1546907,
+      "size_mb": 1.475,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed31_44448692/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1546823,
+      "size_mb": 1.475,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_seed7/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1545427,
+      "size_mb": 1.474,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed31_44426767/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509307,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed31_44426767/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509290,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed7_44465982/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509240,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_seed7_44465809/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509240,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_head_only_44420869/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509233,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage2/wisig_main_ratio_2p0_replay_3p0_seed7_44433946/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509214,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44452811/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509214,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509214,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed7_44440345/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509214,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_short_ce_baseline_44420671/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509198,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed7_44448692/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509180,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_tail_unfreeze_plus_feature_distill_44422380/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509172,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_kd_off_44420869/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509170,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_low_backbone_lr_44420869/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509169,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_2p0_44422703/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509155,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_2p5_44422703/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509129,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_replay_x2_44420869/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509128,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_replay_x2_confirm_44422380/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509128,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_feature_distill_tail_44422380/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509110,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed7_44426767/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509108,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_3p0_44422703/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509108,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_masked_kd_low_44422380/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509106,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_3p0_44422703/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509101,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_supcon_default_backend_44420869/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509095,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed7_44426767/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509095,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_3p0_44422703/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509095,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_short_supcon_representation_44420671/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509095,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_masked_kd_schedule_44422380/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509088,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_2p5_44422703/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509079,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_2p0_44422703/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509070,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_replay_x3_44422380/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509048,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_balanced_old_new_batch_44422380/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509047,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_2p0_44422703/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509047,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_2p5_44422703/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1509020,
+      "size_mb": 1.439,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_v2_seed7/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1507762,
+      "size_mb": 1.438,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_orderblock_seed23/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1507713,
+      "size_mb": 1.438,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_radcil_frozen_backbone_seed7_44573200/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1343731,
+      "size_mb": 1.281,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/adsb_90known_mvacc_cil_strict_seed31/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1329701,
+      "size_mb": 1.268,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/adsb_90known_mvacc_cil_strict_seed31/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1326565,
+      "size_mb": 1.265,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/adsb_90known_mvacc_cil_strict_seed31/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1321957,
+      "size_mb": 1.261,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/adsb_90known_mvacc_cil_strict_seed31/closedset_adsb_90known_strict.pth",
+      "suffix": ".pth",
+      "size_bytes": 1318823,
+      "size_mb": 1.258,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/adsb_closedset_dev_seed41/best_closedset_adsb90_validation_only.pth",
+      "suffix": ".pth",
+      "size_bytes": 1318615,
+      "size_mb": 1.258,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_backend_diagnostic_seed7_44573192/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1308275,
+      "size_mb": 1.248,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_orderblock_seed23/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1292517,
+      "size_mb": 1.233,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed13_44448692/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1292517,
+      "size_mb": 1.233,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed13_44465982/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1292197,
+      "size_mb": 1.232,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed13_44426767/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1292005,
+      "size_mb": 1.232,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed13_44426767/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1292005,
+      "size_mb": 1.232,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1292005,
+      "size_mb": 1.232,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed13_44440345/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1292005,
+      "size_mb": 1.232,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed31_44465982/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1291685,
+      "size_mb": 1.232,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_seed7/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1291493,
+      "size_mb": 1.232,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_v2_seed7/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1291493,
+      "size_mb": 1.232,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1291493,
+      "size_mb": 1.232,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed31_44448692/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1291493,
+      "size_mb": 1.232,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed31_44440345/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1291493,
+      "size_mb": 1.232,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_seed7/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1291493,
+      "size_mb": 1.232,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed7_44465982/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1291173,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_seed7_44465809/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1291173,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_head_only_44420869/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_kd_off_44420869/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_low_backbone_lr_44420869/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_memory_50_44420869/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_replay_x2_44420869/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_supcon_default_backend_44420869/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_balanced_old_new_batch_44422380/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_feature_distill_tail_44422380/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_masked_kd_low_44422380/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_masked_kd_schedule_44422380/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed31_44426767/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed7_44426767/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed31_44426767/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed7_44426767/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_2p0_44422703/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_2p5_44422703/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_3p0_44422703/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_2p0_44422703/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_2p5_44422703/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_3p0_44422703/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_2p0_44422703/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_2p5_44422703/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_3p0_44422703/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_replay_x2_confirm_44422380/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_replay_x3_44422380/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_tail_unfreeze_plus_feature_distill_44422380/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_short_ce_baseline_44420671/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_short_supcon_representation_44420671/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage2/wisig_main_ratio_2p0_replay_3p0_seed7_44433946/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44452811/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed7_44448692/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed7_44440345/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_orderblock_seed23/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_v2_seed7/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1290981,
+      "size_mb": 1.231,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_radcil_frozen_backbone_seed7_44573200/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1289637,
+      "size_mb": 1.23,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_backend_diagnostic_seed7_44573192/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1289125,
+      "size_mb": 1.229,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_mvacc_cil_seed7_44573179/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1288613,
+      "size_mb": 1.229,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_orderblock_seed23/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1286885,
+      "size_mb": 1.227,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed31_44465982/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1286565,
+      "size_mb": 1.227,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_seed7/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1286373,
+      "size_mb": 1.227,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_v2_seed7/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1286373,
+      "size_mb": 1.227,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed13_44426767/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1286373,
+      "size_mb": 1.227,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed13_44426767/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1286373,
+      "size_mb": 1.227,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1286373,
+      "size_mb": 1.227,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1286373,
+      "size_mb": 1.227,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed13_44448692/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1286373,
+      "size_mb": 1.227,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed31_44448692/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1286373,
+      "size_mb": 1.227,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed13_44440345/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1286373,
+      "size_mb": 1.227,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed31_44440345/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1286373,
+      "size_mb": 1.227,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_seed7/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1286373,
+      "size_mb": 1.227,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed13_44465982/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1286053,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed7_44465982/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1286053,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_seed7_44465809/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1286053,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_head_only_44420869/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_kd_off_44420869/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_low_backbone_lr_44420869/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_memory_50_44420869/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_replay_x2_44420869/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_supcon_default_backend_44420869/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_balanced_old_new_batch_44422380/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_feature_distill_tail_44422380/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_masked_kd_low_44422380/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_masked_kd_schedule_44422380/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed31_44426767/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed7_44426767/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed31_44426767/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed7_44426767/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_2p0_44422703/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_2p5_44422703/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_3p0_44422703/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_2p0_44422703/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_2p5_44422703/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_3p0_44422703/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_2p0_44422703/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_2p5_44422703/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_3p0_44422703/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_replay_x2_confirm_44422380/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_replay_x3_44422380/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_tail_unfreeze_plus_feature_distill_44422380/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_short_ce_baseline_44420671/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_short_supcon_representation_44420671/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage2/wisig_main_ratio_2p0_replay_3p0_seed7_44433946/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44452811/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed7_44448692/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed7_44440345/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_orderblock_seed23/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_v2_seed7/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1285861,
+      "size_mb": 1.226,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_backend_diagnostic_seed7_44573192/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1284965,
+      "size_mb": 1.225,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_mvacc_cil_seed7_44573179/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1284965,
+      "size_mb": 1.225,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_radcil_frozen_backbone_seed7_44573200/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1284965,
+      "size_mb": 1.225,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_selected_representation_backend_seed7_44573278/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1284581,
+      "size_mb": 1.225,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_selected_representation_cil_seed7_44573272/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1284581,
+      "size_mb": 1.225,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_0p0/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1282661,
+      "size_mb": 1.223,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_0p25/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1282661,
+      "size_mb": 1.223,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_1p0/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1282661,
+      "size_mb": 1.223,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_grouped_hybrid_seed7_44578823/mvacc_cil_after_r3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1282597,
+      "size_mb": 1.223,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_backend_diagnostic_seed7_44573192/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1281893,
+      "size_mb": 1.223,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_mvacc_cil_seed7_44573179/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1281893,
+      "size_mb": 1.223,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_radcil_frozen_backbone_seed7_44573200/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1281893,
+      "size_mb": 1.223,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_orderblock_seed23/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1281701,
+      "size_mb": 1.222,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed13_44426767/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1281189,
+      "size_mb": 1.222,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed13_44426767/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1281189,
+      "size_mb": 1.222,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_selected_representation_backend_seed7_44573278/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280997,
+      "size_mb": 1.222,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_selected_representation_cil_seed7_44573272/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280997,
+      "size_mb": 1.222,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed13_44465982/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280869,
+      "size_mb": 1.222,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed31_44465982/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280869,
+      "size_mb": 1.222,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed7_44465982/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280869,
+      "size_mb": 1.222,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_seed7_44465809/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280869,
+      "size_mb": 1.222,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_seed7/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_v2_seed7/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_head_only_44420869/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_kd_off_44420869/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_low_backbone_lr_44420869/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_memory_50_44420869/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_replay_x2_44420869/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_supcon_default_backend_44420869/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_balanced_old_new_batch_44422380/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_feature_distill_tail_44422380/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_masked_kd_low_44422380/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_masked_kd_schedule_44422380/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed31_44426767/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed7_44426767/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed31_44426767/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed7_44426767/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_2p0_44422703/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_2p5_44422703/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_3p0_44422703/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_2p0_44422703/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_2p5_44422703/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_3p0_44422703/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_2p0_44422703/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_2p5_44422703/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_3p0_44422703/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_replay_x2_confirm_44422380/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_replay_x3_44422380/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_tail_unfreeze_plus_feature_distill_44422380/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_short_ce_baseline_44420671/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_short_supcon_representation_44420671/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage2/wisig_main_ratio_2p0_replay_3p0_seed7_44433946/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44452811/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed13_44448692/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed31_44448692/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed7_44448692/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed13_44440345/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed31_44440345/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed7_44440345/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_orderblock_seed23/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_seed7/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_v2_seed7/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280677,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_0p0/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280101,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_0p25/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280101,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_1p0/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280101,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_grouped_hybrid_seed7_44578823/mvacc_cil_after_r2.pth",
+      "suffix": ".pth",
+      "size_bytes": 1280037,
+      "size_mb": 1.221,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_selected_representation_backend_seed7_44573278/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1278437,
+      "size_mb": 1.219,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_selected_representation_cil_seed7_44573272/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1278437,
+      "size_mb": 1.219,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cflcg_v3_seed7/closedset_rx3_day1_10known_cflcg_v3.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277899,
+      "size_mb": 1.219,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_orderblock_seed23/closedset_manytx_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277759,
+      "size_mb": 1.219,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_seed7/closedset_manytx_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277759,
+      "size_mb": 1.219,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_trainingv2_seed7/closedset_manytx_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277759,
+      "size_mb": 1.219,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_orderblock_seed23/closedset_rx3_day1_10known_strict.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277695,
+      "size_mb": 1.219,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_0p0/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277541,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_0p25/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277541,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_1p0/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277541,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_grouped_hybrid_seed7_44578823/mvacc_cil_after_r1.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277477,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_seed7/closedset_rx3_day1_10known_cil.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277421,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_mvacc_cil_seed7_44573179/closedset_lora_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277339,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_head_only_44420869/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_kd_off_44420869/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_low_backbone_lr_44420869/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_memory_50_44420869/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_replay_x2_44420869/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_supcon_default_backend_44420869/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_balanced_old_new_batch_44422380/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_feature_distill_tail_44422380/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_masked_kd_low_44422380/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_masked_kd_schedule_44422380/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed13_44426767/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed31_44426767/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed7_44426767/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed13_44426767/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed31_44426767/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed7_44426767/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_2p0_44422703/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_2p5_44422703/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_3p0_44422703/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_2p0_44422703/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_2p5_44422703/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_3p0_44422703/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_2p0_44422703/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_2p5_44422703/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_3p0_44422703/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_replay_x2_confirm_44422380/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_replay_x3_44422380/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_tail_unfreeze_plus_feature_distill_44422380/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_short_ce_baseline_44420671/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_short_supcon_representation_44420671/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage2/wisig_main_ratio_2p0_replay_3p0_seed7_44433946/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44452811/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed13_44448692/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed31_44448692/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed7_44448692/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed13_44465982/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed31_44465982/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed7_44465982/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_seed7_44465809/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed13_44440345/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed31_44440345/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed7_44440345/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277205,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_igcd_frontend_compare_44422704/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277013,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_simgcd_frontend_compare_44422098/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277013,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_simgcd_frontend_compare_44422110/closedset_rx2_day1_10known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1277013,
+      "size_mb": 1.218,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_representation_screen_seed7_44573240/supcon_rf_aug.pth",
+      "suffix": ".pth",
+      "size_bytes": 1275975,
+      "size_mb": 1.217,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_representation_screen_seed7_44573240/supcon_no_aug.pth",
+      "suffix": ".pth",
+      "size_bytes": 1275783,
+      "size_mb": 1.217,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_representation_screen_seed7_44573240/ce_rf_aug.pth",
+      "suffix": ".pth",
+      "size_bytes": 1275695,
+      "size_mb": 1.217,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_representation_screen_seed7_44573240/ce_no_aug.pth",
+      "suffix": ".pth",
+      "size_bytes": 1275503,
+      "size_mb": 1.216,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_representation_screen_seed7_44573249/supcon_rf_aug.pth",
+      "suffix": ".pth",
+      "size_bytes": 1275399,
+      "size_mb": 1.216,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_representation_screen_seed7_44573249/supcon_no_aug.pth",
+      "suffix": ".pth",
+      "size_bytes": 1275207,
+      "size_mb": 1.216,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_representation_screen_seed7_44573249/ce_rf_aug.pth",
+      "suffix": ".pth",
+      "size_bytes": 1275119,
+      "size_mb": 1.216,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manyrx_fixedrx_trainingv2_seed7/closedset_manyrx_fixedrx_day1_4known.pth",
+      "suffix": ".pth",
+      "size_bytes": 1275025,
+      "size_mb": 1.216,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_representation_screen_seed7_44573249/ce_no_aug.pth",
+      "suffix": ".pth",
+      "size_bytes": 1274927,
+      "size_mb": 1.216,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_mvacc_cil_seed7_44573179/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1273519,
+      "size_mb": 1.215,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed13_44426767/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1169884,
+      "size_mb": 1.116,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed13_44426767/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1169884,
+      "size_mb": 1.116,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed31_44465982/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1169750,
+      "size_mb": 1.116,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1169708,
+      "size_mb": 1.116,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed31_44448692/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1169708,
+      "size_mb": 1.116,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed31_44440345/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1169708,
+      "size_mb": 1.116,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1169686,
+      "size_mb": 1.115,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed13_44448692/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1169686,
+      "size_mb": 1.115,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed13_44440345/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1169686,
+      "size_mb": 1.115,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_seed7/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1168727,
+      "size_mb": 1.115,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed31_44426767/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132131,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed31_44426767/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132131,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed7_44465982/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132121,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_seed7_44465809/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132121,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_head_only_44420869/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132110,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_low_backbone_lr_44420869/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132102,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_replay_x2_44420869/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132079,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_replay_x2_confirm_44422380/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132079,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage2/wisig_main_ratio_2p0_replay_3p0_seed7_44433946/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132066,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44452811/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132066,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132066,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed7_44448692/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132066,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed7_44440345/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132066,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_2p0_44422703/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132064,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_tail_unfreeze_plus_feature_distill_44422380/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132063,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_2p5_44422703/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132058,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_feature_distill_tail_44422380/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132056,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_masked_kd_low_44422380/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132048,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_kd_off_44420869/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132047,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_replay_x3_44422380/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132045,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed7_44426767/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132034,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed7_44426767/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132034,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_3p0_44422703/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132034,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_3p0_44422703/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132034,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_3p0_44422703/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132034,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_masked_kd_schedule_44422380/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132026,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_balanced_old_new_batch_44422380/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132016,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_2p0_44422703/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132016,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_2p0_44422703/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132016,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_2p5_44422703/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132014,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_2p5_44422703/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132014,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_supcon_default_backend_44420869/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132013,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_short_supcon_representation_44420671/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132013,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_short_ce_baseline_44420671/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132010,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed13_44465982/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1132001,
+      "size_mb": 1.08,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_v2_seed7/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1131081,
+      "size_mb": 1.079,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_orderblock_seed23/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1130931,
+      "size_mb": 1.079,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_selected_representation_backend_seed7_44573278/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1054928,
+      "size_mb": 1.006,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_selected_representation_cil_seed7_44573272/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 1054928,
+      "size_mb": 1.006,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_radcil_frozen_backbone_seed7_44573200/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1019370,
+      "size_mb": 0.972,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_backend_diagnostic_seed7_44573192/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1016092,
+      "size_mb": 0.969,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_mvacc_cil_seed7_44573179/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 1015932,
+      "size_mb": 0.969,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_orderblock_seed23/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 968767,
+      "size_mb": 0.924,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_v2_seed7/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 923929,
+      "size_mb": 0.881,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_seed7/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 923846,
+      "size_mb": 0.881,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_grouped_hybrid_seed7_44578823/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 914775,
+      "size_mb": 0.872,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_0p0/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 913908,
+      "size_mb": 0.872,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_1p0/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 912645,
+      "size_mb": 0.87,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_0p25/replay_memory_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 912281,
+      "size_mb": 0.87,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_backend_diagnostic_seed7_44573192/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 801996,
+      "size_mb": 0.765,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_mvacc_cil_seed7_44573179/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 801996,
+      "size_mb": 0.765,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_radcil_frozen_backbone_seed7_44573200/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 801996,
+      "size_mb": 0.765,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_selected_representation_backend_seed7_44573278/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 800550,
+      "size_mb": 0.763,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_selected_representation_cil_seed7_44573272/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 800550,
+      "size_mb": 0.763,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed13_44426767/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 792621,
+      "size_mb": 0.756,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed13_44426767/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 792621,
+      "size_mb": 0.756,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed31_44426767/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754907,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed31_44426767/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754907,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed31_44453416/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754858,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed31_44448692/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754858,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed31_44465982/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754858,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed31_44440345/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754858,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage2/wisig_main_ratio_2p0_replay_3p0_seed7_44433946/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754832,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44452811/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754832,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed7_44453416/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754832,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed7_44448692/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754832,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed7_44465982/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754832,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_seed7_44465809/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754832,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed7_44440345/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754832,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_head_only_44420869/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_kd_off_44420869/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_low_backbone_lr_44420869/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_replay_x2_44420869/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_backend_supcon_default_backend_44420869/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_balanced_old_new_batch_44422380/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_feature_distill_tail_44422380/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_masked_kd_low_44422380/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_masked_kd_schedule_44422380/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_2p0_replay_3p0_seed7_44426767/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_multiseed_ratio_3p0_replay_3p0_seed7_44426767/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_2p0_44422703/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_2p5_44422703/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_1p5_replay_3p0_44422703/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_2p0_44422703/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_2p5_44422703/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_2p0_replay_3p0_44422703/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_2p0_44422703/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_2p5_44422703/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_ratio_ratio_3p0_replay_3p0_44422703/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_replay_x2_confirm_44422380/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_replay_x3_44422380/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_radcil_tail_unfreeze_plus_feature_distill_44422380/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_short_supcon_representation_44420671/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754791,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_cil_baselines_ratio_2p0_replay_3p0_seed13_44453416/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754790,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_high_replay_ratio_3p0_replay_3p0_seed13_44448692/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754790,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed13_44465982/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754790,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_main_ratio_2p0_replay_3p0_seed13_44440345/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754790,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage1/wisig_short_ce_baseline_44420671/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754763,
+      "size_mb": 0.72,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_seed7/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754179,
+      "size_mb": 0.719,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_v2_seed7/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754179,
+      "size_mb": 0.719,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/wisig_rx3_mvacc_cil_orderblock_seed23/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 754014,
+      "size_mb": 0.719,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_grouped_hybrid_seed7_44578823/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 732275,
+      "size_mb": 0.698,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_0p0/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 731138,
+      "size_mb": 0.697,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_1p0/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 731061,
+      "size_mb": 0.697,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_0p25/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 730596,
+      "size_mb": 0.697,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_orderblock_seed23/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 726815,
+      "size_mb": 0.693,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_seed7/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 697734,
+      "size_mb": 0.665,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_v2_seed7/replay_memory_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 697734,
+      "size_mb": 0.665,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_selected_representation_backend_seed7_44573278/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 621614,
+      "size_mb": 0.593,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_selected_representation_cil_seed7_44573272/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 621614,
+      "size_mb": 0.593,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_grouped_hybrid_seed7_44578823/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 551015,
+      "size_mb": 0.525,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_0p0/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 551015,
+      "size_mb": 0.525,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_0p25/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 551015,
+      "size_mb": 0.525,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_prototype_anchor_seed7_44586060/anchor_1p0/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 551015,
+      "size_mb": 0.525,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_orderblock_seed23/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 502965,
+      "size_mb": 0.48,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_seed7/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 458456,
+      "size_mb": 0.437,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/manytx_rx2_mvacc_cil_v2_seed7/replay_memory_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 458456,
+      "size_mb": 0.437,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed13_44465982/hybrid_doi_prototype_bank_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 20486,
+      "size_mb": 0.02,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed31_44465982/hybrid_doi_prototype_bank_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 20001,
+      "size_mb": 0.019,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed7_44465982/hybrid_doi_prototype_bank_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 19542,
+      "size_mb": 0.019,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_seed7_44465809/hybrid_doi_prototype_bank_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 19542,
+      "size_mb": 0.019,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed31_44465982/hybrid_doi_prototype_bank_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 15195,
+      "size_mb": 0.014,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed7_44465982/hybrid_doi_prototype_bank_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 14738,
+      "size_mb": 0.014,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_seed7_44465809/hybrid_doi_prototype_bank_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 14738,
+      "size_mb": 0.014,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed13_44465982/hybrid_doi_prototype_bank_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 14716,
+      "size_mb": 0.014,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_grouped_hybrid_seed7_44578823/hybrid_doi_prototype_bank_after_r3.npz",
+      "suffix": ".npz",
+      "size_bytes": 12351,
+      "size_mb": 0.012,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed7_44465982/hybrid_doi_prototype_bank_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 9973,
+      "size_mb": 0.01,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_seed7_44465809/hybrid_doi_prototype_bank_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 9973,
+      "size_mb": 0.01,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed31_44465982/hybrid_doi_prototype_bank_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 9969,
+      "size_mb": 0.01,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage3/wisig_hybrid_doi_multiseed_seed13_44465982/hybrid_doi_prototype_bank_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 9966,
+      "size_mb": 0.01,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_grouped_hybrid_seed7_44578823/hybrid_doi_prototype_bank_after_r2.npz",
+      "suffix": ".npz",
+      "size_bytes": 9964,
+      "size_mb": 0.01,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    },
+    {
+      "path": "results/stage5/lora_grouped_hybrid_seed7_44578823/hybrid_doi_prototype_bank_after_r1.npz",
+      "suffix": ".npz",
+      "size_bytes": 7583,
+      "size_mb": 0.007,
+      "large": false,
+      "recommended_action": "retain_on_slurm_exclude_from_normal_git"
+    }
+  ],
+  "nonempty_error_logs": [
+    {
+      "path": "results/slurm-osei-stage1-simgcd-44422098.err",
+      "size_bytes": 803,
+      "recommended_action": "review_then_archive_or_keep"
+    },
+    {
+      "path": "results/slurm-osei-stage1-mseed-44426767.err",
+      "size_bytes": 458,
+      "recommended_action": "review_then_archive_or_keep"
+    },
+    {
+      "path": "results/slurm-osei-stage3-wisig-44440345.err",
+      "size_bytes": 229,
+      "recommended_action": "review_then_archive_or_keep"
+    },
+    {
+      "path": "results/slurm-osei-stage3-highreplay-44448692.err",
+      "size_bytes": 229,
+      "recommended_action": "review_then_archive_or_keep"
+    },
+    {
+      "path": "results/slurm-osei-stage3-baselines-44452811.err",
+      "size_bytes": 411,
+      "recommended_action": "review_then_archive_or_keep"
+    },
+    {
+      "path": "results/slurm-osei-stage3-baselines-44453416.err",
+      "size_bytes": 458,
+      "recommended_action": "review_then_archive_or_keep"
+    },
+    {
+      "path": "results/slurm-osei-stage3-hybrid-doi-ms-44465982.err",
+      "size_bytes": 229,
+      "recommended_action": "review_then_archive_or_keep"
+    },
+    {
+      "path": "results/slurm-osei-stage5-lora-smoke-44559269.err",
+      "size_bytes": 900,
+      "recommended_action": "review_then_archive_or_keep"
+    },
+    {
+      "path": "results/slurm-osei-stage5-lora-selected-s7-44573266.err",
+      "size_bytes": 139,
+      "recommended_action": "review_then_archive_or_keep"
+    }
+  ]
+}
