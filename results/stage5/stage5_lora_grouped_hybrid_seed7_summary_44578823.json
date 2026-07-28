@@ -1,0 +1,64 @@
+{
+  "job_id": "44578823",
+  "save_dir": "results/stage5/lora_grouped_hybrid_seed7_44578823",
+  "metrics": {
+    "rounds": [
+      {
+        "round": "R1",
+        "cluster_count": 5.0,
+        "nmi": 0.1440461306340795,
+        "ari": 0.10218063707922487,
+        "purity": 0.40408163265306124,
+        "hungarian_acc": 0.39387755102040817,
+        "overall_acc": 0.2904761904761905,
+        "old_acc": 0.23095238095238096,
+        "new_acc": 0.4095238095238095,
+        "forgetting_rate": 0.3428571428571428,
+        "macro_f1": 0.22580753236703893
+      },
+      {
+        "round": "R2",
+        "cluster_count": 5.0,
+        "nmi": 0.11904840328724971,
+        "ari": 0.0970187295429749,
+        "purity": 0.3551020408163265,
+        "hungarian_acc": 0.34285714285714286,
+        "overall_acc": 0.21785714285714286,
+        "old_acc": 0.19206349206349208,
+        "new_acc": 0.29523809523809524,
+        "forgetting_rate": 0.29047619047619044,
+        "macro_f1": 0.15129479996814624
+      },
+      {
+        "round": "R3",
+        "cluster_count": 5.0,
+        "nmi": 0.2997060911932455,
+        "ari": 0.2464186109256997,
+        "purity": 0.48775510204081635,
+        "hungarian_acc": 0.48367346938775513,
+        "overall_acc": 0.14952380952380953,
+        "old_acc": 0.07976190476190476,
+        "new_acc": 0.42857142857142855,
+        "forgetting_rate": 0.43571428571428567,
+        "macro_f1": 0.09172069148946602
+      }
+    ]
+  },
+  "references": {
+    "RADCIL": {
+      "overall": 0.1419,
+      "old": 0.0798,
+      "new": 0.3905,
+      "forgetting": 0.519
+    },
+    "DOI-style": {
+      "overall": 0.1676,
+      "old": 0.1786,
+      "new": 0.1238,
+      "forgetting": 0.2119
+    }
+  },
+  "cluster_count_gate_passed": true,
+  "old_new_tradeoff_gate_passed": false,
+  "expand_multiseed": false
+}
