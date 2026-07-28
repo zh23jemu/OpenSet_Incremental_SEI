@@ -1,0 +1,47 @@
+{
+  "job_id": "local-smoke",
+  "save_dir": "results\\stage5\\lora_mvacc_cil_seed7_local_smoke",
+  "metrics": {
+    "rounds": [
+      {
+        "round": "R1",
+        "cluster_count": 8.0,
+        "nmi": 0.019442971423811923,
+        "ari": 0.0021789593774717477,
+        "purity": 0.2693877551020408,
+        "hungarian_acc": 0.18775510204081633,
+        "overall_acc": 0.05555555555555555,
+        "old_acc": 0.0,
+        "new_acc": 0.16666666666666666,
+        "forgetting_rate": 0.1,
+        "macro_f1": 0.016932332966232578
+      },
+      {
+        "round": "R2",
+        "cluster_count": 12.0,
+        "nmi": 0.024994311260331765,
+        "ari": 0.0018966472702498824,
+        "purity": 0.2897959183673469,
+        "hungarian_acc": 0.1489795918367347,
+        "overall_acc": 0.05119047619047619,
+        "old_acc": 0.0,
+        "new_acc": 0.20476190476190476,
+        "forgetting_rate": 0.1,
+        "macro_f1": 0.008728950403690889
+      },
+      {
+        "round": "R3",
+        "cluster_count": 9.0,
+        "nmi": 0.015559323980120986,
+        "ari": -0.0010918349608090027,
+        "purity": 0.25918367346938775,
+        "hungarian_acc": 0.15918367346938775,
+        "overall_acc": 0.02857142857142857,
+        "old_acc": 0.0,
+        "new_acc": 0.14285714285714285,
+        "forgetting_rate": 0.1,
+        "macro_f1": 0.00853639854576718
+      }
+    ]
+  }
+}

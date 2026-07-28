@@ -80,6 +80,7 @@ from features.rf_features import extract_rf_features_batch
 from utils.classic_feature_gating import select_classic_feature_view, save_selection, local_cross_view_consistency
 from utils.incremental_visualization import save_seen_class_visualizations, save_paper_method_visualizations
 from models.vup_model import ClosedSetSEI
+from datasets.lora25_strict_loader import load_lora25_diffdays_3round
 from utils.improved_closedset_training import (
     TRAINING_RECIPE_VERSION,
     stratified_train_validation_split,
@@ -271,7 +272,7 @@ def supervised_contrastive_loss(features, labels, temperature=0.2):
     loss = -mean_log_prob_pos[valid].mean()
     return loss
 
-def train_closedset_model(train_set, num_classes, feat_dim, epochs, batch_size, lr, device, save_path, use_supcon=False, supcon_weight=0.1, supcon_temperature=0.2, checkpoint_metadata=None, seed=7, validation_fraction=1.0 / 7.0, use_rf_augmentation=True, projection_hidden_dim=128, projection_dim=64):
+def train_closedset_model(train_set, num_classes, feat_dim, epochs, batch_size, lr, device, save_path, use_supcon=False, supcon_weight=0.1, supcon_temperature=0.2, checkpoint_metadata=None, seed=7, validation_fraction=1.0 / 7.0, use_rf_augmentation=True, projection_hidden_dim=128, projection_dim=64, validation_set=None):
     ensure_dir(os.path.dirname(save_path))
     train_closedset_with_validation(
         train_set=train_set,
@@ -281,7 +282,7 @@ def train_closedset_model(train_set, num_classes, feat_dim, epochs, batch_size, 
         supcon_weight=supcon_weight, supcon_temperature=supcon_temperature,
         checkpoint_metadata=checkpoint_metadata, validation_fraction=validation_fraction,
         use_rf_augmentation=use_rf_augmentation, projection_hidden_dim=projection_hidden_dim,
-        projection_dim=projection_dim,
+        projection_dim=projection_dim, validation_set=validation_set,
     )
     return load_closedset_model(save_path, num_classes, feat_dim, device, expected_metadata=checkpoint_metadata)
 
@@ -2844,6 +2845,7 @@ def run_discovery(method, round_name, day_name, true_new_classes, X_round, y_rou
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset_profile", choices=["wisig", "lora25"], default="wisig", help="Dataset-specific strict split profile; the algorithmic MV-ACC-CIL core is shared.")
     parser.add_argument("--dataset_path", type=str, default=r"D:\WiSigCustom\WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl")
     parser.add_argument("--save_dir", type=str, default="./results/wisig_rx2_10known_3round_nodrop")
     parser.add_argument("--checkpoint", type=str, default=None)
@@ -2970,11 +2972,15 @@ def main():
     set_seed(args.seed)
     ensure_dir(args.save_dir)
 
-    if args.initial_known_classes != 10 or args.round_size != 10 or args.num_rounds != 3:
-        raise ValueError("This script is specialized for 10 known + 3 rounds of 10 classes each.")
+    expected_round_size = 5 if args.dataset_profile == "lora25" else 10
+    if args.initial_known_classes != 10 or args.round_size != expected_round_size or args.num_rounds != 3:
+        raise ValueError(
+            f"The {args.dataset_profile} profile requires 10 known + 3 rounds of "
+            f"{expected_round_size} classes each."
+        )
 
     selected_rx_list = [int(x.strip()) for x in args.selected_rx_list.split(",") if x.strip() != ""]
-    if selected_rx_list != [2]:
+    if args.dataset_profile == "wisig" and selected_rx_list != [2]:
         raise ValueError(
             "This RX2-only script requires --selected_rx_list 2 "
             "(Python index 2 is the third receiver)."
@@ -2984,12 +2990,16 @@ def main():
     if args.checkpoint is None:
         args.checkpoint = os.path.join(args.save_dir, "closedset_rx2_day1_10known.pth")
 
-    print("\n========== WiSig Cross-Day 10-Known 3-Round Incremental Experiment ==========")
+    dataset_title = "LoRa25 Different Days Indoor" if args.dataset_profile == "lora25" else "WiSig Cross-Day"
+    print(f"\n========== {dataset_title} 10-Known 3-Round Incremental Experiment ==========")
     print(f"Dataset: {args.dataset_path}")
     print(f"Save dir: {args.save_dir}")
     print(f"Device: {device}")
-    print("Protocol: 10 known + 10 unknown R1 + 10 unknown R2 + 10 unknown R3")
-    print("Receiver setting: selected_rx_list=[2] | mode=single-Rx | physical receiver=third")
+    print(f"Protocol: 10 known + {args.round_size} unknown R1 + {args.round_size} unknown R2 + {args.round_size} unknown R3")
+    if args.dataset_profile == "wisig":
+        print("Receiver setting: selected_rx_list=[2] | mode=single-Rx | physical receiver=third")
+    else:
+        print("LoRa split: IQ_1-6 train | IQ_7 validation | IQ_8-10 held-out evaluation")
     print(f"Old-class prototype bonus beta: {args.old_class_bonus}")
     if args.use_supcon:
         print(f"Closed-set training loss: CE + {args.supcon_weight} * SupCon(T={args.supcon_temperature})")
@@ -3011,16 +3021,25 @@ def main():
         f"coverage=100%, strict_alignment=Hungarian"
     )
 
-    splits = load_wisig_crossday_10known_3round(
-        dataset_path=args.dataset_path,
-        transpose_to_model=True,
-        train_ratio=args.development_ratio,
-        selected_rx_list=selected_rx_list,
-        seed=args.seed,
-    )
+    if args.dataset_profile == "lora25":
+        splits = load_lora25_diffdays_3round(args.dataset_path)
+        train_split_key = "day1_backbone_train"
+        validation_split_key = "day1_known_validation"
+    else:
+        splits = load_wisig_crossday_10known_3round(
+            dataset_path=args.dataset_path,
+            transpose_to_model=True,
+            train_ratio=args.development_ratio,
+            selected_rx_list=selected_rx_list,
+            seed=args.seed,
+        )
+        train_split_key = "day1_known_train"
+        validation_split_key = None
 
-    X_train = splits["day1_known_train"]["X"]
-    y_train = splits["day1_known_train"]["y"]
+    X_train = splits[train_split_key]["X"]
+    y_train = splits[train_split_key]["y"]
+    X_validation = splits[validation_split_key]["X"] if validation_split_key else None
+    y_validation = splits[validation_split_key]["y"] if validation_split_key else None
 
     round_keys = [
         "day2_unknown_round1",
@@ -3051,22 +3070,32 @@ def main():
             "split_key": split_key,
         }
 
+    development_label = "IQ_1-6 train" if args.dataset_profile == "lora25" else "70%"
+    discovery_label = "IQ_1-7 discovery" if args.dataset_profile == "lora25" else "70%"
+    evaluation_label = "IQ_8-10 eval" if args.dataset_profile == "lora25" else "30%"
     print("\n[Splits]")
-    print(f"Day1 known train 70%: {X_train.shape}, classes={np.unique(y_train).size}, labels={np.min(y_train)}-{np.max(y_train)}")
+    print(f"Day1 known train {development_label}: {X_train.shape}, classes={np.unique(y_train).size}, labels={np.min(y_train)}-{np.max(y_train)}")
     print(f"Initial eval 30%:     {eval_data['eval_initial']['X'].shape}, classes={np.unique(eval_data['eval_initial']['y']).size}, labels={np.min(eval_data['eval_initial']['y'])}-{np.max(eval_data['eval_initial']['y'])}, day={eval_data['eval_initial']['day']}")
     for i, rd in enumerate(round_data, start=1):
         ek = f"eval_r{i}"
-        print(f"Unknown R{i} 70%:     {rd['X'].shape}, classes={np.unique(rd['y']).size}, labels={np.min(rd['y'])}-{np.max(rd['y'])}, day={rd['day']}")
-        print(f"After R{i} eval 30%:  {eval_data[ek]['X'].shape}, classes={np.unique(eval_data[ek]['y']).size}, labels={np.min(eval_data[ek]['y'])}-{np.max(eval_data[ek]['y'])}, day={eval_data[ek]['day']}")
+        print(f"Unknown R{i} {discovery_label}: {rd['X'].shape}, classes={np.unique(rd['y']).size}, labels={np.min(rd['y'])}-{np.max(rd['y'])}, day={rd['day']}")
+        print(f"After R{i} {evaluation_label}: {eval_data[ek]['X'].shape}, classes={np.unique(eval_data[ek]['y']).size}, labels={np.min(eval_data[ek]['y'])}-{np.max(eval_data[ek]['y'])}, day={eval_data[ek]['day']}")
 
     train_set = to_dataset(X_train, y_train)
+    validation_set = to_dataset(X_validation, y_validation) if X_validation is not None else None
+    split_protocol_name = (
+        "lora25_transmission_disjoint_60_10_30_v1"
+        if args.dataset_profile == "lora25"
+        else "stratified_random_60_10_30_v1"
+    )
     checkpoint_metadata = {
         "dataset_path": os.path.abspath(args.dataset_path),
         "selected_rx_list": list(selected_rx_list),
         "known_tx": list(range(args.initial_known_classes)),
         "training_day_index": 0,
         "development_ratio": float(args.development_ratio),
-        "sample_split_protocol": "stratified_random_60_10_30_v1",
+        "dataset_profile": args.dataset_profile,
+        "sample_split_protocol": split_protocol_name,
         "seed": int(args.seed),
         "use_supcon": bool(args.use_supcon),
         "supcon_weight": float(args.supcon_weight),
@@ -3096,6 +3125,7 @@ def main():
             use_rf_augmentation=not args.disable_rf_augmentation,
             projection_hidden_dim=args.projection_hidden_dim,
             projection_dim=args.projection_dim,
+            validation_set=validation_set,
         )
     else:
         model = load_closedset_model(
@@ -3108,25 +3138,44 @@ def main():
 
     print("\n[Extract] Deep embeddings")
     Z_train, y_train = extract_deep_features(model, X_train, y_train, args.test_batch_size, device)
-    day1_training_subset, day1_validation_subset = stratified_train_validation_split(
-        train_set, validation_fraction=args.closedset_val_ratio, seed=args.seed
-    )
-    day1_validation_indices = np.asarray(day1_validation_subset.indices, dtype=np.int64)
+    if validation_set is None:
+        day1_training_subset, day1_validation_subset = stratified_train_validation_split(
+            train_set, validation_fraction=args.closedset_val_ratio, seed=args.seed
+        )
+        day1_validation_indices = np.asarray(day1_validation_subset.indices, dtype=np.int64)
+        X_calibration = X_train[day1_validation_indices]
+        y_calibration = y_train[day1_validation_indices]
+        Z_calibration = Z_train[day1_validation_indices]
+    else:
+        # LoRa 的 IQ_7 是独立固定验证 transmission。深度特征和经典特征
+        # 校准都只读取该 split，不从 IQ_1-6 训练集重新抽样。
+        day1_training_subset = train_set
+        day1_validation_subset = validation_set
+        Z_calibration, y_calibration = extract_deep_features(
+            model, X_validation, y_validation, args.test_batch_size, device
+        )
+        X_calibration = X_validation
     with open(os.path.join(args.save_dir, "split_protocol.json"), "w", encoding="utf-8") as f:
         json.dump({
-            "split_level": "stored-order block split (capture metadata unavailable)",
+            "dataset_profile": args.dataset_profile,
+            "split_level": (
+                "transmission-disjoint fixed split"
+                if args.dataset_profile == "lora25"
+                else "stored-order block split (capture metadata unavailable)"
+            ),
             "seed": int(args.seed),
             "day1_backbone_train_samples": int(len(day1_training_subset)),
             "day1_validation_samples": int(len(day1_validation_subset)),
             "day1_heldout_evaluation_samples": int(len(eval_data["eval_initial"]["y"])),
             "development_ratio": float(args.development_ratio),
+            "validation_split_key": validation_split_key,
             "frozen_before_unknown_rounds": ["checkpoint", "CF-LCG", "MV-ACC parameters"],
         }, f, indent=2)
     args.cflcg_extractor = None
     args.cflcg_gate_open = True
     if not args.disable_cflcg:
         cflcg_selection, cflcg_extractor = select_classic_feature_view(
-            X_train[day1_validation_indices], y_train[day1_validation_indices], args.cflcg_gate_threshold)
+            X_calibration, y_calibration, args.cflcg_gate_threshold)
         args.cflcg_extractor = cflcg_extractor
         args.cflcg_gate_open = bool(cflcg_selection["rf_gate_open"])
         save_selection(cflcg_selection, args.save_dir)
@@ -3135,8 +3184,7 @@ def main():
             print("[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.")
     if not args.disable_mvacc_calibration:
         calibrate_mvacc_on_known_day1(
-            X_train[day1_validation_indices], y_train[day1_validation_indices],
-            Z_train[day1_validation_indices], args,
+            X_calibration, y_calibration, Z_calibration, args,
         )
     for rd in round_data:
         rd["Z"], rd["y"] = extract_deep_features(model, rd["X"], rd["y"], args.test_batch_size, device)

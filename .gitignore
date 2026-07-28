@@ -42,3 +42,7 @@ Desktop.ini
 /数据集/Dataset/
 /数据集/ManyTx/
 /数据集/ManyRx/
+
+# 阶段 5 LoRa 本地端到端 smoke 的临时模型与回放记忆；CSV/JSON/Markdown 审计结果保留入库
+/results/stage5/lora_mvacc_cil_seed7_local_smoke/*.pth
+/results/stage5/lora_mvacc_cil_seed7_local_smoke/*.npz

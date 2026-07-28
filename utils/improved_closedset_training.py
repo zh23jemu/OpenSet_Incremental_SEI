@@ -233,20 +233,34 @@ def train_closedset_with_validation(
     projection_dim: int = 64,
     augmentation_config: Optional[RFAugmentConfig] = None,
     validation_groups: Optional[np.ndarray] = None,
+    validation_set: Optional[Dataset] = None,
 ) -> None:
-    """Train and save the checkpoint with the best Day-1 validation accuracy."""
+    """Train and save the checkpoint with the best Day-1 validation accuracy.
+
+    ``validation_set`` 用于已经按物理 transmission/session 固定切分的协议。
+    传入时不再从 ``train_set`` 内随机抽取验证样本，从而保持数据源定义的
+    训练/验证边界；未传入时继续沿用历史分层切分行为。
+    """
 
     torch.manual_seed(int(seed))
     np.random.seed(int(seed))
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(int(seed))
 
-    train_subset, validation_subset = stratified_train_validation_split(
-        train_set,
-        validation_fraction=validation_fraction,
-        seed=seed,
-        groups=validation_groups,
-    )
+    if validation_set is None:
+        train_subset, validation_subset = stratified_train_validation_split(
+            train_set,
+            validation_fraction=validation_fraction,
+            seed=seed,
+            groups=validation_groups,
+        )
+    else:
+        # LoRa 等协议已经按完整 transmission 预切 Day1 train/validation，
+        # 此处直接使用调用方提供的数据集，禁止再次执行样本级随机切分。
+        if len(validation_set) == 0:
+            raise ValueError("validation_set must not be empty")
+        train_subset = train_set
+        validation_subset = validation_set
     generator = torch.Generator()
     generator.manual_seed(int(seed))
     train_loader = DataLoader(
