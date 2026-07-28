@@ -990,13 +990,16 @@ def assign_noise_samples_no_drop(labels, feats, args):
 
 
 def adaptive_split_large_clusters_no_drop(labels, feats, args):
-    """Split statistically oversized clusters without using labels or a target K.
+    """Split oversized clusters and, optionally, protocol-deficit clusters.
 
-    Density clustering can occasionally merge two transmitters when a backbone
-    seed changes local geometry.  After no-drop consolidation, clusters much
-    larger than the median are tested with a two-way K-means split in a joint
-    deep/RF/graph space.  A split is retained only when both parts are large
-    enough and their within-cluster silhouette exceeds a fixed threshold.
+    默认行为只执行历史的“过大簇”分裂：密度聚类偶尔会把两个发射机合并
+    成一个明显偏大的簇，因此只对大于中位簇大小若干倍的簇做二分测试。
+
+    当 ``--enable_mvacc_target_split`` 打开时，函数会额外执行一个严格的
+    协议目标簇数补齐分裂：目标簇数只来自公开协议的每轮新类数
+    ``round_size``，不读取真实标签；候选二分只根据当前簇内部的无标签
+    silhouette 和最小子簇大小门控接受。该分支用于 ADS-B R2/R3 欠聚类
+    风险收敛，默认关闭以保持既有正式结果完全不变。
     """
     working = np.asarray(labels, dtype=np.int64).copy()
     z = np.concatenate([
@@ -1007,6 +1010,7 @@ def adaptive_split_large_clusters_no_drop(labels, feats, args):
     next_id = int(working.max()) + 1 if len(working) else 0
     total_splits = 0
     accepted_silhouettes = []
+    oversized_splits = 0
 
     for _ in range(int(args.mvacc_split_rounds)):
         cluster_ids = sorted(np.unique(working).tolist())
@@ -1032,17 +1036,73 @@ def adaptive_split_large_clusters_no_drop(labels, feats, args):
             working[idx[sub == 1]] = next_id
             next_id += 1
             total_splits += 1
+            oversized_splits += 1
             accepted_silhouettes.append(score)
             changed = True
 
         if not changed:
             break
 
+    target_splits = 0
+    target_scores = []
+    target_split_enabled = bool(getattr(args, "enable_mvacc_target_split", False))
+    target_clusters = int(getattr(args, "mvacc_target_split_clusters", 0) or getattr(args, "round_size", 0))
+    if target_split_enabled and target_clusters > 0:
+        max_added = max(0, int(getattr(args, "mvacc_target_split_max_added", 0)))
+        threshold = float(getattr(args, "mvacc_target_split_silhouette", args.mvacc_split_silhouette))
+        for _ in range(max_added):
+            cluster_ids = sorted(np.unique(working).tolist())
+            if len(cluster_ids) >= target_clusters:
+                break
+            sizes = np.asarray([np.sum(working == c) for c in cluster_ids], dtype=np.int64)
+            if len(sizes) <= 1:
+                break
+            median_size = float(np.median(sizes))
+            min_part = max(20, int(round(float(args.mvacc_split_min_part_ratio) * median_size)))
+
+            # 对所有可分簇做无标签二分打分，选择 silhouette 最高的一项。
+            # 这样避免按簇大小机械切分，同时仍完全不接触真实设备标签。
+            candidates = []
+            for cid, size in sorted(zip(cluster_ids, sizes), key=lambda item: item[1], reverse=True):
+                if int(size) < 2 * min_part:
+                    continue
+                idx = np.where(working == cid)[0]
+                sub = KMeans(n_clusters=2, n_init=10, random_state=int(args.seed) + target_splits).fit_predict(z[idx])
+                counts = np.bincount(sub, minlength=2)
+                if int(counts.min()) < min_part:
+                    continue
+                score = float(silhouette_score(z[idx], sub, metric="euclidean"))
+                candidates.append((score, int(cid), idx, sub))
+
+            if not candidates:
+                break
+            score, cid, idx, sub = max(candidates, key=lambda item: item[0])
+            if score < threshold:
+                break
+
+            working[idx[sub == 1]] = next_id
+            next_id += 1
+            total_splits += 1
+            target_splits += 1
+            target_scores.append(score)
+            accepted_silhouettes.append(score)
+
     final = np.empty_like(working)
     for new_id, old_id in enumerate(sorted(np.unique(working).tolist())):
         final[working == old_id] = new_id
     return final.astype(np.int64), {
         "Adaptive Split Count": int(total_splits),
+        "Oversized Split Count": int(oversized_splits),
+        "Target Split Enabled": bool(target_split_enabled),
+        "Target Split Count": int(target_splits),
+        "Target Split Target Clusters": int(target_clusters),
+        "Target Split Max Added": int(getattr(args, "mvacc_target_split_max_added", 0)),
+        "Target Split Silhouette Threshold": float(
+            getattr(args, "mvacc_target_split_silhouette", args.mvacc_split_silhouette)
+        ),
+        "Target Split Silhouette Mean": (
+            float(np.mean(target_scores)) if target_scores else np.nan
+        ),
         "Adaptive Split Size Factor": float(args.mvacc_split_size_factor),
         "Adaptive Split Silhouette Threshold": float(args.mvacc_split_silhouette),
         "Adaptive Split Silhouette Mean": (
@@ -3017,6 +3077,29 @@ def main():
     parser.add_argument("--mvacc_split_min_part_ratio", type=float, default=0.30, help="Minimum child size relative to the median cluster size.")
     parser.add_argument("--mvacc_split_silhouette", type=float, default=0.30, help="Minimum internal silhouette required to retain an adaptive split.")
     parser.add_argument(
+        "--enable_mvacc_target_split",
+        action="store_true",
+        help="启用协议目标簇数补齐分裂；只使用 round_size 和无标签簇内 silhouette，默认关闭。",
+    )
+    parser.add_argument(
+        "--mvacc_target_split_clusters",
+        type=int,
+        default=0,
+        help="目标补齐分裂的目标簇数；0 表示使用当前协议 round_size。",
+    )
+    parser.add_argument(
+        "--mvacc_target_split_max_added",
+        type=int,
+        default=4,
+        help="每轮目标补齐最多新增的簇数，防止欠聚类修复变成过切分。",
+    )
+    parser.add_argument(
+        "--mvacc_target_split_silhouette",
+        type=float,
+        default=0.26,
+        help="目标补齐分裂接受候选二分所需的最小无标签 silhouette。",
+    )
+    parser.add_argument(
         "--enable_mvacc_adaptive_density",
         action="store_true",
         help="启用严格无标签轮次自适应密度；默认关闭以保持历史正式配置不变。",
@@ -3082,6 +3165,13 @@ def main():
         f"split_factor={args.mvacc_split_size_factor}, split_sil={args.mvacc_split_silhouette}, "
         f"coverage=100%, strict_alignment=Hungarian"
     )
+    if args.enable_mvacc_target_split:
+        target_clusters = int(args.mvacc_target_split_clusters or args.round_size)
+        print(
+            "MV-ACC target split: "
+            f"target_clusters={target_clusters}, max_added={args.mvacc_target_split_max_added}, "
+            f"split_sil={args.mvacc_target_split_silhouette}"
+        )
     if args.enable_mvacc_adaptive_density:
         print(
             "MV-ACC adaptive density: "
