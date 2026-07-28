@@ -114,6 +114,7 @@
 - 只读清单 `results/stage5/slurm_artifact_inventory_44586060.json` 已确认服务器有 553 个 `.pth/.npz`、约 5.21 GB、54 个超过 50 MB，另有 9 个非空错误日志；已精确忽略本矩阵二进制，不删除任何历史产物。
 - 已新增单文件客户汇报 `CUSTOMER_PROGRESS_REPORT.html`，内嵌项目阶段图、正式指标图、发现链路图和结果表格；该文件从实施计划派生，可直接离线打开或打印为 PDF，不替代唯一事实源。
 - 阶段 5 ManyTx/ManyRx 补充稳定性验证已通过只读汇总既有 seed7 三轮结果完成：ManyTx R3 Overall `0.2700`、New `0.5600`、Forgetting `0.4267`；ManyRx R3 Overall `0.5700`、New `0.9500`、Forgetting `0.5250`。报告为 `results/stage5/STAGE5_MANYTX_MANYRX_SUPPLEMENT_REPORT.md`，阶段 5 可关闭并转入阶段 6。
+- 为继续收敛 ADS-B 欠聚类风险，已新增 MV-ACC 协议目标簇数补齐分裂开关；seed31 Job `44670427` 显示 R3 最终簇数 `7->10`、Label-free Silhouette `0.2647->0.3527`、Overall `0.4866->0.5075`、New Acc `0.4300->0.5930`，当前已提交配对三种子验证 Job `44766923`，等待 Slurm GPU 资源。
 
 ## Recent Changes
 
@@ -185,12 +186,13 @@
 - 2026-07-28：完成 Job `44586060` 和只读服务器产物清单；IQ_7 按规则选择权重 0，`0.25/1.0` 均退化，训练期原型锚定归档为负消融。
 - 2026-07-28：新增 `CUSTOMER_PROGRESS_REPORT.html` 单文件客户汇报，整理 WiSig/ADS-B 正式三种子结果、LoRa seed7 边界、负消融、风险和下一步；同步修正实施计划中过期的中期待办。
 - 2026-07-28：新增 `tools/stage5_manytx_manyrx_supplement_report.py`，只读汇总 ManyTx/ManyRx 既有 seed7 三轮结果，生成 `results/stage5/STAGE5_MANYTX_MANYRX_SUPPLEMENT_REPORT.md` 与 `stage5_manytx_manyrx_supplement_summary.json`，并将实施计划阶段 5 最后一项标记完成。
+- 2026-07-29：新增 ADS-B target split 单种子和三种子验证入口：`tools/stage4_adsb_target_split_plan.py`、`tools/stage4_adsb_target_split_report.py`、`tools/stage4_adsb_target_split_multiseed_plan.py`、`tools/stage4_adsb_target_split_multiseed_report.py`、`slurm/stage4_adsb_target_split_seed31.sbatch`、`slurm/stage4_adsb_target_split_multiseed.sbatch`；seed31 Job `44670427` 为正向结果，配对三种子 Job `44766923` 已提交等待资源。
 
 ## Next TODO
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
-- 阶段 4 ADS-B 已完成；正式全轮次继续使用 ratio 0.03，自适应密度作为负消融归档，不再继续调固定密度参数。
+- 阶段 4 ADS-B ratio 0.03 和自适应密度结论保持不变；当前先等待 target split 配对三种子 Job `44766923`，若 seed7/13 未出现过切分、簇大小失衡或旧类/遗忘退化，再判断是否把 target split 作为 ADS-B 欠聚类风险收敛方案。
 - 阶段 5 已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，后续进入阶段 6 结果整理与交付。
 - 使用 `CUSTOMER_PROGRESS_REPORT.html` 进行阶段汇报；每次关键正式结果变化后，从实施计划同步更新该派生页面并复核图表数值。
 - 将 IGCD-minimal 纳入 strict baseline 表，但正式主前端继续优先使用 MV-ACC 或稳定 Deep-HDBSCAN。
