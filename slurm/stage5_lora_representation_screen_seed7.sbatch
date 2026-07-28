@@ -1,15 +1,14 @@
 #!/bin/bash
 # LoRa25 seed7 跨 transmission 表征筛选；只用 IQ_7 选择候选。
 #SBATCH --job-name=osei-stage5-lora-repr-s7
-#SBATCH --partition=gpuHz
+#SBATCH --partition=defq
 #SBATCH --account=gpo-ifv7xx
 #SBATCH --qos=shortjobs
 #SBATCH --time=01:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=24G
-#SBATCH --gres=gpu:1
+#SBATCH --mem=16G
 #SBATCH --output=results/slurm-osei-stage5-lora-repr-s7-%j.out
 #SBATCH --error=results/slurm-osei-stage5-lora-repr-s7-%j.err
 
