@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-28
-- 当前阶段：实施计划 1.1，阶段 4 ADS-B 已收束；阶段 5 LoRa strict 协议入口和单种子 smoke 已通过 Slurm 验证，下一步接 LoRa MV-ACC-CIL seed7 正式入口
+- 当前阶段：阶段 5 LoRa seed7 正式链路、IQ_7-only 表征筛选和后端矩阵已完成；下一步实现无测试泄漏的 RADCIL/原型双头融合
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -126,6 +126,7 @@ Strict loader 审计：
 - 已新增 `tools/stage3_wisig_strong_backend_plan.py` 并生成 `results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md`，把共享发现后端风险收束为 `RADCIL + DOI-style`、`RADCIL + iCaRL`、`RADCIL + TPCIL-style` 三个待实现混合候选；下一步先做 seed 7 短验证。
 - ADS-B strict 主入口已使用 `ADSBLongClosedSet`，并支持 RADCIL old:new batch ratio；阶段 4 单种子和正式三种子计划、报告、Slurm 入口均已同步。
 - LoRa 阶段 5 已新增 strict loader、协议审计和 closedset smoke 入口；Job `44559268` 协议审计 `ok=true`，Job `44572328` closedset smoke 完成，证明紧凑 LoRa NPZ 可进入现有 PyTorch 训练/发现链路。
+- LoRa seed7 正式 Job `44573179`、冻结消融 `44573200`、IQ_7-only 表征筛选 `44573249`、预选表征三轮 `44573272` 和后端矩阵 `44573278` 均完成。预选表征 RADCIL R3 Overall/Old/New 为 `0.1419/0.0798/0.3905`；DOI-style 为 `0.1676/0.1786/0.1238`。
 - 已在 WiSig strict 入口实现可选 DOI-memory hybrid：使用伪标签 replay 记忆构建原型、跨轮对齐历史原型，并与网络 logits 做 late fusion；默认融合权重为 0，不改变历史 RADCIL 行为。
 - 已新增 `tools/stage3_wisig_hybrid_doi_plan.py`、`tools/stage3_wisig_hybrid_doi_report.py` 和 `slurm/stage3_wisig_hybrid_doi_seed7.sbatch`；本地语法、参数入口、计划生成和合成张量 smoke test 已通过，待 Slurm seed7 验证。
 - SimGCD-style 已验证为可运行学习式发现 baseline，但真实 WiSig 前端质量低于 MV-ACC；阶段 1 短期主线应保留 MV-ACC 或稳定 Deep-HDBSCAN 前端，避免把弱前端误锁为新主方法。
@@ -136,8 +137,8 @@ Strict loader 审计：
 ## 7. 下一步执行顺序
 
 1. ADS-B 阶段 4 已收束；固定 ratio 0.03 为正式配置，自适应密度作为负消融保留，不再继续调固定密度参数。
-2. 阶段 5 LoRa strict 协议和 Slurm smoke 已通过；当前不要把 1 epoch CPU smoke 的弱性能写成方法结论。
-3. 下一步接入 LoRa MV-ACC-CIL seed7 正式入口，生成完整增量报告后再决定是否扩展三种子。
+2. 阶段 5 LoRa 正式 seed7 与风险诊断已完成；暂不扩种子，避免复制已知的新旧类权衡。
+3. 下一步实现只用 IQ_7 校准的 RADCIL/原型双头融合；达到同时改善 Overall 与 Old/Forgetting 的门槛后再扩 seed13/31。
 4. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 5. 若后续补充实验需要 LoRa 完整数据或 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压或下载；LoRa 可优先只取 Different Days Indoor Scenario 的必要子集，不删除 Release 分片或原压缩包。
 

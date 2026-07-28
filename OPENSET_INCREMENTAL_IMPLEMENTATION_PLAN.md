@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划与项目进度总表
 
-- 状态：实施中；阶段 0–3 已完成；阶段 4 ADS-B Long-RADCIL、固定密度消融、自适应密度负消融和 strict baseline 已收束；阶段 5 LoRa strict 协议与单种子 smoke 已通过，下一步接正式 MV-ACC-CIL 单种子入口
+- 状态：实施中；阶段 0–4 已收束；阶段 5 LoRa strict seed7 正式链路、表征筛选和后端矩阵已完成，下一步解决 RADCIL 新类与原型后端旧类保持的权衡
 - 版本：1.1
 - 创建日期：2026-07-26
 - 最近更新：2026-07-28
@@ -20,7 +20,7 @@
 | 数据与环境         | 已完成阶段 0    | WiSig、ADS-B、ManyTx、ManyRx 大数据哈希和结构已校验；WiSig/ADS-B strict loader 审计已通过                      |
 | WiSig 阶段 1    | 已完成多轮短实验   | 已比较表征、发现前端、后端消融、RADCIL ratio/weight、多种子确认和 IGCD strict baseline                            |
 | ADS-B         | 阶段 4 三种子已完成 | 已迁移 `ADSBLongClosedSet` 与 old:new=2.0；R3 Overall `0.4824±0.0074`，当前瓶颈为 R3 仅发现 6–7 簇 |
-| LoRa          | 阶段 5 smoke 已通过 | 已固化 LoRa RFFP Different Days Indoor 10+5×3 strict 协议；Job `44559268` 协议审计通过，Job `44572328` closedset smoke 通过 |
+| LoRa          | 阶段 5 seed7 已完成 | 正式 Job `44573179` 已跑通三轮；IQ_7 预选表征 Job `44573272` R3 Overall `0.1419`，后端矩阵 Job `44573278` 暴露新旧类权衡 |
 | ManyTx/ManyRx | 作为补充实验     | 完整压缩包已收到并校验结构，后续按补充实验需要展开                                                                  |
 | 项目记忆与交接       | 已维护        | `AGENTS.md`、`PROJECT_HANDOFF.md`、RecallLoom rolling summary 均已同步最新状态                       |
 
@@ -238,8 +238,10 @@
 
 - [x] 复核 LoRa RFFP Dataset - Different Days Indoor Scenario；基于紧凑对齐 NPZ 固化 10+5×3 strict 协议，Day1 按 IQ_1-6/IQ_7/IQ_8-10 固定为 60/10/30。
 - [x] 完成 LoRa strict 协议审计与单种子 closedset smoke：Job `44559268` 协议审计 `ok=true`，Job `44572328` smoke 完成；Job `44559269` 的 CPU auto-device 失败已修复。
-- [ ] 接入 LoRa MV-ACC-CIL 单种子正式入口，先跑 seed7，再决定是否扩展三种子。
-- [ ] 在 LoRa 上验证跨信号体制泛化。
+- [x] 接入并完成 LoRa MV-ACC-CIL seed7 正式入口与三轮报告：Job `44573179`。
+- [x] 完成 IQ_7-only 表征筛选、冻结 backbone 消融和共享发现后端矩阵：Jobs `44573200`、`44573249`、`44573272`、`44573278`。
+- [x] 在 LoRa 上完成首轮跨信号体制泛化验证；当前结果显示表征改善有限，主要剩余风险为新旧类后端权衡。
+- [ ] 实现只用 IQ_7 校准的 RADCIL/原型双头融合，seed7 达到门槛后再扩展三种子。
 - [ ] 使用 ManyTx、ManyRx 进行补充稳定性验证；不因补充实验延迟 WiSig、ADS-B 主结果。
 
 ### 阶段 6：结果与交付，2–3 天
@@ -357,7 +359,7 @@ Job `44517860` 已完成 ADS-B strict baseline 与前端消融三种子实验。
 | IGCD-minimal 不是完整复现            | 客户或论文审稿可能质疑 SOTA 公平性                                                              | 明确标注为 minimal strict adaptation，必要时后续补齐更完整适配                         |
 | ADS-B R2/R3 发现欠聚类                  | 三种子 R3 仅发现 6–7/10 类，限制 New Acc 和 Overall                                             | 固定 Long-RADCIL 后端与 ratio 0.03；自适应密度已证实为负消融，停止继续调固定密度参数                |
 | ADS-B 遗忘控制仍弱于 DOI-style          | 主方法 Overall/New Acc 更高，但 Forgetting 明显更高                                             | 在结果表中同时报告优势与局限；后续跨体制验证不以牺牲协议隔离换取更低遗忘                         |
-| LoRa 当前只有 smoke 结果                 | 1 epoch CPU closedset smoke 可执行但性能很弱，不能代表正式跨体制效果                                      | 已解决 strict 入口缺口；下一步接入 MV-ACC-CIL seed7 单种子正式链路，禁止用 held-out eval 真值调参 |
+| LoRa 新旧类后端权衡                     | 预选表征 RADCIL R3 New `0.3905` 但 Old `0.0798`；DOI-style Old `0.1786` 但 New `0.1238` | 暂不扩三种子；实现只依赖 IQ_7 校准的网络/原型双头融合，禁止用 held-out eval 调权重 |
 | ManyRx 正式 runner 缺失            | 补充实验入口不清晰                                                                         | 后续恢复 runner 或修正文档引用                                                  |
 | Slurm 端保留多份大数据分片               | 占用存储                                                                              | 未经确认不删除，后续只做保留策略建议                                                   |
 
@@ -366,8 +368,8 @@ Job `44517860` 已完成 ADS-B strict baseline 与前端消融三种子实验。
 短期优先级：
 
 1. ADS-B 阶段 4 已收束：正式 ratio 0.03 不变，自适应密度归档为负消融，baseline 总表已完成。
-2. LoRa strict 入口与 Slurm smoke 已通过：协议审计 Job `44559268`、closedset smoke Job `44572328` 均完成。
-3. 接入 LoRa MV-ACC-CIL 单种子正式入口；只在 seed7 跑通并生成完整报告后，再决定是否扩展三种子，不使用 held-out evaluation 真值调参。
+2. LoRa seed7 正式链路、表征筛选、冻结消融与后端矩阵已完成；当前不直接扩三种子。
+3. 下一步实现 RADCIL 网络头与 DOI/iCaRL 原型头的双头融合，融合权重只由 IQ_7 validation 校准，IQ_8-10 只用于最终报告。
 
 中期优先级：
 

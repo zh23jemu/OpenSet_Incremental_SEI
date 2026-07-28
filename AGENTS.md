@@ -106,6 +106,9 @@
 - Slurm Job `44517860` 已完成 ADS-B strict baseline 与前端消融三种子实验；MV-ACC-CIL R3 Overall `0.4831±0.0089`，高于共享发现 DOI-style `0.4621±0.0273` 和 Deep-HDBSCAN + DOI-style `0.4759±0.0168`，但其遗忘率高于 DOI-style，需作为局限如实报告。
 - 阶段 5 LoRa 跨体制验证已固化 10 known + 5×3 strict 协议入口：`datasets/lora25_strict_loader.py` 将 Day1 IQ_1-6/IQ_7/IQ_8-10 固定为 60/10/30，Day2–4 使用 IQ_1-7 discovery 与 IQ_8-10 held-out evaluation。
 - Slurm Job `44559268` 已完成 LoRa strict 协议审计，`results/stage5/stage5_lora_protocol_audit_44559268.json` 显示 `ok=true`；修复 `--device auto` CPU 回落后，Job `44572328` 已完成 LoRa closedset smoke。
+- LoRa MV-ACC-CIL seed7 正式 Job `44573179` 已完成：R3 Overall `0.1200`、Old `0.0607`、New `0.3571`、Forgetting `0.4976`；完整三轮跨体制链路已打通，但旧类遗忘严重。
+- Job `44573200` 冻结 backbone 未改善 Old/Forgetting，记录为负消融；Job `44573249` 仅按 IQ_7 选中 `supcon_rf_aug`，完整三轮 Job `44573272` 将 R3 Overall 提升到 `0.1419`、Old `0.0798`、New `0.3905`，但 Forgetting 仍为 `0.5190`。
+- Job `44573278` 在预选表征上确认 DOI-style R3 Old `0.1786`、Forgetting `0.2119`，显著优于 RADCIL，但 New 仅 `0.1238`；当前风险已收束为 RADCIL 偏新类、稳定原型后端偏旧类的后端权衡。
 
 ## Recent Changes
 
@@ -169,13 +172,15 @@
 - 2026-07-23：完成 Git 初始化并创建基线提交 `ca50523`，纳入 1162 个现有项目文件。
 - 2026-07-28：新增 LoRa25 strict loader、协议审计、closedset smoke 和两个 Slurm 短任务入口；本地协议审计与 1 epoch CPU smoke 均通过。
 - 2026-07-28：Slurm Job `44559268` 完成 LoRa strict 协议审计；首次 Job `44559269` 暴露 `--device auto` CPU 回落缺陷，修复后 Job `44572328` 成功完成 closedset smoke。
+- 2026-07-28：完成 LoRa strict MV-ACC-CIL seed7 正式 Job `44573179`、冻结 backbone 负消融 `44573200`、IQ_7-only 表征筛选 `44573249`、预选表征三轮 `44573272` 和后端矩阵 `44573278`。
+- 2026-07-28：确认预选表征 RADCIL 偏新类、DOI/iCaRL 偏旧类；阶段 5 暂不扩三种子，下一步转向只用 IQ_7 校准的网络/原型双头融合。
 
 ## Next TODO
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
 - 阶段 4 ADS-B 已完成；正式全轮次继续使用 ratio 0.03，自适应密度作为负消融归档，不再继续调固定密度参数。
-- 阶段 5 下一步：基于已通过的 LoRa strict loader 和 Slurm smoke，接入正式 MV-ACC-CIL 单种子入口；先生成 seed7 报告，再决定是否扩展三种子。
+- 阶段 5 下一步：暂不扩展三种子；在 IQ_7 预选 `supcon_rf_aug` 表征上实现 RADCIL 网络头与 DOI/iCaRL 原型头的无测试泄漏双头融合，只用 IQ_7 校准融合权重。
 - 将 IGCD-minimal 纳入 strict baseline 表，但正式主前端继续优先使用 MV-ACC 或稳定 Deep-HDBSCAN。
 - 后续每完成关键 Slurm job、阶段报告或客户可汇报结论时，同步更新 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 的当前状态、关键结果、风险和下一步行动清单。
 - 后续 WiSig 短实验优先使用 MV-ACC 或稳定 Deep-HDBSCAN 前端；SimGCD-style 保留为学习式发现 baseline，不作为阶段 1 主前端。
@@ -198,7 +203,7 @@
 - ADS-B Long-RADCIL 三种子已完成，但 R3 仅发现 6–7/10 类；后续调参不得使用 held-out evaluation 真值。
 - ADS-B R3 欠聚类已定位到初始密度形成阶段；固定 ratio 0.02 和无标签自适应密度均未形成跨轮次稳定收益，正式配置保持 ratio 0.03，阶段 4 不再继续调密度参数。
 - ADS-B MV-ACC-CIL 的 Overall 高于当前 baseline，但 Forgetting `0.1159±0.0108` 高于共享发现 DOI-style `0.0551±0.0032`；论文表述必须同时报告整体识别优势和遗忘控制局限。
-- LoRa strict 协议入口和 smoke 已完成；当前风险转为 closedset smoke 仅 1 epoch/CPU 可执行性验证，性能很弱，不能作为正式跨体制结果，仍需接入 MV-ACC-CIL 单种子训练验证。
+- LoRa strict 正式 seed7、表征筛选和后端矩阵均已完成；当前风险是 RADCIL New 高但 Old/Forgetting 差，DOI/iCaRL Old 稳定但 New 低，尚无同时兼顾新旧类的组合。
 - Slurm 端仍保留若干历史 failed smoke 日志和大型 `.pth`/`.npz` 运行产物；本次只同步成功阶段 5 小型 JSON/stdout/stderr，未删除、未提交大型产物。
 - IGCD-minimal 已接入真实 WiSig frozen embeddings 并完成 Job `44422704`，但当前仍是 minimal strict adaptation，不是完整 IGCD 论文复现。
 - `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`。
