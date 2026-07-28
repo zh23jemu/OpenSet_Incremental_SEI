@@ -831,6 +831,63 @@ def iterative_merge_clusters_no_drop(labels, feats, args, max_rounds=2, threshol
     return working.astype(np.int64), stats
 
 
+def merge_closest_clusters_to_target_no_drop(labels, feats, args, target_count):
+    """将过聚类结果按多视图最近原型合并到协议指定的目标簇数。
+
+    该步骤只读取 discovery 样本的深度、RF 和图表征，以及实验协议预先
+    声明的每轮新增类别数；不读取 discovery 或 held-out evaluation 真值。
+    当当前簇数不高于目标值时保持原结果，避免把欠聚类进一步恶化。
+    """
+    working = np.asarray(labels, dtype=np.int64).copy()
+    target_count = int(target_count)
+    if target_count <= 0:
+        raise ValueError("target_count must be positive.")
+
+    total_merges = 0
+    last_similarity = np.nan
+    while len([c for c in np.unique(working) if c != -1]) > target_count:
+        cluster_ids = [int(c) for c in np.unique(working) if c != -1]
+        protos_deep, protos_rf, protos_graph = [], [], []
+        for cid in cluster_ids:
+            idx = np.where(working == cid)[0]
+            protos_deep.append(feats["deep"][idx].mean(axis=0))
+            protos_rf.append(feats["rf"][idx].mean(axis=0))
+            protos_graph.append(feats["graph"][idx].mean(axis=0))
+
+        pd = normalize(np.stack(protos_deep, axis=0), axis=1)
+        pg = normalize(np.stack(protos_graph, axis=0), axis=1)
+        similarity_deep = np.clip((pd @ pd.T + 1.0) / 2.0, 0.0, 1.0)
+        similarity_graph = np.clip((pg @ pg.T + 1.0) / 2.0, 0.0, 1.0)
+        pr = np.stack(protos_rf, axis=0)
+        distances_rf = euclidean_distances(pr, pr)
+        positive = distances_rf[distances_rf > 0]
+        sigma = float(np.median(positive)) if len(positive) > 0 else 1.0
+        similarity_rf = np.exp(-(distances_rf ** 2) / (2.0 * sigma ** 2 + 1e-8))
+
+        weight_deep = float(args.mvacc_lambda_deep)
+        weight_rf = float(args.mvacc_lambda_rf)
+        weight_graph = float(args.mvacc_lambda_graph)
+        weight_sum = max(weight_deep + weight_rf + weight_graph, 1e-8)
+        similarity = (
+            weight_deep * similarity_deep
+            + weight_rf * similarity_rf
+            + weight_graph * similarity_graph
+        ) / weight_sum
+        np.fill_diagonal(similarity, -np.inf)
+        left, right = np.unravel_index(np.argmax(similarity), similarity.shape)
+        last_similarity = float(similarity[left, right])
+        keep_id = min(cluster_ids[left], cluster_ids[right])
+        merge_id = max(cluster_ids[left], cluster_ids[right])
+        working[working == merge_id] = keep_id
+        total_merges += 1
+
+    return working.astype(np.int64), {
+        "Target Cluster Count": target_count,
+        "Target Count Merges": int(total_merges),
+        "Target Count Last Merge Similarity": last_similarity,
+    }
+
+
 def assign_noise_samples_no_drop(labels, feats, args):
     """Assign every HDBSCAN noise sample without using ground-truth labels."""
     working = np.asarray(labels, dtype=np.int64).copy()
@@ -1949,6 +2006,7 @@ def _predict_hybrid_radcil_doi(
     device,
     fusion_weight=0.30,
     prototype_temperature=0.10,
+    old_class_count=None,
 ):
     """融合网络分类概率与 DOI-style replay 原型概率。
 
@@ -1976,8 +2034,47 @@ def _predict_hybrid_radcil_doi(
 
     network_log_prob = F.log_softmax(torch.from_numpy(network_logits), dim=1).numpy()
     prototype_log_prob = F.log_softmax(torch.from_numpy(class_scores), dim=1).numpy()
-    fused_log_prob = (1.0 - fusion_weight) * network_log_prob + fusion_weight * prototype_log_prob
+    fused_log_prob = network_log_prob.copy()
+    # 分组双头融合只校正本轮训练前已经存在的旧类列；当前新注册类继续完全
+    # 使用网络分类头。类别边界来自 classifier 扩展前的输出维数，不需要知道
+    # 任一样本的真实旧/新身份，因此不会引入 held-out 标签泄漏。
+    old_class_count = class_scores.shape[1] if old_class_count is None else int(old_class_count)
+    if old_class_count < 0 or old_class_count > class_scores.shape[1]:
+        raise ValueError("old_class_count is outside classifier output range.")
+    fused_log_prob[:, :old_class_count] = (
+        (1.0 - fusion_weight) * network_log_prob[:, :old_class_count]
+        + fusion_weight * prototype_log_prob[:, :old_class_count]
+    )
     return np.argmax(fused_log_prob, axis=1).astype(np.int64)
+
+
+def _calibrate_grouped_doi_weight_on_validation(
+    model, validation_x, validation_y, prototype_bank, batch_size, device,
+    candidates, prototype_temperature, old_class_count,
+):
+    """仅使用 Day1 validation 已知类选择旧类原型融合权重。
+
+    IQ_7 不包含增量新类，因此它只负责约束旧类保持；新类列无论选择哪个
+    候选都保留网络头分数。并列时选择较小权重，减少不必要的原型偏置。
+    """
+    candidate_weights = sorted({float(value) for value in candidates})
+    if not candidate_weights:
+        raise ValueError("Grouped DOI fusion requires at least one calibration candidate.")
+    if any(weight < 0.0 or weight > 1.0 for weight in candidate_weights):
+        raise ValueError("Grouped DOI fusion candidates must be within [0, 1].")
+
+    rows = []
+    for weight in candidate_weights:
+        prediction = _predict_hybrid_radcil_doi(
+            model, validation_x, prototype_bank, batch_size, device, weight,
+            prototype_temperature, old_class_count=old_class_count,
+        )
+        rows.append({
+            "Fusion Weight": weight,
+            "Validation Accuracy": float(np.mean(prediction == validation_y)),
+        })
+    best = sorted(rows, key=lambda row: (-row["Validation Accuracy"], row["Fusion Weight"]))[0]
+    return float(best["Fusion Weight"]), rows
 
 
 def _prototype_predict_from_memory(memory_X, memory_y, eval_X, old_class_bonus=0.0, old_class_count=10):
@@ -2692,10 +2789,16 @@ def run_discovery(method, round_name, day_name, true_new_classes, X_round, y_rou
         labels_for_metrics, split_stats = adaptive_split_large_clusters_no_drop(
             labels_for_metrics, feats, mvacc_args
         )
+        target_stats = {}
+        if bool(args.mvacc_enforce_round_size):
+            labels_for_metrics, target_stats = merge_closest_clusters_to_target_no_drop(
+                labels_for_metrics, feats, mvacc_args, target_count=args.round_size
+            )
         iarc_stats = {
             **merge_stats,
             **assignment_stats,
             **split_stats,
+            **target_stats,
             "MVACC Min Cluster Size": int(discovery_min_cluster_size),
             "MVACC Min Cluster Ratio": float(args.mvacc_min_cluster_ratio),
             "MVACC Min Samples": int(discovery_min_samples),
@@ -2905,6 +3008,8 @@ def main():
     parser.add_argument("--radcil_doi_fusion_weight", type=float, default=0.0, help="DOI replay-prototype late-fusion weight; 0 keeps network-only RADCIL prediction.")
     parser.add_argument("--radcil_doi_align_lambda", type=float, default=0.30, help="Current-round weight used to align historical and current replay prototypes.")
     parser.add_argument("--radcil_doi_prototype_temperature", type=float, default=0.10, help="Temperature applied to cosine prototype scores before late fusion.")
+    parser.add_argument("--radcil_grouped_doi_fusion", action="store_true", help="Fuse DOI prototypes only into old-class columns; current-round new classes retain network-head scores.")
+    parser.add_argument("--radcil_doi_fusion_candidates", type=str, default="0,0.25,0.5,0.75,1.0", help="Day1-validation candidates for grouped DOI old-class fusion.")
     parser.add_argument("--pseudo_weight_floor", type=float, default=0.20)
 
 
@@ -2960,6 +3065,7 @@ def main():
     parser.add_argument("--mvacc_split_size_factor", type=float, default=1.75, help="Split-test clusters larger than this multiple of the median cluster size.")
     parser.add_argument("--mvacc_split_min_part_ratio", type=float, default=0.30, help="Minimum child size relative to the median cluster size.")
     parser.add_argument("--mvacc_split_silhouette", type=float, default=0.30, help="Minimum internal silhouette required to retain an adaptive split.")
+    parser.add_argument("--mvacc_enforce_round_size", action="store_true", help="Merge over-clustered MV-ACC output to the protocol-declared per-round class count without using discovery labels.")
 
     parser.add_argument("--enable_visualization", action="store_true", default=True, help="Save 2D discovery visualizations. Default: enabled.")
     parser.add_argument("--disable_visualization", action="store_true", help="Disable visualization output.")
@@ -3169,7 +3275,10 @@ def main():
             "day1_heldout_evaluation_samples": int(len(eval_data["eval_initial"]["y"])),
             "development_ratio": float(args.development_ratio),
             "validation_split_key": validation_split_key,
-            "frozen_before_unknown_rounds": ["checkpoint", "CF-LCG", "MV-ACC parameters"],
+            "frozen_before_unknown_rounds": [
+                "checkpoint", "CF-LCG", "MV-ACC parameters",
+                "grouped DOI candidate set and IQ_7-only selection rule",
+            ],
         }, f, indent=2)
     args.cflcg_extractor = None
     args.cflcg_gate_open = True
@@ -3221,8 +3330,12 @@ def main():
 
     # MV-ACC-CIL 使用冻结 Teacher 完成发现，再更新 Student。可选 DOI-memory
     # 后端只改变评估时的后验融合，不读取 held-out 真值，也不改变发现流程。
-    hybrid_doi_enabled = float(args.radcil_doi_fusion_weight) > 0
-    main_method_name = "MV-ACC-CIL + DOI-memory" if hybrid_doi_enabled else "MV-ACC-CIL"
+    hybrid_doi_enabled = bool(args.radcil_grouped_doi_fusion) or float(args.radcil_doi_fusion_weight) > 0
+    main_method_name = (
+        "MV-ACC-CIL + grouped DOI-memory"
+        if args.radcil_grouped_doi_fusion
+        else ("MV-ACC-CIL + DOI-memory" if hybrid_doi_enabled else "MV-ACC-CIL")
+    )
     print(f"\n[{main_method_name}] End-to-end pseudo-label class-incremental learning")
     if hybrid_doi_enabled:
         print(
@@ -3236,6 +3349,8 @@ def main():
     pseudo_to_true = {int(c): int(c) for c in range(args.initial_known_classes)}
     memory_x, memory_y = _update_iq_memory(None, None, X_train, y_train, args.memory_per_class, args.seed)
     doi_prototype_bank = None
+    doi_fusion_weight = float(args.radcil_doi_fusion_weight)
+    doi_calibration_rows = []
     if hybrid_doi_enabled:
         doi_prototype_bank = _build_aligned_doi_prototype_bank(
             student,
@@ -3246,14 +3361,29 @@ def main():
             previous_bank=None,
             align_lambda=args.radcil_doi_align_lambda,
         )
+        if args.radcil_grouped_doi_fusion:
+            if X_validation is None:
+                raise ValueError("Grouped DOI fusion requires an explicit Day1 validation split.")
+            candidates = [
+                float(value) for value in args.radcil_doi_fusion_candidates.split(",")
+                if value.strip()
+            ]
+            doi_fusion_weight, calibration = _calibrate_grouped_doi_weight_on_validation(
+                student, X_validation, y_validation, doi_prototype_bank,
+                args.test_batch_size, device, candidates,
+                args.radcil_doi_prototype_temperature, args.initial_known_classes,
+            )
+            doi_calibration_rows.extend([{"Stage": "Initial", **row} for row in calibration])
+            print(f"[Grouped DOI calibration] stage=Initial | IQ_7 only | weight={doi_fusion_weight}")
         initial_pred = _predict_hybrid_radcil_doi(
             student,
             eval_data["eval_initial"]["X"],
             doi_prototype_bank,
             args.test_batch_size,
             device,
-            args.radcil_doi_fusion_weight,
+            doi_fusion_weight,
             args.radcil_doi_prototype_temperature,
+            old_class_count=args.initial_known_classes if args.radcil_grouped_doi_fusion else None,
         )
     else:
         initial_pred = _predict_end_to_end(student, eval_data["eval_initial"]["X"], args.test_batch_size, device)
@@ -3304,14 +3434,26 @@ def main():
                 previous_bank=doi_prototype_bank,
                 align_lambda=args.radcil_doi_align_lambda,
             )
+            if args.radcil_grouped_doi_fusion:
+                doi_fusion_weight, calibration = _calibrate_grouped_doi_weight_on_validation(
+                    student, X_validation, y_validation, doi_prototype_bank,
+                    args.test_batch_size, device, candidates,
+                    args.radcil_doi_prototype_temperature, old_out,
+                )
+                doi_calibration_rows.extend([{"Stage": f"After R{i}", **row} for row in calibration])
+                print(
+                    f"[Grouped DOI calibration] stage=After R{i} | IQ_7 only | "
+                    f"old_class_count={old_out} | weight={doi_fusion_weight}"
+                )
             pred = _predict_hybrid_radcil_doi(
                 student,
                 eval_data[eval_key]["X"],
                 doi_prototype_bank,
                 args.test_batch_size,
                 device,
-                args.radcil_doi_fusion_weight,
+                doi_fusion_weight,
                 args.radcil_doi_prototype_temperature,
+                old_class_count=old_out if args.radcil_grouped_doi_fusion else None,
             )
         else:
             pred = _predict_end_to_end(student, eval_data[eval_key]["X"], args.test_batch_size, device)
@@ -3328,8 +3470,9 @@ def main():
                 doi_prototype_bank,
                 args.test_batch_size,
                 device,
-                args.radcil_doi_fusion_weight,
+                doi_fusion_weight,
                 args.radcil_doi_prototype_temperature,
+                old_class_count=old_out if args.radcil_grouped_doi_fusion else None,
             )
         else:
             fixed_pred = _predict_end_to_end(student, eval_data["eval_initial"]["X"], args.test_batch_size, device)
@@ -3342,6 +3485,8 @@ def main():
             "num_outputs": int(student.classifier.out_features),
             "method": main_method_name,
             "radcil_doi_fusion_weight": float(args.radcil_doi_fusion_weight),
+            "radcil_doi_effective_fusion_weight": float(doi_fusion_weight),
+            "radcil_grouped_doi_fusion": bool(args.radcil_grouped_doi_fusion),
             "radcil_doi_align_lambda": float(args.radcil_doi_align_lambda),
             "radcil_doi_prototype_temperature": float(args.radcil_doi_prototype_temperature),
         }, os.path.join(args.save_dir, f"mvacc_cil_after_r{i}.pth"))
@@ -3356,6 +3501,8 @@ def main():
     clustering_df = save_csv(clustering_rows, os.path.join(args.save_dir, "clustering_results.csv"))
     incremental_df = save_csv(incremental_rows, os.path.join(args.save_dir, "incremental_results.csv"))
     save_csv(retention_rows, os.path.join(args.save_dir, "fixed_day1_retention.csv"))
+    if doi_calibration_rows:
+        save_csv(doi_calibration_rows, os.path.join(args.save_dir, "grouped_doi_iq7_calibration.csv"))
     per_round_summary_df = build_per_round_summary(clustering_df, incremental_df)
     if not clustering_df.empty and "MV-ACC-CIL discovery" in set(clustering_df["Method"].astype(str)):
         c = clustering_df[clustering_df["Method"].astype(str) == "MV-ACC-CIL discovery"].set_index("Round")

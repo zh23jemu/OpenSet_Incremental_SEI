@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划与项目进度总表
 
-- 状态：实施中；阶段 0–4 已收束；阶段 5 LoRa strict seed7 正式链路、表征筛选和后端矩阵已完成，下一步解决 RADCIL 新类与原型后端旧类保持的权衡
+- 状态：实施中；阶段 0–4 已收束；阶段 5 已实现协议目标簇数约束和 IQ_7-only 分组双头融合，待 seed7 Slurm 实证
 - 版本：1.1
 - 创建日期：2026-07-26
 - 最近更新：2026-07-28
@@ -241,7 +241,8 @@
 - [x] 接入并完成 LoRa MV-ACC-CIL seed7 正式入口与三轮报告：Job `44573179`。
 - [x] 完成 IQ_7-only 表征筛选、冻结 backbone 消融和共享发现后端矩阵：Jobs `44573200`、`44573249`、`44573272`、`44573278`。
 - [x] 在 LoRa 上完成首轮跨信号体制泛化验证；当前结果显示表征改善有限，主要剩余风险为新旧类后端权衡。
-- [ ] 实现只用 IQ_7 校准的 RADCIL/原型双头融合，seed7 达到门槛后再扩展三种子。
+- [x] 实现只用 IQ_7 校准的 RADCIL/原型分组双头融合，并增加协议已知每轮 5 类的无标签目标簇数合并。
+- [ ] 提交分组双头 seed7 短验证；只有聚类和新旧类权衡门槛同时通过才扩展三种子。
 - [ ] 使用 ManyTx、ManyRx 进行补充稳定性验证；不因补充实验延迟 WiSig、ADS-B 主结果。
 
 ### 阶段 6：结果与交付，2–3 天
@@ -359,7 +360,7 @@ Job `44517860` 已完成 ADS-B strict baseline 与前端消融三种子实验。
 | IGCD-minimal 不是完整复现            | 客户或论文审稿可能质疑 SOTA 公平性                                                              | 明确标注为 minimal strict adaptation，必要时后续补齐更完整适配                         |
 | ADS-B R2/R3 发现欠聚类                  | 三种子 R3 仅发现 6–7/10 类，限制 New Acc 和 Overall                                             | 固定 Long-RADCIL 后端与 ratio 0.03；自适应密度已证实为负消融，停止继续调固定密度参数                |
 | ADS-B 遗忘控制仍弱于 DOI-style          | 主方法 Overall/New Acc 更高，但 Forgetting 明显更高                                             | 在结果表中同时报告优势与局限；后续跨体制验证不以牺牲协议隔离换取更低遗忘                         |
-| LoRa 新旧类后端权衡                     | 预选表征 RADCIL R3 New `0.3905` 但 Old `0.0798`；DOI-style Old `0.1786` 但 New `0.1238` | 暂不扩三种子；实现只依赖 IQ_7 校准的网络/原型双头融合，禁止用 held-out eval 调权重 |
+| LoRa 新旧类后端权衡                     | 预选表征 RADCIL R3 New `0.3905` 但 Old `0.0798`；DOI-style Old `0.1786` 但 New `0.1238` | 已实现 IQ_7-only 分组双头与协议目标簇数合并；待 seed7 实证，禁止用 held-out eval 调权重 |
 | ManyRx 正式 runner 缺失            | 补充实验入口不清晰                                                                         | 后续恢复 runner 或修正文档引用                                                  |
 | Slurm 端保留多份大数据分片               | 占用存储                                                                              | 未经确认不删除，后续只做保留策略建议                                                   |
 
@@ -369,7 +370,7 @@ Job `44517860` 已完成 ADS-B strict baseline 与前端消融三种子实验。
 
 1. ADS-B 阶段 4 已收束：正式 ratio 0.03 不变，自适应密度归档为负消融，baseline 总表已完成。
 2. LoRa seed7 正式链路、表征筛选、冻结消融与后端矩阵已完成；当前不直接扩三种子。
-3. 下一步实现 RADCIL 网络头与 DOI/iCaRL 原型头的双头融合，融合权重只由 IQ_7 validation 校准，IQ_8-10 只用于最终报告。
+3. 推送并提交 `stage5_lora_grouped_hybrid_seed7.sbatch`；融合权重只由 IQ_7 validation 校准，IQ_8-10 只用于最终报告。
 
 中期优先级：
 
