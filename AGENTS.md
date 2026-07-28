@@ -110,7 +110,8 @@
 - Job `44573200` 冻结 backbone 未改善 Old/Forgetting，记录为负消融；Job `44573249` 仅按 IQ_7 选中 `supcon_rf_aug`，完整三轮 Job `44573272` 将 R3 Overall 提升到 `0.1419`、Old `0.0798`、New `0.3905`，但 Forgetting 仍为 `0.5190`。
 - Job `44573278` 在预选表征上确认 DOI-style R3 Old `0.1786`、Forgetting `0.2119`，显著优于 RADCIL，但 New 仅 `0.1238`；当前风险已收束为 RADCIL 偏新类、稳定原型后端偏旧类的后端权衡。
 - Slurm Job `44578823` 已完成 LoRa 分组双头 seed7 严格验证：R3 全轮均达到 5 簇，New 提升至 `0.4286`、Forgetting 降至 `0.4357`，但 Overall `0.1495` 低于 DOI-style `0.1676`，Old `0.0798` 未超过 RADCIL `0.0798`；按预注册双门槛记录为负消融，不扩展 seed13/31。
-- 已实现训练期旧类原型锚定，使用本轮 Teacher 与旧类 replay 构建冻结类中心，只约束 Student 旧类 replay 的类级中心漂移；已预注册权重 `0/0.25/1.0`，候选只按 IQ_7 R3 旧类保持率选择。对应 Slurm 矩阵与只读服务器产物清单入口已准备，尚未推送或提交。
+- Slurm Job `44586060` 已完成训练期旧类原型锚定 seed7 矩阵：IQ_7 R3 旧类保持率为 `0.1143/0.0929/0.0857`（权重 `0/0.25/1.0`），正式选择基线 0；锚定权重均降低 Overall 和 Old，记录为负消融，不扩种子或迁移 ADS-B。
+- 只读清单 `results/stage5/slurm_artifact_inventory_44586060.json` 已确认服务器有 553 个 `.pth/.npz`、约 5.21 GB、54 个超过 50 MB，另有 9 个非空错误日志；已精确忽略本矩阵二进制，不删除任何历史产物。
 
 ## Recent Changes
 
@@ -179,13 +180,14 @@
 - 2026-07-28：实现 MV-ACC 协议目标簇数合并、RADCIL/DOI 分组双头融合、IQ_7-only 权重校准、seed7 报告器与短时 Slurm 入口；本地语法、CLI 和两个合成不变量测试通过。
 - 2026-07-28：完成 Job `44578823` 并同步小型结果；IQ_7 每阶段均选择融合权重 1.0，但未形成同时改善 Overall、Old、New 与 Forgetting 的组合，正式归档为负消融。
 - 2026-07-28：新增训练期 Teacher replay 类中心锚定、IQ_7 retention 审计、三权重 seed7 报告器、Slurm 矩阵和服务器产物只读清单工具；本地语法、CLI 与真实反向传播合成测试通过。
+- 2026-07-28：完成 Job `44586060` 和只读服务器产物清单；IQ_7 按规则选择权重 0，`0.25/1.0` 均退化，训练期原型锚定归档为负消融。
 
 ## Next TODO
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
 - 阶段 4 ADS-B 已完成；正式全轮次继续使用 ratio 0.03，自适应密度作为负消融归档，不再继续调固定密度参数。
-- 阶段 5：不扩展分组双头三种子。下一步在明确推送/Slurm 授权后运行训练期原型锚定 `0/0.25/1.0` seed7 矩阵，只按 IQ_7 选择候选。
+- 阶段 5：不扩展分组双头或训练期原型锚定三种子。LoRa 后端已完成两轮严格负消融，后续优先整理跨体制局限，而非继续后验/原型类调参。
 - 将 IGCD-minimal 纳入 strict baseline 表，但正式主前端继续优先使用 MV-ACC 或稳定 Deep-HDBSCAN。
 - 后续每完成关键 Slurm job、阶段报告或客户可汇报结论时，同步更新 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 的当前状态、关键结果、风险和下一步行动清单。
 - 后续 WiSig 短实验优先使用 MV-ACC 或稳定 Deep-HDBSCAN 前端；SimGCD-style 保留为学习式发现 baseline，不作为阶段 1 主前端。
@@ -209,7 +211,7 @@
 - ADS-B R3 欠聚类已定位到初始密度形成阶段；固定 ratio 0.02 和无标签自适应密度均未形成跨轮次稳定收益，正式配置保持 ratio 0.03，阶段 4 不再继续调密度参数。
 - ADS-B MV-ACC-CIL 的 Overall 高于当前 baseline，但 Forgetting `0.1159±0.0108` 高于共享发现 DOI-style `0.0551±0.0032`；论文表述必须同时报告整体识别优势和遗忘控制局限。
 - LoRa 目标簇数约束已消除 seed7 的过聚类，但分组双头未解决新旧类权衡；IQ_7 每阶段均选择 1.0 原型权重仍无法提高 R3 Old，继续调 late-fusion 权重价值有限。
-- 训练期原型锚定尚未在真实 LoRa seed7 上运行，不能宣称已解决旧类漂移；若 IQ_7 未改善或 held-out New 下降超过 0.03，将记录为负消融并停止。
+- LoRa 旧类漂移仍未解决：训练期类中心锚定在 IQ_7 即未改善，且 held-out Old/Overall 退化；继续沿该类原型约束调权重价值有限。
 - Slurm 端仍保留若干历史 failed smoke 日志和大型 `.pth`/`.npz` 运行产物；本次只同步成功阶段 5 小型 JSON/stdout/stderr，未删除、未提交大型产物。
 - IGCD-minimal 已接入真实 WiSig frozen embeddings 并完成 Job `44422704`，但当前仍是 minimal strict adaptation，不是完整 IGCD 论文复现。
 - `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`。
@@ -231,6 +233,7 @@
 - LoRa 分组双头将“当前轮新类”定义为分类器扩展前后新增的输出列，而不是按样本真值路由；目标簇数来自预先声明的 10+5×3 协议。两个机制均为显式开关，保持 WiSig/ADS-B 历史默认行为不变。
 - LoRa 分组双头的 seed7 结果作为负消融保留：目标簇数约束可独立消除过聚类，但不把该后端锁定为主方法，也不据此扩展更多随机种子。
 - 训练期原型锚定使用 Teacher replay 类中心而非逐样本特征复制，目的是以更弱约束稳定旧类，同时为跨天域适应保留空间；默认权重 0，保持历史实验行为。
+- 服务器产物采用“只读清单 + 精确忽略 + 小型结果入库”策略：不删除既有 5.21 GB 二进制，任何清理仅在用户明确授权后另行执行。
 - ADS-B 正式主入口固定使用 `ADSBLongClosedSet` 与 `ratio_2p0_replay_3p0`；下一轮只研究发现前端，避免同时改动表征、发现和后端导致归因不清。
 - ADS-B 发现参数消融必须预注册为单因素变体；候选选择只使用 discovery 侧无标签结构指标，NMI/ARI/Hungarian 和增量准确率只用于事后审计。
 - ADS-B 自适应密度三种子验证未通过收益门槛；正式 ratio 固定为 0.03，停止继续调固定密度参数，避免在同一数据集上反复事后选参。

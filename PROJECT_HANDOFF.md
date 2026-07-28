@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-28
-- 当前阶段：阶段 5 分组双头已归档为负消融；训练期旧类原型锚定 seed7 预注册矩阵已实现，待明确授权推送和提交
+- 当前阶段：阶段 5 两种 LoRa 后端修复均已归档为 seed7 负消融；停止扩大后端调参
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -128,7 +128,8 @@ Strict loader 审计：
 - LoRa 阶段 5 已新增 strict loader、协议审计和 closedset smoke 入口；Job `44559268` 协议审计 `ok=true`，Job `44572328` closedset smoke 完成，证明紧凑 LoRa NPZ 可进入现有 PyTorch 训练/发现链路。
 - LoRa seed7 正式 Job `44573179`、冻结消融 `44573200`、IQ_7-only 表征筛选 `44573249`、预选表征三轮 `44573272` 和后端矩阵 `44573278` 均完成。预选表征 RADCIL R3 Overall/Old/New 为 `0.1419/0.0798/0.3905`；DOI-style 为 `0.1676/0.1786/0.1238`。
 - LoRa Job `44578823` 已验证协议目标簇数合并和分组双头：R3 为 5 簇、Overall/Old/New/Forgetting=`0.1495/0.0798/0.4286/0.4357`。三轮均达到 5 簇，但 Overall 低于 DOI-style 且 Old 未改善；按预注册门槛不扩种子。
-- 已实现训练期 Teacher replay 类中心锚定，权重矩阵固定为 `0/0.25/1.0`；报告器先按 IQ_7 R3 旧类保持率选候选，再展示 IQ_8-10 事后指标。入口为 `slurm/stage5_lora_prototype_anchor_seed7.sbatch`，尚未提交。
+- Job `44586060` 已完成训练期 Teacher replay 类中心锚定矩阵。IQ_7 R3 旧类保持率在权重 `0/0.25/1.0` 分别为 `0.1143/0.0929/0.0857`，按规则选择 0；锚定使 held-out Overall/Old 同步退化，不扩种子或迁移 ADS-B。
+- 已生成只读服务器产物清单：553 个模型/回放二进制、约 5.21 GB、54 个超 50 MB 和 9 个非空错误日志。未删除任何文件，仅精确忽略新矩阵二进制并保留小型审计结果。
 - 已在 WiSig strict 入口实现可选 DOI-memory hybrid：使用伪标签 replay 记忆构建原型、跨轮对齐历史原型，并与网络 logits 做 late fusion；默认融合权重为 0，不改变历史 RADCIL 行为。
 - 已新增 `tools/stage3_wisig_hybrid_doi_plan.py`、`tools/stage3_wisig_hybrid_doi_report.py` 和 `slurm/stage3_wisig_hybrid_doi_seed7.sbatch`；本地语法、参数入口、计划生成和合成张量 smoke test 已通过，待 Slurm seed7 验证。
 - SimGCD-style 已验证为可运行学习式发现 baseline，但真实 WiSig 前端质量低于 MV-ACC；阶段 1 短期主线应保留 MV-ACC 或稳定 Deep-HDBSCAN 前端，避免把弱前端误锁为新主方法。
@@ -140,7 +141,7 @@ Strict loader 审计：
 
 1. ADS-B 阶段 4 已收束；固定 ratio 0.03 为正式配置，自适应密度作为负消融保留，不再继续调固定密度参数。
 2. 阶段 5 LoRa 正式 seed7 与风险诊断已完成；暂不扩种子，避免复制已知的新旧类权衡。
-3. 明确授权后推送并提交 LoRa 原型锚定 seed7 矩阵；若门槛通过才考虑迁移 ADS-B 或扩种子。
+3. 不再扩展 LoRa 后端调参。后续应整理严格负消融与跨体制局限，或选择不复用上述原型/late-fusion 机制的新方向。
 4. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 5. 若后续补充实验需要 LoRa 完整数据或 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压或下载；LoRa 可优先只取 Different Days Indoor Scenario 的必要子集，不删除 Release 分片或原压缩包。
 
