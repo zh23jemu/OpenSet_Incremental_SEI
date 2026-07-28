@@ -46,3 +46,7 @@ Desktop.ini
 # 阶段 5 LoRa 本地端到端 smoke 的临时模型与回放记忆；CSV/JSON/Markdown 审计结果保留入库
 /results/stage5/lora_mvacc_cil_seed7_local_smoke/*.pth
 /results/stage5/lora_mvacc_cil_seed7_local_smoke/*.npz
+
+# 阶段 5 原型锚定矩阵仅将大型训练状态保留在 Slurm；CSV/JSON/Markdown 结果继续入库
+/results/stage5/lora_prototype_anchor_seed7_*/*/*.pth
+/results/stage5/lora_prototype_anchor_seed7_*/*/*.npz

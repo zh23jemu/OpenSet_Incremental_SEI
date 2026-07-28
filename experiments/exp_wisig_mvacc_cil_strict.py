@@ -1833,6 +1833,37 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
     for p in teacher.parameters():
         p.requires_grad_(False)
 
+    # 类中心锚定使用本轮训练开始前的 Teacher 和旧类 replay 构建固定原型。
+    # 与逐样本特征蒸馏不同，它只约束旧类的类级中心，不要求 Student 复制每个
+    # 样本的瞬时特征，因此给跨天域偏移保留适应空间。当前轮新伪类尚未进入
+    # memory，且标签边界由 old_out_dim 给出，不读取任何 held-out 真值。
+    anchor_prototypes = None
+    anchor_valid = None
+    if float(args.radcil_prototype_anchor_weight) > 0:
+        teacher_features = []
+        anchor_loader = DataLoader(
+            TensorDataset(torch.as_tensor(memory_x, dtype=torch.float32)),
+            batch_size=int(args.test_batch_size), shuffle=False, num_workers=0,
+        )
+        with torch.no_grad():
+            for (anchor_x,) in anchor_loader:
+                anchor_feat, _ = teacher(anchor_x.to(device))
+                teacher_features.append(anchor_feat)
+        all_teacher_features = torch.cat(teacher_features, dim=0)
+        memory_y_device = torch.as_tensor(memory_y, dtype=torch.long, device=device)
+        anchor_prototypes = torch.zeros(
+            (int(old_out_dim), all_teacher_features.shape[1]),
+            dtype=all_teacher_features.dtype, device=device,
+        )
+        anchor_valid = torch.zeros(int(old_out_dim), dtype=torch.bool, device=device)
+        for class_id in range(int(old_out_dim)):
+            class_mask = memory_y_device == class_id
+            if torch.any(class_mask):
+                anchor_prototypes[class_id] = F.normalize(
+                    all_teacher_features[class_mask].mean(dim=0), dim=0
+                )
+                anchor_valid[class_id] = True
+
     def trainable_backbone_parameters():
         """按 RADCIL 消融参数选择需要解冻的骨干末端范围。"""
         scope = str(args.radcil_unfreeze_scope).lower()
@@ -1920,6 +1951,18 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                     feature_distill = F.mse_loss(F.normalize(feat[len(xc):], dim=1), F.normalize(teacher_feat_m, dim=1))
                 else:
                     feature_distill = logits_m.sum() * 0.0
+                if anchor_prototypes is not None:
+                    anchor_mask = (ym < int(old_out_dim)) & anchor_valid[ym.clamp(max=int(old_out_dim) - 1)]
+                    if torch.any(anchor_mask):
+                        student_anchor_features = F.normalize(feat[len(xc):][anchor_mask], dim=1)
+                        target_anchor_prototypes = anchor_prototypes[ym[anchor_mask]]
+                        prototype_anchor = (
+                            1.0 - (student_anchor_features * target_anchor_prototypes).sum(dim=1)
+                        ).mean()
+                    else:
+                        prototype_anchor = logits_m.sum() * 0.0
+                else:
+                    prototype_anchor = logits_m.sum() * 0.0
                 high = wc >= float(args.cil_supcon_threshold)
                 feat_con = torch.cat([feat[:len(xc)][high], feat[len(xc):]], dim=0)
                 y_con = torch.cat([yc[high], ym], dim=0)
@@ -1930,6 +1973,7 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                     + float(args.cil_replay_weight) * ce_memory
                     + kd_weight * kd
                     + float(args.radcil_feature_distill_weight) * feature_distill
+                    + float(args.radcil_prototype_anchor_weight) * prototype_anchor
                     + float(args.cil_supcon_weight) * con
                 )
                 opt.zero_grad()
@@ -3004,6 +3048,7 @@ def main():
     parser.add_argument("--radcil_masked_kd", action="store_true", help="Apply KD only on replay samples whose labels are inside the teacher output range.")
     parser.add_argument("--radcil_kd_schedule", choices=["constant", "cosine", "linear_decay"], default="constant", help="Schedule for the end-to-end CIL KD weight inside each training stage.")
     parser.add_argument("--radcil_feature_distill_weight", type=float, default=0.0, help="Replay-feature distillation weight for constraining old-class backbone drift.")
+    parser.add_argument("--radcil_prototype_anchor_weight", type=float, default=0.0, help="Teacher replay class-prototype anchor weight; 0 preserves historical RADCIL behavior.")
     parser.add_argument("--radcil_unfreeze_scope", choices=["none", "fc", "layer3", "tail", "layer2_tail"], default="tail", help="Backbone scope unfrozen during the joint RADCIL stage.")
     parser.add_argument("--radcil_doi_fusion_weight", type=float, default=0.0, help="DOI replay-prototype late-fusion weight; 0 keeps network-only RADCIL prediction.")
     parser.add_argument("--radcil_doi_align_lambda", type=float, default=0.30, help="Current-round weight used to align historical and current replay prototypes.")
@@ -3345,6 +3390,7 @@ def main():
             f"prototype_temperature={args.radcil_doi_prototype_temperature}"
         )
     clustering_rows, incremental_rows, retention_rows = [], [], []
+    validation_retention_rows = []
     student = copy.deepcopy(model).to(device).eval()
     pseudo_to_true = {int(c): int(c) for c in range(args.initial_known_classes)}
     memory_x, memory_y = _update_iq_memory(None, None, X_train, y_train, args.memory_per_class, args.seed)
@@ -3394,6 +3440,14 @@ def main():
     )
     incremental_rows.append(initial_row)
     retention_rows.append({"Round": "Initial", "Fixed Day1 Old-Class Acc": float(initial_row["Overall Acc"])})
+    if X_validation is not None:
+        initial_validation_pred = _predict_end_to_end(
+            student, X_validation, args.test_batch_size, device
+        )
+        validation_retention_rows.append({
+            "Round": "Initial",
+            "IQ_7 Validation Old-Class Acc": float(np.mean(initial_validation_pred == y_validation)),
+        })
     initial_reference_acc = float(initial_row["Initial Known Acc"])
     next_label = int(args.initial_known_classes)
 
@@ -3479,6 +3533,16 @@ def main():
         fixed_true = eval_y_dict["eval_initial"]
         fixed_mapped = np.asarray([pseudo_to_true.get(int(p), int(p)) for p in fixed_pred], dtype=np.int64)
         retention_rows.append({"Round": f"R{i}", "Fixed Day1 Old-Class Acc": float(np.mean(fixed_true == fixed_mapped))})
+        if X_validation is not None:
+            # 该表专供 seed7 训练配置选择。只评估固定 IQ_7 初始旧类，不能
+            # 表示增量新类质量；IQ_8-10 held-out 指标不得用于候选选择。
+            validation_pred = _predict_end_to_end(
+                student, X_validation, args.test_batch_size, device
+            )
+            validation_retention_rows.append({
+                "Round": f"R{i}",
+                "IQ_7 Validation Old-Class Acc": float(np.mean(validation_pred == y_validation)),
+            })
         torch.save({
             "model_state": student.state_dict(),
             "round": i,
@@ -3487,6 +3551,7 @@ def main():
             "radcil_doi_fusion_weight": float(args.radcil_doi_fusion_weight),
             "radcil_doi_effective_fusion_weight": float(doi_fusion_weight),
             "radcil_grouped_doi_fusion": bool(args.radcil_grouped_doi_fusion),
+            "radcil_prototype_anchor_weight": float(args.radcil_prototype_anchor_weight),
             "radcil_doi_align_lambda": float(args.radcil_doi_align_lambda),
             "radcil_doi_prototype_temperature": float(args.radcil_doi_prototype_temperature),
         }, os.path.join(args.save_dir, f"mvacc_cil_after_r{i}.pth"))
@@ -3501,6 +3566,11 @@ def main():
     clustering_df = save_csv(clustering_rows, os.path.join(args.save_dir, "clustering_results.csv"))
     incremental_df = save_csv(incremental_rows, os.path.join(args.save_dir, "incremental_results.csv"))
     save_csv(retention_rows, os.path.join(args.save_dir, "fixed_day1_retention.csv"))
+    if validation_retention_rows:
+        save_csv(
+            validation_retention_rows,
+            os.path.join(args.save_dir, "iq7_validation_retention.csv"),
+        )
     if doi_calibration_rows:
         save_csv(doi_calibration_rows, os.path.join(args.save_dir, "grouped_doi_iq7_calibration.csv"))
     per_round_summary_df = build_per_round_summary(clustering_df, incremental_df)
