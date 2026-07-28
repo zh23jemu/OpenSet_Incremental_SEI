@@ -1,0 +1,118 @@
+
+========== LoRa25 Different Days Indoor 10-Known 3-Round Incremental Experiment ==========
+Dataset: datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz
+Save dir: results/stage5/lora_selected_representation_backend_seed7_44573278
+Device: cpu
+Protocol: 10 known + 5 unknown R1 + 5 unknown R2 + 5 unknown R3
+LoRa split: IQ_1-6 train | IQ_7 validation | IQ_8-10 held-out evaluation
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.03, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train IQ_1-6 train: (840, 2, 256), classes=10, labels=0-9
+Initial eval 30%:     (420, 2, 256), classes=10, labels=0-9, day=Day 1
+Unknown R1 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=10-14, day=Day 2
+After R1 IQ_8-10 eval: (630, 2, 256), classes=15, labels=0-14, day=Day 2
+Unknown R2 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=15-19, day=Day 3
+After R2 IQ_8-10 eval: (840, 2, 256), classes=20, labels=0-19, day=Day 3
+Unknown R3 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=20-24, day=Day 4
+After R3 IQ_8-10 eval: (1050, 2, 256), classes=25, labels=0-24, day=Day 4
+[Load] checkpoint=results/stage5/lora_representation_screen_seed7_44573249/supcon_rf_aug.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.347 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Representative Class-Incremental Baselines: Shared Graph-fusion pseudo-labels ==========
+
+========== Representative Class-Incremental Baselines: End-to-end with neutral Deep-HDBSCAN discovery ==========
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples
+MV-ACC-CIL discovery    R1         Day 2                 5      490                      7                    7                    2                    1.4         7    0.0 0.150027 0.099739 0.426531       0.320408 fixed_alpha    0.7                 12                        0                  0.74                        102               102                  1.0               0.732938              0.518360                False                     0                        1.75                                  0.3                             NaN                      15                     0.03                  5
+MV-ACC-CIL discovery    R2         Day 3                 5      490                      5                    5                    0                    1.0         5    0.0 0.121893 0.095736 0.357143       0.353061 fixed_alpha    0.7                 12                        0                  0.74                        136               136                  1.0               0.698240              0.412681                False                     0                        1.75                                  0.3                             NaN                      15                     0.03                  5
+MV-ACC-CIL discovery    R3         Day 4                 5      490                      8                    7                    2                    1.4         7    0.0 0.320639 0.275377 0.520408       0.455102 fixed_alpha    0.7                 12                        1                  0.74                        140               140                  1.0               0.741581              0.440809                False                     0                        1.75                                  0.3                             NaN                      15                     0.03                  5
+Saved: results/stage5/lora_selected_representation_backend_seed7_44573278/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.526190 0.526190      NaN           0.526190         0.000000  0.507408
+MV-ACC-CIL After R1    Day 2   eval_r1_30pct_15_seen            15                5                   7                 7           630     0.244444 0.173810 0.385714           0.173810         0.352381  0.190265
+MV-ACC-CIL After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.213095 0.179365 0.314286           0.192857         0.333333  0.150645
+MV-ACC-CIL After R3    Day 4   eval_r3_30pct_25_seen            25                5                   7                 7          1050     0.141905 0.079762 0.390476           0.007143         0.519048  0.069720
+Saved: results/stage5/lora_selected_representation_backend_seed7_44573278/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1              7                                 7                    2         1.000000 0.426531 0.150027 0.099739       0.320408     0.244444 0.385714         0.352381
+MV-ACC-CIL    R2              5                                 5                    0         1.000000 0.357143 0.121893 0.095736       0.353061     0.213095 0.314286         0.333333
+MV-ACC-CIL    R3              7                                 7                    2         1.000000 0.520408 0.320639 0.275377       0.455102     0.141905 0.390476         0.519048
+Saved: results/stage5/lora_selected_representation_backend_seed7_44573278/per_round_summary_results.csv
+
+========== Table 4: Shared-Discovery Baseline Details ==========
+     Method    Stage Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+     Ft-CNN  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.416667 0.416667      NaN           0.416667         0.000000  0.351439
+        LwF  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.416667 0.416667      NaN           0.416667         0.000000  0.351439
+       EEIL  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.416667 0.416667      NaN           0.416667         0.000000  0.351439
+      iCaRL  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.485714 0.485714      NaN           0.485714         0.000000  0.470031
+TPCIL-style  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.478571 0.478571      NaN           0.478571         0.000000  0.468655
+  DOI-style  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.485714 0.485714      NaN           0.485714         0.000000  0.470031
+     Ft-CNN After R1    Day 2   eval_r1_30pct_15_seen            15                5                   7                 7           630     0.223810 0.221429 0.228571           0.221429         0.195238  0.175600
+        LwF After R1    Day 2   eval_r1_30pct_15_seen            15                5                   7                 7           630     0.230159 0.223810 0.242857           0.223810         0.192857  0.196908
+      iCaRL After R1    Day 2   eval_r1_30pct_15_seen            15                5                   7                 7           630     0.269841 0.292857 0.223810           0.292857         0.192857  0.256014
+       EEIL After R1    Day 2   eval_r1_30pct_15_seen            15                5                   7                 7           630     0.185714 0.159524 0.238095           0.159524         0.257143  0.134823
+TPCIL-style After R1    Day 2   eval_r1_30pct_15_seen            15                5                   7                 7           630     0.271429 0.307143 0.200000           0.307143         0.171429  0.256387
+  DOI-style After R1    Day 2   eval_r1_30pct_15_seen            15                5                   7                 7           630     0.261905 0.290476 0.204762           0.290476         0.195238  0.247909
+     Ft-CNN After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.144048 0.120635 0.214286           0.180952         0.235714  0.103518
+        LwF After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.167857 0.131746 0.276190           0.188095         0.228571  0.118145
+      iCaRL After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.284524 0.314286 0.195238           0.416667         0.069048  0.290585
+       EEIL After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.197619 0.160317 0.309524           0.235714         0.180952  0.170894
+TPCIL-style After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.275000 0.315873 0.152381           0.433333         0.045238  0.272198
+  DOI-style After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.276190 0.309524 0.176190           0.421429         0.064286  0.282020
+     Ft-CNN After R3    Day 4   eval_r3_30pct_25_seen            25                5                   7                 7          1050     0.128571 0.095238 0.261905           0.190476         0.226190  0.077134
+        LwF After R3    Day 4   eval_r3_30pct_25_seen            25                5                   7                 7          1050     0.123810 0.098810 0.223810           0.197619         0.219048  0.081927
+      iCaRL After R3    Day 4   eval_r3_30pct_25_seen            25                5                   7                 7          1050     0.166667 0.177381 0.123810           0.266667         0.219048  0.159800
+       EEIL After R3    Day 4   eval_r3_30pct_25_seen            25                5                   7                 7          1050     0.137143 0.116667 0.219048           0.233333         0.183333  0.093323
+TPCIL-style After R3    Day 4   eval_r3_30pct_25_seen            25                5                   7                 7          1050     0.167619 0.177381 0.128571           0.290476         0.188095  0.158032
+  DOI-style After R3    Day 4   eval_r3_30pct_25_seen            25                5                   7                 7          1050     0.167619 0.178571 0.123810           0.273810         0.211905  0.160219
+Saved: results/stage5/lora_selected_representation_backend_seed7_44573278/shared_discovery_baseline_results.csv
+
+========== Table 5: Shared-Discovery Controlled Comparison ==========
+     Method   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Ft-CNN 0.223810       0.195238 0.144048       0.235714 0.128571       0.226190 0.165476        0.219048
+        LwF 0.230159       0.192857 0.167857       0.228571 0.123810       0.219048 0.173942        0.213492
+      iCaRL 0.269841       0.192857 0.284524       0.069048 0.166667       0.219048 0.240344        0.160317
+       EEIL 0.185714       0.257143 0.197619       0.180952 0.137143       0.183333 0.173492        0.207143
+TPCIL-style 0.271429       0.171429 0.275000       0.045238 0.167619       0.188095 0.238016        0.134921
+  DOI-style 0.261905       0.195238 0.276190       0.064286 0.167619       0.211905 0.235238        0.157143
+ MV-ACC-CIL 0.244444       0.352381 0.213095       0.333333 0.141905       0.519048 0.199815        0.401587
+Saved: results/stage5/lora_selected_representation_backend_seed7_44573278/shared_discovery_comparison_results.csv
+
+========== Table 6: End-to-End Open-Set Incremental Comparison ==========
+                    Method   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Deep-HDBSCAN + Ft-CNN 0.225397       0.130952 0.138095       0.200000 0.116190       0.195238 0.159894        0.175397
+        Deep-HDBSCAN + LwF 0.203175       0.178571 0.142857       0.195238 0.116190       0.195238 0.154074        0.189683
+      Deep-HDBSCAN + iCaRL 0.273016       0.104762 0.252381       0.061905 0.180952       0.133333 0.235450        0.100000
+       Deep-HDBSCAN + EEIL 0.228571       0.138095 0.151190       0.178571 0.127619       0.171429 0.169127        0.162698
+Deep-HDBSCAN + TPCIL-style 0.280952       0.076190 0.254762       0.045238 0.177143       0.128571 0.237619        0.083333
+  Deep-HDBSCAN + DOI-style 0.274603       0.104762 0.252381       0.061905 0.181905       0.133333 0.236296        0.100000
+                MV-ACC-CIL 0.244444       0.352381 0.213095       0.333333 0.141905       0.519048 0.199815        0.401587
+Saved: results/stage5/lora_selected_representation_backend_seed7_44573278/end_to_end_comparison_results.csv
+
+========== Table 7: Full End-to-End System Comparison (Main Table) ==========
+                    Method                                  Discovery Module                            Incremental Module   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Deep-HDBSCAN + Ft-CNN                          Deep embedding + HDBSCAN                                   Fine-tuning 0.225397       0.130952 0.138095       0.200000 0.116190       0.195238 0.159894        0.175397
+        Deep-HDBSCAN + LwF                          Deep embedding + HDBSCAN                        Knowledge distillation 0.203175       0.178571 0.142857       0.195238 0.116190       0.195238 0.154074        0.189683
+      Deep-HDBSCAN + iCaRL                          Deep embedding + HDBSCAN        Exemplar replay + prototype classifier 0.273016       0.104762 0.252381       0.061905 0.180952       0.133333 0.235450        0.100000
+       Deep-HDBSCAN + EEIL                          Deep embedding + HDBSCAN                         Replay + distillation 0.228571       0.138095 0.151190       0.178571 0.127619       0.171429 0.169127        0.162698
+Deep-HDBSCAN + TPCIL-style                          Deep embedding + HDBSCAN            Topology-aware prototype smoothing 0.280952       0.076190 0.254762       0.045238 0.177143       0.128571 0.237619        0.083333
+  Deep-HDBSCAN + DOI-style                          Deep embedding + HDBSCAN DOI-inspired prototype preservation/alignment 0.274603       0.104762 0.252381       0.061905 0.181905       0.133333 0.236296        0.100000
+                MV-ACC-CIL SupCon deep/RF graphs + adaptive fusion + HDBSCAN                 Network replay + distillation 0.244444       0.352381 0.213095       0.333333 0.141905       0.519048 0.199815        0.401587
+Saved: results/stage5/lora_selected_representation_backend_seed7_44573278/end_to_end_system_comparison.csv
