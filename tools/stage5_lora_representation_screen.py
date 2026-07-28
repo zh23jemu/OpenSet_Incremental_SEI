@@ -53,6 +53,11 @@ def main() -> int:
     for variant in VARIANTS:
         checkpoint = output_dir / f"{variant['name']}.pth"
         metadata = {
+            "dataset_path": str(Path(args.npz_path).resolve()),
+            "selected_rx_list": [2],
+            "known_tx": list(range(10)),
+            "training_day_index": 0,
+            "development_ratio": 0.70,
             "dataset_profile": "lora25",
             "sample_split_protocol": "lora25_transmission_disjoint_60_10_30_v1",
             "seed": int(args.seed),
@@ -60,7 +65,10 @@ def main() -> int:
             "supcon_weight": 0.1,
             "supcon_temperature": 0.2,
             "training_recipe_version": TRAINING_RECIPE_VERSION,
+            "closedset_validation_fraction": 1.0 / 7.0,
             "rf_augmentation": bool(variant["use_rf_augmentation"]),
+            "supcon_projection_dim": 64 if variant["use_supcon"] else 0,
+            "supcon_projection_hidden_dim": 128 if variant["use_supcon"] else 0,
         }
         model = train_closedset_model(
             train_set, 10, 128, args.epochs, args.batch_size, args.lr, device, str(checkpoint),
