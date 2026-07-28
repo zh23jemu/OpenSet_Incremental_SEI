@@ -1,0 +1,54 @@
+
+========== LoRa25 Different Days Indoor 10-Known 3-Round Incremental Experiment ==========
+Dataset: datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz
+Save dir: results/stage5/lora_radcil_frozen_backbone_seed7_44573200
+Device: cuda
+Protocol: 10 known + 5 unknown R1 + 5 unknown R2 + 5 unknown R3
+LoRa split: IQ_1-6 train | IQ_7 validation | IQ_8-10 held-out evaluation
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.03, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train IQ_1-6 train: (840, 2, 256), classes=10, labels=0-9
+Initial eval 30%:     (420, 2, 256), classes=10, labels=0-9, day=Day 1
+Unknown R1 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=10-14, day=Day 2
+After R1 IQ_8-10 eval: (630, 2, 256), classes=15, labels=0-14, day=Day 2
+Unknown R2 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=15-19, day=Day 3
+After R2 IQ_8-10 eval: (840, 2, 256), classes=20, labels=0-19, day=Day 3
+Unknown R3 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=20-24, day=Day 4
+After R3 IQ_8-10 eval: (1050, 2, 256), classes=25, labels=0-24, day=Day 4
+[Load] checkpoint=results/stage5/lora_mvacc_cil_seed7_44573179/closedset_lora_day1_10known.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.347 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples
+MV-ACC-CIL discovery    R1         Day 2                 5      490                     11                   12                    7                    2.4        12    0.0 0.233383 0.113874 0.483673       0.263265 fixed_alpha    0.7                 12                        1                  0.74                        176               176                  1.0               0.775725              0.543682                False                     2                        1.75                                  0.3                        0.322136                      15                     0.03                  5
+MV-ACC-CIL discovery    R2         Day 3                 5      490                      7                    6                    1                    1.2         6    0.0 0.182684 0.117749 0.448980       0.391837 fixed_alpha    0.7                 12                        1                  0.74                        142               142                  1.0               0.771631              0.445634                False                     0                        1.75                                  0.3                             NaN                      15                     0.03                  5
+MV-ACC-CIL discovery    R3         Day 4                 5      490                     10                    9                    4                    1.8         9    0.0 0.345053 0.236234 0.559184       0.373469 fixed_alpha    0.7                 12                        2                  0.74                        144               144                  1.0               0.812670              0.493753                False                     1                        1.75                                  0.3                        0.315160                      15                     0.03                  5
+Saved: results/stage5/lora_radcil_frozen_backbone_seed7_44573200/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.497619 0.497619      NaN           0.497619         0.000000  0.476007
+MV-ACC-CIL After R1    Day 2   eval_r1_30pct_15_seen            15                5                  12                12           630     0.169841 0.157143 0.195238           0.157143         0.340476  0.144928
+MV-ACC-CIL After R2    Day 3   eval_r2_30pct_20_seen            20                5                   6                 6           840     0.182143 0.125397 0.352381           0.138095         0.359524  0.127587
+MV-ACC-CIL After R3    Day 4   eval_r3_30pct_25_seen            25                5                   9                 9          1050     0.131429 0.059524 0.419048           0.000000         0.497619  0.075200
+Saved: results/stage5/lora_radcil_frozen_backbone_seed7_44573200/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1             12                                12                    7         1.000000 0.483673 0.233383 0.113874       0.263265     0.169841 0.195238         0.340476
+MV-ACC-CIL    R2              6                                 6                    1         1.000000 0.448980 0.182684 0.117749       0.391837     0.182143 0.352381         0.359524
+MV-ACC-CIL    R3              9                                 9                    4         1.000000 0.559184 0.345053 0.236234       0.373469     0.131429 0.419048         0.497619
+Saved: results/stage5/lora_radcil_frozen_backbone_seed7_44573200/per_round_summary_results.csv
+LoRa25 seed7 报告：results/stage5/STAGE5_LORA_RADCIL_FROZEN_BACKBONE_SEED7_REPORT_44573200.md
