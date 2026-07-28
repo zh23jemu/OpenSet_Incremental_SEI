@@ -1,0 +1,51 @@
+{
+  "selection_metric": "IQ_7 validation_accuracy only",
+  "heldout_eval_role": "posthoc report only; not used for ranking",
+  "selected_variant": "supcon_rf_aug",
+  "rows": [
+    {
+      "name": "supcon_rf_aug",
+      "use_supcon": true,
+      "use_rf_augmentation": true,
+      "validation_accuracy": 0.5428571428571428,
+      "validation_loss": 1.2513179234095981,
+      "selection_epoch": 19,
+      "posthoc_initial_eval_accuracy": 0.5261904761904762,
+      "posthoc_initial_eval_loss": 1.153166743687221,
+      "checkpoint": "results/stage5/lora_representation_screen_seed7_44573249/supcon_rf_aug.pth"
+    },
+    {
+      "name": "supcon_no_aug",
+      "use_supcon": true,
+      "use_rf_augmentation": false,
+      "validation_accuracy": 0.5071428571428571,
+      "validation_loss": 1.4114387512207032,
+      "selection_epoch": 9,
+      "posthoc_initial_eval_accuracy": 0.4023809523809524,
+      "posthoc_initial_eval_loss": 1.5571008954729353,
+      "checkpoint": "results/stage5/lora_representation_screen_seed7_44573249/supcon_no_aug.pth"
+    },
+    {
+      "name": "ce_no_aug",
+      "use_supcon": false,
+      "use_rf_augmentation": false,
+      "validation_accuracy": 0.4714285714285714,
+      "validation_loss": 1.3571405683244977,
+      "selection_epoch": 11,
+      "posthoc_initial_eval_accuracy": 0.4238095238095238,
+      "posthoc_initial_eval_loss": 1.471119108654204,
+      "checkpoint": "results/stage5/lora_representation_screen_seed7_44573249/ce_no_aug.pth"
+    },
+    {
+      "name": "ce_rf_aug",
+      "use_supcon": false,
+      "use_rf_augmentation": true,
+      "validation_accuracy": 0.4142857142857143,
+      "validation_loss": 1.5638282775878907,
+      "selection_epoch": 13,
+      "posthoc_initial_eval_accuracy": 0.3476190476190476,
+      "posthoc_initial_eval_loss": 1.6892967587425596,
+      "checkpoint": "results/stage5/lora_representation_screen_seed7_44573249/ce_rf_aug.pth"
+    }
+  ]
+}
