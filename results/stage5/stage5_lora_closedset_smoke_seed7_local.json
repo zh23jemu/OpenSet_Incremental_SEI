@@ -1,6 +1,6 @@
 {
   "schema_version": "stage5_lora_closedset_smoke_v1",
-  "created_at_utc": "2026-07-27T23:49:46.345644+00:00",
+  "created_at_utc": "2026-07-28T00:58:07.456387+00:00",
   "ok": true,
   "dataset": "LoRa RFFP Different Days Indoor compact aligned subset",
   "npz_path": "datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz",

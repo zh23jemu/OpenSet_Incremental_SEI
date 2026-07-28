@@ -164,7 +164,10 @@ def audit_discovery(features: np.ndarray, y_true: np.ndarray, min_cluster_ratio:
 def build_smoke(args: argparse.Namespace) -> dict[str, Any]:
     """执行 LoRa 单种子 smoke，并返回完整 JSON 报告。"""
     set_seed(args.seed)
-    device = torch.device("cuda" if args.device == "auto" and torch.cuda.is_available() else args.device)
+    # auto 在 GPU 节点优先使用 CUDA；CPU/defq smoke 环境则必须显式回落到 cpu，
+    # 避免把字符串 "auto" 直接传给 torch.device 导致 Slurm smoke 失败。
+    device_name = "cuda" if args.device == "auto" and torch.cuda.is_available() else "cpu" if args.device == "auto" else args.device
+    device = torch.device(device_name)
     splits = load_lora25_diffdays_3round(args.npz_path)
 
     model = ClosedSetSEI(num_known_classes=10, feat_dim=args.feat_dim).to(device)
