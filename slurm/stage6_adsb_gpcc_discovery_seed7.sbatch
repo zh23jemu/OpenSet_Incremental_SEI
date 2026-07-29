@@ -24,7 +24,7 @@ cd "${PROJECT_ROOT}"
 PYTHON_BIN="${PROJECT_ROOT}/.venv/bin/python"
 JOB_ID="${SLURM_JOB_ID:-manual}"
 DATA_ROOT="${ADSB_DATA_ROOT:-数据集/ADS-B/Dataset}"
-CHECKPOINT="results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth"
+CHECKPOINT="${ADSB_GPCC_CHECKPOINT:-results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth}"
 MVACC_DIR="results/stage6/adsb_gpcc_discovery_mvacc_seed7_${JOB_ID}"
 GPCC_DIR="results/stage6/adsb_gpcc_discovery_gpcc_seed7_${JOB_ID}"
 
