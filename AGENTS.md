@@ -117,6 +117,7 @@
 - 为继续收敛 ADS-B 欠聚类风险，已新增 MV-ACC 协议目标簇数补齐分裂开关；seed31 Job `44670427` 显示 R3 最终簇数 `7->10`、Label-free Silhouette `0.2647->0.3527`、Overall `0.4866->0.5075`、New Acc `0.4300->0.5930`。配对三种子 Job `44766923` 已完成，target split 将 R3 最终簇稳定到 `10.0000±0.0000`，九轮绝对簇误差 `17->5`，R3 Overall `0.4820±0.0091 -> 0.4927±0.0137`，New Acc `0.4423±0.0131 -> 0.4930±0.0869`；但 seed7/13 的 R3 New Acc 分别轻微下降 `-0.0050/-0.0060` 且簇大小 CV 增加，当前应作为 ADS-B 欠聚类风险收敛候选，而非直接锁定默认配置。
 - 为压低 seed7/13 的 CV 与过切分风险，已完成保守 target split 参数消融 Job `44767309`：`max_added=2, silhouette=0.26`、`max_added=4, silhouette=0.34`、`max_added=4, silhouette=0.38` 均未优于默认 target split。默认 target split 九轮绝对簇误差最低为 `5`、R3 Overall `0.4927±0.0137`、New Acc `0.4930±0.0869`；自动排序下保守候选 `target_split_m4_s034` 最优，但九轮绝对簇误差为 `6`、R3 New Acc `0.4617±0.0312`，低于默认配置。当前结论是默认 target split 仍是 ADS-B 欠聚类风险收敛的最佳候选，保守门控无法同时保留补齐收益和降低 CV 风险。
 - Slurm Job `44780602` 已完成 ADS-B 默认 target split 后端遗忘对照；固定 target split 后，MV-ACC-CIL R3 Overall `0.4932±0.0128`、New `0.4930±0.0859`，高于共享发现 DOI-style 的 Overall `0.4722±0.0295`、New `0.3277±0.0925`，但 Forgetting `0.1151±0.0090` 仍高于 DOI-style `0.0629±0.0077`。当前 ADS-B 风险已从发现欠聚类进一步收敛为 RADCIL/DOI-style 的旧新类后端权衡。
+- Slurm Job `44781083` 已完成 ADS-B 默认 target split 下训练期旧类 Teacher 原型锚定 seed7 矩阵；权重 `0.10/0.25` 相对 `0` 的 R3 Overall 均为 `-0.0070`，Old 分别为 `-0.0079/-0.0083`，Forgetting 为 `+0.0008/+0.0000`，均未通过扩展门槛。该结构性后端候选归档为负消融，不扩 seed13/31。
 
 ## Recent Changes
 
@@ -193,12 +194,13 @@
 - 2026-07-29：更新 `results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md` 与 JSON 计划，将 DOI-memory hybrid 从待验证候选改为三种子负消融；同步 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 和 `PROJECT_HANDOFF.md`，明确 WiSig 后端上限风险已收敛为局限，后续若继续研究必须换机制而非调 late-fusion 权重。
 - 2026-07-29：实现并完成 WiSig `hybrid_radcil_icarl_exemplar_classifier_fallback`：seed7 Job `44771723` 通过扩展门槛，但三种子 Job `44771757` 未稳定优于主方法，R3 Overall `0.5923±0.0514` 低于主方法 `0.6088±0.0415`，正式归档为负消融。
 - 2026-07-29：新增并完成 ADS-B target split 后端遗忘对照入口：`tools/stage4_adsb_target_split_backend_plan.py`、`tools/stage4_adsb_target_split_backend_report.py`、`slurm/stage4_adsb_target_split_backend_baselines.sbatch`；Slurm Job `44780602` 确认默认 target split 保留 MV-ACC-CIL 的 Overall/New 优势，但 Forgetting 仍高于 DOI-style，剩余风险转为后端旧新类权衡。
+- 2026-07-29：新增并完成 ADS-B target split 训练期旧类原型锚定 seed7 消融：`tools/stage4_adsb_target_split_anchor_plan.py`、`tools/stage4_adsb_target_split_anchor_report.py`、`slurm/stage4_adsb_target_split_anchor_seed7.sbatch` 和 `results/stage4/STAGE4_ADSB_TARGET_SPLIT_ANCHOR_SEED7_REPORT_44781083.md`；非零锚定权重未降低遗忘且降低 Overall/Old，归档为负消融。
 
 ## Next TODO
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
-- 阶段 4 ADS-B ratio 0.03 和自适应密度结论保持不变；默认 target split 已作为 ADS-B 欠聚类收敛候选，保守门控和 max-added 消融未找到更优折中。固定 target split 后端对照显示剩余风险是 RADCIL 偏新类、DOI-style 遗忘更低的后端旧新类权衡；后续若继续 ADS-B，应研究结构不同的遗忘控制机制，不继续 target split 小参数搜索。
+- 阶段 4 ADS-B ratio 0.03 和自适应密度结论保持不变；默认 target split 已作为 ADS-B 欠聚类收敛候选，保守门控、max-added 消融和训练期旧类原型锚定均未找到更优折中。固定 target split 后端对照显示剩余风险是 RADCIL 偏新类、DOI-style 遗忘更低的后端旧新类权衡；后续若继续 ADS-B，应研究结构不同的遗忘控制机制，不继续 target split 小参数或原型锚定权重搜索。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
 - 阶段 5 补充风险已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，当前继续以风险收敛和结果一致性为主。
 - 使用 `CUSTOMER_PROGRESS_REPORT.html` 进行阶段汇报；每次关键正式结果变化后，从实施计划同步更新该派生页面并复核图表数值。
@@ -224,6 +226,7 @@
 - ADS-B Long-RADCIL 原始三种子 R3 仅发现 6–7/10 类，但默认 target split 已将 R3 稳定补到 10 类；后续调参不得使用 held-out evaluation 真值。
 - ADS-B R3 欠聚类已定位到初始密度形成阶段；固定 ratio 0.02、无标签自适应密度和保守 target split 均未优于默认 target split。正式 ratio 仍保持 0.03，默认 target split 作为欠聚类收敛候选，阶段 4 不再继续调密度或 target split 小参数。
 - ADS-B MV-ACC-CIL 在默认 target split 下 Overall/New 高于共享发现 DOI-style，但 Forgetting `0.1151±0.0090` 高于 DOI-style `0.0629±0.0077`；论文表述必须同时报告整体识别优势和遗忘控制局限。
+- ADS-B 训练期旧类 Teacher 原型锚定 seed7 未改善后端遗忘，权重 `0.10/0.25` 均降低 Overall/Old；该候选不扩展三种子，不能作为当前 ADS-B 后端风险的解决方案。
 - LoRa 目标簇数约束已消除 seed7 的过聚类，但分组双头未解决新旧类权衡；IQ_7 每阶段均选择 1.0 原型权重仍无法提高 R3 Old，继续调 late-fusion 权重价值有限。
 - LoRa 旧类漂移仍未解决：训练期类中心锚定在 IQ_7 即未改善，且 held-out Old/Overall 退化；继续沿该类原型约束调权重价值有限。
 - Slurm 端仍保留若干历史 failed smoke 日志和大型 `.pth`/`.npz` 运行产物；本次只同步成功阶段 5 小型 JSON/stdout/stderr，未删除、未提交大型产物。
@@ -254,6 +257,7 @@
 - ADS-B 发现参数消融必须预注册为单因素变体；候选选择只使用 discovery 侧无标签结构指标，NMI/ARI/Hungarian 和增量准确率只用于事后审计。
 - ADS-B 自适应密度三种子验证未通过收益门槛；正式 ratio 固定为 0.03，停止继续调固定密度参数，避免在同一数据集上反复事后选参。
 - ADS-B target split 选择只使用公开协议目标新类数和 discovery 侧无标签 silhouette 门控；固定 target split 后端对照不得使用 held-out 真值选参，剩余遗忘风险需通过结构不同的后端机制处理。
+- ADS-B 训练期旧类原型锚定沿用 Teacher replay 类中心约束，默认权重为 0 以保持历史行为；seed7 预注册矩阵未通过扩展门槛，因此只作为负消融保留，不继续调权重。
 - 主实验优先 WiSig 10+10×3 和 ADS-B 90+10×3；LoRa25 默认 10+5×3，ManyTx/ManyRx 沿用现有协议作为补充验证。
 - LoRa 跨体制验证优先使用 LoRa RFFP Different Days Indoor Scenario；完整数据较大时只下载或切分必要 Setup 1 子集，不因完整 LoRa 全量下载延迟 WiSig/ADS-B 主线。
 - 客户补充的超大数据保留为本地压缩包并精确排除出 Git；ADS-B 统一以 `ADS-B.rar` 作为实验数据源。

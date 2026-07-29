@@ -1,7 +1,7 @@
 {
   "schema_version": "stage4_adsb_target_split_anchor_plan_v1",
-  "created_at_utc": "2026-07-29T06:32:35.472759+00:00",
-  "job_id": "localcheck",
+  "created_at_utc": "2026-07-29T08:25:26.713205+00:00",
+  "job_id": "44781083",
   "seed": 7,
   "weights": [
     0.0,
@@ -28,13 +28,13 @@
     {
       "seed": 7,
       "anchor_weight": 0.0,
-      "save_dir": "results/stage4/adsb_target_split_anchor_seed7_w0_localcheck",
+      "save_dir": "results/stage4/adsb_target_split_anchor_seed7_w0_44781083",
       "checkpoint": "results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth",
       "argv": [
         "--data_root",
         "数据集/ADS-B/Dataset",
         "--save_dir",
-        "results/stage4/adsb_target_split_anchor_seed7_w0_localcheck",
+        "results/stage4/adsb_target_split_anchor_seed7_w0_44781083",
         "--checkpoint",
         "results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth",
         "--initial_known_classes",
@@ -87,13 +87,13 @@
     {
       "seed": 7,
       "anchor_weight": 0.1,
-      "save_dir": "results/stage4/adsb_target_split_anchor_seed7_w0p10_localcheck",
+      "save_dir": "results/stage4/adsb_target_split_anchor_seed7_w0p10_44781083",
       "checkpoint": "results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth",
       "argv": [
         "--data_root",
         "数据集/ADS-B/Dataset",
         "--save_dir",
-        "results/stage4/adsb_target_split_anchor_seed7_w0p10_localcheck",
+        "results/stage4/adsb_target_split_anchor_seed7_w0p10_44781083",
         "--checkpoint",
         "results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth",
         "--initial_known_classes",
@@ -146,13 +146,13 @@
     {
       "seed": 7,
       "anchor_weight": 0.25,
-      "save_dir": "results/stage4/adsb_target_split_anchor_seed7_w0p25_localcheck",
+      "save_dir": "results/stage4/adsb_target_split_anchor_seed7_w0p25_44781083",
       "checkpoint": "results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth",
       "argv": [
         "--data_root",
         "数据集/ADS-B/Dataset",
         "--save_dir",
-        "results/stage4/adsb_target_split_anchor_seed7_w0p25_localcheck",
+        "results/stage4/adsb_target_split_anchor_seed7_w0p25_44781083",
         "--checkpoint",
         "results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth",
         "--initial_known_classes",

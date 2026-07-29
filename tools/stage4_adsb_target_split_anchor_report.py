@@ -11,16 +11,17 @@ from typing import Any
 import pandas as pd
 
 
-def weight_tag(weight: float) -> str:
-    """保持和计划脚本一致的权重目录后缀。"""
+def weight_tag(weight_text: str) -> str:
+    """保持和计划脚本、Slurm 循环一致的权重目录后缀。"""
 
-    return str(weight).replace(".", "p")
+    return weight_text.strip().replace(".", "p")
 
 
-def load_r3_row(output_prefix: str, job_id: str, weight: float) -> dict[str, Any]:
+def load_r3_row(output_prefix: str, job_id: str, weight_text: str) -> dict[str, Any]:
     """读取某个权重的 After R3 主方法指标。"""
 
-    save_dir = Path(f"{output_prefix}_w{weight_tag(weight)}_{job_id}")
+    weight = float(weight_text)
+    save_dir = Path(f"{output_prefix}_w{weight_tag(weight_text)}_{job_id}")
     csv_path = save_dir / "incremental_results.csv"
     if not csv_path.exists():
         raise FileNotFoundError(f"缺少增量结果：{csv_path}")
@@ -30,7 +31,7 @@ def load_r3_row(output_prefix: str, job_id: str, weight: float) -> dict[str, Any
         raise RuntimeError(f"{csv_path} 中缺少 MV-ACC-CIL After R3")
     item = row.iloc[0].to_dict()
     return {
-        "anchor_weight": float(weight),
+        "anchor_weight": weight,
         "save_dir": str(save_dir),
         "overall": float(item["Overall Acc"]),
         "old": float(item["Old Acc"]),
@@ -142,8 +143,9 @@ def main() -> int:
     parser.add_argument("--summary-json", required=True)
     args = parser.parse_args()
 
-    weights = [float(item.strip()) for item in args.weights.split(",") if item.strip()]
-    rows = [load_r3_row(args.output_prefix, args.job_id, weight) for weight in weights]
+    weight_items = [item.strip() for item in args.weights.split(",") if item.strip()]
+    weights = [float(item) for item in weight_items]
+    rows = [load_r3_row(args.output_prefix, args.job_id, item) for item in weight_items]
     baseline = next(item for item in rows if float(item["anchor_weight"]) == 0.0)
     gates = [
         {
@@ -168,6 +170,7 @@ def main() -> int:
                 "job_id": args.job_id,
                 "seed": 7,
                 "weights": weights,
+                "weight_items": weight_items,
                 "output_prefix": args.output_prefix,
                 "r3_rows": rows,
                 "seed7_gates": gates,

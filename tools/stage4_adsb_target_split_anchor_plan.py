@@ -17,10 +17,14 @@ from typing import Any
 SEED7_CHECKPOINT = "results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth"
 
 
-def weight_tag(weight: float) -> str:
-    """把浮点权重转换成稳定目录后缀，避免路径里出现多个点。"""
+def weight_tag(weight_text: str) -> str:
+    """把命令行里的权重文本转换成稳定目录后缀。
 
-    return str(weight).replace(".", "p")
+    保留用户输入的有效数字可以让计划、Slurm 循环和报告器共享同一套
+    路径规则，例如 `0` -> `w0`、`0.10` -> `w0p10`。
+    """
+
+    return weight_text.strip().replace(".", "p")
 
 
 def experiment_args(data_root: str, save_dir: str, weight: float) -> list[str]:
@@ -66,10 +70,11 @@ def experiment_args(data_root: str, save_dir: str, weight: float) -> list[str]:
 def build_plan(args: argparse.Namespace) -> dict[str, Any]:
     """生成包含 baseline 和两个锚定权重的 seed7 矩阵。"""
 
-    weights = [float(item.strip()) for item in args.weights.split(",") if item.strip()]
+    weight_items = [item.strip() for item in args.weights.split(",") if item.strip()]
     runs = []
-    for weight in weights:
-        save_dir = f"{args.output_prefix}_w{weight_tag(weight)}_{args.job_id}"
+    for weight_text in weight_items:
+        weight = float(weight_text)
+        save_dir = f"{args.output_prefix}_w{weight_tag(weight_text)}_{args.job_id}"
         runs.append({
             "seed": 7,
             "anchor_weight": weight,
@@ -83,7 +88,8 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "job_id": args.job_id,
         "seed": 7,
-        "weights": weights,
+        "weights": [float(item) for item in weight_items],
+        "weight_items": weight_items,
         "output_prefix": args.output_prefix,
         "risk_question": (
             "默认 target split 已缓解 ADS-B 欠聚类后，训练期旧类 Teacher 原型锚定"
