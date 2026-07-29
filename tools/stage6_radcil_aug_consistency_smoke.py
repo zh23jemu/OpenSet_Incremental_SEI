@@ -21,7 +21,10 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from experiments.exp_wisig_mvacc_cil_strict import _feature_view_consistency_loss
+from experiments.exp_wisig_mvacc_cil_strict import (
+    _compute_pseudo_sample_weights,
+    _feature_view_consistency_loss,
+)
 
 
 def main() -> None:
@@ -35,6 +38,20 @@ def main() -> None:
     augmented[:, :8] *= -1.0
     changed = _feature_view_consistency_loss(features, augmented)
 
+    labels = torch.tensor([0, 0, 1, 1], dtype=torch.long).numpy()
+    probabilities = torch.tensor([1.0, 0.8, 0.9, 0.7]).numpy()
+    reliability_weights = _compute_pseudo_sample_weights(
+        labels,
+        probabilities,
+        reliability_map={0: 0.5, 1: 1.0},
+        floor=0.2,
+        use_cluster_reliability=True,
+    )
+    reliability_ok = bool(
+        reliability_weights[0] < probabilities[0]
+        and reliability_weights[2] == probabilities[2]
+    )
+
     shape_error = False
     try:
         _feature_view_consistency_loss(features, torch.randn(7, 16))
@@ -46,10 +63,12 @@ def main() -> None:
             float(identical.item()) < 1e-6
             and float(changed.item()) > 0.1
             and shape_error
+            and reliability_ok
         ),
         "same_view_loss": float(identical.item()),
         "changed_view_loss": float(changed.item()),
         "shape_mismatch_rejected": shape_error,
+        "cluster_reliability_weighting_ok": reliability_ok,
         "uses_heldout_eval": False,
     }
     print(json.dumps(result, ensure_ascii=False, indent=2))

@@ -1,0 +1,38 @@
+{
+  "stage": "stage6",
+  "experiment": "lora_reliability_weight_seed7",
+  "dataset": "LoRa RFFP Different Days Indoor compact subset",
+  "protocol": "10 known + 5x3 strict; IQ_7 validation; IQ_8-10 held-out evaluation",
+  "fixed_backend": {
+    "radcil_old_new_batch_ratio": 2.0,
+    "cil_replay_weight": 3.0,
+    "mvacc_enforce_round_size": true,
+    "pseudo_weight_floor": 0.2,
+    "cluster_reliability_floor": 0.2
+  },
+  "candidates": [
+    {
+      "name": "reliability_off",
+      "use_cluster_reliability": false
+    },
+    {
+      "name": "reliability_on",
+      "use_cluster_reliability": true
+    }
+  ],
+  "selection_rule": [
+    "只使用 IQ_7 R3 Old-Class Acc 选择是否采用；并列优先关闭新增机制。",
+    "IQ_8-10 只做最终事后审计，不参与选择。"
+  ],
+  "pass_gate": {
+    "validation_old_acc_must_improve": true,
+    "heldout_overall_drop_max": 0.01,
+    "heldout_new_acc_drop_max": 0.03,
+    "heldout_forgetting_must_decrease": true
+  },
+  "leakage_policy": {
+    "uses_heldout_eval_for_selection": false,
+    "uses_ground_truth_for_training": false,
+    "reliability_uses_discovery_structure_only": true
+  }
+}

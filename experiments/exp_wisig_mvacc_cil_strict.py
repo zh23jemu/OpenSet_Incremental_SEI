@@ -1861,6 +1861,55 @@ def _feature_view_consistency_loss(features, augmented_features):
     return (1.0 - cosine).mean()
 
 
+def _compute_pseudo_sample_weights(
+    labels,
+    raw_probabilities,
+    reliability_map=None,
+    floor=0.20,
+    use_cluster_reliability=False,
+):
+    """把逐样本概率和无标签簇可靠性合成为伪标签训练权重。
+
+    ``raw_probabilities`` 通常来自 HDBSCAN；``reliability_map`` 来自当前轮
+    discovery 的簇紧凑度、簇间分离度和概率综合评分。两者都只使用
+    discovery 样本，不依赖当前轮或 held-out evaluation 的真实标签。GPCC
+    没有噪声簇时默认可靠性为 1，不会改变它的默认训练路径。
+    """
+    labels = np.asarray(labels, dtype=np.int64)
+    probabilities = np.asarray(raw_probabilities, dtype=np.float32)
+    if len(labels) != len(probabilities):
+        raise ValueError(
+            "Pseudo-label weights require labels and probabilities with equal length."
+        )
+    floor = float(np.clip(floor, 0.0, 1.0))
+    weights = np.maximum(
+        floor,
+        np.nan_to_num(probabilities, nan=0.0, posinf=1.0, neginf=0.0),
+    )
+    if not use_cluster_reliability:
+        return weights.astype(np.float32)
+    reliability_map = reliability_map or {}
+    cluster_reliability = np.asarray(
+        [
+            float(
+                np.clip(
+                    np.nan_to_num(
+                        reliability_map.get(int(label), 1.0),
+                        nan=1.0,
+                        posinf=1.0,
+                        neginf=0.0,
+                    ),
+                    0.0,
+                    1.0,
+                )
+            )
+            for label in labels
+        ],
+        dtype=np.float32,
+    )
+    return np.maximum(floor, weights * cluster_reliability).astype(np.float32)
+
+
 def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, memory_x, memory_y, old_out_dim, args, device):
     """Head warm-up followed by last-block backbone adaptation on raw IQ samples.
 
@@ -3296,6 +3345,17 @@ def main():
         default=0.0,
         help="Incremental dual-view feature consistency weight; 0 preserves historical RADCIL behavior.",
     )
+    parser.add_argument(
+        "--pseudo_weight_use_cluster_reliability",
+        action="store_true",
+        help="Multiply pseudo-label weights by discovery-side cluster reliability; disabled by default.",
+    )
+    parser.add_argument(
+        "--pseudo_weight_cluster_reliability_floor",
+        type=float,
+        default=0.20,
+        help="Minimum pseudo-label weight after cluster-reliability scaling.",
+    )
     parser.add_argument("--radcil_unfreeze_scope", choices=["none", "fc", "layer3", "tail", "layer2_tail"], default="tail", help="Backbone scope unfrozen during the joint RADCIL stage.")
     parser.add_argument("--radcil_doi_fusion_weight", type=float, default=0.0, help="DOI replay-prototype late-fusion weight; 0 keeps network-only RADCIL prediction.")
     parser.add_argument("--radcil_doi_align_lambda", type=float, default=0.30, help="Current-round weight used to align historical and current replay prototypes.")
@@ -3409,6 +3469,11 @@ def main():
     print(
         "Incremental dual-view consistency weight: "
         f"{args.radcil_aug_consistency_weight}"
+    )
+    print(
+        "Pseudo-label cluster reliability weighting: "
+        f"{args.pseudo_weight_use_cluster_reliability} "
+        f"(floor={args.pseudo_weight_cluster_reliability_floor})"
     )
     if args.use_supcon:
         print(f"Closed-set training loss: CE + {args.supcon_weight} * SupCon(T={args.supcon_temperature})")
@@ -3826,9 +3891,20 @@ def main():
         pseudo_y = np.asarray([cid_to_pseudo[int(c)] for c in labels], dtype=np.int64)
         pairs = [(int(cid), int(cid_to_pseudo[int(cid)])) for cid in cluster_ids]
         pseudo_to_true.update(build_posthoc_pseudo_to_true(rd["y"], labels, pairs))
-        raw_probs = np.asarray(info.get("raw_hdbscan_probabilities", np.ones(len(labels))), dtype=np.float32)
+        raw_probs = np.asarray(
+            info.get("raw_hdbscan_probabilities", np.ones(len(labels))),
+            dtype=np.float32,
+        )
         raw_noise = np.asarray(info.get("raw_noise_mask", np.zeros(len(labels), dtype=bool)), dtype=bool)
-        current_w = np.maximum(float(args.pseudo_weight_floor), np.nan_to_num(raw_probs, nan=0.0))
+        current_w = _compute_pseudo_sample_weights(
+            labels,
+            raw_probs,
+            reliability_map=info.get("reliability_map", info.get("reliability", {})),
+            floor=args.pseudo_weight_cluster_reliability_floor
+            if args.pseudo_weight_use_cluster_reliability
+            else args.pseudo_weight_floor,
+            use_cluster_reliability=args.pseudo_weight_use_cluster_reliability,
+        )
         current_w[raw_noise] = float(args.pseudo_weight_floor)
         old_out = int(student.classifier.out_features)
         imprinted_means = np.stack([rd["Z"][pseudo_y == int(next_label + j)].mean(axis=0) for j in range(len(cluster_ids))]).astype(np.float32)
@@ -3977,6 +4053,10 @@ def main():
             "radcil_grouped_doi_fusion": bool(args.radcil_grouped_doi_fusion),
             "radcil_prototype_anchor_weight": float(args.radcil_prototype_anchor_weight),
             "radcil_aug_consistency_weight": float(args.radcil_aug_consistency_weight),
+            "pseudo_weight_use_cluster_reliability": bool(args.pseudo_weight_use_cluster_reliability),
+            "pseudo_weight_cluster_reliability_floor": float(
+                args.pseudo_weight_cluster_reliability_floor
+            ),
             "radcil_doi_align_lambda": float(args.radcil_doi_align_lambda),
             "radcil_doi_prototype_temperature": float(args.radcil_doi_prototype_temperature),
             "radcil_icarl_fallback": bool(icarl_fallback_enabled),
