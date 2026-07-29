@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划与项目进度总表
 
-- 状态：阶段 7 训练期跨天表征验证已启动；阶段 6 的 GPCC、增量双视图一致性和 discovery 簇可靠性加权均未形成最终收益，当前等待 Job `45049066` 的 seed7 二元结果
+- 状态：阶段 7 训练期跨天表征验证已完成；Job `45049135` 未通过双门槛，LoRa 机制搜索停止，当前转入最终局限报告和交付整理
 - 版本：1.1
 - 创建日期：2026-07-26
 - 最近更新：2026-07-29
@@ -24,7 +24,7 @@
 | GPCC 前端      | 阶段 6 seed7 已闭环 | ADS-B discovery-only 聚类指标优于 MV-ACC，但完整增量 R3 Overall `0.4839` 未超过 target split 对照约 `0.4932`；LoRa discovery-only 固定簇数但 ARI 下降，未过门槛 |
 | 双视图一致性   | 阶段 6 LoRa seed7 已验证 | 权重 `0.05/0.10` 均降低 IQ_7 Old 和 held-out Overall；记录为负消融，不扩三种子 |
 | 簇可靠性加权   | 阶段 6 seed7 已完成 | 开启/关闭结果完全一致，IQ_7 R3 Old `0.1357`、held-out R3 Overall `0.1667`，未通过双门槛，不扩三种子 |
-| 跨天特征分布对齐 | 阶段 7 seed7 已提交 | 训练期对齐当前 discovery/replay 的单位特征均值和协方差；默认关闭，Job `45049066` 等待资源 |
+| 跨天特征分布对齐 | 阶段 7 seed7 已完成 | 开启/关闭 IQ_7 R3 Old 均 `0.1357`、Overall 均 `0.1667`；开启后 Old `0.0905`、Forgetting `0.4857`，未通过双门槛，不扩三种子 |
 | ManyTx/ManyRx | 阶段 5 补充验证已完成 | 已只读汇总既有 seed7 三轮结果；ManyTx R3 Overall `0.2700`、ManyRx R3 Overall `0.5700`，作为辅助稳定性证据       |
 | 项目记忆与交接       | 已维护            | `AGENTS.md`、`PROJECT_HANDOFF.md`、RecallLoom rolling summary 均已同步最新状态                |
 
@@ -271,7 +271,7 @@
 - [x] 通过 Slurm 跑 LoRa 与 ADS-B seed7 discovery-only，对比 MV-ACC/HDBSCAN 与 GPCC 的簇数、ARI、Hungarian Acc、noise 和覆盖率；LoRa Job `44998998` 未过门槛，ADS-B Job `44997092` 聚类通过后继续完整增量 Job `44999118`，但 R3 Overall `0.4839` 未超过 target split 对照约 `0.4932`，不扩三种子。
 - [x] 完成 LoRa 增量双视图一致性 seed7 矩阵 Job `45047897`；权重 `0.05/0.10` 未改善 IQ_7 Old 或 held-out Overall，记录为负消融，不扩 seed13/31。
 - [x] 完成 LoRa discovery 簇可靠性伪标签加权二元 Job `45048052`；开启/关闭结果完全一致，IQ_7/held-out 双门槛均未通过，停止 LoRa 后端小机制搜索。
-- [x] 新增 LoRa 训练期跨天特征分布对齐候选、预注册计划、报告器、Slurm 入口和合成 smoke test；Job `45049066` 已提交，等待 seed7 结果。
+- [x] 完成 LoRa 训练期跨天特征分布对齐 Job `45049135`；未改善 IQ_7 旧类保持或 held-out Overall，归档为负消融，不扩 seed13/31。
 - [ ] 提供 `gpu` 分区、`gpo-ifv7xx` 账号、`normal` QOS 的正式 Slurm 脚本；一小时内验证任务使用 `shortjobs`。
 - [ ] 汇总多种子均值、标准差、对照和消融表格。
 - [ ] 整理可直接用于论文的 t-SNE 图和结果图表。
@@ -397,7 +397,7 @@ Job `44781083` 在默认 target split 与 Long-RADCIL 配置下验证训练期�
 | GPCC 真实数据收益不足                  | ADS-B discovery-only 的 mean ARI/Hungarian 从 MV-ACC `0.6436/0.6902` 提升到 `0.6672/0.7364`，但完整增量 R3 Overall `0.4839` 低于 target split 对照约 `0.4932`；LoRa discovery-only Hungarian 提升但 ARI 下降 | GPCC 作为结构性前端候选保留，不扩三种子；后续若继续攻低分，应转向训练期域适应或伪标签质量控制，而不是继续替换聚类器小参数 |
 | 增量双视图一致性无收益          | LoRa seed7 权重 `0.05/0.10` 的 IQ_7 Old 与 Overall 均低于权重 `0` 基线 | 已归档负消融，不继续调一致性权重 |
 | discovery 簇可靠性加权无收益     | Job `45048052` 开启/关闭结果逐项完全一致，未改变 IQ_7 旧类保持或 held-out R3 指标 | 已归档负消融；停止 LoRa 后端小机制搜索，后续只考虑训练期跨天表征和表征-发现联合设计 |
-| 训练期跨天分布漂移              | LoRa 不同采集日之间的表征分布偏移可能同时影响聚类和旧新类识别 | 先验证 discovery/replay 的无标签均值/协方差对齐；Job `45049066` 通过双门槛才考虑扩展，否则归档 |
+| 训练期跨天分布漂移              | LoRa 不同采集日之间的表征分布偏移可能同时影响聚类和旧新类识别 | CORAL-style discovery/replay 均值/协方差对齐未通过双门槛；记录为根因证据和负消融，停止继续叠加局部机制 |
 | ManyRx 正式 runner 缺失            | 阶段 5 已用既有结果完成补充稳定性汇总，但复现实验入口仍不够直观                              | 阶段 6 文档中标明历史 runner 位置，必要时再恢复受维护入口                       |
 | Slurm 端保留多份大数据分片               | 占用存储                                                             | 未经确认不删除，后续只做保留策略建议                                     |
 
@@ -407,7 +407,7 @@ Job `44781083` 在默认 target split 与 Long-RADCIL 配置下验证训练期�
 
 1. GPCC seed7 闭环结论：LoRa discovery-only 未过门槛；ADS-B discovery-only 聚类通过，但完整增量 seed7 未超过 target split，因此不扩三种子。
 2. ADS-B 欠聚类风险已收束：正式 ratio 0.03 不变，自适应密度归档为负消融，默认 target split 作为当前最佳欠聚类收敛候选；固定 target split 后端对照、训练期旧类原型锚定和 GPCC 完整增量结果均显示，剩余问题不能靠继续调 target split、anchor 权重或替换聚类器解决。
-3. LoRa 双视图一致性和簇可靠性加权均已归档为负消融；当前只验证训练期跨天特征分布对齐 Job `45049066`，通过双门槛才继续扩展，否则转入跨体制局限报告。
+3. LoRa 双视图一致性、簇可靠性加权和训练期跨天特征分布对齐均已归档为负消融；停止机制搜索，转入跨体制局限报告。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 
