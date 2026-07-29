@@ -83,8 +83,11 @@ def summarize_variant(rows: list[dict[str, Any]]) -> dict[str, Any]:
     ari = [_to_float(r.get("ARI")) for r in rows]
     hungarian = [_to_float(r.get("Hungarian Acc")) for r in rows]
     noise = [_to_float(r.get("Noise Points"), 0.0) for r in rows]
-    coverage = [_to_float(r.get("Assignment Coverage")) for r in rows]
+    # GPCC 固定为全样本分配簇，旧 CSV 若没有显式 coverage 字段，按 1.0
+    # 处理；MV-ACC 旧前端缺少 GPCC 标记时，按历史实现视为使用 HDBSCAN。
+    coverage = [_to_float(r.get("Assignment Coverage"), 1.0) for r in rows]
     uses_hdbscan_values = [str(r.get("GPCC Uses HDBSCAN", "")).lower() for r in rows]
+    default_uses_hdbscan = rows[0]["Variant"] != "gpcc"
     return {
         "variant": rows[0]["Variant"],
         "rounds": len(rows),
@@ -94,7 +97,9 @@ def summarize_variant(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "mean_hungarian_acc": float(np.nanmean(hungarian)),
         "total_noise_points": float(np.nansum(noise)),
         "mean_assignment_coverage": float(np.nanmean(coverage)),
-        "uses_hdbscan": any(v == "true" for v in uses_hdbscan_values),
+        "uses_hdbscan": any(v == "true" for v in uses_hdbscan_values) or (
+            default_uses_hdbscan and all(v in {"", "nan", "none"} for v in uses_hdbscan_values)
+        ),
     }
 
 
@@ -180,7 +185,7 @@ def build_markdown(dataset: str, job_id: str, rows: list[dict[str, Any]], summar
                 noise=_fmt(row.get("Noise Points", 0.0)),
                 ari=_fmt(row.get("ARI")),
                 hungarian=_fmt(row.get("Hungarian Acc")),
-                coverage=_fmt(row.get("Assignment Coverage")),
+                coverage=_fmt(row.get("Assignment Coverage", 1.0)),
             )
         )
     lines.append("")

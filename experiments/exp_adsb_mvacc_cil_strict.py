@@ -2834,6 +2834,8 @@ def run_discovery(method, round_name, day_name, true_new_classes, X_round, y_rou
             "Final Cluster Count": int(final_metrics["Clusters"]),
             "Cluster Count Error": int(abs(int(final_metrics["Clusters"]) - int(true_new_classes))),
             "Over-clustering Ratio": float(final_metrics["Clusters"] / max(int(true_new_classes), 1)),
+            "Assignment Coverage": 1.0,
+            "Noise Points": 0,
             **final_metrics,
             **label_free_metrics,
             "Discovery Backend": "GPCC",
