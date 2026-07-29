@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划与项目进度总表
 
-- 状态：阶段 6 聚类前端重设计中；阶段 0–5 已收束；ADS-B/LoRa 低结果风险已形成客户解释口径；在 old-logit bias、BN 重校准和原型锚定等小机制均未稳定解决后，当前按客户意见转向不依赖 HDBSCAN 的 GPCC 聚类发现前端，先跑 seed7 discovery-only 再决定是否进入完整增量
+- 状态：阶段 6 聚类前端重设计 seed7 已闭环；阶段 0–5 已收束；ADS-B/LoRa 低结果风险已形成客户解释口径；在 old-logit bias、BN 重校准、原型锚定和不依赖 HDBSCAN 的 GPCC 聚类发现前端均未稳定解决最终低分后，当前进入结果整理与下一机制方向判断
 - 版本：1.1
 - 创建日期：2026-07-26
 - 最近更新：2026-07-28
@@ -21,7 +21,7 @@
 | WiSig 阶段 1    | 已完成多轮短实验       | 已比较表征、发现前端、后端消融、RADCIL ratio/weight、多种子确认和 IGCD strict baseline                     |
 | ADS-B         | 阶段 4 发现风险已收敛    | Long-RADCIL 正式三种子 R3 Overall `0.4824±0.0074`；默认 target split 将 R3 簇数稳定补到 `10.0000±0.0000`，R3 Overall 提升到 `0.4932±0.0128`；训练期旧类原型锚定 seed7 未降低遗忘 |
 | LoRa          | 阶段 5 seed7 已完成 | 分组双头 Job `44578823` 将簇数固定至 5、New 提升至 `0.4286`，但 Overall/Old 门槛未通过，归档为负消融            |
-| GPCC 前端      | 阶段 6 本地入口已完成 | 新增目标类数约束图-原型聚类前端；本地 smoke 通过，ADS-B/LoRa seed7 discovery-only Slurm 待运行                         |
+| GPCC 前端      | 阶段 6 seed7 已闭环 | ADS-B discovery-only 聚类指标优于 MV-ACC，但完整增量 R3 Overall `0.4839` 未超过 target split 对照约 `0.4932`；LoRa discovery-only 固定簇数但 ARI 下降，未过门槛 |
 | ManyTx/ManyRx | 阶段 5 补充验证已完成 | 已只读汇总既有 seed7 三轮结果；ManyTx R3 Overall `0.2700`、ManyRx R3 Overall `0.5700`，作为辅助稳定性证据       |
 | 项目记忆与交接       | 已维护            | `AGENTS.md`、`PROJECT_HANDOFF.md`、RecallLoom rolling summary 均已同步最新状态                |
 
@@ -46,7 +46,7 @@
 - ADS-B 原正式三种子 R3 只发现 6–7 个簇；默认 target split 已将 R3 欠聚类收敛到 10 簇，保守门控没有更优折中。剩余局限不再是“欠聚类未解”，而是 RADCIL 更偏新类、DOI-style 更低遗忘的后端权衡。
 - LoRa 不下载完整数据集；当前已保留实验需要的 Different Days Indoor 紧凑子集，阶段 6 审计 `results/stage6/lora_required_subset_audit.json` 显示 `ok=true`，可支撑当前 10+5×3 跨体制验证。
 - LoRa `--radcil_old_logit_bias_candidates` 诊断后端已完成 seed7 与三种子验证：seed7 一度通过扩展门槛，但三种子 R3 New 均值仅 `0.0508` 且 seed31 R3 只发现 3 簇，因此归档为负消融，不作为最终解决方案。
-- 新 GPCC 前端目前只有本地合成 smoke 和 strict 入口验证，真实 ADS-B/LoRa seed7 结果尚未运行；不能提前声称已经解决 ADS-B 约 50% 或 LoRa 低结果。
+- 新 GPCC 前端真实 seed7 已完成：ADS-B discovery-only 有正信号，但完整增量未超过 target split；LoRa discovery-only 未通过预注册门槛。不能声称已经解决 ADS-B 约 50% 或 LoRa 低结果，应写成结构性候选验证后未形成最终收益。
 
 ## 2. 已锁定的实施原则
 
@@ -264,7 +264,7 @@
 - [x] 完成 LoRa old-logit bias seed7 与三种子诊断：seed7 Job `44881172` 通过扩展门槛；三种子 Job `44893894` 的 R3 Overall/Old/New/Forgetting 均值为 `0.1714/0.2016/0.0508/0.3175`，Old 提升但 New 塌缩且 seed31 R3 仅 3 簇，不采用为正式后端。
 - [x] 完成 LoRa BatchNorm 重校准 seed7 与三种子验证：seed7 Job `44919835` R3 Overall/Old/New/Forgetting 为 `0.1638/0.0917/0.4524/0.4976`，三轮均保持 5 簇；三种子 Job `44932580` R3 均值为 `0.1362/0.0984/0.2873/0.4024`，seed13 R3 仅 3 簇，不采用为正式候选。
 - [x] 新增 GPCC 发现前端和 discovery-only strict 入口：固定使用协议公开目标 K，不调用 HDBSCAN，不产生 noise；本地 `py_compile`、合成 5/10 类 smoke、CLI help 和报告器 smoke 已通过。
-- [ ] 通过 Slurm 跑 LoRa 与 ADS-B seed7 discovery-only，对比 MV-ACC/HDBSCAN 与 GPCC 的簇数、ARI、Hungarian Acc、noise 和覆盖率。
+- [x] 通过 Slurm 跑 LoRa 与 ADS-B seed7 discovery-only，对比 MV-ACC/HDBSCAN 与 GPCC 的簇数、ARI、Hungarian Acc、noise 和覆盖率；LoRa Job `44998998` 未过门槛，ADS-B Job `44997092` 聚类通过后继续完整增量 Job `44999118`，但 R3 Overall `0.4839` 未超过 target split 对照约 `0.4932`，不扩三种子。
 - [ ] 提供 `gpu` 分区、`gpo-ifv7xx` 账号、`normal` QOS 的正式 Slurm 脚本；一小时内验证任务使用 `shortjobs`。
 - [ ] 汇总多种子均值、标准差、对照和消融表格。
 - [ ] 整理可直接用于论文的 t-SNE 图和结果图表。
@@ -387,7 +387,7 @@ Job `44781083` 在默认 target split 与 Long-RADCIL 配置下验证训练期�
 | ADS-B R2/R3 发现欠聚类              | 原正式三种子 R3 仅发现 6–7/10 类；target split 已补齐 R3，并在后端对照中保持 Overall/New 优势 | 采用默认 target split 作为欠聚类收敛候选；保守门控已验证不优，停止继续小参数搜索并如实报告局限 |
 | ADS-B 后端旧新类权衡                  | target split 下 MV-ACC-CIL Overall/New 高于 DOI-style，但 Forgetting 仍高约 `0.0522`；训练期旧类原型锚定 seed7 未降低遗忘 | 风险已从发现前端转为后端权衡；后续若继续改 ADS-B，应换结构不同的遗忘控制机制，而不是继续调 target split 或 anchor 权重 |
 | LoRa 新旧类后端权衡                   | Grouped fusion、训练期类中心锚定、old-logit bias 和 BN 重校准均未通过最终门槛；old-logit bias 三种子 Old 提升但 New 均值塌到 `0.0508`，BN 三种子 Overall 均值为 `0.1362` 且 seed13 R3 仅 3 簇 | 当前低结果由跨天表征漂移、发现不稳和旧/新类后端冲突共同造成；停止 LoRa 小机制追分，作为跨体制局限和后续机制方向 |
-| GPCC 真实数据收益未知                  | 本地合成数据只能证明固定 K、无 noise 和复现性，不能证明 ADS-B/LoRa 真实聚类会提升                                   | 先跑 seed7 discovery-only；不过门槛就归档负消融，不扩完整增量或三种子 |
+| GPCC 真实数据收益不足                  | ADS-B discovery-only 的 mean ARI/Hungarian 从 MV-ACC `0.6436/0.6902` 提升到 `0.6672/0.7364`，但完整增量 R3 Overall `0.4839` 低于 target split 对照约 `0.4932`；LoRa discovery-only Hungarian 提升但 ARI 下降 | GPCC 作为结构性前端候选保留，不扩三种子；后续若继续攻低分，应转向训练期域适应或伪标签质量控制，而不是继续替换聚类器小参数 |
 | ManyRx 正式 runner 缺失            | 阶段 5 已用既有结果完成补充稳定性汇总，但复现实验入口仍不够直观                              | 阶段 6 文档中标明历史 runner 位置，必要时再恢复受维护入口                       |
 | Slurm 端保留多份大数据分片               | 占用存储                                                             | 未经确认不删除，后续只做保留策略建议                                     |
 
@@ -395,8 +395,8 @@ Job `44781083` 在默认 target split 与 Long-RADCIL 配置下验证训练期�
 
 短期优先级：
 
-1. 先跑 GPCC seed7 discovery-only：LoRa 和 ADS-B 分别比较旧 MV-ACC/HDBSCAN 与 GPCC；若 GPCC 每轮固定 K、无 noise 且 ARI/Hungarian 至少一项优于旧前端，再进入完整增量 seed7。
-2. ADS-B 欠聚类风险已收束：正式 ratio 0.03 不变，自适应密度归档为负消融，默认 target split 作为欠聚类收敛候选，保守门控消融未优于默认；固定 target split 后端对照和训练期旧类原型锚定 seed7 结果显示剩余问题是旧新类后端权衡，不能靠继续调 target split 或 anchor 权重解决。
+1. GPCC seed7 闭环结论：LoRa discovery-only 未过门槛；ADS-B discovery-only 聚类通过，但完整增量 seed7 未超过 target split，因此不扩三种子。
+2. ADS-B 欠聚类风险已收束：正式 ratio 0.03 不变，自适应密度归档为负消融，默认 target split 作为当前最佳欠聚类收敛候选；固定 target split 后端对照、训练期旧类原型锚定和 GPCC 完整增量结果均显示，剩余问题不能靠继续调 target split、anchor 权重或替换聚类器解决。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 
