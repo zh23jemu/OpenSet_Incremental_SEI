@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/mnt/users/xj62kv/OpenSet_Incremental_SEI_gpcc_run/experiments/exp_lora25_mvacc_cil_strict.py", line 28, in <module>
+    main()
+  File "/mnt/users/xj62kv/OpenSet_Incremental_SEI_gpcc_run/experiments/exp_lora25_mvacc_cil_strict.py", line 24, in main
+    shared_main()
+  File "/mnt/users/xj62kv/OpenSet_Incremental_SEI_gpcc_run/experiments/exp_wisig_mvacc_cil_strict.py", line 3490, in main
+    model = load_closedset_model(
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/users/xj62kv/OpenSet_Incremental_SEI_gpcc_run/experiments/exp_wisig_mvacc_cil_strict.py", line 307, in load_closedset_model
+    raise RuntimeError(
+RuntimeError: Checkpoint protocol mismatch: {'dataset_path': {'expected': '/mnt/users/xj62kv/OpenSet_Incremental_SEI_gpcc_run/datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz', 'stored': '/mnt/users/xj62kv/OpenSet_Incremental_SEI/datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz'}}. Use a new checkpoint or re-run with --train_closedset.

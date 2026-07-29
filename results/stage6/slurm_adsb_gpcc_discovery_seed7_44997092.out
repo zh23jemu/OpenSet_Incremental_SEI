@@ -1,0 +1,75 @@
+运行 ADS-B discovery-only：backend=mvacc, save_dir=results/stage6/adsb_gpcc_discovery_mvacc_seed7_44997092
+
+========== Strict ADS-B 90-Known 3-Round MV-ACC-CIL Experiment ==========
+Dataset root: /mnt/users/xj62kv/OpenSet_Incremental_SEI/数据集/ADS-B/Dataset
+Save dir: results/stage6/adsb_gpcc_discovery_mvacc_seed7_44997092
+Device: cuda
+Backbone: adsb_long
+Protocol: 90 known + 10 novel R1 + 10 novel R2 + 10 novel R3
+Receiver setting: receiver metadata unavailable; treated as one acquisition domain
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Base-class protocol: 60% backbone train + 10% validation + 30% stored-order held-out evaluation
+Novel-class protocol: provided train file for discovery/training; provided test file for evaluation only
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Base development 70%: (14388, 2, 4800), classes=90, labels=0-89
+Initial eval 30%:     (6178, 2, 4800), classes=90, labels=0-89, day=ADS-B known-pool held-out partition
+Novel R1 train file: (3081, 2, 4800), classes=10, labels=90-99, source=ADS-B novel pool group 0-9
+After R1 held-out eval: (7178, 2, 4800), classes=100, labels=0-99, source=ADS-B held-out evaluation after round 1
+Novel R2 train file: (2911, 2, 4800), classes=10, labels=100-109, source=ADS-B novel pool group 10-19
+After R2 held-out eval: (8178, 2, 4800), classes=110, labels=0-109, source=ADS-B held-out evaluation after round 2
+Novel R3 train file: (2448, 2, 4800), classes=10, labels=110-119, source=ADS-B novel pool group 20-29
+After R3 held-out eval: (9178, 2, 4800), classes=120, labels=0-119, source=ADS-B held-out evaluation after round 3
+[Integrity] exact IQ overlap across every development/test boundary: 0
+[Load] checkpoint=/mnt/users/xj62kv/OpenSet_Incremental_SEI/results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.111 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[discovery_only] Strict GPCC/MV-ACC front-end evaluation
+[discovery_only] Saved strict discovery outputs; skipped held-out eval feature extraction and CIL training.
+Saved: results/stage6/adsb_gpcc_discovery_mvacc_seed7_44997092/clustering_results.csv
+运行 ADS-B discovery-only：backend=gpcc, save_dir=results/stage6/adsb_gpcc_discovery_gpcc_seed7_44997092
+
+========== Strict ADS-B 90-Known 3-Round MV-ACC-CIL Experiment ==========
+Dataset root: /mnt/users/xj62kv/OpenSet_Incremental_SEI/数据集/ADS-B/Dataset
+Save dir: results/stage6/adsb_gpcc_discovery_gpcc_seed7_44997092
+Device: cuda
+Backbone: adsb_long
+Protocol: 90 known + 10 novel R1 + 10 novel R2 + 10 novel R3
+Receiver setting: receiver metadata unavailable; treated as one acquisition domain
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Base-class protocol: 60% backbone train + 10% validation + 30% stored-order held-out evaluation
+Novel-class protocol: provided train file for discovery/training; provided test file for evaluation only
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Base development 70%: (14388, 2, 4800), classes=90, labels=0-89
+Initial eval 30%:     (6178, 2, 4800), classes=90, labels=0-89, day=ADS-B known-pool held-out partition
+Novel R1 train file: (3081, 2, 4800), classes=10, labels=90-99, source=ADS-B novel pool group 0-9
+After R1 held-out eval: (7178, 2, 4800), classes=100, labels=0-99, source=ADS-B held-out evaluation after round 1
+Novel R2 train file: (2911, 2, 4800), classes=10, labels=100-109, source=ADS-B novel pool group 10-19
+After R2 held-out eval: (8178, 2, 4800), classes=110, labels=0-109, source=ADS-B held-out evaluation after round 2
+Novel R3 train file: (2448, 2, 4800), classes=10, labels=110-119, source=ADS-B novel pool group 20-29
+After R3 held-out eval: (9178, 2, 4800), classes=120, labels=0-119, source=ADS-B held-out evaluation after round 3
+[Integrity] exact IQ overlap across every development/test boundary: 0
+[Load] checkpoint=/mnt/users/xj62kv/OpenSet_Incremental_SEI/results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.111 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[discovery_only] Strict GPCC/MV-ACC front-end evaluation
+[discovery_only] Saved strict discovery outputs; skipped held-out eval feature extraction and CIL training.
+Saved: results/stage6/adsb_gpcc_discovery_gpcc_seed7_44997092/clustering_results.csv
+GPCC discovery report: results/stage6/STAGE6_ADSB_GPCC_DISCOVERY_SEED7_REPORT_44997092.md

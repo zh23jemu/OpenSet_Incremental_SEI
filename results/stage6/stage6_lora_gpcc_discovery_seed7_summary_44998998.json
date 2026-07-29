@@ -1,0 +1,126 @@
+{
+  "dataset": "lora",
+  "job_id": "44998998",
+  "rows": [
+    {
+      "Variant": "mvacc",
+      "Save Dir": "results/stage6/lora_gpcc_discovery_mvacc_seed7_44998998",
+      "Round": "R1",
+      "Final Cluster Count": 7,
+      "True New Classes": 5,
+      "Cluster Count Error": 2,
+      "Assignment Coverage": 1.0,
+      "Purity": 0.4265306122448979,
+      "NMI": 0.1486880320908592,
+      "ARI": 0.0989390665124677,
+      "Hungarian Acc": 0.3204081632653061
+    },
+    {
+      "Variant": "mvacc",
+      "Save Dir": "results/stage6/lora_gpcc_discovery_mvacc_seed7_44998998",
+      "Round": "R2",
+      "Final Cluster Count": 6,
+      "True New Classes": 5,
+      "Cluster Count Error": 1,
+      "Assignment Coverage": 1.0,
+      "Purity": 0.3897959183673469,
+      "NMI": 0.1452550996147694,
+      "ARI": 0.1128453028658717,
+      "Hungarian Acc": 0.3673469387755102
+    },
+    {
+      "Variant": "mvacc",
+      "Save Dir": "results/stage6/lora_gpcc_discovery_mvacc_seed7_44998998",
+      "Round": "R3",
+      "Final Cluster Count": 7,
+      "True New Classes": 5,
+      "Cluster Count Error": 2,
+      "Assignment Coverage": 1.0,
+      "Purity": 0.5142857142857142,
+      "NMI": 0.3266547853315215,
+      "ARI": 0.2644958458710733,
+      "Hungarian Acc": 0.4387755102040816
+    },
+    {
+      "Variant": "gpcc",
+      "Save Dir": "results/stage6/lora_gpcc_discovery_gpcc_seed7_44998998",
+      "Round": "R1",
+      "Final Cluster Count": 5,
+      "True New Classes": 5,
+      "Cluster Count Error": 0,
+      "Noise Points": 0,
+      "Assignment Coverage": 1.0,
+      "Purity": 0.4081632653061224,
+      "NMI": 0.1385992163754604,
+      "ARI": 0.1078726445716226,
+      "Hungarian Acc": 0.3857142857142857,
+      "GPCC Uses HDBSCAN": false,
+      "GPCC Cluster Size CV": 0.1138109672830698
+    },
+    {
+      "Variant": "gpcc",
+      "Save Dir": "results/stage6/lora_gpcc_discovery_gpcc_seed7_44998998",
+      "Round": "R2",
+      "Final Cluster Count": 5,
+      "True New Classes": 5,
+      "Cluster Count Error": 0,
+      "Noise Points": 0,
+      "Assignment Coverage": 1.0,
+      "Purity": 0.3775510204081632,
+      "NMI": 0.135049759384341,
+      "ARI": 0.0917417772102904,
+      "Hungarian Acc": 0.373469387755102,
+      "GPCC Uses HDBSCAN": false,
+      "GPCC Cluster Size CV": 0.2607936497812233
+    },
+    {
+      "Variant": "gpcc",
+      "Save Dir": "results/stage6/lora_gpcc_discovery_gpcc_seed7_44998998",
+      "Round": "R3",
+      "Final Cluster Count": 5,
+      "True New Classes": 5,
+      "Cluster Count Error": 0,
+      "Noise Points": 0,
+      "Assignment Coverage": 1.0,
+      "Purity": 0.4938775510204081,
+      "NMI": 0.31504519318549,
+      "ARI": 0.2417412731261864,
+      "Hungarian Acc": 0.4938775510204081,
+      "GPCC Uses HDBSCAN": false,
+      "GPCC Cluster Size CV": 0.3008387552597646
+    }
+  ],
+  "summary": {
+    "mvacc": {
+      "variant": "mvacc",
+      "rounds": 3,
+      "all_target_cluster_count": false,
+      "total_cluster_count_error": 5.0,
+      "mean_ari": 0.15876007174980422,
+      "mean_hungarian_acc": 0.37551020408163266,
+      "total_noise_points": 0.0,
+      "mean_assignment_coverage": 1.0,
+      "uses_hdbscan": true
+    },
+    "gpcc": {
+      "variant": "gpcc",
+      "rounds": 3,
+      "all_target_cluster_count": true,
+      "total_cluster_count_error": 0.0,
+      "mean_ari": 0.14711856496936648,
+      "mean_hungarian_acc": 0.41768707482993195,
+      "total_noise_points": 0.0,
+      "mean_assignment_coverage": 1.0,
+      "uses_hdbscan": false
+    }
+  },
+  "gate": {
+    "has_gpcc": true,
+    "gpcc_cluster_count_gate": true,
+    "gpcc_no_noise_gate": true,
+    "gpcc_uses_hdbscan": false,
+    "ari_delta_vs_mvacc": -0.011641506780437738,
+    "hungarian_delta_vs_mvacc": 0.04217687074829929,
+    "passed_gate": false
+  }
+}

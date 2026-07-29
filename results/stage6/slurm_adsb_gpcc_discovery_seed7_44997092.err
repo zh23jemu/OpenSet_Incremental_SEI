@@ -1,0 +1,2 @@
+/mnt/users/xj62kv/OpenSet_Incremental_SEI_gpcc_run/tools/stage6_gpcc_discovery_report.py:96: RuntimeWarning: Mean of empty slice
+  "mean_assignment_coverage": float(np.nanmean(coverage)),
