@@ -1935,6 +1935,41 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
     for p in teacher.parameters():
         p.requires_grad_(False)
 
+    # 训练期旧类原型锚定：在每一轮增量训练开始前，用冻结 Teacher 在 replay
+    # 记忆上计算旧类类中心。训练 Student 时只对 replay 旧类样本施加类级余弦
+    # 锚定，目标是减少旧类表征整体漂移；它不约束当前轮新伪类，也不读取
+    # held-out evaluation 真值，因此可作为 ADS-B 后端遗忘风险的结构性消融。
+    anchor_prototypes = None
+    anchor_valid = None
+    if float(args.radcil_prototype_anchor_weight) > 0 and int(old_out_dim) > 0:
+        teacher_features = []
+        anchor_loader = DataLoader(
+            TensorDataset(torch.as_tensor(memory_x, dtype=torch.float32)),
+            batch_size=int(args.test_batch_size),
+            shuffle=False,
+            num_workers=0,
+        )
+        with torch.no_grad():
+            for (anchor_x,) in anchor_loader:
+                anchor_feat, _ = teacher(anchor_x.to(device))
+                teacher_features.append(anchor_feat)
+        if teacher_features:
+            all_teacher_features = torch.cat(teacher_features, dim=0)
+            memory_y_device = torch.as_tensor(memory_y, dtype=torch.long, device=device)
+            anchor_prototypes = torch.zeros(
+                (int(old_out_dim), all_teacher_features.shape[1]),
+                dtype=all_teacher_features.dtype,
+                device=device,
+            )
+            anchor_valid = torch.zeros(int(old_out_dim), dtype=torch.bool, device=device)
+            for class_id in range(int(old_out_dim)):
+                class_mask = memory_y_device == class_id
+                if torch.any(class_mask):
+                    anchor_prototypes[class_id] = F.normalize(
+                        all_teacher_features[class_mask].mean(dim=0), dim=0
+                    )
+                    anchor_valid[class_id] = True
+
     def configure(stage):
         for p in student.backbone.parameters():
             p.requires_grad_(False)
@@ -1977,7 +2012,25 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                 feat_con = torch.cat([feat[:len(xc)][high], feat[len(xc):]], dim=0)
                 y_con = torch.cat([yc[high], ym], dim=0)
                 con = _supcon_incremental(feat_con, y_con, args.supcon_temperature)
-                loss = ce_current + float(args.cil_replay_weight) * ce_memory + float(args.cil_kd_weight) * kd + float(args.cil_supcon_weight) * con
+                if anchor_prototypes is not None and anchor_valid is not None:
+                    anchor_mask = (ym < int(old_out_dim)) & anchor_valid[ym.clamp(max=int(old_out_dim) - 1)]
+                    if torch.any(anchor_mask):
+                        student_anchor_features = F.normalize(feat[len(xc):][anchor_mask], dim=1)
+                        target_anchor_prototypes = anchor_prototypes[ym[anchor_mask]]
+                        prototype_anchor = (
+                            1.0 - (student_anchor_features * target_anchor_prototypes).sum(dim=1)
+                        ).mean()
+                    else:
+                        prototype_anchor = logits_m.sum() * 0.0
+                else:
+                    prototype_anchor = logits_m.sum() * 0.0
+                loss = (
+                    ce_current
+                    + float(args.cil_replay_weight) * ce_memory
+                    + float(args.cil_kd_weight) * kd
+                    + float(args.radcil_prototype_anchor_weight) * prototype_anchor
+                    + float(args.cil_supcon_weight) * con
+                )
                 opt.zero_grad()
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(student.parameters(), max_norm=5.0)
@@ -3021,6 +3074,12 @@ def main():
         default=0.0,
         help="RADCIL replay old:new batch ratio；0 保持历史等 batch 行为。",
     )
+    parser.add_argument(
+        "--radcil_prototype_anchor_weight",
+        type=float,
+        default=0.0,
+        help="训练期 Teacher replay 类中心锚定权重；0 保持历史 ADS-B RADCIL 行为。",
+    )
     parser.add_argument("--pseudo_weight_floor", type=float, default=0.20)
 
 
@@ -3468,7 +3527,12 @@ def main():
         fixed_true = eval_y_dict["eval_initial"]
         fixed_mapped = np.asarray([pseudo_to_true.get(int(p), int(p)) for p in fixed_pred], dtype=np.int64)
         retention_rows.append({"Round": f"R{i}", "Fixed Day1 Old-Class Acc": float(np.mean(fixed_true == fixed_mapped))})
-        torch.save({"model_state": student.state_dict(), "round": i, "num_outputs": int(student.classifier.out_features)}, os.path.join(args.save_dir, f"mvacc_cil_after_r{i}.pth"))
+        torch.save({
+            "model_state": student.state_dict(),
+            "round": i,
+            "num_outputs": int(student.classifier.out_features),
+            "radcil_prototype_anchor_weight": float(args.radcil_prototype_anchor_weight),
+        }, os.path.join(args.save_dir, f"mvacc_cil_after_r{i}.pth"))
         np.savez_compressed(os.path.join(args.save_dir, f"replay_memory_after_r{i}.npz"), X=memory_x, y=memory_y)
 
     clustering_df = save_csv(clustering_rows, os.path.join(args.save_dir, "clustering_results.csv"))
