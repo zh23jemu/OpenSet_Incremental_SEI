@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-28
-- 当前阶段：阶段 5 两种 LoRa 后端修复均已归档为 seed7 负消融；停止扩大后端调参
+- 当前阶段：继续风险收敛；ADS-B 欠聚类已收为 target split 候选，WiSig DOI-memory hybrid 已归档为三种子负消融
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -125,7 +125,7 @@ Strict loader 审计：
 - Job `44670427` 与 Job `44766923` 已完成 ADS-B target split 单种子和三种子验证；默认 target split 将 R3 最终簇数从 `6.6667±0.5774` 补到 `10.0000±0.0000`，九轮绝对簇误差 `17->5`，R3 Overall `0.4820±0.0091 -> 0.4927±0.0137`，New Acc `0.4423±0.0131 -> 0.4930±0.0869`。
 - Job `44767309` 已完成 ADS-B 保守 target split 消融；`max_added=2`、`silhouette=0.34/0.38` 均未优于默认 `max_added=4, silhouette=0.26`。ADS-B 欠聚类风险已收敛为默认 target split 候选，剩余局限为 seed7/13 新类收益不稳定和簇大小 CV 上升。
 - 已新增 `tools/stage3_wisig_strict_baseline_table.py` 并生成 `results/stage3/STAGE3_WISIG_STRICT_BASELINE_TABLE.md`，将 SimGCD-style 标注为 learning-style adaptation、IGCD-minimal 标注为 minimal strict adaptation，二者均不作为完整论文复现；MV-ACC 仍是正式主前端。
-- 已新增 `tools/stage3_wisig_strong_backend_plan.py` 并生成 `results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md`，把共享发现后端风险收束为 `RADCIL + DOI-style`、`RADCIL + iCaRL`、`RADCIL + TPCIL-style` 三个待实现混合候选；下一步先做 seed 7 短验证。
+- `results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md` 已更新为后端风险收口记录：`RADCIL + DOI-style` 已完成 seed7 与正式三种子验证，三种子 R3 Overall 与主方法持平但 Old/Forgetting 略差，归档为负消融；iCaRL/TPCIL 仅作为后续新机制候选，不再延续 late-fusion 权重搜索。
 - ADS-B strict 主入口已使用 `ADSBLongClosedSet`，并支持 RADCIL old:new batch ratio；阶段 4 单种子和正式三种子计划、报告、Slurm 入口均已同步。
 - LoRa 阶段 5 已新增 strict loader、协议审计和 closedset smoke 入口；Job `44559268` 协议审计 `ok=true`，Job `44572328` closedset smoke 完成，证明紧凑 LoRa NPZ 可进入现有 PyTorch 训练/发现链路。
 - LoRa seed7 正式 Job `44573179`、冻结消融 `44573200`、IQ_7-only 表征筛选 `44573249`、预选表征三轮 `44573272` 和后端矩阵 `44573278` 均完成。预选表征 RADCIL R3 Overall/Old/New 为 `0.1419/0.0798/0.3905`；DOI-style 为 `0.1676/0.1786/0.1238`。
@@ -134,8 +134,8 @@ Strict loader 审计：
 - 已新增 `CUSTOMER_PROGRESS_REPORT.html` 单文件客户汇报，内嵌阶段状态、正式指标对比、发现链路和风险表格；页面可离线打开和打印，但内容仍以实施计划为唯一事实源。
 - 已新增 `tools/stage5_manytx_manyrx_supplement_report.py`、`results/stage5/STAGE5_MANYTX_MANYRX_SUPPLEMENT_REPORT.md` 和 JSON 摘要，只读汇总既有 ManyTx/ManyRx seed7 三轮结果；ManyTx R3 Overall/New/Forgetting=`0.2700/0.5600/0.4267`，ManyRx R3 Overall/New/Forgetting=`0.5700/0.9500/0.5250`，阶段 5 补充稳定性验证已关闭。
 - 已生成只读服务器产物清单：553 个模型/回放二进制、约 5.21 GB、54 个超 50 MB 和 9 个非空错误日志。未删除任何文件，仅精确忽略新矩阵二进制并保留小型审计结果。
-- 已在 WiSig strict 入口实现可选 DOI-memory hybrid：使用伪标签 replay 记忆构建原型、跨轮对齐历史原型，并与网络 logits 做 late fusion；默认融合权重为 0，不改变历史 RADCIL 行为。
-- 已新增 `tools/stage3_wisig_hybrid_doi_plan.py`、`tools/stage3_wisig_hybrid_doi_report.py` 和 `slurm/stage3_wisig_hybrid_doi_seed7.sbatch`；本地语法、参数入口、计划生成和合成张量 smoke test 已通过，待 Slurm seed7 验证。
+- 已在 WiSig strict 入口实现可选 DOI-memory hybrid：使用伪标签 replay 记忆构建原型、跨轮对齐历史原型，并与网络 logits 做 late fusion；默认融合权重为 0，不改变历史 RADCIL 行为。该分支已完成 seed7 和三种子验证，正式结论为负消融。
+- 已新增 `tools/stage3_wisig_hybrid_doi_plan.py`、`tools/stage3_wisig_hybrid_doi_report.py`、`tools/stage3_wisig_hybrid_doi_multiseed_plan.py`、`tools/stage3_wisig_hybrid_doi_multiseed_report.py`、`slurm/stage3_wisig_hybrid_doi_seed7.sbatch` 和 `slurm/stage3_wisig_hybrid_doi_multiseed.sbatch`；Job `44465809` 与 `44465982` 已完成并同步报告。
 - SimGCD-style 已验证为可运行学习式发现 baseline，但真实 WiSig 前端质量低于 MV-ACC；阶段 1 短期主线应保留 MV-ACC 或稳定 Deep-HDBSCAN 前端，避免把弱前端误锁为新主方法。
 - Slurm 端同时保留 ManyTx 的 6 个分片和合并 ZIP，存在约 2.63 GB 重复占用；未取得明确清理指令前不要删除。
 - 阶段 0 两个 Slurm job 的 JSON/stdout/stderr 已同步回本地；后续不要再把本地缺失误判为实验未运行。
@@ -143,9 +143,9 @@ Strict loader 审计：
 
 ## 7. 下一步执行顺序
 
-1. ADS-B 阶段 4 已收束；固定 ratio 0.03 为正式配置，自适应密度作为负消融保留，不再继续调固定密度参数。
-2. 阶段 5 已完成；LoRa 不扩种子，ManyTx/ManyRx 补充结果仅作为辅助稳定性证据。
-3. 不再扩展 LoRa 后端调参。后续应整理严格负消融与跨体制局限，或选择不复用上述原型/late-fusion 机制的新方向。
+1. ADS-B 欠聚类风险已收束；固定 ratio 0.03 为正式配置，自适应密度作为负消融保留，默认 target split 作为候选并保留 seed7/13 局限。
+2. WiSig 后端上限风险已收束；DOI-memory late fusion 不能解决后端上限，后续若继续只能换机制并先做 seed7 短验证。
+3. LoRa 不扩种子，ManyTx/ManyRx 补充结果仅作为辅助稳定性证据；不再扩展 LoRa 原型锚定或 late-fusion 后端调参。
 4. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 5. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 6. 若后续补充实验需要 LoRa 完整数据或 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压或下载；LoRa 可优先只取 Different Days Indoor Scenario 的必要子集，不删除 Release 分片或原压缩包。

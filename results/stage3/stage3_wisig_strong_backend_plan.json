@@ -3,8 +3,8 @@
   "created_at_utc": "2026-07-27T12:41:03.206287+00:00",
   "source_summary": "results\\stage3\\stage3_wisig_cil_baselines_multiseed_summary_44453416.json",
   "source_job": "44453416",
-  "risk_resolved_as": "backend_ceiling_exposed_and_converted_to_hybrid_ablation_plan",
-  "selection_rule": "先将 DOI-style/iCaRL/TPCIL-style 作为共享 MV-ACC 伪标签强后端参考；新增混合后端时先跑 seed 7 短验证，只有 R3 Overall 或 Old/Forgotten 明显优于当前 MV-ACC-CIL 时才扩展三种子。",
+  "risk_resolved_as": "backend_ceiling_exposed_and_doi_memory_recorded_as_negative_ablation",
+  "selection_rule": "先将 DOI-style/iCaRL/TPCIL-style 作为共享 MV-ACC 伪标签强后端参考；DOI-memory hybrid 已完成 seed7 与三种子验证但未稳定优于当前 MV-ACC-CIL。后续若继续后端研究，必须更换机制并先跑 seed7 短验证，不再继续 late-fusion 权重搜索。",
   "candidate_matrix": [
     {
       "variant": "reference_shared_mvacc_doistyle",
@@ -44,23 +44,28 @@
     },
     {
       "variant": "hybrid_radcil_doi_memory_alignment",
-      "status": "ready_for_seed7",
+      "status": "completed_negative_ablation",
       "backend_source": "RADCIL + DOI-style",
-      "run_requirement": "已实现 replay 原型历史对齐和 logits/prototype late fusion；运行 seed 7 短验证，达到门槛后扩展 3 seeds。",
-      "purpose": "检验 DOI-style 的旧类原型保持是否能与网络式新类学习互补。"
+      "run_requirement": "seed7 Job 44465809 达到扩展门槛；正式三种子 Job 44465982 R3 Overall 0.6088、Old 0.5451、New 0.8000、Forgetting 0.2311，未稳定优于主方法。",
+      "r3_overall_mean": 0.6088,
+      "r3_old_mean": 0.5451,
+      "r3_new_mean": 0.8,
+      "r3_forgetting_mean": 0.2311,
+      "delta_vs_mvacc_cil_overall": 0.0,
+      "purpose": "检验 DOI-style 的旧类原型保持是否能与网络式新类学习互补；结果显示该 late-fusion 机制不能解决后端上限风险，正式归档为负消融。"
     },
     {
       "variant": "hybrid_radcil_icarl_exemplar_classifier_fallback",
-      "status": "requires_code_change",
+      "status": "deferred_new_mechanism",
       "backend_source": "RADCIL + iCaRL",
-      "run_requirement": "新增 exemplar classifier fallback 或 logits/prototype late fusion 后运行 seed 7 短验证。",
+      "run_requirement": "仅当继续后端研究时再实现；必须提出不同于 DOI-memory late fusion 的旧类保持机制，并先运行 seed 7 短验证。",
       "purpose": "检验 iCaRL 样本记忆分类器能否补足 RADCIL 旧类决策边界漂移。"
     },
     {
       "variant": "hybrid_radcil_tpcil_graph_smoothed_prototypes",
-      "status": "requires_code_change",
+      "status": "deferred_new_mechanism",
       "backend_source": "RADCIL + TPCIL-style",
-      "run_requirement": "新增图平滑原型正则或后验融合后运行 seed 7 短验证。",
+      "run_requirement": "仅当继续后端研究时再实现；需先证明图平滑原型会带来结构性旧类保持收益。",
       "purpose": "检验 TPCIL-style 原型拓扑平滑是否能降低旧类遗忘而不牺牲新类。"
     }
   ],
@@ -72,10 +77,11 @@
       "R3 Forgetting Rate",
       "R3 New Acc"
     ],
-    "minimum_next_step": "任一混合候选 seed7 R3 Overall 不低于 MV-ACC-CIL，且 Old Acc 或 Forgetting 至少一项接近强后端 reference。"
+    "minimum_next_step": "DOI-memory 已完成并归档为负消融；若继续做 iCaRL/TPCIL 类新机制，必须先给出不同机制假设并通过 seed7 短验证，不再做单纯 late-fusion 权重搜索。"
   },
   "blocked_items": [
-    "DOI-memory late fusion 已实现但尚未完成 Slurm seed7 结果验证；iCaRL/TPCIL hybrid 仍待实现。",
-    "不能直接把共享发现 frozen-feature baseline 写成新主方法，只能作为后端上限和混合设计依据。"
+    "DOI-memory late fusion 已完成 seed7 与三种子验证，但未稳定优于主方法，不能作为主后端。",
+    "iCaRL/TPCIL hybrid 仍未实现；在没有新机制假设前，暂不继续扩展，避免把后端风险变成小参数搜索。",
+    "不能直接把共享发现 frozen-feature baseline 写成新主方法，只能作为后端上限、局限说明和后续机制设计依据。"
   ]
 }
