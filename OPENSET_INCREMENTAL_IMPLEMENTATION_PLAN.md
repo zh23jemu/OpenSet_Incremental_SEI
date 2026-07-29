@@ -43,7 +43,7 @@
 - WiSig 网络后端仍低于共享 MV-ACC 伪标签下的 DOI-style reference，DOI-memory late fusion 未稳定缩小该差距。
 - IGCD-minimal 是最小严格适配，不是完整 IGCD 论文复现。
 - ADS-B 原正式三种子 R3 只发现 6–7 个簇；默认 target split 已将 R3 欠聚类收敛到 10 簇，保守门控没有更优折中。剩余局限不再是“欠聚类未解”，而是 RADCIL 更偏新类、DOI-style 更低遗忘的后端权衡。
-- LoRa 完整数据尚未下载或切分，但不阻塞 WiSig/ADS-B 主线。
+- LoRa 不下载完整数据集；当前已保留实验需要的 Different Days Indoor 紧凑子集，阶段 6 审计 `results/stage6/lora_required_subset_audit.json` 显示 `ok=true`，可支撑当前 10+5×3 跨体制验证。
 
 ## 2. 已锁定的实施原则
 
@@ -63,7 +63,7 @@
 | ------------------ | ----- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | WiSig              | 主实验   | 初始 10 类，3 个增量轮次，每轮 10 类，最终 40 类                            | 根目录完整 PKL 已有；阶段 0 审计通过；阶段 1 短实验已完成                                                                                                                                          |
 | ADS-B              | 主实验   | 初始 90 类，剩余 30 类分 3 轮，每轮 10 类                               | `数据集/ADS-B.rar` 已包含所需 NPY；已在 Slurm 解压并通过 strict loader 审计                                                                                                                   |
-| LoRa25 / LoRa RFFP | 跨体制验证 | 初始 10 类，3 个增量轮次，每轮 5 类，最终 25 类                             | 来源确认为 Comprehensive LoRa RF Datasets for Device Fingerprinting Using Deep Learning 中的 LoRa RFFP Dataset - Different Days Indoor Scenario；当前有紧凑版，完整数据较大，后续可只下载或切分 Setup 1 子集 |
+| LoRa25 / LoRa RFFP | 跨体制验证 | 初始 10 类，3 个增量轮次，每轮 5 类，最终 25 类                             | 来源确认为 Comprehensive LoRa RF Datasets for Device Fingerprinting Using Deep Learning 中的 LoRa RFFP Dataset - Different Days Indoor Scenario；当前只保留实验需要的紧凑子集，不下载完整 LoRa |
 | ManyTx             | 补充实验  | 沿用现有 10 类初始、3 轮增量协议                                        | 完整 PKL 压缩包已收到并校验结构，按需展开                                                                                                                                                     |
 | ManyRx             | 补充实验  | 严格沿用现有 `manyrx_protocol_manifest.json` 的 4 类初始、3 轮固定跨接收机协议 | 完整 PKL 和紧凑版均已有；正式 runner 需后续恢复或文档修正                                                                                                                                         |
 
@@ -257,6 +257,7 @@
 ### 阶段 6：结果与交付，2–3 天
 
 - [x] 聚合当前客户问答风险：DOI-style 简化复现口径、LoRa 数据下载范围、ADS-B/LoRa 低结果解释。
+- [x] 审计 LoRa 实验必要子集：`datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz` 已覆盖 25 设备、10+5×3 strict 协议，结果见 `results/stage6/lora_required_subset_audit.json` 和 `results/stage6/LORA_REQUIRED_SUBSET_READY.md`。
 - [ ] 提供 `gpu` 分区、`gpo-ifv7xx` 账号、`normal` QOS 的正式 Slurm 脚本；一小时内验证任务使用 `shortjobs`。
 - [ ] 汇总多种子均值、标准差、对照和消融表格。
 - [ ] 整理可直接用于论文的 t-SNE 图和结果图表。

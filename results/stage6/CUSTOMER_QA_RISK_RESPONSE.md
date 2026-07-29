@@ -8,9 +8,9 @@ DOI-style 是本项目中加入的简化版增量后端 baseline，不是官方�
 
 ## 2. LoRa 数据集能否下载
 
-LoRa 数据集可以下载，但完整数据体量较大。当前实验使用的是 `Comprehensive LoRa RF Datasets for Device Fingerprinting Using Deep Learning` 中的 `LoRa RFFP Dataset - Different Days Indoor Scenario` 子集，并已基于紧凑版数据完成 10+5x3 strict 协议验证。
+LoRa 数据集可以下载，但完整数据体量较大。当前不下载完整 LoRa，只使用 `Comprehensive LoRa RF Datasets for Device Fingerprinting Using Deep Learning` 中的 `LoRa RFFP Dataset - Different Days Indoor Scenario` 必要子集，并已基于紧凑版数据完成 10+5x3 strict 协议验证。
 
-如果后续需要完整复现或扩展 LoRa，可以在 Slurm 服务器上按需下载完整数据，或优先只下载/切分当前协议需要的 Different Days Indoor Scenario 必要子集，避免占用本地 C 盘空间。
+必要子集已经准备好：`datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz`，约 9.7 MB。阶段 6 审计 `results/stage6/lora_required_subset_audit.json` 显示 `ok=true`。如果后续要扩展 LoRa 场景或设备范围，再在 Slurm 服务器上按需下载，不占用本地 C 盘。
 
 ## 3. ADS-B 和 LoRa 结果是否偏低
 
@@ -26,6 +26,6 @@ LoRa 数据集可以下载，但完整数据体量较大。当前实验使用的
 
 DOI-style 是我加的一个简化版 baseline，不是官方完整实现。原版来自 DOI 框架论文，但代码没完整开源，所以没法严格复现。我这里只是按论文思路做了一个简洁版，主要用来对比原型/记忆这类后端对旧类保持的效果。
 
-LoRa 数据集是能下载的，不过完整数据比较大。现在用的是 Different Days Indoor 这个子集，后面如果要完整复现，可以在服务器上继续下载完整数据，或者只下载我们实验需要的部分。
+LoRa 完整数据先不下了，数据太大。现在实验需要的 Different Days Indoor 子集已经切好了，审计也通过，可以直接支撑现在的 LoRa 实验。
 
 ADS-B 和 LoRa 目前结果确实不高。ADS-B 加了 target split 后接近 50%，但遗忘还是偏高；LoRa 更低一些，主要说明跨体制很难。所以这两个现在更适合做补充实验和局限分析，不能硬说效果很好。

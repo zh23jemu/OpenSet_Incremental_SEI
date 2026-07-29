@@ -33,7 +33,7 @@
 - WiSig 主实验：初始 10 类，3 轮增量，每轮 10 类，最终 40 类。
 - ADS-B 主实验：初始 90 类，剩余 30 类分 3 轮，每轮 10 类。
 - LoRa25：默认 10 + 5 × 3，作为跨信号体制验证。
-- LoRa 数据来源已由用户确认：Comprehensive LoRa RF Datasets for Device Fingerprinting Using Deep Learning；使用子集为 LoRa RFFP Dataset - Different Days Indoor Scenario。完整数据较大，后续可只下载或切分 Setup 1 必要子集。
+- LoRa 数据来源已由用户确认：Comprehensive LoRa RF Datasets for Device Fingerprinting Using Deep Learning；当前只保留实验需要的 LoRa RFFP Dataset - Different Days Indoor Scenario 紧凑子集，不下载完整 LoRa。阶段 6 审计结果为 `results/stage6/lora_required_subset_audit.json`，`ok=true`。
 - ManyTx/ManyRx：作为 WiSig 补充协议，不得延迟 WiSig、ADS-B 主结果。
 - WiSig 主协议继续采用 60% 初始训练、10% 验证、30% 最终评估；其它数据优先使用 strict loader 并输出完整性审计。
 
@@ -135,6 +135,7 @@ Strict loader 审计：
 - Job `44586060` 已完成训练期 Teacher replay 类中心锚定矩阵。IQ_7 R3 旧类保持率在权重 `0/0.25/1.0` 分别为 `0.1143/0.0929/0.0857`，按规则选择 0；锚定使 held-out Overall/Old 同步退化，不扩种子或迁移 ADS-B。
 - 已新增 `CUSTOMER_PROGRESS_REPORT.html` 单文件客户汇报，内嵌阶段状态、正式指标对比、发现链路和风险表格；页面可离线打开和打印，但内容仍以实施计划为唯一事实源。
 - 已新增 `results/stage6/CUSTOMER_QA_RISK_RESPONSE.md`，单独整理 DOI-style 简化 baseline、LoRa 数据下载和 ADS-B/LoRa 低结果的客户问答口径；`CUSTOMER_PROGRESS_REPORT.html` 已同步修正 ADS-B target split 最新结果和低结果局限。
+- 已新增 `results/stage6/LORA_REQUIRED_SUBSET_READY.md`，明确 LoRa 当前只使用约 9.7 MB 的 Different Days Indoor 必要子集，并列出 10+5×3 协议覆盖范围。
 - 已新增 `tools/stage5_manytx_manyrx_supplement_report.py`、`results/stage5/STAGE5_MANYTX_MANYRX_SUPPLEMENT_REPORT.md` 和 JSON 摘要，只读汇总既有 ManyTx/ManyRx seed7 三轮结果；ManyTx R3 Overall/New/Forgetting=`0.2700/0.5600/0.4267`，ManyRx R3 Overall/New/Forgetting=`0.5700/0.9500/0.5250`，阶段 5 补充稳定性验证已关闭。
 - 已生成只读服务器产物清单：553 个模型/回放二进制、约 5.21 GB、54 个超 50 MB 和 9 个非空错误日志。未删除任何文件，仅精确忽略新矩阵二进制并保留小型审计结果。
 - 已在 WiSig strict 入口实现可选 DOI-memory hybrid：使用伪标签 replay 记忆构建原型、跨轮对齐历史原型，并与网络 logits 做 late fusion；默认融合权重为 0，不改变历史 RADCIL 行为。该分支已完成 seed7 和三种子验证，正式结论为负消融。
@@ -151,7 +152,7 @@ Strict loader 审计：
 3. LoRa 不扩种子，ManyTx/ManyRx 补充结果仅作为辅助稳定性证据；不再扩展 LoRa 原型锚定或 late-fusion 后端调参。
 4. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。当前 DOI-style、LoRa 数据和 ADS-B/LoRa 低结果问答已在阶段 6 风险说明中收口。
 5. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
-6. 若后续补充实验需要 LoRa 完整数据或 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压或下载；LoRa 可优先只取 Different Days Indoor Scenario 的必要子集，不删除 Release 分片或原压缩包。
+6. 若后续补充实验需要 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压；LoRa 当前不下载完整数据，继续使用已审计通过的 Different Days Indoor 必要子集。
 
 ## 8. 变更与 Git 状态
 

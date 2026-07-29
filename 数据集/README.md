@@ -63,4 +63,4 @@ cat 数据集/ManyTx.pkl.zip.part{01..06} > 数据集/ManyTx.pkl.zip
 
 ## 完整性结论
 
-当前主线所需的 WiSig、ADS-B、LoRa 数据均已具备。ManyTx 和 ManyRx 的完整原始压缩包也已具备。ORACLE/Orbit RF 原始数据仍未提供，但它们不属于当前确认的 WiSig、ADS-B、LoRa 主实验范围。
+当前主线所需的 WiSig、ADS-B、LoRa 数据均已具备。LoRa 不下载完整数据集，当前只使用已审计通过的 Different Days Indoor 必要紧凑子集：`../datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz`。ManyTx 和 ManyRx 的完整原始压缩包也已具备。ORACLE/Orbit RF 原始数据仍未提供，但它们不属于当前确认的 WiSig、ADS-B、LoRa 主实验范围。
