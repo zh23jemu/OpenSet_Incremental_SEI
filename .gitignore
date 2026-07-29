@@ -50,3 +50,6 @@ Desktop.ini
 # 阶段 5 原型锚定矩阵仅将大型训练状态保留在 Slurm；CSV/JSON/Markdown 结果继续入库
 /results/stage5/lora_prototype_anchor_seed7_*/*/*.pth
 /results/stage5/lora_prototype_anchor_seed7_*/*/*.npz
+
+# Slurm 小型结果同步时的本地中转目录；正式报告、CSV 和 JSON 会整理到对应 results 子目录
+/results/stage*/osei_*_results_*/
