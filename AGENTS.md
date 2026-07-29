@@ -115,7 +115,7 @@
 - 已新增单文件客户汇报 `CUSTOMER_PROGRESS_REPORT.html`，内嵌项目阶段图、正式指标图、发现链路图和结果表格；该文件从实施计划派生，可直接离线打开或打印为 PDF，不替代唯一事实源。
 - 阶段 5 ManyTx/ManyRx 补充稳定性验证已通过只读汇总既有 seed7 三轮结果完成：ManyTx R3 Overall `0.2700`、New `0.5600`、Forgetting `0.4267`；ManyRx R3 Overall `0.5700`、New `0.9500`、Forgetting `0.5250`。报告为 `results/stage5/STAGE5_MANYTX_MANYRX_SUPPLEMENT_REPORT.md`，阶段 5 可关闭并转入阶段 6。
 - 为继续收敛 ADS-B 欠聚类风险，已新增 MV-ACC 协议目标簇数补齐分裂开关；seed31 Job `44670427` 显示 R3 最终簇数 `7->10`、Label-free Silhouette `0.2647->0.3527`、Overall `0.4866->0.5075`、New Acc `0.4300->0.5930`。配对三种子 Job `44766923` 已完成，target split 将 R3 最终簇稳定到 `10.0000±0.0000`，九轮绝对簇误差 `17->5`，R3 Overall `0.4820±0.0091 -> 0.4927±0.0137`，New Acc `0.4423±0.0131 -> 0.4930±0.0869`；但 seed7/13 的 R3 New Acc 分别轻微下降 `-0.0050/-0.0060` 且簇大小 CV 增加，当前应作为 ADS-B 欠聚类风险收敛候选，而非直接锁定默认配置。
-- 为压低 seed7/13 的 CV 与过切分风险，已新增保守 target split 参数消融矩阵：`max_added=2, silhouette=0.26`、`max_added=4, silhouette=0.34`、`max_added=4, silhouette=0.38`；作业 `44767309` 已提交到 `gpuHz`，当前等待资源。
+- 为压低 seed7/13 的 CV 与过切分风险，已完成保守 target split 参数消融 Job `44767309`：`max_added=2, silhouette=0.26`、`max_added=4, silhouette=0.34`、`max_added=4, silhouette=0.38` 均未优于默认 target split。默认 target split 九轮绝对簇误差最低为 `5`、R3 Overall `0.4927±0.0137`、New Acc `0.4930±0.0869`；自动排序下保守候选 `target_split_m4_s034` 最优，但九轮绝对簇误差为 `6`、R3 New Acc `0.4617±0.0312`，低于默认配置。当前结论是默认 target split 仍是 ADS-B 欠聚类风险收敛的最佳候选，保守门控无法同时保留补齐收益和降低 CV 风险。
 
 ## Recent Changes
 
@@ -188,13 +188,13 @@
 - 2026-07-28：新增 `CUSTOMER_PROGRESS_REPORT.html` 单文件客户汇报，整理 WiSig/ADS-B 正式三种子结果、LoRa seed7 边界、负消融、风险和下一步；同步修正实施计划中过期的中期待办。
 - 2026-07-28：新增 `tools/stage5_manytx_manyrx_supplement_report.py`，只读汇总 ManyTx/ManyRx 既有 seed7 三轮结果，生成 `results/stage5/STAGE5_MANYTX_MANYRX_SUPPLEMENT_REPORT.md` 与 `stage5_manytx_manyrx_supplement_summary.json`，并将实施计划阶段 5 最后一项标记完成。
 - 2026-07-29：新增 ADS-B target split 单种子和三种子验证入口：`tools/stage4_adsb_target_split_plan.py`、`tools/stage4_adsb_target_split_report.py`、`tools/stage4_adsb_target_split_multiseed_plan.py`、`tools/stage4_adsb_target_split_multiseed_report.py`、`slurm/stage4_adsb_target_split_seed31.sbatch`、`slurm/stage4_adsb_target_split_multiseed.sbatch`；seed31 Job `44670427` 和三种子 Job `44766923` 均完成，三种子报告为 `results/stage4/STAGE4_ADSB_TARGET_SPLIT_MULTISEED_REPORT_44766923.md`。
-- 2026-07-29：新增保守 target split 消融入口：`tools/stage4_adsb_target_split_conservative_plan.py`、`tools/stage4_adsb_target_split_conservative_report.py`、`slurm/stage4_adsb_target_split_conservative.sbatch`，并生成 `results/stage4/stage4_adsb_target_split_conservative_plan.json`；保守消融作业 `44767309` 已提交等待 Slurm 资源。
+- 2026-07-29：新增并完成保守 target split 消融入口：`tools/stage4_adsb_target_split_conservative_plan.py`、`tools/stage4_adsb_target_split_conservative_report.py`、`slurm/stage4_adsb_target_split_conservative.sbatch`，生成 `results/stage4/stage4_adsb_target_split_conservative_plan.json`；Job `44767309` 正常完成，报告为 Slurm 端 `results/stage4/STAGE4_ADSB_TARGET_SPLIT_CONSERVATIVE_REPORT_44767309.md`。
 
 ## Next TODO
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
-- 阶段 4 ADS-B ratio 0.03 和自适应密度结论保持不变；target split 三种子已确认能稳定补齐 R3 欠聚类并提升 Overall/New 均值，但 seed7/13 新类收益不稳定且 CV 上升。当前已用更保守的 target split 门控和 max-added 消融去压风险，待 Job `44767309` 完成后再选是否收敛为正式配置。
+- 阶段 4 ADS-B ratio 0.03 和自适应密度结论保持不变；target split 三种子已确认能稳定补齐 R3 欠聚类并提升 Overall/New 均值，保守门控和 max-added 消融未找到更优折中。下一步应将默认 target split 作为 ADS-B 欠聚类收敛候选写入阶段结论，同时如实保留 seed7/13 新类收益不稳定和 CV 上升的局限。
 - 阶段 5 已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，后续进入阶段 6 结果整理与交付。
 - 使用 `CUSTOMER_PROGRESS_REPORT.html` 进行阶段汇报；每次关键正式结果变化后，从实施计划同步更新该派生页面并复核图表数值。
 - 将 IGCD-minimal 纳入 strict baseline 表，但正式主前端继续优先使用 MV-ACC 或稳定 Deep-HDBSCAN。
