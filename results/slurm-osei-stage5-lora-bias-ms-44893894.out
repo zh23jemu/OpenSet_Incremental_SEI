@@ -1,0 +1,243 @@
+
+========== LoRa25 Different Days Indoor 10-Known 3-Round Incremental Experiment ==========
+Dataset: /mnt/users/xj62kv/OpenSet_Incremental_SEI/datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz
+Save dir: results/stage5/lora_old_logit_bias_multiseed_44893894/seed7
+Device: cuda
+Protocol: 10 known + 5 unknown R1 + 5 unknown R2 + 5 unknown R3
+LoRa split: IQ_1-6 train | IQ_7 validation | IQ_8-10 held-out evaluation
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.03, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train IQ_1-6 train: (840, 2, 256), classes=10, labels=0-9
+Initial eval 30%:     (420, 2, 256), classes=10, labels=0-9, day=Day 1
+Unknown R1 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=10-14, day=Day 2
+After R1 IQ_8-10 eval: (630, 2, 256), classes=15, labels=0-14, day=Day 2
+Unknown R2 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=15-19, day=Day 3
+After R2 IQ_8-10 eval: (840, 2, 256), classes=20, labels=0-19, day=Day 3
+Unknown R3 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=20-24, day=Day 4
+After R3 IQ_8-10 eval: (1050, 2, 256), classes=25, labels=0-24, day=Day 4
+
+[Train-v2] classes=10 | train=840 | validation=140 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/020 | train_loss=2.8725 | train_acc=0.0964 | val_acc=0.1000 | val_loss=2.3020
+Epoch 002/020 | train_loss=2.8418 | train_acc=0.1380 | val_acc=0.1214 | val_loss=2.2971
+Epoch 003/020 | train_loss=2.8376 | train_acc=0.1250 | val_acc=0.1643 | val_loss=2.2879
+Epoch 004/020 | train_loss=2.8203 | train_acc=0.1602 | val_acc=0.1429 | val_loss=2.3009
+Epoch 005/020 | train_loss=2.7812 | train_acc=0.1771 | val_acc=0.1643 | val_loss=2.3461
+Epoch 006/020 | train_loss=2.7039 | train_acc=0.2161 | val_acc=0.0929 | val_loss=2.6756
+Epoch 007/020 | train_loss=2.5345 | train_acc=0.2409 | val_acc=0.2286 | val_loss=2.2543
+Epoch 008/020 | train_loss=2.3415 | train_acc=0.2839 | val_acc=0.1786 | val_loss=2.7348
+Epoch 009/020 | train_loss=2.2178 | train_acc=0.3424 | val_acc=0.3929 | val_loss=1.6090
+Epoch 010/020 | train_loss=2.0999 | train_acc=0.3971 | val_acc=0.1357 | val_loss=2.4317
+Epoch 011/020 | train_loss=1.9822 | train_acc=0.4362 | val_acc=0.2786 | val_loss=1.7248
+Epoch 012/020 | train_loss=1.9342 | train_acc=0.4544 | val_acc=0.1786 | val_loss=2.6290
+Epoch 013/020 | train_loss=1.9156 | train_acc=0.4219 | val_acc=0.3071 | val_loss=1.6817
+Epoch 014/020 | train_loss=1.8123 | train_acc=0.5104 | val_acc=0.2714 | val_loss=2.1093
+Epoch 015/020 | train_loss=1.7304 | train_acc=0.5443 | val_acc=0.2000 | val_loss=4.4125
+Epoch 016/020 | train_loss=1.6850 | train_acc=0.5378 | val_acc=0.4571 | val_loss=1.2733
+Epoch 017/020 | train_loss=1.6248 | train_acc=0.5339 | val_acc=0.3214 | val_loss=1.9083
+Epoch 018/020 | train_loss=1.5961 | train_acc=0.5586 | val_acc=0.3000 | val_loss=2.2376
+Epoch 019/020 | train_loss=1.5424 | train_acc=0.5703 | val_acc=0.2786 | val_loss=2.1194
+Epoch 020/020 | train_loss=1.5415 | train_acc=0.5833 | val_acc=0.5286 | val_loss=1.1778
+[Train-v2] best_val_acc=0.5286 | best_val_loss=1.1778 | saved=results/stage5/lora_old_logit_bias_multiseed_44893894/seed7/closedset_lora_day1_10known.pth
+[Load] checkpoint=results/stage5/lora_old_logit_bias_multiseed_44893894/seed7/closedset_lora_day1_10known.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.347 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL + old-logit-bias] End-to-end pseudo-label class-incremental learning
+[Old-logit bias calibration] stage=Initial | Day1 validation only | old_class_count=10 | bias=0.0
+[Old-logit bias calibration] stage=After R1 | Day1 validation only | old_class_count=10 | bias=3.0
+[Old-logit bias calibration] stage=After R2 | Day1 validation only | old_class_count=15 | bias=3.0
+[Old-logit bias calibration] stage=After R3 | Day1 validation only | old_class_count=20 | bias=3.0
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  Target Cluster Count  Target Count Merges  Target Count Last Merge Similarity  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples
+MV-ACC-CIL discovery    R1         Day 2                 5      490                     11                    5                    0                    1.0         5    0.0 0.211122 0.144212 0.430612       0.428571 fixed_alpha    0.7                 12                        1                  0.74                        176               176                  1.0               0.775725              0.543682                False                     2                        1.75                                  0.3                        0.322136                     5                    7                            0.673318                      15                     0.03                  5
+MV-ACC-CIL discovery    R2         Day 3                 5      490                      6                    5                    0                    1.0         5    0.0 0.179888 0.113301 0.412245       0.402041 fixed_alpha    0.7                 12                        1                  0.74                        115               115                  1.0               0.741066              0.441369                False                     0                        1.75                                  0.3                             NaN                     5                    0                                 NaN                      15                     0.03                  5
+MV-ACC-CIL discovery    R3         Day 4                 5      490                      8                    5                    0                    1.0         5    0.0 0.385761 0.340199 0.522449       0.520408 fixed_alpha    0.7                 12                        0                  0.74                        103               103                  1.0               0.794926              0.500191                False                     0                        1.75                                  0.3                             NaN                     5                    3                            0.619345                      15                     0.03                  5
+Saved: results/stage5/lora_old_logit_bias_multiseed_44893894/seed7/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+                     Method    Stage Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL + old-logit-bias  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.497619 0.497619      NaN           0.497619         0.000000  0.476007
+MV-ACC-CIL + old-logit-bias After R1    Day 2   eval_r1_30pct_15_seen            15                5                   5                 5           630     0.268254 0.254762 0.295238           0.254762         0.242857  0.225916
+MV-ACC-CIL + old-logit-bias After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.176190 0.233333 0.004762           0.183333         0.314286  0.128576
+MV-ACC-CIL + old-logit-bias After R3    Day 4   eval_r3_30pct_25_seen            25                5                   5                 5          1050     0.200000 0.214286 0.142857           0.097619         0.400000  0.121073
+Saved: results/stage5/lora_old_logit_bias_multiseed_44893894/seed7/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+                     Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL + old-logit-bias    R1              5                                 5                    0         1.000000 0.430612 0.211122 0.144212       0.428571     0.268254 0.295238         0.242857
+MV-ACC-CIL + old-logit-bias    R2              5                                 5                    0         1.000000 0.412245 0.179888 0.113301       0.402041     0.176190 0.004762         0.314286
+MV-ACC-CIL + old-logit-bias    R3              5                                 5                    0         1.000000 0.522449 0.385761 0.340199       0.520408     0.200000 0.142857         0.400000
+Saved: results/stage5/lora_old_logit_bias_multiseed_44893894/seed7/per_round_summary_results.csv
+
+========== LoRa25 Different Days Indoor 10-Known 3-Round Incremental Experiment ==========
+Dataset: /mnt/users/xj62kv/OpenSet_Incremental_SEI/datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz
+Save dir: results/stage5/lora_old_logit_bias_multiseed_44893894/seed13
+Device: cuda
+Protocol: 10 known + 5 unknown R1 + 5 unknown R2 + 5 unknown R3
+LoRa split: IQ_1-6 train | IQ_7 validation | IQ_8-10 held-out evaluation
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.03, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train IQ_1-6 train: (840, 2, 256), classes=10, labels=0-9
+Initial eval 30%:     (420, 2, 256), classes=10, labels=0-9, day=Day 1
+Unknown R1 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=10-14, day=Day 2
+After R1 IQ_8-10 eval: (630, 2, 256), classes=15, labels=0-14, day=Day 2
+Unknown R2 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=15-19, day=Day 3
+After R2 IQ_8-10 eval: (840, 2, 256), classes=20, labels=0-19, day=Day 3
+Unknown R3 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=20-24, day=Day 4
+After R3 IQ_8-10 eval: (1050, 2, 256), classes=25, labels=0-24, day=Day 4
+
+[Train-v2] classes=10 | train=840 | validation=140 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/020 | train_loss=2.8747 | train_acc=0.0924 | val_acc=0.1071 | val_loss=2.3096
+Epoch 002/020 | train_loss=2.8602 | train_acc=0.1185 | val_acc=0.1500 | val_loss=2.3180
+Epoch 003/020 | train_loss=2.8404 | train_acc=0.1380 | val_acc=0.1571 | val_loss=2.2962
+Epoch 004/020 | train_loss=2.8124 | train_acc=0.1589 | val_acc=0.1357 | val_loss=2.2993
+Epoch 005/020 | train_loss=2.7863 | train_acc=0.1940 | val_acc=0.1429 | val_loss=2.3481
+Epoch 006/020 | train_loss=2.7130 | train_acc=0.2344 | val_acc=0.1571 | val_loss=2.1926
+Epoch 007/020 | train_loss=2.5543 | train_acc=0.2865 | val_acc=0.2500 | val_loss=1.9883
+Epoch 008/020 | train_loss=2.3638 | train_acc=0.2682 | val_acc=0.2786 | val_loss=1.7676
+Epoch 009/020 | train_loss=2.2408 | train_acc=0.3398 | val_acc=0.2571 | val_loss=1.8151
+Epoch 010/020 | train_loss=2.0776 | train_acc=0.4076 | val_acc=0.1786 | val_loss=1.9687
+Epoch 011/020 | train_loss=1.9981 | train_acc=0.3945 | val_acc=0.1143 | val_loss=6.0256
+Epoch 012/020 | train_loss=1.9421 | train_acc=0.4232 | val_acc=0.4429 | val_loss=1.3831
+Epoch 013/020 | train_loss=1.9284 | train_acc=0.4036 | val_acc=0.3714 | val_loss=1.5463
+Epoch 014/020 | train_loss=1.8767 | train_acc=0.4661 | val_acc=0.3929 | val_loss=1.4891
+Epoch 015/020 | train_loss=1.8635 | train_acc=0.4844 | val_acc=0.4214 | val_loss=1.4349
+Epoch 016/020 | train_loss=1.8343 | train_acc=0.4727 | val_acc=0.3714 | val_loss=1.4067
+Epoch 017/020 | train_loss=1.7147 | train_acc=0.4857 | val_acc=0.3929 | val_loss=1.3283
+Epoch 018/020 | train_loss=1.6559 | train_acc=0.5547 | val_acc=0.3500 | val_loss=1.7893
+Epoch 019/020 | train_loss=1.6076 | train_acc=0.5534 | val_acc=0.2000 | val_loss=2.3312
+Epoch 020/020 | train_loss=1.6251 | train_acc=0.5391 | val_acc=0.3714 | val_loss=2.1109
+[Train-v2] best_val_acc=0.4429 | best_val_loss=1.3831 | saved=results/stage5/lora_old_logit_bias_multiseed_44893894/seed13/closedset_lora_day1_10known.pth
+[Load] checkpoint=results/stage5/lora_old_logit_bias_multiseed_44893894/seed13/closedset_lora_day1_10known.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.347 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL + old-logit-bias] End-to-end pseudo-label class-incremental learning
+[Old-logit bias calibration] stage=Initial | Day1 validation only | old_class_count=10 | bias=0.0
+[Old-logit bias calibration] stage=After R1 | Day1 validation only | old_class_count=10 | bias=3.0
+[Old-logit bias calibration] stage=After R2 | Day1 validation only | old_class_count=15 | bias=1.0
+[Old-logit bias calibration] stage=After R3 | Day1 validation only | old_class_count=20 | bias=3.0
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  Target Cluster Count  Target Count Merges  Target Count Last Merge Similarity  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples
+MV-ACC-CIL discovery    R1         Day 2                 5      490                      8                    5                    0                    1.0         5    0.0 0.075904 0.052901 0.326531       0.322449 fixed_alpha    0.7                 12                        0                  0.74                        209               209                  1.0               0.744906              0.532882                False                     0                        1.75                                  0.3                             NaN                     5                    3                            0.684682                      15                     0.03                  5
+MV-ACC-CIL discovery    R2         Day 3                 5      490                      6                    5                    0                    1.0         5    0.0 0.050954 0.030400 0.300000       0.300000 fixed_alpha    0.7                 12                        0                  0.74                        194               194                  1.0               0.709433              0.457105                False                     0                        1.75                                  0.3                             NaN                     5                    1                            0.715776                      15                     0.03                  5
+MV-ACC-CIL discovery    R3         Day 4                 5      490                      5                    5                    0                    1.0         5    0.0 0.250446 0.216000 0.448980       0.436735 fixed_alpha    0.7                 12                        0                  0.74                        156               156                  1.0               0.707998              0.493347                False                     0                        1.75                                  0.3                             NaN                     5                    0                                 NaN                      15                     0.03                  5
+Saved: results/stage5/lora_old_logit_bias_multiseed_44893894/seed13/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+                     Method    Stage Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL + old-logit-bias  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.428571 0.428571      NaN           0.428571         0.000000  0.374352
+MV-ACC-CIL + old-logit-bias After R1    Day 2   eval_r1_30pct_15_seen            15                5                   5                 5           630     0.250794 0.338095 0.076190           0.338095         0.090476  0.205516
+MV-ACC-CIL + old-logit-bias After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.164286 0.219048 0.000000           0.204762         0.223810  0.128742
+MV-ACC-CIL + old-logit-bias After R3    Day 4   eval_r3_30pct_25_seen            25                5                   5                 5          1050     0.126667 0.157143 0.004762           0.138095         0.290476  0.086788
+Saved: results/stage5/lora_old_logit_bias_multiseed_44893894/seed13/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+                     Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL + old-logit-bias    R1              5                                 5                    0         1.000000 0.326531 0.075904 0.052901       0.322449     0.250794 0.076190         0.090476
+MV-ACC-CIL + old-logit-bias    R2              5                                 5                    0         1.000000 0.300000 0.050954 0.030400       0.300000     0.164286 0.000000         0.223810
+MV-ACC-CIL + old-logit-bias    R3              5                                 5                    0         1.000000 0.448980 0.250446 0.216000       0.436735     0.126667 0.004762         0.290476
+Saved: results/stage5/lora_old_logit_bias_multiseed_44893894/seed13/per_round_summary_results.csv
+
+========== LoRa25 Different Days Indoor 10-Known 3-Round Incremental Experiment ==========
+Dataset: /mnt/users/xj62kv/OpenSet_Incremental_SEI/datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz
+Save dir: results/stage5/lora_old_logit_bias_multiseed_44893894/seed31
+Device: cuda
+Protocol: 10 known + 5 unknown R1 + 5 unknown R2 + 5 unknown R3
+LoRa split: IQ_1-6 train | IQ_7 validation | IQ_8-10 held-out evaluation
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.03, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train IQ_1-6 train: (840, 2, 256), classes=10, labels=0-9
+Initial eval 30%:     (420, 2, 256), classes=10, labels=0-9, day=Day 1
+Unknown R1 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=10-14, day=Day 2
+After R1 IQ_8-10 eval: (630, 2, 256), classes=15, labels=0-14, day=Day 2
+Unknown R2 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=15-19, day=Day 3
+After R2 IQ_8-10 eval: (840, 2, 256), classes=20, labels=0-19, day=Day 3
+Unknown R3 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=20-24, day=Day 4
+After R3 IQ_8-10 eval: (1050, 2, 256), classes=25, labels=0-24, day=Day 4
+
+[Train-v2] classes=10 | train=840 | validation=140 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/020 | train_loss=2.8776 | train_acc=0.0768 | val_acc=0.1000 | val_loss=2.3099
+Epoch 002/020 | train_loss=2.8442 | train_acc=0.1458 | val_acc=0.1000 | val_loss=2.3148
+Epoch 003/020 | train_loss=2.8238 | train_acc=0.1393 | val_acc=0.1286 | val_loss=2.2802
+Epoch 004/020 | train_loss=2.7832 | train_acc=0.1719 | val_acc=0.1143 | val_loss=2.3183
+Epoch 005/020 | train_loss=2.6986 | train_acc=0.2070 | val_acc=0.2071 | val_loss=2.0730
+Epoch 006/020 | train_loss=2.5198 | train_acc=0.2826 | val_acc=0.1929 | val_loss=2.1922
+Epoch 007/020 | train_loss=2.3626 | train_acc=0.2812 | val_acc=0.1286 | val_loss=3.0712
+Epoch 008/020 | train_loss=2.2243 | train_acc=0.3477 | val_acc=0.2786 | val_loss=1.7266
+Epoch 009/020 | train_loss=2.1065 | train_acc=0.3802 | val_acc=0.1214 | val_loss=4.0582
+Epoch 010/020 | train_loss=2.0489 | train_acc=0.3867 | val_acc=0.1143 | val_loss=4.3486
+Epoch 011/020 | train_loss=1.9760 | train_acc=0.4271 | val_acc=0.1000 | val_loss=3.8744
+Epoch 012/020 | train_loss=1.8496 | train_acc=0.5026 | val_acc=0.4071 | val_loss=1.4305
+Epoch 013/020 | train_loss=1.8205 | train_acc=0.5299 | val_acc=0.3857 | val_loss=1.4152
+Epoch 014/020 | train_loss=1.7446 | train_acc=0.5026 | val_acc=0.3000 | val_loss=1.8448
+Epoch 015/020 | train_loss=1.7309 | train_acc=0.5326 | val_acc=0.4071 | val_loss=1.4504
+Epoch 016/020 | train_loss=1.5987 | train_acc=0.5482 | val_acc=0.2857 | val_loss=1.7928
+Epoch 017/020 | train_loss=1.5797 | train_acc=0.5729 | val_acc=0.3286 | val_loss=1.4391
+Epoch 018/020 | train_loss=1.4991 | train_acc=0.5794 | val_acc=0.4214 | val_loss=1.3313
+Epoch 019/020 | train_loss=1.4916 | train_acc=0.5898 | val_acc=0.3857 | val_loss=1.8082
+Epoch 020/020 | train_loss=1.5029 | train_acc=0.5911 | val_acc=0.2714 | val_loss=2.0989
+[Train-v2] best_val_acc=0.4214 | best_val_loss=1.3313 | saved=results/stage5/lora_old_logit_bias_multiseed_44893894/seed31/closedset_lora_day1_10known.pth
+[Load] checkpoint=results/stage5/lora_old_logit_bias_multiseed_44893894/seed31/closedset_lora_day1_10known.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.347 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL + old-logit-bias] End-to-end pseudo-label class-incremental learning
+[Old-logit bias calibration] stage=Initial | Day1 validation only | old_class_count=10 | bias=0.0
+[Old-logit bias calibration] stage=After R1 | Day1 validation only | old_class_count=10 | bias=3.0
+[Old-logit bias calibration] stage=After R2 | Day1 validation only | old_class_count=15 | bias=1.5
+[Old-logit bias calibration] stage=After R3 | Day1 validation only | old_class_count=20 | bias=1.0
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  Target Cluster Count  Target Count Merges  Target Count Last Merge Similarity  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples
+MV-ACC-CIL discovery    R1         Day 2                 5      490                      6                    5                    0                    1.0         5    0.0 0.156628 0.111680 0.393878       0.393878 fixed_alpha    0.7                 12                        0                  0.74                        146               146                  1.0               0.728111              0.535869                False                     0                        1.75                                  0.3                             NaN                     5                    1                            0.679888                      15                     0.03                  5
+MV-ACC-CIL discovery    R2         Day 3                 5      490                      9                    5                    0                    1.0         5    0.0 0.147624 0.113477 0.365306       0.361224 fixed_alpha    0.7                 12                        0                  0.74                        184               184                  1.0               0.769509              0.494751                False                     0                        1.75                                  0.3                             NaN                     5                    4                            0.652496                      15                     0.03                  5
+MV-ACC-CIL discovery    R3         Day 4                 5      490                      3                    3                    2                    0.6         3    0.0 0.030382 0.004006 0.244898       0.244898 fixed_alpha    0.7                 12                        0                  0.74                         37                37                  1.0               0.603147              0.421915                False                     0                        1.75                                  0.3                             NaN                     5                    0                                 NaN                      15                     0.03                  5
+Saved: results/stage5/lora_old_logit_bias_multiseed_44893894/seed31/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+                     Method    Stage Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL + old-logit-bias  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.492857 0.492857      NaN           0.492857         0.000000  0.462960
+MV-ACC-CIL + old-logit-bias After R1    Day 2   eval_r1_30pct_15_seen            15                5                   5                 5           630     0.234921 0.190476 0.323810           0.190476         0.302381  0.198331
+MV-ACC-CIL + old-logit-bias After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.175000 0.212698 0.061905           0.204762         0.288095  0.139103
+MV-ACC-CIL + old-logit-bias After R3    Day 4   eval_r3_30pct_25_seen            25                5                   3                 3          1050     0.187619 0.233333 0.004762           0.230952         0.261905  0.128159
+Saved: results/stage5/lora_old_logit_bias_multiseed_44893894/seed31/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+                     Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL + old-logit-bias    R1              5                                 5                    0         1.000000 0.393878 0.156628 0.111680       0.393878     0.234921 0.323810         0.302381
+MV-ACC-CIL + old-logit-bias    R2              5                                 5                    0         1.000000 0.365306 0.147624 0.113477       0.361224     0.175000 0.061905         0.288095
+MV-ACC-CIL + old-logit-bias    R3              3                                 3                    2         1.000000 0.244898 0.030382 0.004006       0.244898     0.187619 0.004762         0.261905
+Saved: results/stage5/lora_old_logit_bias_multiseed_44893894/seed31/per_round_summary_results.csv

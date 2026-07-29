@@ -1,0 +1,82 @@
+{
+  "job_id": "44893894",
+  "matrix_root": "results/stage5/lora_old_logit_bias_multiseed_44893894",
+  "seeds": [
+    7,
+    13,
+    31
+  ],
+  "rows": [
+    {
+      "seed": 7,
+      "cluster_count": 5,
+      "overall": 0.2,
+      "old": 0.2142857142857142,
+      "new": 0.1428571428571428,
+      "forgetting": 0.4,
+      "macro_f1": 0.1210727059707371,
+      "r3_bias": 3.0,
+      "r3_iq7_old": 0.1571428571428571
+    },
+    {
+      "seed": 13,
+      "cluster_count": 5,
+      "overall": 0.1266666666666666,
+      "old": 0.1571428571428571,
+      "new": 0.0047619047619047,
+      "forgetting": 0.2904761904761904,
+      "macro_f1": 0.086788321268928,
+      "r3_bias": 3.0,
+      "r3_iq7_old": 0.1714285714285714
+    },
+    {
+      "seed": 31,
+      "cluster_count": 3,
+      "overall": 0.1876190476190476,
+      "old": 0.2333333333333333,
+      "new": 0.0047619047619047,
+      "forgetting": 0.2619047619047619,
+      "macro_f1": 0.1281591700601583,
+      "r3_bias": 1.0,
+      "r3_iq7_old": 0.2785714285714286
+    }
+  ],
+  "summary": {
+    "overall": {
+      "mean": 0.1714285714285714,
+      "std": 0.03205248907547566
+    },
+    "old": {
+      "mean": 0.20158730158730154,
+      "std": 0.032374727070430376
+    },
+    "new": {
+      "mean": 0.050793650793650724,
+      "std": 0.06509871953780913
+    },
+    "forgetting": {
+      "mean": 0.31746031746031744,
+      "std": 0.05951851828334184
+    },
+    "macro_f1": {
+      "mean": 0.11200673243327447,
+      "std": 0.018065264820702927
+    }
+  },
+  "references": {
+    "grouped_hybrid_seed7": {
+      "overall": 0.1495,
+      "old": 0.0798,
+      "new": 0.4286,
+      "forgetting": 0.4357
+    },
+    "doi_style_seed7": {
+      "overall": 0.1676,
+      "old": 0.1786,
+      "new": 0.1238,
+      "forgetting": 0.2119
+    }
+  },
+  "cluster_count_gate_passed": false,
+  "adopt_candidate": false
+}
