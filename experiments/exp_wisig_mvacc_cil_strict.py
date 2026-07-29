@@ -2002,10 +2002,48 @@ def _extract_end_to_end_outputs(model, X, batch_size, device):
     )
 
 
-def _predict_end_to_end(model, X, batch_size, device):
-    """使用增量网络分类头预测伪标签类别。"""
+def _predict_end_to_end(model, X, batch_size, device, old_class_count=0, old_logit_bias=0.0):
+    """使用增量网络分类头预测伪标签类别。
+
+    ``old_logit_bias`` 是一个严格的验证集校准项：它只给当前轮训练前已经
+    存在的类别列加同一个 logit 偏置，用来诊断旧类分数是否被新类头系统性
+    压低。偏置候选必须来自 Day1/IQ_7 validation，不能读取 held-out eval
+    真值；默认值 0 完全保持历史网络预测行为。
+    """
     _, logits = _extract_end_to_end_outputs(model, X, batch_size, device)
+    if len(logits) and int(old_class_count) > 0 and abs(float(old_logit_bias)) > 0:
+        old_class_count = min(int(old_class_count), logits.shape[1])
+        logits = logits.copy()
+        logits[:, :old_class_count] += float(old_logit_bias)
     return np.argmax(logits, axis=1).astype(np.int64) if len(logits) else np.empty(0, dtype=np.int64)
+
+
+def _calibrate_old_logit_bias_on_validation(model, X_val, y_val, batch_size, device, candidates, old_class_count):
+    """只用 Day1/IQ_7 验证集选择旧类 logit 偏置。
+
+    IQ_7 只包含初始已知类，因此该校准只衡量“初始旧类是否还能被识别”，
+    不评价当前轮新类质量，也不使用任何 held-out eval 样本或真值。返回的
+    表格会写入结果目录，方便判断低分是不是旧/新类 logit 尺度失衡造成的。
+    """
+    rows = []
+    best_bias = 0.0
+    best_acc = -1.0
+    for bias in candidates:
+        pred = _predict_end_to_end(
+            model, X_val, batch_size, device,
+            old_class_count=old_class_count,
+            old_logit_bias=float(bias),
+        )
+        acc = float(np.mean(pred == y_val)) if len(pred) else 0.0
+        rows.append({
+            "Old Logit Bias": float(bias),
+            "Old Class Count": int(old_class_count),
+            "IQ_7 Validation Old-Class Acc": acc,
+        })
+        if acc > best_acc or (np.isclose(acc, best_acc) and abs(float(bias)) < abs(float(best_bias))):
+            best_acc = acc
+            best_bias = float(bias)
+    return best_bias, rows
 
 
 def _build_aligned_doi_prototype_bank(
@@ -3141,6 +3179,7 @@ def main():
     parser.add_argument("--radcil_icarl_fallback", action="store_true", help="Enable confidence-gated iCaRL exemplar fallback during evaluation.")
     parser.add_argument("--radcil_icarl_fallback_threshold", type=float, default=0.60, help="Confidence threshold for exemplar fallback when validation-based calibration is not used.")
     parser.add_argument("--radcil_icarl_fallback_candidates", type=str, default="0.45,0.55,0.65,0.75,0.85", help="Day1-validation candidates for confidence-gated exemplar fallback.")
+    parser.add_argument("--radcil_old_logit_bias_candidates", type=str, default="", help="Comma-separated old-class logit bias candidates calibrated on Day1/IQ_7 validation; empty disables this diagnostic backend.")
     parser.add_argument("--pseudo_weight_floor", type=float, default=0.20)
 
 
@@ -3464,15 +3503,24 @@ def main():
     # 评估时的预测后处理，不读取 held-out 真值，也不改变发现或训练流程。
     hybrid_doi_enabled = bool(args.radcil_grouped_doi_fusion) or float(args.radcil_doi_fusion_weight) > 0
     icarl_fallback_enabled = bool(args.radcil_icarl_fallback)
-    if hybrid_doi_enabled and icarl_fallback_enabled:
-        raise ValueError("DOI-memory fusion and iCaRL fallback must be tested as separate ablations.")
+    old_logit_bias_candidates = [
+        float(value) for value in str(args.radcil_old_logit_bias_candidates).split(",")
+        if value.strip()
+    ]
+    old_logit_bias_enabled = bool(old_logit_bias_candidates)
+    if sum([bool(hybrid_doi_enabled), bool(icarl_fallback_enabled), bool(old_logit_bias_enabled)]) > 1:
+        raise ValueError("DOI-memory fusion, iCaRL fallback and old-logit bias must be tested as separate ablations.")
     main_method_name = (
         "MV-ACC-CIL + grouped DOI-memory"
         if args.radcil_grouped_doi_fusion
         else (
             "MV-ACC-CIL + iCaRL-fallback"
             if icarl_fallback_enabled
-            else ("MV-ACC-CIL + DOI-memory" if hybrid_doi_enabled else "MV-ACC-CIL")
+            else (
+                "MV-ACC-CIL + old-logit-bias"
+                if old_logit_bias_enabled
+                else ("MV-ACC-CIL + DOI-memory" if hybrid_doi_enabled else "MV-ACC-CIL")
+            )
         )
     )
     print(f"\n[{main_method_name}] End-to-end pseudo-label class-incremental learning")
@@ -3492,8 +3540,10 @@ def main():
     icarl_prototype_bank = None
     doi_fusion_weight = float(args.radcil_doi_fusion_weight)
     icarl_fallback_threshold = float(args.radcil_icarl_fallback_threshold)
+    old_logit_bias = 0.0
     doi_calibration_rows = []
     icarl_fallback_calibration_rows = []
+    old_logit_bias_calibration_rows = []
     if hybrid_doi_enabled:
         doi_prototype_bank = _build_aligned_doi_prototype_bank(
             student,
@@ -3552,6 +3602,21 @@ def main():
             confidence_threshold=icarl_fallback_threshold,
             old_class_count=args.initial_known_classes,
         )
+    elif old_logit_bias_enabled:
+        old_logit_bias, calibration = _calibrate_old_logit_bias_on_validation(
+            student, X_calibration, y_calibration, args.test_batch_size, device,
+            old_logit_bias_candidates, args.initial_known_classes,
+        )
+        old_logit_bias_calibration_rows.extend([{"Stage": "Initial", **row} for row in calibration])
+        print(
+            "[Old-logit bias calibration] stage=Initial | Day1 validation only | "
+            f"old_class_count={args.initial_known_classes} | bias={old_logit_bias}"
+        )
+        initial_pred = _predict_end_to_end(
+            student, eval_data["eval_initial"]["X"], args.test_batch_size, device,
+            old_class_count=args.initial_known_classes,
+            old_logit_bias=old_logit_bias,
+        )
     else:
         initial_pred = _predict_end_to_end(student, eval_data["eval_initial"]["X"], args.test_batch_size, device)
     initial_row = _evaluate_raw_predictions(
@@ -3563,7 +3628,9 @@ def main():
     retention_rows.append({"Round": "Initial", "Fixed Day1 Old-Class Acc": float(initial_row["Overall Acc"])})
     if X_validation is not None:
         initial_validation_pred = _predict_end_to_end(
-            student, X_validation, args.test_batch_size, device
+            student, X_validation, args.test_batch_size, device,
+            old_class_count=args.initial_known_classes if old_logit_bias_enabled else 0,
+            old_logit_bias=old_logit_bias if old_logit_bias_enabled else 0.0,
         )
         validation_retention_rows.append({
             "Round": "Initial",
@@ -3652,6 +3719,21 @@ def main():
                 confidence_threshold=icarl_fallback_threshold,
                 old_class_count=old_out,
             )
+        elif old_logit_bias_enabled:
+            old_logit_bias, calibration = _calibrate_old_logit_bias_on_validation(
+                student, X_calibration, y_calibration, args.test_batch_size, device,
+                old_logit_bias_candidates, old_out,
+            )
+            old_logit_bias_calibration_rows.extend([{"Stage": f"After R{i}", **row} for row in calibration])
+            print(
+                f"[Old-logit bias calibration] stage=After R{i} | Day1 validation only | "
+                f"old_class_count={old_out} | bias={old_logit_bias}"
+            )
+            pred = _predict_end_to_end(
+                student, eval_data[eval_key]["X"], args.test_batch_size, device,
+                old_class_count=old_out,
+                old_logit_bias=old_logit_bias,
+            )
         else:
             pred = _predict_end_to_end(student, eval_data[eval_key]["X"], args.test_batch_size, device)
         incremental_rows.append(_evaluate_raw_predictions(
@@ -3681,6 +3763,12 @@ def main():
                 confidence_threshold=icarl_fallback_threshold,
                 old_class_count=old_out,
             )
+        elif old_logit_bias_enabled:
+            fixed_pred = _predict_end_to_end(
+                student, eval_data["eval_initial"]["X"], args.test_batch_size, device,
+                old_class_count=old_out,
+                old_logit_bias=old_logit_bias,
+            )
         else:
             fixed_pred = _predict_end_to_end(student, eval_data["eval_initial"]["X"], args.test_batch_size, device)
         fixed_true = eval_y_dict["eval_initial"]
@@ -3690,7 +3778,9 @@ def main():
             # 该表专供 seed7 训练配置选择。只评估固定 IQ_7 初始旧类，不能
             # 表示增量新类质量；IQ_8-10 held-out 指标不得用于候选选择。
             validation_pred = _predict_end_to_end(
-                student, X_validation, args.test_batch_size, device
+                student, X_validation, args.test_batch_size, device,
+                old_class_count=old_out if old_logit_bias_enabled else 0,
+                old_logit_bias=old_logit_bias if old_logit_bias_enabled else 0.0,
             )
             validation_retention_rows.append({
                 "Round": f"R{i}",
@@ -3709,6 +3799,7 @@ def main():
             "radcil_doi_prototype_temperature": float(args.radcil_doi_prototype_temperature),
             "radcil_icarl_fallback": bool(icarl_fallback_enabled),
             "radcil_icarl_fallback_threshold": float(icarl_fallback_threshold),
+            "radcil_old_logit_bias": float(old_logit_bias),
         }, os.path.join(args.save_dir, f"mvacc_cil_after_r{i}.pth"))
         np.savez_compressed(os.path.join(args.save_dir, f"replay_memory_after_r{i}.npz"), X=memory_x, y=memory_y)
         if hybrid_doi_enabled:
@@ -3738,6 +3829,11 @@ def main():
         save_csv(
             icarl_fallback_calibration_rows,
             os.path.join(args.save_dir, "icarl_fallback_iq7_calibration.csv"),
+        )
+    if old_logit_bias_calibration_rows:
+        save_csv(
+            old_logit_bias_calibration_rows,
+            os.path.join(args.save_dir, "old_logit_bias_iq7_calibration.csv"),
         )
     per_round_summary_df = build_per_round_summary(clustering_df, incremental_df)
     if not clustering_df.empty and "MV-ACC-CIL discovery" in set(clustering_df["Method"].astype(str)):
