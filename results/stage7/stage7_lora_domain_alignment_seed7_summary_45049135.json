@@ -1,0 +1,30 @@
+{
+  "job_id": "45049135",
+  "matrix_root": "results/stage7/lora_domain_alignment_seed7_45049135",
+  "rows": [
+    {
+      "variant": "alignment_off",
+      "iq7_r3_old_acc": 0.1357142857142857,
+      "cluster_count": 5,
+      "overall": 0.1666666666666666,
+      "old": 0.0916666666666666,
+      "new": 0.4666666666666667,
+      "forgetting": 0.4857142857142857,
+      "macro_f1": 0.0943861177301691
+    },
+    {
+      "variant": "alignment_on",
+      "iq7_r3_old_acc": 0.1357142857142857,
+      "cluster_count": 5,
+      "overall": 0.1666666666666666,
+      "old": 0.0904761904761904,
+      "new": 0.4714285714285714,
+      "forgetting": 0.4857142857142857,
+      "macro_f1": 0.0945490032818292
+    }
+  ],
+  "selection_source": "IQ_7 R3 old-class validation accuracy only",
+  "validation_improved": false,
+  "heldout_gate": false,
+  "adopt": false
+}
