@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划与项目进度总表
 
-- 状态：实施中；阶段 0–5 已收束；LoRa 两种后端修复均为 seed7 负消融，ManyTx/ManyRx 补充稳定性验证已完成
+- 状态：阶段 6 交付整理中；阶段 0–5 已收束；ADS-B/LoRa 低结果风险已改为客户可解释口径和局限分析，不继续小参数调参
 - 版本：1.1
 - 创建日期：2026-07-26
 - 最近更新：2026-07-28
@@ -36,6 +36,7 @@
 - WiSig DOI-memory hybrid 和 iCaRL 低置信回退都已完成 seed7 与三种子验证；iCaRL fallback seed7 有局部收益，但三种子 R3 Overall `0.5923±0.0514` 低于主方法 `0.6088±0.0415`，因此记录为负消融，停止继续调这两类混合后端。
 - ADS-B Long-RADCIL 已完成正式三种子，R3 Overall `0.4824±0.0074`、Forgetting `0.1168±0.0138`；相较历史 legacy seed31 的 R3 Overall `0.3273` 有明显改善。固定 target split 后重新打开同协议后端 baseline，MV-ACC-CIL R3 Overall `0.4932±0.0128` 高于 DOI-style `0.4722±0.0295`，但 Forgetting `0.1151±0.0090` 仍高于 DOI-style `0.0629±0.0077`。
 - ADS-B 训练期旧类 Teacher 原型锚定 seed7 矩阵已完成，权重 `0.10/0.25` 均未降低遗忘且降低 Overall/Old，按预注册门槛归档为负消融，不扩三种子。
+- 客户问答风险已单独整理到 `results/stage6/CUSTOMER_QA_RISK_RESPONSE.md`：DOI-style 是 DOI-inspired 简化 baseline，不是官方完整复现；LoRa 完整数据可下载但建议按需在 Slurm 获取；ADS-B/LoRa 当前结果偏低，应作为局限如实报告。
 
 需要谨慎表述：
 
@@ -255,6 +256,7 @@
 
 ### 阶段 6：结果与交付，2–3 天
 
+- [x] 聚合当前客户问答风险：DOI-style 简化复现口径、LoRa 数据下载范围、ADS-B/LoRa 低结果解释。
 - [ ] 提供 `gpu` 分区、`gpo-ifv7xx` 账号、`normal` QOS 的正式 Slurm 脚本；一小时内验证任务使用 `shortjobs`。
 - [ ] 汇总多种子均值、标准差、对照和消融表格。
 - [ ] 整理可直接用于论文的 t-SNE 图和结果图表。
@@ -394,6 +396,7 @@ Job `44781083` 在默认 target split 与 Long-RADCIL 配置下验证训练期�
 2. 将 LoRa 两轮严格负消融保留为跨体制局限，不继续原型锚定或 late-fusion 后端调参。
 3. ManyRx 当前仅保留既有结果汇总；如需重新运行，再恢复受维护入口，不把 runner 缺失误判为主实验风险。
 4. 为严格协议和核心报告器补充轻量级自动化测试。
+5. 对 ADS-B/LoRa 低结果只做诚实解释和局限分析，不再用真值或小参数追结果。
 
 ## 9. 代码与变更控制
 

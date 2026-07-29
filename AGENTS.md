@@ -118,6 +118,7 @@
 - 为压低 seed7/13 的 CV 与过切分风险，已完成保守 target split 参数消融 Job `44767309`：`max_added=2, silhouette=0.26`、`max_added=4, silhouette=0.34`、`max_added=4, silhouette=0.38` 均未优于默认 target split。默认 target split 九轮绝对簇误差最低为 `5`、R3 Overall `0.4927±0.0137`、New Acc `0.4930±0.0869`；自动排序下保守候选 `target_split_m4_s034` 最优，但九轮绝对簇误差为 `6`、R3 New Acc `0.4617±0.0312`，低于默认配置。当前结论是默认 target split 仍是 ADS-B 欠聚类风险收敛的最佳候选，保守门控无法同时保留补齐收益和降低 CV 风险。
 - Slurm Job `44780602` 已完成 ADS-B 默认 target split 后端遗忘对照；固定 target split 后，MV-ACC-CIL R3 Overall `0.4932±0.0128`、New `0.4930±0.0859`，高于共享发现 DOI-style 的 Overall `0.4722±0.0295`、New `0.3277±0.0925`，但 Forgetting `0.1151±0.0090` 仍高于 DOI-style `0.0629±0.0077`。当前 ADS-B 风险已从发现欠聚类进一步收敛为 RADCIL/DOI-style 的旧新类后端权衡。
 - Slurm Job `44781083` 已完成 ADS-B 默认 target split 下训练期旧类 Teacher 原型锚定 seed7 矩阵；权重 `0.10/0.25` 相对 `0` 的 R3 Overall 均为 `-0.0070`，Old 分别为 `-0.0079/-0.0083`，Forgetting 为 `+0.0008/+0.0000`，均未通过扩展门槛。该结构性后端候选归档为负消融，不扩 seed13/31。
+- 阶段 6 已启动客户风险口径收口：新增 `results/stage6/CUSTOMER_QA_RISK_RESPONSE.md`，明确 DOI-style 是 DOI-inspired 简化 baseline、LoRa 完整数据可按需下载、ADS-B/LoRa 当前低结果应作为局限如实报告；`CUSTOMER_PROGRESS_REPORT.html` 已同步修正 ADS-B target split 最新结果和风险表述。
 
 ## Recent Changes
 
@@ -195,12 +196,13 @@
 - 2026-07-29：实现并完成 WiSig `hybrid_radcil_icarl_exemplar_classifier_fallback`：seed7 Job `44771723` 通过扩展门槛，但三种子 Job `44771757` 未稳定优于主方法，R3 Overall `0.5923±0.0514` 低于主方法 `0.6088±0.0415`，正式归档为负消融。
 - 2026-07-29：新增并完成 ADS-B target split 后端遗忘对照入口：`tools/stage4_adsb_target_split_backend_plan.py`、`tools/stage4_adsb_target_split_backend_report.py`、`slurm/stage4_adsb_target_split_backend_baselines.sbatch`；Slurm Job `44780602` 确认默认 target split 保留 MV-ACC-CIL 的 Overall/New 优势，但 Forgetting 仍高于 DOI-style，剩余风险转为后端旧新类权衡。
 - 2026-07-29：新增并完成 ADS-B target split 训练期旧类原型锚定 seed7 消融：`tools/stage4_adsb_target_split_anchor_plan.py`、`tools/stage4_adsb_target_split_anchor_report.py`、`slurm/stage4_adsb_target_split_anchor_seed7.sbatch` 和 `results/stage4/STAGE4_ADSB_TARGET_SPLIT_ANCHOR_SEED7_REPORT_44781083.md`；非零锚定权重未降低遗忘且降低 Overall/Old，归档为负消融。
+- 2026-07-29：新增阶段 6 客户问答风险说明 `results/stage6/CUSTOMER_QA_RISK_RESPONSE.md`，并更新 `CUSTOMER_PROGRESS_REPORT.html`、实施计划、交接和 AGENTS；将客户关心的 DOI-style 来源、LoRa 数据下载和 ADS-B/LoRa 低结果统一为诚实交付口径。
 
 ## Next TODO
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
-- 阶段 4 ADS-B ratio 0.03 和自适应密度结论保持不变；默认 target split 已作为 ADS-B 欠聚类收敛候选，保守门控、max-added 消融和训练期旧类原型锚定均未找到更优折中。固定 target split 后端对照显示剩余风险是 RADCIL 偏新类、DOI-style 遗忘更低的后端旧新类权衡；后续若继续 ADS-B，应研究结构不同的遗忘控制机制，不继续 target split 小参数或原型锚定权重搜索。
+- 阶段 4 ADS-B ratio 0.03 和自适应密度结论保持不变；默认 target split 已作为 ADS-B 欠聚类收敛候选，保守门控、max-added 消融和训练期旧类原型锚定均未找到更优折中。固定 target split 后端对照显示剩余风险是 RADCIL 偏新类、DOI-style 遗忘更低的后端旧新类权衡；当前进入阶段 6 交付整理，不继续 target split 小参数或原型锚定权重搜索。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
 - 阶段 5 补充风险已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，当前继续以风险收敛和结果一致性为主。
 - 使用 `CUSTOMER_PROGRESS_REPORT.html` 进行阶段汇报；每次关键正式结果变化后，从实施计划同步更新该派生页面并复核图表数值。
@@ -229,6 +231,7 @@
 - ADS-B 训练期旧类 Teacher 原型锚定 seed7 未改善后端遗忘，权重 `0.10/0.25` 均降低 Overall/Old；该候选不扩展三种子，不能作为当前 ADS-B 后端风险的解决方案。
 - LoRa 目标簇数约束已消除 seed7 的过聚类，但分组双头未解决新旧类权衡；IQ_7 每阶段均选择 1.0 原型权重仍无法提高 R3 Old，继续调 late-fusion 权重价值有限。
 - LoRa 旧类漂移仍未解决：训练期类中心锚定在 IQ_7 即未改善，且 held-out Old/Overall 退化；继续沿该类原型约束调权重价值有限。
+- 客户关于 ADS-B/LoRa 低结果的疑问已作为交付风险处理：ADS-B 接近 50%、LoRa 约 0.15-0.17 的事实不包装为强结果，而是作为局限和下一步机制方向说明。
 - Slurm 端仍保留若干历史 failed smoke 日志和大型 `.pth`/`.npz` 运行产物；本次只同步成功阶段 5 小型 JSON/stdout/stderr，未删除、未提交大型产物。
 - IGCD-minimal 已接入真实 WiSig frozen embeddings 并完成 Job `44422704`，但当前仍是 minimal strict adaptation，不是完整 IGCD 论文复现。
 - `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；阶段 5 已用既有结果完成补充汇总，对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`，后续复现说明仍需避免误导。
@@ -244,6 +247,7 @@
 - RecallLoom 使用隐藏存储模式和 `zh-CN` 工作区语言，由 helper 管理并通过 `.git/info/exclude` 排除；禁止手工修改 `.recallloom/config.json`、`.recallloom/state.json` 及其他托管状态标记。
 - `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 是新一轮方法实施、项目进度跟踪和客户汇报的唯一主入口；偏离算法、协议、标签边界、baseline、验收标准或客户可汇报结论前必须先更新计划并说明原因。
 - `CUSTOMER_PROGRESS_REPORT.html` 是可离线交付的客户派生摘要，允许为展示裁剪内部执行细节，但所有数值、结论和状态必须追溯到 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`，不得形成并行事实源。
+- `results/stage6/CUSTOMER_QA_RISK_RESPONSE.md` 是阶段 6 客户问答草稿，服务于沟通口径，不替代实施计划；其中 DOI-style、LoRa 数据和 ADS-B/LoRa 低结果结论必须与实施计划保持一致。
 - 原 MV-ACC、CF-LCG、HDBSCAN 和原型注册链路完整保留为 baseline，但不再约束新主方法结构；新主方法可重新设计深度表征、未知检测、类别发现、可靠伪标签和真实网络增量训练，经典特征仅用于旧方法对照与消融。
 - 正式实验必须包含固定旧前端配新后端、新前端配原型注册和完整新方法三组组合，分离类别发现与增量后端的贡献，并补充至少 1–2 个可公平复现的近年 SOTA 对照。
 - 阶段 2 首个 WiSig 主组合固定为 MV-ACC 前端 + `ratio_2p0_replay_3p0` 后端；该配置通过 `utils/radcil_config.py` 管理，旧 strict 实验入口默认行为保持不变。

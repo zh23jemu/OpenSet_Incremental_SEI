@@ -268,7 +268,7 @@
   <header class="masthead">
     <p class="eyebrow">阶段性客户汇报 · 严格开放集类别增量 SEI</p>
     <h1>OpenSet Incremental SEI 项目进度汇报</h1>
-    <p class="subtitle">项目已完成 WiSig 与 ADS-B 主实验阶段，并打通 LoRa 跨信号体制的完整三轮验证链路。当前工作重点已从“流程能否运行”转向“稳定控制旧类遗忘与跨天表征漂移”。</p>
+    <p class="subtitle">项目已完成 WiSig 与 ADS-B 主实验阶段，并打通 LoRa 跨信号体制的完整三轮验证链路。当前工作重点已从“流程能否运行”转向“结果交付、风险解释和后续机制边界”。</p>
     <div class="meta">
       <span>报告日期：2026-07-28</span>
       <span>结果口径：严格训练 / 验证 / 最终评估隔离</span>
@@ -281,10 +281,10 @@
     <div class="kpi-grid">
       <div class="kpi"><span>主实验阶段</span><strong>2 / 2</strong><span>WiSig 与 ADS-B 正式三种子实验均已完成</span></div>
       <div class="kpi"><span>WiSig R3 Overall</span><strong>0.6088</strong><span>标准差 0.0415；New Acc 0.7804</span></div>
-      <div class="kpi"><span>ADS-B R3 Overall</span><strong>0.4831</strong><span>标准差 0.0089；优于当前端到端 baseline</span></div>
+      <div class="kpi"><span>ADS-B R3 Overall</span><strong>0.4932</strong><span>默认 target split 后；仍接近 50%，需报告局限</span></div>
       <div class="kpi"><span>LoRa 验证状态</span><strong>Seed 7</strong><span>完整链路已打通，但跨天旧类漂移仍未解决</span></div>
     </div>
-    <div class="callout"><strong>当前结论：</strong>数据、协议、训练环境、发现前端和增量学习链路均已形成可复现闭环。WiSig 的类别发现质量较强；ADS-B 的整体识别效果领先当前 baseline；LoRa 证明了跨体制可执行性，同时暴露出新旧类权衡和跨天漂移这一核心研究风险。</div>
+    <div class="callout"><strong>当前结论：</strong>数据、协议、训练环境、发现前端和增量学习链路均已形成可复现闭环。WiSig 的主结果最适合作为正向主线；ADS-B 通过 target split 缓解欠聚类但整体仍接近 50%；LoRa 证明跨体制链路可执行，但当前更适合作为局限分析和补充验证。</div>
   </section>
 
   <section>
@@ -316,8 +316,8 @@
         <tbody>
           <tr><td>WiSig：MV-ACC + RADCIL</td><td>3 seeds</td><td class="num good">0.6088±0.0415</td><td class="num">0.5516</td><td class="num good">0.7804</td><td class="num">0.2285</td><td>端到端主链路稳定，发现前端贡献明确</td></tr>
           <tr><td>WiSig：共享发现 DOI-style</td><td>3 seeds</td><td class="num good">0.6579±0.0350</td><td class="num">0.5721</td><td class="num">0.9152</td><td class="num">0.1959</td><td>证明当前网络后端仍不是性能上限</td></tr>
-          <tr><td>ADS-B：MV-ACC-CIL</td><td>3 seeds</td><td class="num good">0.4831±0.0089</td><td class="num">0.4882</td><td class="num">0.4420</td><td class="num risk">0.1159</td><td>Overall / New 领先，遗忘控制仍弱于 DOI-style</td></tr>
-          <tr><td>ADS-B：共享发现 DOI-style</td><td>3 seeds</td><td class="num">0.4621±0.0273</td><td class="num">0.4899</td><td class="num">0.2353</td><td class="num good">0.0551</td><td>遗忘更低，但整体识别性能较弱</td></tr>
+          <tr><td>ADS-B：target split MV-ACC-CIL</td><td>3 seeds</td><td class="num warn">0.4932±0.0128</td><td class="num">0.4902</td><td class="num">0.4930</td><td class="num risk">0.1151</td><td>欠聚类已缓解，但整体仍接近 50%，遗忘控制弱于 DOI-style</td></tr>
+          <tr><td>ADS-B：target split DOI-style</td><td>3 seeds</td><td class="num">0.4722±0.0295</td><td class="num">0.4895</td><td class="num">0.3277</td><td class="num good">0.0629</td><td>遗忘更低，但整体和新类识别较弱</td></tr>
           <tr><td>LoRa：Grouped hybrid</td><td>Seed 7</td><td class="num warn">0.1495</td><td class="num">0.0798</td><td class="num">0.4286</td><td class="num risk">0.4357</td><td>过聚类已解决，但新旧类权衡门槛未通过</td></tr>
         </tbody>
       </table>
@@ -398,6 +398,7 @@
         <tbody>
           <tr><td>WiSig DOI-memory 后验融合</td><td>Seed 7 有局部收益，但三种子 R3 Overall 未稳定超过主方法</td><td>作为负消融归档，不作为新方法贡献</td></tr>
           <tr><td>ADS-B 固定低密度比例与无标签自适应密度</td><td>局部结构指标改善，但跨轮次 New Acc 与簇均衡性不稳定</td><td>正式配置保持 ratio 0.03，停止继续调固定密度参数</td></tr>
+          <tr><td>ADS-B target split 与原型锚定</td><td>target split 缓解欠聚类；训练期旧类原型锚定未降低遗忘，且降低 Overall / Old</td><td>保留默认 target split 候选；不继续调 target split 小参数或 anchor 权重</td></tr>
           <tr><td>LoRa 分组双头融合</td><td>过聚类消除，New Acc 改善，但 Overall / Old 门槛未通过</td><td>不扩 seed 13/31</td></tr>
           <tr><td>LoRa 训练期原型锚定</td><td>验证侧旧类保持率随锚定权重增加而下降，最终选择权重 0</td><td>停止原型锚定与同类 late-fusion 调参</td></tr>
         </tbody>
@@ -412,9 +413,8 @@
         <h3>当前主要风险</h3>
         <ul>
           <li><strong>WiSig 后端上限：</strong>共享发现条件下 DOI-style 高于当前网络后端。</li>
-          <li><strong>ADS-B 欠聚类：</strong>R3 仅发现 6–7 个簇，而协议新增类别为 10 类。</li>
-          <li><strong>ADS-B 遗忘：</strong>Overall 领先，但 Forgetting 高于 DOI-style。</li>
-          <li><strong>LoRa 跨天漂移：</strong>完整链路可执行，但旧类保持仍弱；当前仅有 seed 7。</li>
+          <li><strong>ADS-B 低结果与遗忘：</strong>target split 已缓解 R3 欠聚类，但 R3 Overall 仍接近 50%，Forgetting 仍高于 DOI-style。</li>
+          <li><strong>LoRa 跨天漂移：</strong>完整链路可执行，但 R3 Overall 约 0.15-0.17，当前更适合作为局限分析。</li>
           <li><strong>补充实验复现：</strong>ManyTx/ManyRx 已完成补充稳定性汇总；ManyRx 历史 runner 仍需在复现说明中标明归档位置。</li>
         </ul>
       </div>
@@ -422,6 +422,7 @@
         <h3>下一阶段建议</h3>
         <ol>
           <li>完成阶段 6：统一正式结果表、客户汇报材料、论文图和复现说明。</li>
+          <li>单独保留 DOI-style、LoRa 数据下载和 ADS-B/LoRa 低结果的客户问答口径。</li>
           <li>将 LoRa 两轮严格负消融整理为跨体制局限，不继续原型或后验融合调参。</li>
           <li>若继续算法研究，选择不同于原型锚定 / late-fusion 的机制，并先执行 seed 7 无泄漏门控。</li>
           <li>在复现说明中标明 ManyRx 历史 runner 归档位置，补齐轻量级协议测试和根目录用户说明。</li>
