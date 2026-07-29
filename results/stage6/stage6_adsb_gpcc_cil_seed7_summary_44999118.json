@@ -1,0 +1,107 @@
+{
+  "job_id": "44999118",
+  "metrics": {
+    "save_dir": "results/stage6/adsb_gpcc_cil_seed7_44999118",
+    "rounds": [
+      {
+        "round": "R1",
+        "cluster_count": 10,
+        "target_classes": 10,
+        "cluster_error": 0,
+        "ari": 0.7645981355580579,
+        "hungarian_acc": 0.8143459915611815,
+        "overall_acc": 0.548760100306492,
+        "old_acc": 0.5309161540951765,
+        "new_acc": 0.659,
+        "forgetting": 0.0687924894787956,
+        "macro_f1": 0.5264395334886264
+      },
+      {
+        "round": "R2",
+        "cluster_count": 10,
+        "target_classes": 10,
+        "cluster_error": 0,
+        "ari": 0.7106329613080199,
+        "hungarian_acc": 0.7670903469598076,
+        "overall_acc": 0.5254340914649058,
+        "old_acc": 0.5110058512120368,
+        "new_acc": 0.629,
+        "forgetting": 0.0872450631272255,
+        "macro_f1": 0.5132354385280778
+      },
+      {
+        "round": "R3",
+        "cluster_count": 10,
+        "target_classes": 10,
+        "cluster_error": 0,
+        "ari": 0.5462302007904711,
+        "hungarian_acc": 0.6151960784313726,
+        "overall_acc": 0.4838744824580518,
+        "old_acc": 0.4823917828319882,
+        "new_acc": 0.496,
+        "forgetting": 0.1066688248624149,
+        "macro_f1": 0.4758443428518755
+      }
+    ],
+    "r3": {
+      "round": "R3",
+      "cluster_count": 10,
+      "target_classes": 10,
+      "cluster_error": 0,
+      "ari": 0.5462302007904711,
+      "hungarian_acc": 0.6151960784313726,
+      "overall_acc": 0.4838744824580518,
+      "old_acc": 0.4823917828319882,
+      "new_acc": 0.496,
+      "forgetting": 0.1066688248624149,
+      "macro_f1": 0.4758443428518755
+    },
+    "per_round_rows": [
+      {
+        "Method": "MV-ACC-CIL",
+        "Round": "R1",
+        "Cluster Count": 10,
+        "Incremental Pseudo-label Classes": 10,
+        "Cluster Count Error": 0,
+        "Sample Coverage": 1.0,
+        "Purity": 0.8773125608568647,
+        "NMI": 0.8367953770032808,
+        "ARI": 0.7645981355580579,
+        "Hungarian Acc": 0.8143459915611815,
+        "Overall Acc": 0.548760100306492,
+        "New Acc": 0.659,
+        "Forgetting Rate": 0.0687924894787956
+      },
+      {
+        "Method": "MV-ACC-CIL",
+        "Round": "R2",
+        "Cluster Count": 10,
+        "Incremental Pseudo-label Classes": 10,
+        "Cluster Count Error": 0,
+        "Sample Coverage": 1.0,
+        "Purity": 0.8323600137409825,
+        "NMI": 0.8340897967441128,
+        "ARI": 0.7106329613080199,
+        "Hungarian Acc": 0.7670903469598076,
+        "Overall Acc": 0.5254340914649058,
+        "New Acc": 0.629,
+        "Forgetting Rate": 0.0872450631272255
+      },
+      {
+        "Method": "MV-ACC-CIL",
+        "Round": "R3",
+        "Cluster Count": 10,
+        "Incremental Pseudo-label Classes": 10,
+        "Cluster Count Error": 0,
+        "Sample Coverage": 1.0,
+        "Purity": 0.7238562091503268,
+        "NMI": 0.7365338414223322,
+        "ARI": 0.5462302007904711,
+        "Hungarian Acc": 0.6151960784313726,
+        "Overall Acc": 0.4838744824580518,
+        "New Acc": 0.496,
+        "Forgetting Rate": 0.1066688248624149
+      }
+    ]
+  }
+}

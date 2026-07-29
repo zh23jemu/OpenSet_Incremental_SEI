@@ -1,0 +1,57 @@
+
+========== Strict ADS-B 90-Known 3-Round MV-ACC-CIL Experiment ==========
+Dataset root: /mnt/users/xj62kv/OpenSet_Incremental_SEI/数据集/ADS-B/Dataset
+Save dir: results/stage6/adsb_gpcc_cil_seed7_44999118
+Device: cuda
+Backbone: adsb_long
+Protocol: 90 known + 10 novel R1 + 10 novel R2 + 10 novel R3
+Receiver setting: receiver metadata unavailable; treated as one acquisition domain
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Base-class protocol: 60% backbone train + 10% validation + 30% stored-order held-out evaluation
+Novel-class protocol: provided train file for discovery/training; provided test file for evaluation only
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Base development 70%: (14388, 2, 4800), classes=90, labels=0-89
+Initial eval 30%:     (6178, 2, 4800), classes=90, labels=0-89, day=ADS-B known-pool held-out partition
+Novel R1 train file: (3081, 2, 4800), classes=10, labels=90-99, source=ADS-B novel pool group 0-9
+After R1 held-out eval: (7178, 2, 4800), classes=100, labels=0-99, source=ADS-B held-out evaluation after round 1
+Novel R2 train file: (2911, 2, 4800), classes=10, labels=100-109, source=ADS-B novel pool group 10-19
+After R2 held-out eval: (8178, 2, 4800), classes=110, labels=0-109, source=ADS-B held-out evaluation after round 2
+Novel R3 train file: (2448, 2, 4800), classes=10, labels=110-119, source=ADS-B novel pool group 20-29
+After R3 held-out eval: (9178, 2, 4800), classes=120, labels=0-119, source=ADS-B held-out evaluation after round 3
+[Integrity] exact IQ overlap across every development/test boundary: 0
+[Load] checkpoint=/mnt/users/xj62kv/OpenSet_Incremental_SEI/results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.111 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Assignment Coverage  Noise Points  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc  Label-free Silhouette  Cluster Size Min  Cluster Size Median  Cluster Size Max  Cluster Size CV  Small Cluster Fraction  Raw HDBSCAN Confidence Mean Discovery Backend                          GPCC Backend  GPCC Target Clusters GPCC Selected Candidate                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              GPCC Candidate Scores  GPCC Silhouette  GPCC Prototype Margin Mean  GPCC Silhouette Confidence Mean  GPCC Confidence Mean  GPCC Confidence Min  GPCC Cluster Stability  GPCC Cluster Size CV  GPCC Uses HDBSCAN
+MV-ACC-CIL discovery    R1         Day 2                10     3081                     10                   10                    0                    1.0                  1.0             0        10    0.0 0.836795 0.764598 0.877313       0.814346               0.265178               145                321.0               462         0.322282                     0.1                     0.479121              GPCC graph_prototype_controlled_clustering                    10            kmeans_joint {'kmeans_joint': {'score': 0.5454421547227399, 'silhouette': 0.2621608078479767, 'balance': 0.7562685520317637, 'stability': 1.0, 'cluster_size_cv': 0.3222816118869894}, 'kmeans_graph': {'score': 0.49618129174761344, 'silhouette': 0.2463718056678772, 'balance': 0.7666284377449486, 'stability': 0.8294044443251648, 'cluster_size_cv': 0.30441286908364396}, 'agglomerative_joint': {'score': 0.5185433048020536, 'silhouette': 0.2577546238899231, 'balance': 0.7270798871148142, 'stability': 0.925449136958532, 'cluster_size_cv': 0.37536468512171706}}         0.262161                    0.376001                         0.631080              0.479121             0.030207                     1.0              0.322282              False
+MV-ACC-CIL discovery    R2         Day 3                10     2911                     10                   10                    0                    1.0                  1.0             0        10    0.0 0.834090 0.710633 0.832360       0.767090               0.303665               174                258.0               564         0.364261                     0.0                     0.484205              GPCC graph_prototype_controlled_clustering                    10            kmeans_joint {'kmeans_joint': {'score': 0.548692332011758, 'silhouette': 0.2765323221683502, 'balance': 0.7329977740958268, 'stability': 1.0, 'cluster_size_cv': 0.36426062307423485}, 'kmeans_graph': {'score': 0.5128292866706254, 'silhouette': 0.25990837812423706, 'balance': 0.7279700506775411, 'stability': 0.8971426742671474, 'cluster_size_cv': 0.3736828858127796}, 'agglomerative_joint': {'score': 0.5368605862469749, 'silhouette': 0.2744584381580353, 'balance': 0.7235420587475232, 'stability': 0.9648001340422031, 'cluster_size_cv': 0.38208966280555307}}         0.276532                    0.377652                         0.638266              0.484205             0.031142                     1.0              0.364261              False
+MV-ACC-CIL discovery    R3         Day 4                10     2448                     10                   10                    0                    1.0                  1.0             0        10    0.0 0.736534 0.546230 0.723856       0.615196               0.307488               133                218.0               394         0.351240                     0.0                     0.470227              GPCC graph_prototype_controlled_clustering                    10            kmeans_joint {'kmeans_joint': {'score': 0.5356702864739741, 'silhouette': 0.25028738379478455, 'balance': 0.7400611269342127, 'stability': 1.0, 'cluster_size_cv': 0.3512397335914855}, 'kmeans_graph': {'score': 0.4526384579247267, 'silhouette': 0.2370425909757614, 'balance': 0.6852262638022488, 'stability': 0.7408791205104326, 'cluster_size_cv': 0.45937196635036226}, 'agglomerative_joint': {'score': 0.48964768968111316, 'silhouette': 0.23980289697647095, 'balance': 0.732637787469682, 'stability': 0.844914155400471, 'cluster_size_cv': 0.3649309619337399}}         0.250287                    0.367326                         0.625144              0.470227             0.011168                     1.0              0.351240              False
+Saved: results/stage6/adsb_gpcc_cil_seed7_44999118/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage                                Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial     ADS-B known-pool held-out partition day1_eval_initial_30pct            90                -                   -                 -          6178     0.599709 0.599709      NaN           0.599709         0.000000  0.546687
+MV-ACC-CIL After R1 ADS-B held-out evaluation after round 1  eval_r1_30pct_100_seen           100               10                  10                10          7178     0.548760 0.530916    0.659           0.530916         0.068792  0.526440
+MV-ACC-CIL After R2 ADS-B held-out evaluation after round 2  eval_r2_30pct_110_seen           110               10                  10                10          8178     0.525434 0.511006    0.629           0.512464         0.087245  0.513235
+MV-ACC-CIL After R3 ADS-B held-out evaluation after round 3  eval_r3_30pct_120_seen           120               10                  10                10          9178     0.483874 0.482392    0.496           0.493040         0.106669  0.475844
+Saved: results/stage6/adsb_gpcc_cil_seed7_44999118/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1             10                                10                    0         1.000000 0.877313 0.836795 0.764598       0.814346     0.548760 0.659000         0.068792
+MV-ACC-CIL    R2             10                                10                    0         1.000000 0.832360 0.834090 0.710633       0.767090     0.525434 0.629000         0.087245
+MV-ACC-CIL    R3             10                                10                    0         1.000000 0.723856 0.736534 0.546230       0.615196     0.483874 0.496000         0.106669
+Saved: results/stage6/adsb_gpcc_cil_seed7_44999118/per_round_summary_results.csv
+ADS-B GPCC CIL seed7 report: results/stage6/STAGE6_ADSB_GPCC_CIL_SEED7_REPORT_44999118.md
