@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划与项目进度总表
 
-- 状态：阶段 6 交付整理中；阶段 0–5 已收束；ADS-B/LoRa 低结果风险已形成客户解释口径；LoRa old-logit bias 已完成 seed7 与三种子验证，确认旧类打分偏置能解释部分低分但不能稳定解决新旧类权衡；当前转向 BN 统计重校准验证跨天表征漂移
+- 状态：阶段 6 交付整理中；阶段 0–5 已收束；ADS-B/LoRa 低结果风险已形成客户解释口径；LoRa old-logit bias 与 BN 统计重校准均已完成 seed7 与三种子验证，确认旧类打分偏置和跨天统计漂移都能解释部分低分，但不能稳定解决新旧类权衡与发现不稳
 - 版本：1.1
 - 创建日期：2026-07-26
 - 最近更新：2026-07-28
@@ -260,7 +260,7 @@
 - [x] 聚合当前客户问答风险：DOI-style 简化复现口径、LoRa 数据下载范围、ADS-B/LoRa 低结果解释。
 - [x] 审计 LoRa 实验必要子集：`datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz` 已覆盖 25 设备、10+5×3 strict 协议，结果见 `results/stage6/lora_required_subset_audit.json` 和 `results/stage6/LORA_REQUIRED_SUBSET_READY.md`。
 - [x] 完成 LoRa old-logit bias seed7 与三种子诊断：seed7 Job `44881172` 通过扩展门槛；三种子 Job `44893894` 的 R3 Overall/Old/New/Forgetting 均值为 `0.1714/0.2016/0.0508/0.3175`，Old 提升但 New 塌缩且 seed31 R3 仅 3 簇，不采用为正式后端。
-- [x] 完成 LoRa BatchNorm 重校准 seed7 验证：Job `44919835` R3 Overall/Old/New/Forgetting 为 `0.1638/0.0917/0.4524/0.4976`，三轮均保持 5 簇；三种子 Job `44925458` 与短队列补提 `44932580` 已提交，等待稳定性结果。
+- [x] 完成 LoRa BatchNorm 重校准 seed7 与三种子验证：seed7 Job `44919835` R3 Overall/Old/New/Forgetting 为 `0.1638/0.0917/0.4524/0.4976`，三轮均保持 5 簇；三种子 Job `44932580` R3 均值为 `0.1362/0.0984/0.2873/0.4024`，seed13 R3 仅 3 簇，不采用为正式候选。
 - [ ] 提供 `gpu` 分区、`gpo-ifv7xx` 账号、`normal` QOS 的正式 Slurm 脚本；一小时内验证任务使用 `shortjobs`。
 - [ ] 汇总多种子均值、标准差、对照和消融表格。
 - [ ] 整理可直接用于论文的 t-SNE 图和结果图表。
@@ -382,7 +382,7 @@ Job `44781083` 在默认 target split 与 Long-RADCIL 配置下验证训练期�
 | IGCD-minimal 不是完整复现            | 客户或论文审稿可能质疑 SOTA 公平性                                             | 明确标注为 minimal strict adaptation，必要时后续补齐更完整适配           |
 | ADS-B R2/R3 发现欠聚类              | 原正式三种子 R3 仅发现 6–7/10 类；target split 已补齐 R3，并在后端对照中保持 Overall/New 优势 | 采用默认 target split 作为欠聚类收敛候选；保守门控已验证不优，停止继续小参数搜索并如实报告局限 |
 | ADS-B 后端旧新类权衡                  | target split 下 MV-ACC-CIL Overall/New 高于 DOI-style，但 Forgetting 仍高约 `0.0522`；训练期旧类原型锚定 seed7 未降低遗忘 | 风险已从发现前端转为后端权衡；后续若继续改 ADS-B，应换结构不同的遗忘控制机制，而不是继续调 target split 或 anchor 权重 |
-| LoRa 新旧类后端权衡                   | Grouped fusion、训练期类中心锚定和 old-logit bias 均未通过最终门槛；old-logit bias 三种子 Old 提升但 New 均值塌到 `0.0508`，seed31 R3 仅 3 簇；BN 重校准 seed7 通过但三种子仍待确认 | 当前低结果由跨天表征漂移、发现不稳和旧/新类后端冲突共同造成；停止 LoRa 小机制追分，作为跨体制局限和后续机制方向 |
+| LoRa 新旧类后端权衡                   | Grouped fusion、训练期类中心锚定、old-logit bias 和 BN 重校准均未通过最终门槛；old-logit bias 三种子 Old 提升但 New 均值塌到 `0.0508`，BN 三种子 Overall 均值为 `0.1362` 且 seed13 R3 仅 3 簇 | 当前低结果由跨天表征漂移、发现不稳和旧/新类后端冲突共同造成；停止 LoRa 小机制追分，作为跨体制局限和后续机制方向 |
 | ManyRx 正式 runner 缺失            | 阶段 5 已用既有结果完成补充稳定性汇总，但复现实验入口仍不够直观                              | 阶段 6 文档中标明历史 runner 位置，必要时再恢复受维护入口                       |
 | Slurm 端保留多份大数据分片               | 占用存储                                                             | 未经确认不删除，后续只做保留策略建议                                     |
 
@@ -392,12 +392,12 @@ Job `44781083` 在默认 target split 与 Long-RADCIL 配置下验证训练期�
 
 1. ADS-B 欠聚类风险已收束：正式 ratio 0.03 不变，自适应密度归档为负消融，默认 target split 作为欠聚类收敛候选，保守门控消融未优于默认；固定 target split 后端对照和训练期旧类原型锚定 seed7 结果显示剩余问题是旧新类后端权衡，不能靠继续调 target split 或 anchor 权重解决。
 2. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
-3. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头和 old-logit bias 均已完成；old-logit bias 说明旧类打分偏置确实存在，但三种子新类塌缩，不能作为正式解决方案。BN 重校准 seed7 已通过，当前三种子在跑，若稳定则可作为跨天表征漂移的轻量补偿候选。
+3. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 
 中期优先级：
 
 1. 停止 WiSig DOI-memory 和 iCaRL fallback 小机制搜索；保留三种子负消融证据，后续若继续后端研究必须先提出结构不同且可预注册的新机制。
-2. 将 LoRa 多轮严格负消融保留为跨体制局限，不继续原型锚定、late-fusion 或 old-logit bias 后端调参；当前转而验证 BN 统计重校准，后续若三种子不稳定，再回到跨天表征/域适应机制。
+2. 将 LoRa 多轮严格负消融保留为跨体制局限，不继续原型锚定、late-fusion、old-logit bias 或 BN 统计细调；后续若继续攻 LoRa，应转向训练期跨天域适应机制。
 3. ManyRx 当前仅保留既有结果汇总；如需重新运行，再恢复受维护入口，不把 runner 缺失误判为主实验风险。
 4. 为严格协议和核心报告器补充轻量级自动化测试。
 5. 对 ADS-B/LoRa 低结果只做诚实解释和局限分析；LoRa old-logit bias 证明旧类偏置可解释部分问题，但不能解决整体跨体制低分。

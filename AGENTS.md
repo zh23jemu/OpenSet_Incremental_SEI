@@ -121,7 +121,7 @@
 - 阶段 6 已启动客户风险口径收口：新增 `results/stage6/CUSTOMER_QA_RISK_RESPONSE.md`，明确 DOI-style 是 DOI-inspired 简化 baseline、LoRa 完整数据可按需下载、ADS-B/LoRa 当前低结果应作为局限如实报告；`CUSTOMER_PROGRESS_REPORT.html` 已同步修正 ADS-B target split 最新结果和风险表述。
 - 阶段 6 已完成 LoRa 实验必要子集审计：`datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz` 约 9.7 MB，覆盖 Different Days Indoor 25 设备和 10+5×3 strict 协议；审计报告为 `results/stage6/lora_required_subset_audit.json`，说明为 `results/stage6/LORA_REQUIRED_SUBSET_READY.md`。
 - 阶段 6 已完成 LoRa old-logit bias 诊断：seed7 Job `44881172` R3 Overall/Old/New/Forgetting 为 `0.1676/0.1619/0.1905/0.4214`，通过扩展门槛；三种子 Job `44893894` R3 均值为 `0.1714/0.2016/0.0508/0.3175`，Old 提升但 New 明显塌缩且 seed31 R3 仅 3 簇，最终归档为负消融。
-- 阶段 6 继续攻 LoRa 跨天表征漂移：已新增 BatchNorm 统计重校准入口并通过 seed7，Job `44919835` R3 Overall/Old/New/Forgetting 为 `0.1638/0.0917/0.4524/0.4976`，三轮均保持 5 簇；正式三种子 Job `44925458` 与短队列补提 `44932580` 已提交，等待稳定性确认。
+- 阶段 6 已完成 LoRa BatchNorm 统计重校准验证：seed7 Job `44919835` R3 Overall/Old/New/Forgetting 为 `0.1638/0.0917/0.4524/0.4976` 且三轮均 5 簇；三种子 Job `44932580` R3 均值为 `0.1362/0.0984/0.2873/0.4024`，seed13 R3 仅 3 簇，未通过平衡候选门槛，归档为负消融。
 
 ## Recent Changes
 
@@ -202,14 +202,14 @@
 - 2026-07-29：新增阶段 6 客户问答风险说明 `results/stage6/CUSTOMER_QA_RISK_RESPONSE.md`，并更新 `CUSTOMER_PROGRESS_REPORT.html`、实施计划、交接和 AGENTS；将客户关心的 DOI-style 来源、LoRa 数据下载和 ADS-B/LoRa 低结果统一为诚实交付口径。
 - 2026-07-29：执行 LoRa 必要子集审计，确认当前紧凑 NPZ 已覆盖实验需要的 Different Days Indoor 子集，无需下载完整 LoRa；新增 `results/stage6/LORA_REQUIRED_SUBSET_READY.md` 并同步实施计划、交接和 AGENTS。
 - 2026-07-29：新增并完成 LoRa old-logit bias 诊断后端、报告器、seed7 入口和三种子入口；Job `44881172` seed7 通过门槛，但 Job `44893894` 三种子确认 New Acc 均值塌缩到 `0.0508`，不采用为正式后端。
-- 2026-07-29：新增 LoRa BatchNorm 统计重校准 seed7 入口、报告器和 Slurm 脚本；Job `44919835` seed7 通过门槛，随后补提三种子 Job `44925458` 和短队列补提 `44932580` 进行稳定性验证。
+- 2026-07-29：新增并完成 LoRa BatchNorm 统计重校准 seed7 与三种子验证；Job `44919835` seed7 通过门槛，但 Job `44932580` 三种子 Overall 均值降至 `0.1362` 且 seed13 R3 仅 3 簇，不采用为正式候选。
 
 ## Next TODO
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
 - 阶段 4 ADS-B ratio 0.03 和自适应密度结论保持不变；默认 target split 已作为 ADS-B 欠聚类收敛候选，保守门控、max-added 消融和训练期旧类原型锚定均未找到更优折中。固定 target split 后端对照显示剩余风险是 RADCIL 偏新类、DOI-style 遗忘更低的后端旧新类权衡；当前进入阶段 6 交付整理，不继续 target split 小参数或原型锚定权重搜索。
-- 继续跟踪 LoRa BatchNorm 重校准三种子 Job `44925458` / `44932580` 的运行与报告，确认是否能在不压塌 New 的情况下稳定改善 Old/Overall。
+- LoRa BN 重校准已归档为负消融；下一步如果继续攻 LoRa，应转向更明确的跨天表征/域适应训练机制，而不是继续后验校准或 BN 统计细调。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
 - 阶段 5 补充风险已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，当前继续以风险收敛和结果一致性为主。
 - 使用 `CUSTOMER_PROGRESS_REPORT.html` 进行阶段汇报；每次关键正式结果变化后，从实施计划同步更新该派生页面并复核图表数值。
@@ -228,7 +228,7 @@
 - 当前安装的 RecallLoom 为 0.4.5，支持执行但提示可升级到 0.4.8.2；这只是升级建议，不再阻塞读取、写入或完整 provenance 校验。
 - RecallLoom 结构校验和完整 provenance 校验已通过；`legacy_optional_metadata_missing` 仅为协议 1.0 旧侧车可省略字段的兼容性警告。
 - 当前 C 盘可用空间约 8.53 GB，不适合同时展开 ADS-B、ManyTx 和 ManyRx；完整解压应优先在训练服务器进行。
-- LoRa BN 重校准 seed7 已通过门槛，但三种子正式稳定性仍未完成；若三种子结果回落，需要回退为负消融，不再继续追 BN 统计细调。
+- LoRa BN 重校准三种子未通过采用门槛；它说明跨天统计漂移存在，但仅刷新 BN 无法稳定解决发现不稳和旧新类权衡。
 - Slurm `.venv` 当前安装的是 2026-07-26 可用的较新依赖组合，尚未通过旧版端到端实验验证；如出现兼容问题，应基于成功环境生成锁文件后做最小范围降级。
 - ADS-B 已在 Slurm 解压并通过 strict loader 审计；ManyTx/ManyRx 完整 ZIP 结构有效但未解压，后续仅在补充实验需要时按需展开，不作为阶段 1 阻塞风险。
 - SimGCD-style 最小适配器在 WiSig frozen embeddings 上弱于 MV-ACC；学习式发现头直接迁移到 RF 特征的收益不足，后续若继续改进需证明稳定超过 Deep-HDBSCAN/MV-ACC。
@@ -257,7 +257,7 @@
 - RecallLoom 使用隐藏存储模式和 `zh-CN` 工作区语言，由 helper 管理并通过 `.git/info/exclude` 排除；禁止手工修改 `.recallloom/config.json`、`.recallloom/state.json` 及其他托管状态标记。
 - `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 是新一轮方法实施、项目进度跟踪和客户汇报的唯一主入口；偏离算法、协议、标签边界、baseline、验收标准或客户可汇报结论前必须先更新计划并说明原因。
 - `CUSTOMER_PROGRESS_REPORT.html` 是可离线交付的客户派生摘要，允许为展示裁剪内部执行细节，但所有数值、结论和状态必须追溯到 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`，不得形成并行事实源。
-- LoRa 当前不继续 old-logit bias、原型锚定或 late-fusion 小机制；若 BN 重校准三种子也不能稳定过门槛，后续只保留为跨天表征漂移的负消融，不再扩新后端搜索。
+- LoRa 当前不继续 old-logit bias、原型锚定、late-fusion 或 BN 统计细调；这些都只作为低分根因证据和负消融保留，后续若继续应转向训练期跨天域适应。
 - `results/stage6/CUSTOMER_QA_RISK_RESPONSE.md` 是阶段 6 客户问答草稿，服务于沟通口径，不替代实施计划；其中 DOI-style、LoRa 数据和 ADS-B/LoRa 低结果结论必须与实施计划保持一致。
 - 原 MV-ACC、CF-LCG、HDBSCAN 和原型注册链路完整保留为 baseline，但不再约束新主方法结构；新主方法可重新设计深度表征、未知检测、类别发现、可靠伪标签和真实网络增量训练，经典特征仅用于旧方法对照与消融。
 - 正式实验必须包含固定旧前端配新后端、新前端配原型注册和完整新方法三组组合，分离类别发现与增量后端的贡献，并补充至少 1–2 个可公平复现的近年 SOTA 对照。
