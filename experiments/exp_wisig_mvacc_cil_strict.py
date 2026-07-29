@@ -84,6 +84,7 @@ from models.vup_model import ClosedSetSEI
 from datasets.lora25_strict_loader import load_lora25_diffdays_3round
 from utils.improved_closedset_training import (
     TRAINING_RECIPE_VERSION,
+    augment_iq_batch,
     stratified_train_validation_split,
     train_closedset_with_validation,
 )
@@ -1837,8 +1838,37 @@ def _supcon_incremental(features, labels, temperature=0.2):
     return -(log_prob * same.float()).sum(dim=1)[valid].div(positives[valid].float()).mean()
 
 
+def _feature_view_consistency_loss(features, augmented_features):
+    """计算原始 IQ 与轻度增强 IQ 的单位特征一致性损失。
+
+    该损失不需要额外标签，也不把不同类别样本强行拉到一起；它只要求同一
+    个样本在轻微幅度、相位、时间偏移和噪声扰动下保持方向一致。这样可以
+    给跨天采集造成的低阶域变化留出适应空间，同时避免把 Teacher 的旧域
+    特征逐样本硬复制到当前轮新类。
+    """
+    if features.numel() == 0 or augmented_features.numel() == 0:
+        return features.sum() * 0.0
+    if features.shape != augmented_features.shape:
+        raise ValueError(
+            "Feature-view consistency requires matching feature shapes, got "
+            f"{tuple(features.shape)} and {tuple(augmented_features.shape)}."
+        )
+    cosine = F.cosine_similarity(
+        F.normalize(features, dim=1),
+        F.normalize(augmented_features, dim=1),
+        dim=1,
+    )
+    return (1.0 - cosine).mean()
+
+
 def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, memory_x, memory_y, old_out_dim, args, device):
-    """Head warm-up followed by last-block backbone adaptation on raw IQ samples."""
+    """Head warm-up followed by last-block backbone adaptation on raw IQ samples.
+
+    ``radcil_aug_consistency_weight`` 开启后，当前轮 discovery 和 replay 样本
+    会各自生成一个只用于训练的增强视图，并加入同一样本的特征方向一致性
+    损失。增强视图不会进入聚类、验证或 held-out 评估，因此不改变严格
+    数据边界；权重为 0 时完全保持历史训练路径。
+    """
     current_x = np.asarray(current_x, dtype=np.float32)
     current_y = np.asarray(current_y, dtype=np.int64)
     current_w = np.asarray(current_w, dtype=np.float32)
@@ -1994,6 +2024,15 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                         prototype_anchor = logits_m.sum() * 0.0
                 else:
                     prototype_anchor = logits_m.sum() * 0.0
+                if float(args.radcil_aug_consistency_weight) > 0:
+                    # 只对训练 batch 做增强。当前轮伪标签和 replay 标签都
+                    # 已经在 discovery/enrollment 或历史训练池内获得，不读取
+                    # 任何 held-out evaluation 样本。
+                    x_aug = augment_iq_batch(x)
+                    feat_aug, _ = student(x_aug)
+                    view_consistency = _feature_view_consistency_loss(feat, feat_aug)
+                else:
+                    view_consistency = logits_m.sum() * 0.0
                 high = wc >= float(args.cil_supcon_threshold)
                 feat_con = torch.cat([feat[:len(xc)][high], feat[len(xc):]], dim=0)
                 y_con = torch.cat([yc[high], ym], dim=0)
@@ -2005,6 +2044,7 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                     + kd_weight * kd
                     + float(args.radcil_feature_distill_weight) * feature_distill
                     + float(args.radcil_prototype_anchor_weight) * prototype_anchor
+                    + float(args.radcil_aug_consistency_weight) * view_consistency
                     + float(args.cil_supcon_weight) * con
                 )
                 opt.zero_grad()
@@ -3250,6 +3290,12 @@ def main():
     parser.add_argument("--radcil_kd_schedule", choices=["constant", "cosine", "linear_decay"], default="constant", help="Schedule for the end-to-end CIL KD weight inside each training stage.")
     parser.add_argument("--radcil_feature_distill_weight", type=float, default=0.0, help="Replay-feature distillation weight for constraining old-class backbone drift.")
     parser.add_argument("--radcil_prototype_anchor_weight", type=float, default=0.0, help="Teacher replay class-prototype anchor weight; 0 preserves historical RADCIL behavior.")
+    parser.add_argument(
+        "--radcil_aug_consistency_weight",
+        type=float,
+        default=0.0,
+        help="Incremental dual-view feature consistency weight; 0 preserves historical RADCIL behavior.",
+    )
     parser.add_argument("--radcil_unfreeze_scope", choices=["none", "fc", "layer3", "tail", "layer2_tail"], default="tail", help="Backbone scope unfrozen during the joint RADCIL stage.")
     parser.add_argument("--radcil_doi_fusion_weight", type=float, default=0.0, help="DOI replay-prototype late-fusion weight; 0 keeps network-only RADCIL prediction.")
     parser.add_argument("--radcil_doi_align_lambda", type=float, default=0.30, help="Current-round weight used to align historical and current replay prototypes.")
@@ -3360,6 +3406,10 @@ def main():
     else:
         print("LoRa split: IQ_1-6 train | IQ_7 validation | IQ_8-10 held-out evaluation")
     print(f"Old-class prototype bonus beta: {args.old_class_bonus}")
+    print(
+        "Incremental dual-view consistency weight: "
+        f"{args.radcil_aug_consistency_weight}"
+    )
     if args.use_supcon:
         print(f"Closed-set training loss: CE + {args.supcon_weight} * SupCon(T={args.supcon_temperature})")
     else:
@@ -3926,6 +3976,7 @@ def main():
             "radcil_doi_effective_fusion_weight": float(doi_fusion_weight),
             "radcil_grouped_doi_fusion": bool(args.radcil_grouped_doi_fusion),
             "radcil_prototype_anchor_weight": float(args.radcil_prototype_anchor_weight),
+            "radcil_aug_consistency_weight": float(args.radcil_aug_consistency_weight),
             "radcil_doi_align_lambda": float(args.radcil_doi_align_lambda),
             "radcil_doi_prototype_temperature": float(args.radcil_doi_prototype_temperature),
             "radcil_icarl_fallback": bool(icarl_fallback_enabled),
