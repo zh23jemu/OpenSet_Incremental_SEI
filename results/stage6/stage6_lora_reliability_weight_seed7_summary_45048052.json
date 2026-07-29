@@ -1,0 +1,30 @@
+{
+  "job_id": "45048052",
+  "matrix_root": "results/stage6/lora_reliability_weight_seed7_45048052",
+  "rows": [
+    {
+      "variant": "reliability_off",
+      "iq7_r3_old_acc": 0.1357142857142857,
+      "cluster_count": 5,
+      "overall": 0.1666666666666666,
+      "old": 0.0916666666666666,
+      "new": 0.4666666666666667,
+      "forgetting": 0.4857142857142857,
+      "macro_f1": 0.0943861177301691
+    },
+    {
+      "variant": "reliability_on",
+      "iq7_r3_old_acc": 0.1357142857142857,
+      "cluster_count": 5,
+      "overall": 0.1666666666666666,
+      "old": 0.0916666666666666,
+      "new": 0.4666666666666667,
+      "forgetting": 0.4857142857142857,
+      "macro_f1": 0.0943861177301691
+    }
+  ],
+  "selection_source": "IQ_7 R3 old-class validation accuracy only",
+  "validation_improved": false,
+  "heldout_gate": false,
+  "adopt": false
+}
