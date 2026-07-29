@@ -94,7 +94,7 @@
 - Slurm Job `44440345` 已完成阶段 3 WiSig 正式三种子主实验；`results/stage3/STAGE3_WISIG_MAIN_MULTISEED_REPORT_44440345.md` 显示 R3 Overall `0.6088±0.0415`、Old `0.5516±0.0453`、New `0.7804±0.0461`、Forgetting `0.2285±0.0948`、Macro F1 `0.5710±0.0420`。
 - Slurm Job `44448692` 已完成阶段 3 WiSig high-replay 同协议正式消融；`results/stage3/STAGE3_WISIG_RADCIL_ABLATION_COMPARE.md` 显示 high-replay 的 R3 New Acc 略高 `+0.0052`，但 Overall `-0.0058`、Old `-0.0095`、Forgetting `+0.0059`、Macro F1 `-0.0033`，支持继续以 `ratio_2p0_replay_3p0` 作为主后端。
 - Slurm Job `44453416` 已完成阶段 3 WiSig CIL baseline 三种子正式实验；`results/stage3/STAGE3_WISIG_CIL_BASELINES_MULTISEED_REPORT_44453416.md` 显示端到端主方法 R3 Overall 比 Deep-HDBSCAN + DOI-style 高 `0.0774`，但共享 MV-ACC 伪标签后端对照中 DOI-style R3 Overall `0.6579±0.0350`，比当前 MV-ACC-CIL 高 `0.0491`。
-- 阶段 3 strict baseline 总表和强后端/混合后端计划已生成并更新：`results/stage3/STAGE3_WISIG_STRICT_BASELINE_TABLE.md`、`results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md`；后端上限风险已收敛为“共享发现强后端存在上限，但当前 DOI-memory late fusion 吸收失败”的局限。
+- 阶段 3 strict baseline 总表和强后端/混合后端计划已生成并更新：`results/stage3/STAGE3_WISIG_STRICT_BASELINE_TABLE.md`、`results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md`；DOI-memory late fusion 与 iCaRL 低置信回退均已完成 seed7/三种子验证并归档为负消融。
 - 阶段 3 WiSig DOI-memory hybrid 已完成 seed7 Job `44465809` 和正式三种子 Job `44465982`；三种子 R3 Overall `0.6088±0.0454` 未稳定优于主方法，Old/Forgetting 略差，记录为负消融，不继续 late-fusion 权重搜索。
 - 阶段 4 已将 `ADSBLongClosedSet` 和 RADCIL old:new=2.0 迁入 strict 主入口；seed31 Job `44467424` 与正式三种子 Job `44470736` 均完成。
 - ADS-B 正式三种子 R3 Overall `0.4824±0.0074`、Old `0.4873±0.0079`、New `0.4427±0.0122`、Forgetting `0.1168±0.0138`；三种子 R3 仅发现 6–7 簇，当前主风险为发现欠聚类。
@@ -190,12 +190,14 @@
 - 2026-07-29：新增 ADS-B target split 单种子和三种子验证入口：`tools/stage4_adsb_target_split_plan.py`、`tools/stage4_adsb_target_split_report.py`、`tools/stage4_adsb_target_split_multiseed_plan.py`、`tools/stage4_adsb_target_split_multiseed_report.py`、`slurm/stage4_adsb_target_split_seed31.sbatch`、`slurm/stage4_adsb_target_split_multiseed.sbatch`；seed31 Job `44670427` 和三种子 Job `44766923` 均完成，三种子报告为 `results/stage4/STAGE4_ADSB_TARGET_SPLIT_MULTISEED_REPORT_44766923.md`。
 - 2026-07-29：新增并完成保守 target split 消融入口：`tools/stage4_adsb_target_split_conservative_plan.py`、`tools/stage4_adsb_target_split_conservative_report.py`、`slurm/stage4_adsb_target_split_conservative.sbatch`，生成 `results/stage4/stage4_adsb_target_split_conservative_plan.json`；Job `44767309` 正常完成，报告为 Slurm 端 `results/stage4/STAGE4_ADSB_TARGET_SPLIT_CONSERVATIVE_REPORT_44767309.md`。
 - 2026-07-29：更新 `results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md` 与 JSON 计划，将 DOI-memory hybrid 从待验证候选改为三种子负消融；同步 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 和 `PROJECT_HANDOFF.md`，明确 WiSig 后端上限风险已收敛为局限，后续若继续研究必须换机制而非调 late-fusion 权重。
+- 2026-07-29：实现并完成 WiSig `hybrid_radcil_icarl_exemplar_classifier_fallback`：seed7 Job `44771723` 通过扩展门槛，但三种子 Job `44771757` 未稳定优于主方法，R3 Overall `0.5923±0.0514` 低于主方法 `0.6088±0.0415`，正式归档为负消融。
 
 ## Next TODO
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
 - 阶段 4 ADS-B ratio 0.03 和自适应密度结论保持不变；target split 三种子已确认能稳定补齐 R3 欠聚类并提升 Overall/New 均值，保守门控和 max-added 消融未找到更优折中。默认 target split 已写入阶段结论作为 ADS-B 欠聚类收敛候选，同时保留 seed7/13 新类收益不稳定和 CV 上升的局限。
+- WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
 - 阶段 5 补充风险已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，当前继续以风险收敛和结果一致性为主。
 - 使用 `CUSTOMER_PROGRESS_REPORT.html` 进行阶段汇报；每次关键正式结果变化后，从实施计划同步更新该派生页面并复核图表数值。
 - 将 IGCD-minimal 纳入 strict baseline 表，但正式主前端继续优先使用 MV-ACC 或稳定 Deep-HDBSCAN。
@@ -216,7 +218,7 @@
 - Slurm `.venv` 当前安装的是 2026-07-26 可用的较新依赖组合，尚未通过旧版端到端实验验证；如出现兼容问题，应基于成功环境生成锁文件后做最小范围降级。
 - ADS-B 已在 Slurm 解压并通过 strict loader 审计；ManyTx/ManyRx 完整 ZIP 结构有效但未解压，后续仅在补充实验需要时按需展开，不作为阶段 1 阻塞风险。
 - SimGCD-style 最小适配器在 WiSig frozen embeddings 上弱于 MV-ACC；学习式发现头直接迁移到 RF 特征的收益不足，后续若继续改进需证明稳定超过 Deep-HDBSCAN/MV-ACC。
-- WiSig DOI-memory hybrid 三种子未稳定优于主方法，不能写成新主方法贡献；该风险已收敛为后端上限与叙事局限，若继续后端研究，应更换机制而非只调 late-fusion 权重。
+- WiSig DOI-memory hybrid 与 iCaRL fallback 三种子均未稳定优于主方法，不能写成新主方法贡献；后续不得继续只调 late-fusion、低置信阈值或相近小机制。
 - ADS-B Long-RADCIL 三种子已完成，但 R3 仅发现 6–7/10 类；后续调参不得使用 held-out evaluation 真值。
 - ADS-B R3 欠聚类已定位到初始密度形成阶段；固定 ratio 0.02 和无标签自适应密度均未形成跨轮次稳定收益，正式配置保持 ratio 0.03，阶段 4 不再继续调密度参数。
 - ADS-B MV-ACC-CIL 的 Overall 高于当前 baseline，但 Forgetting `0.1159±0.0108` 高于共享发现 DOI-style `0.0551±0.0032`；论文表述必须同时报告整体识别优势和遗忘控制局限。
@@ -241,6 +243,7 @@
 - 正式实验必须包含固定旧前端配新后端、新前端配原型注册和完整新方法三组组合，分离类别发现与增量后端的贡献，并补充至少 1–2 个可公平复现的近年 SOTA 对照。
 - 阶段 2 首个 WiSig 主组合固定为 MV-ACC 前端 + `ratio_2p0_replay_3p0` 后端；该配置通过 `utils/radcil_config.py` 管理，旧 strict 实验入口默认行为保持不变。
 - DOI-memory hybrid 采用可选后验融合：网络继续执行真实伪标签增量训练，原型仅由 replay 记忆构建并跨轮对齐；融合权重默认 0，避免改变历史主方法结果。三种子验证已证明该 late-fusion 机制不能解决 WiSig 后端上限风险，因此仅保留为负消融。
+- iCaRL fallback 采用离散低置信回退：网络分类头仍是默认预测，只有最大 softmax 置信度低于 Day1 validation 校准阈值时才回退到 replay exemplar 原型分类器；阈值选择不使用 held-out evaluation 真值。三种子验证已证明该机制不能作为主后端，仅保留为负消融。
 - LoRa 分组双头将“当前轮新类”定义为分类器扩展前后新增的输出列，而不是按样本真值路由；目标簇数来自预先声明的 10+5×3 协议。两个机制均为显式开关，保持 WiSig/ADS-B 历史默认行为不变。
 - LoRa 分组双头的 seed7 结果作为负消融保留：目标簇数约束可独立消除过聚类，但不把该后端锁定为主方法，也不据此扩展更多随机种子。
 - 训练期原型锚定使用 Teacher replay 类中心而非逐样本特征复制，目的是以更弱约束稳定旧类，同时为跨天域适应保留空间；默认权重 0，保持历史实验行为。

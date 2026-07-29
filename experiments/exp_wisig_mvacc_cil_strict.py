@@ -2042,6 +2042,18 @@ def _build_aligned_doi_prototype_bank(
     return l2norm(prototypes).astype(np.float32), np.asarray(prototype_labels, dtype=np.int64)
 
 
+def _build_replay_prototype_bank(model, memory_x, memory_y, batch_size, device):
+    """从 replay IQ 记忆构建 iCaRL-style exemplar 原型库。
+
+    该原型库只使用已训练样本和逐轮伪标签 replay，不做 DOI-style 历史中心
+    对齐，也不读取 held-out 评估真值。它用于低置信网络预测的离散回退，
+    与 DOI-memory 的连续概率 late-fusion 保持机制区分。
+    """
+    memory_features, _ = _extract_end_to_end_outputs(model, memory_x, batch_size, device)
+    prototypes, prototype_labels = make_prototypes(memory_features, np.asarray(memory_y, dtype=np.int64))
+    return l2norm(prototypes).astype(np.float32), np.asarray(prototype_labels, dtype=np.int64)
+
+
 def _predict_hybrid_radcil_doi(
     model,
     eval_x,
@@ -2092,6 +2104,46 @@ def _predict_hybrid_radcil_doi(
     return np.argmax(fused_log_prob, axis=1).astype(np.int64)
 
 
+def _predict_radcil_icarl_fallback(
+    model,
+    eval_x,
+    prototype_bank,
+    batch_size,
+    device,
+    confidence_threshold=0.60,
+    old_class_count=None,
+):
+    """低置信时回退到 exemplar 原型分类器。
+
+    网络分类头仍给出默认预测；只有当最大 softmax 置信度低于阈值时，才
+    使用 replay 原型的最近类结果替换。若提供 `old_class_count`，只允许
+    回退到训练前已经存在的旧类列，避免把当前轮新类样本系统性吸回旧类。
+    """
+    threshold = float(confidence_threshold)
+    if not 0.0 <= threshold <= 1.0:
+        raise ValueError("--radcil_icarl_fallback_threshold must be within [0, 1].")
+
+    eval_features, network_logits = _extract_end_to_end_outputs(model, eval_x, batch_size, device)
+    if len(network_logits) == 0:
+        return np.empty(0, dtype=np.int64)
+    network_prob = F.softmax(torch.from_numpy(network_logits), dim=1).numpy()
+    network_pred = np.argmax(network_prob, axis=1).astype(np.int64)
+    if threshold <= 0.0 or prototype_bank is None:
+        return network_pred
+
+    prototypes, prototype_labels = prototype_bank
+    prototype_pred = predict_proto(eval_features, prototypes, prototype_labels)
+    fallback_mask = np.max(network_prob, axis=1) < threshold
+    if old_class_count is not None:
+        old_class_count = int(old_class_count)
+        if old_class_count < 0 or old_class_count > network_logits.shape[1]:
+            raise ValueError("old_class_count is outside classifier output range.")
+        fallback_mask &= prototype_pred < old_class_count
+    pred = network_pred.copy()
+    pred[fallback_mask] = prototype_pred[fallback_mask]
+    return pred.astype(np.int64)
+
+
 def _calibrate_grouped_doi_weight_on_validation(
     model, validation_x, validation_y, prototype_bank, batch_size, device,
     candidates, prototype_temperature, old_class_count,
@@ -2119,6 +2171,37 @@ def _calibrate_grouped_doi_weight_on_validation(
         })
     best = sorted(rows, key=lambda row: (-row["Validation Accuracy"], row["Fusion Weight"]))[0]
     return float(best["Fusion Weight"]), rows
+
+
+def _calibrate_icarl_fallback_threshold_on_validation(
+    model, validation_x, validation_y, prototype_bank, batch_size, device,
+    candidates, old_class_count,
+):
+    """仅用 Day1 validation 旧类选择低置信 fallback 阈值。
+
+    WiSig 使用 Day1 development 内部切出的 10% 验证样本，LoRa 使用固定
+    IQ_7 验证 transmission；二者都只包含初始已知类。因此这个校准只能
+    用于约束旧类保持，不能评价增量新类。并列时选择更低阈值，使
+    fallback 尽量少触发，避免把该机制退化成纯原型分类器。
+    """
+    candidate_thresholds = sorted({float(value) for value in candidates})
+    if not candidate_thresholds:
+        raise ValueError("iCaRL fallback requires at least one calibration candidate.")
+    if any(value < 0.0 or value > 1.0 for value in candidate_thresholds):
+        raise ValueError("iCaRL fallback candidates must be within [0, 1].")
+
+    rows = []
+    for threshold in candidate_thresholds:
+        prediction = _predict_radcil_icarl_fallback(
+            model, validation_x, prototype_bank, batch_size, device,
+            confidence_threshold=threshold, old_class_count=old_class_count,
+        )
+        rows.append({
+            "Fallback Threshold": threshold,
+            "Validation Accuracy": float(np.mean(prediction == validation_y)),
+        })
+    best = sorted(rows, key=lambda row: (-row["Validation Accuracy"], row["Fallback Threshold"]))[0]
+    return float(best["Fallback Threshold"]), rows
 
 
 def _prototype_predict_from_memory(memory_X, memory_y, eval_X, old_class_bonus=0.0, old_class_count=10):
@@ -3055,6 +3138,9 @@ def main():
     parser.add_argument("--radcil_doi_prototype_temperature", type=float, default=0.10, help="Temperature applied to cosine prototype scores before late fusion.")
     parser.add_argument("--radcil_grouped_doi_fusion", action="store_true", help="Fuse DOI prototypes only into old-class columns; current-round new classes retain network-head scores.")
     parser.add_argument("--radcil_doi_fusion_candidates", type=str, default="0,0.25,0.5,0.75,1.0", help="Day1-validation candidates for grouped DOI old-class fusion.")
+    parser.add_argument("--radcil_icarl_fallback", action="store_true", help="Enable confidence-gated iCaRL exemplar fallback during evaluation.")
+    parser.add_argument("--radcil_icarl_fallback_threshold", type=float, default=0.60, help="Confidence threshold for exemplar fallback when validation-based calibration is not used.")
+    parser.add_argument("--radcil_icarl_fallback_candidates", type=str, default="0.45,0.55,0.65,0.75,0.85", help="Day1-validation candidates for confidence-gated exemplar fallback.")
     parser.add_argument("--pseudo_weight_floor", type=float, default=0.20)
 
 
@@ -3322,7 +3408,8 @@ def main():
             "validation_split_key": validation_split_key,
             "frozen_before_unknown_rounds": [
                 "checkpoint", "CF-LCG", "MV-ACC parameters",
-                "grouped DOI candidate set and IQ_7-only selection rule",
+                "grouped DOI candidate set and Day1 validation-only selection rule",
+                "iCaRL fallback candidate set and Day1 validation-only selection rule",
             ],
         }, f, indent=2)
     args.cflcg_extractor = None
@@ -3373,13 +3460,20 @@ def main():
             _, deep_info = run_discovery("Deep only", f"R{i}", f"Day {i + 1}", args.round_size, rd["X"], rd["y"], rd["Z"], args)
             deep_only_round_infos.append(deep_info)
 
-    # MV-ACC-CIL 使用冻结 Teacher 完成发现，再更新 Student。可选 DOI-memory
-    # 后端只改变评估时的后验融合，不读取 held-out 真值，也不改变发现流程。
+    # MV-ACC-CIL 使用冻结 Teacher 完成发现，再更新 Student。可选后端只改变
+    # 评估时的预测后处理，不读取 held-out 真值，也不改变发现或训练流程。
     hybrid_doi_enabled = bool(args.radcil_grouped_doi_fusion) or float(args.radcil_doi_fusion_weight) > 0
+    icarl_fallback_enabled = bool(args.radcil_icarl_fallback)
+    if hybrid_doi_enabled and icarl_fallback_enabled:
+        raise ValueError("DOI-memory fusion and iCaRL fallback must be tested as separate ablations.")
     main_method_name = (
         "MV-ACC-CIL + grouped DOI-memory"
         if args.radcil_grouped_doi_fusion
-        else ("MV-ACC-CIL + DOI-memory" if hybrid_doi_enabled else "MV-ACC-CIL")
+        else (
+            "MV-ACC-CIL + iCaRL-fallback"
+            if icarl_fallback_enabled
+            else ("MV-ACC-CIL + DOI-memory" if hybrid_doi_enabled else "MV-ACC-CIL")
+        )
     )
     print(f"\n[{main_method_name}] End-to-end pseudo-label class-incremental learning")
     if hybrid_doi_enabled:
@@ -3395,8 +3489,11 @@ def main():
     pseudo_to_true = {int(c): int(c) for c in range(args.initial_known_classes)}
     memory_x, memory_y = _update_iq_memory(None, None, X_train, y_train, args.memory_per_class, args.seed)
     doi_prototype_bank = None
+    icarl_prototype_bank = None
     doi_fusion_weight = float(args.radcil_doi_fusion_weight)
+    icarl_fallback_threshold = float(args.radcil_icarl_fallback_threshold)
     doi_calibration_rows = []
+    icarl_fallback_calibration_rows = []
     if hybrid_doi_enabled:
         doi_prototype_bank = _build_aligned_doi_prototype_bank(
             student,
@@ -3408,19 +3505,17 @@ def main():
             align_lambda=args.radcil_doi_align_lambda,
         )
         if args.radcil_grouped_doi_fusion:
-            if X_validation is None:
-                raise ValueError("Grouped DOI fusion requires an explicit Day1 validation split.")
             candidates = [
                 float(value) for value in args.radcil_doi_fusion_candidates.split(",")
                 if value.strip()
             ]
             doi_fusion_weight, calibration = _calibrate_grouped_doi_weight_on_validation(
-                student, X_validation, y_validation, doi_prototype_bank,
+                student, X_calibration, y_calibration, doi_prototype_bank,
                 args.test_batch_size, device, candidates,
                 args.radcil_doi_prototype_temperature, args.initial_known_classes,
             )
             doi_calibration_rows.extend([{"Stage": "Initial", **row} for row in calibration])
-            print(f"[Grouped DOI calibration] stage=Initial | IQ_7 only | weight={doi_fusion_weight}")
+            print(f"[Grouped DOI calibration] stage=Initial | Day1 validation only | weight={doi_fusion_weight}")
         initial_pred = _predict_hybrid_radcil_doi(
             student,
             eval_data["eval_initial"]["X"],
@@ -3430,6 +3525,32 @@ def main():
             doi_fusion_weight,
             args.radcil_doi_prototype_temperature,
             old_class_count=args.initial_known_classes if args.radcil_grouped_doi_fusion else None,
+        )
+    elif icarl_fallback_enabled:
+        icarl_prototype_bank = _build_replay_prototype_bank(
+            student, memory_x, memory_y, args.test_batch_size, device
+        )
+        candidates = [
+            float(value) for value in args.radcil_icarl_fallback_candidates.split(",")
+            if value.strip()
+        ]
+        icarl_fallback_threshold, calibration = _calibrate_icarl_fallback_threshold_on_validation(
+            student, X_calibration, y_calibration, icarl_prototype_bank,
+            args.test_batch_size, device, candidates, args.initial_known_classes,
+        )
+        icarl_fallback_calibration_rows.extend([{"Stage": "Initial", **row} for row in calibration])
+        print(
+            "[iCaRL fallback calibration] stage=Initial | Day1 validation only | "
+            f"threshold={icarl_fallback_threshold}"
+        )
+        initial_pred = _predict_radcil_icarl_fallback(
+            student,
+            eval_data["eval_initial"]["X"],
+            icarl_prototype_bank,
+            args.test_batch_size,
+            device,
+            confidence_threshold=icarl_fallback_threshold,
+            old_class_count=args.initial_known_classes,
         )
     else:
         initial_pred = _predict_end_to_end(student, eval_data["eval_initial"]["X"], args.test_batch_size, device)
@@ -3490,13 +3611,13 @@ def main():
             )
             if args.radcil_grouped_doi_fusion:
                 doi_fusion_weight, calibration = _calibrate_grouped_doi_weight_on_validation(
-                    student, X_validation, y_validation, doi_prototype_bank,
+                    student, X_calibration, y_calibration, doi_prototype_bank,
                     args.test_batch_size, device, candidates,
                     args.radcil_doi_prototype_temperature, old_out,
                 )
                 doi_calibration_rows.extend([{"Stage": f"After R{i}", **row} for row in calibration])
                 print(
-                    f"[Grouped DOI calibration] stage=After R{i} | IQ_7 only | "
+                    f"[Grouped DOI calibration] stage=After R{i} | Day1 validation only | "
                     f"old_class_count={old_out} | weight={doi_fusion_weight}"
                 )
             pred = _predict_hybrid_radcil_doi(
@@ -3508,6 +3629,28 @@ def main():
                 doi_fusion_weight,
                 args.radcil_doi_prototype_temperature,
                 old_class_count=old_out if args.radcil_grouped_doi_fusion else None,
+            )
+        elif icarl_fallback_enabled:
+            icarl_prototype_bank = _build_replay_prototype_bank(
+                student, memory_x, memory_y, args.test_batch_size, device
+            )
+            icarl_fallback_threshold, calibration = _calibrate_icarl_fallback_threshold_on_validation(
+                student, X_calibration, y_calibration, icarl_prototype_bank,
+                args.test_batch_size, device, candidates, old_out,
+            )
+            icarl_fallback_calibration_rows.extend([{"Stage": f"After R{i}", **row} for row in calibration])
+            print(
+                f"[iCaRL fallback calibration] stage=After R{i} | Day1 validation only | "
+                f"old_class_count={old_out} | threshold={icarl_fallback_threshold}"
+            )
+            pred = _predict_radcil_icarl_fallback(
+                student,
+                eval_data[eval_key]["X"],
+                icarl_prototype_bank,
+                args.test_batch_size,
+                device,
+                confidence_threshold=icarl_fallback_threshold,
+                old_class_count=old_out,
             )
         else:
             pred = _predict_end_to_end(student, eval_data[eval_key]["X"], args.test_batch_size, device)
@@ -3527,6 +3670,16 @@ def main():
                 doi_fusion_weight,
                 args.radcil_doi_prototype_temperature,
                 old_class_count=old_out if args.radcil_grouped_doi_fusion else None,
+            )
+        elif icarl_fallback_enabled:
+            fixed_pred = _predict_radcil_icarl_fallback(
+                student,
+                eval_data["eval_initial"]["X"],
+                icarl_prototype_bank,
+                args.test_batch_size,
+                device,
+                confidence_threshold=icarl_fallback_threshold,
+                old_class_count=old_out,
             )
         else:
             fixed_pred = _predict_end_to_end(student, eval_data["eval_initial"]["X"], args.test_batch_size, device)
@@ -3554,6 +3707,8 @@ def main():
             "radcil_prototype_anchor_weight": float(args.radcil_prototype_anchor_weight),
             "radcil_doi_align_lambda": float(args.radcil_doi_align_lambda),
             "radcil_doi_prototype_temperature": float(args.radcil_doi_prototype_temperature),
+            "radcil_icarl_fallback": bool(icarl_fallback_enabled),
+            "radcil_icarl_fallback_threshold": float(icarl_fallback_threshold),
         }, os.path.join(args.save_dir, f"mvacc_cil_after_r{i}.pth"))
         np.savez_compressed(os.path.join(args.save_dir, f"replay_memory_after_r{i}.npz"), X=memory_x, y=memory_y)
         if hybrid_doi_enabled:
@@ -3561,6 +3716,12 @@ def main():
                 os.path.join(args.save_dir, f"hybrid_doi_prototype_bank_after_r{i}.npz"),
                 prototypes=doi_prototype_bank[0],
                 labels=doi_prototype_bank[1],
+            )
+        if icarl_fallback_enabled:
+            np.savez_compressed(
+                os.path.join(args.save_dir, f"icarl_fallback_prototype_bank_after_r{i}.npz"),
+                prototypes=icarl_prototype_bank[0],
+                labels=icarl_prototype_bank[1],
             )
 
     clustering_df = save_csv(clustering_rows, os.path.join(args.save_dir, "clustering_results.csv"))
@@ -3573,6 +3734,11 @@ def main():
         )
     if doi_calibration_rows:
         save_csv(doi_calibration_rows, os.path.join(args.save_dir, "grouped_doi_iq7_calibration.csv"))
+    if icarl_fallback_calibration_rows:
+        save_csv(
+            icarl_fallback_calibration_rows,
+            os.path.join(args.save_dir, "icarl_fallback_iq7_calibration.csv"),
+        )
     per_round_summary_df = build_per_round_summary(clustering_df, incremental_df)
     if not clustering_df.empty and "MV-ACC-CIL discovery" in set(clustering_df["Method"].astype(str)):
         c = clustering_df[clustering_df["Method"].astype(str) == "MV-ACC-CIL discovery"].set_index("Round")
@@ -3662,7 +3828,9 @@ def main():
                 proposed_source_method=main_method_name,
                 proposed_display_name=main_method_name,
                 proposed_incremental_module=(
-                    "Network replay + DOI-memory late fusion"
+                    "Network replay + confidence-gated exemplar fallback"
+                    if icarl_fallback_enabled
+                    else "Network replay + DOI-memory late fusion"
                     if hybrid_doi_enabled
                     else "Network replay + distillation"
                 ),

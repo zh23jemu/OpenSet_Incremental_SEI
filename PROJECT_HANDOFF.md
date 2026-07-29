@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-28
-- 当前阶段：继续风险收敛；ADS-B 欠聚类已收为 target split 候选，WiSig DOI-memory hybrid 已归档为三种子负消融
+- 当前阶段：继续风险收敛；ADS-B 欠聚类已收为 target split 候选，WiSig DOI-memory hybrid 与 iCaRL fallback 均已归档为三种子负消融
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -125,7 +125,7 @@ Strict loader 审计：
 - Job `44670427` 与 Job `44766923` 已完成 ADS-B target split 单种子和三种子验证；默认 target split 将 R3 最终簇数从 `6.6667±0.5774` 补到 `10.0000±0.0000`，九轮绝对簇误差 `17->5`，R3 Overall `0.4820±0.0091 -> 0.4927±0.0137`，New Acc `0.4423±0.0131 -> 0.4930±0.0869`。
 - Job `44767309` 已完成 ADS-B 保守 target split 消融；`max_added=2`、`silhouette=0.34/0.38` 均未优于默认 `max_added=4, silhouette=0.26`。ADS-B 欠聚类风险已收敛为默认 target split 候选，剩余局限为 seed7/13 新类收益不稳定和簇大小 CV 上升。
 - 已新增 `tools/stage3_wisig_strict_baseline_table.py` 并生成 `results/stage3/STAGE3_WISIG_STRICT_BASELINE_TABLE.md`，将 SimGCD-style 标注为 learning-style adaptation、IGCD-minimal 标注为 minimal strict adaptation，二者均不作为完整论文复现；MV-ACC 仍是正式主前端。
-- `results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md` 已更新为后端风险收口记录：`RADCIL + DOI-style` 已完成 seed7 与正式三种子验证，三种子 R3 Overall 与主方法持平但 Old/Forgetting 略差，归档为负消融；iCaRL/TPCIL 仅作为后续新机制候选，不再延续 late-fusion 权重搜索。
+- `results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md` 已更新为后端风险收口记录：`RADCIL + DOI-style` 已完成 seed7 与正式三种子验证，三种子 R3 Overall 与主方法持平但 Old/Forgetting 略差，归档为负消融；iCaRL fallback seed7 通过门槛但三种子 R3 Overall/New/Macro F1 下降，也归档为负消融。
 - ADS-B strict 主入口已使用 `ADSBLongClosedSet`，并支持 RADCIL old:new batch ratio；阶段 4 单种子和正式三种子计划、报告、Slurm 入口均已同步。
 - LoRa 阶段 5 已新增 strict loader、协议审计和 closedset smoke 入口；Job `44559268` 协议审计 `ok=true`，Job `44572328` closedset smoke 完成，证明紧凑 LoRa NPZ 可进入现有 PyTorch 训练/发现链路。
 - LoRa seed7 正式 Job `44573179`、冻结消融 `44573200`、IQ_7-only 表征筛选 `44573249`、预选表征三轮 `44573272` 和后端矩阵 `44573278` 均完成。预选表征 RADCIL R3 Overall/Old/New 为 `0.1419/0.0798/0.3905`；DOI-style 为 `0.1676/0.1786/0.1238`。
@@ -144,7 +144,7 @@ Strict loader 审计：
 ## 7. 下一步执行顺序
 
 1. ADS-B 欠聚类风险已收束；固定 ratio 0.03 为正式配置，自适应密度作为负消融保留，默认 target split 作为候选并保留 seed7/13 局限。
-2. WiSig 后端上限风险已收束；DOI-memory late fusion 不能解决后端上限，后续若继续只能换机制并先做 seed7 短验证。
+2. WiSig 后端上限风险继续收敛；DOI-memory late fusion 与 iCaRL fallback 都不能解决三种子后端上限，后续不继续调这两类小机制。
 3. LoRa 不扩种子，ManyTx/ManyRx 补充结果仅作为辅助稳定性证据；不再扩展 LoRa 原型锚定或 late-fusion 后端调参。
 4. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 5. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。

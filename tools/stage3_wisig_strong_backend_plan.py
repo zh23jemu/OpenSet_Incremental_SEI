@@ -70,23 +70,31 @@ def build_candidate_matrix(summary: list[dict[str, Any]]) -> list[dict[str, Any]
         [
             {
                 "variant": "hybrid_radcil_doi_memory_alignment",
-                "status": "ready_for_seed7",
+                "status": "completed_negative_ablation",
                 "backend_source": "RADCIL + DOI-style",
-                "run_requirement": "已实现 replay 原型历史对齐和 logits/prototype late fusion；运行 seed 7 短验证，达到门槛后扩展 3 seeds。",
-                "purpose": "检验 DOI-style 的旧类原型保持是否能与网络式新类学习互补。",
+                "run_requirement": "seed7 与三种子均已完成；三种子未稳定优于主方法，归档为负消融，不继续调 late-fusion 权重。",
+                "r3_overall_mean": 0.6088,
+                "r3_old_mean": 0.5451,
+                "r3_new_mean": 0.8000,
+                "r3_forgetting_mean": 0.2311,
+                "purpose": "检验 DOI-style 的旧类原型保持是否能与网络式新类学习互补；结果显示该 late-fusion 机制不能解决后端上限风险。",
             },
             {
                 "variant": "hybrid_radcil_icarl_exemplar_classifier_fallback",
-                "status": "requires_code_change",
+                "status": "completed_negative_ablation",
                 "backend_source": "RADCIL + iCaRL",
-                "run_requirement": "新增 exemplar classifier fallback 或 logits/prototype late fusion 后运行 seed 7 短验证。",
-                "purpose": "检验 iCaRL 样本记忆分类器能否补足 RADCIL 旧类决策边界漂移。",
+                "run_requirement": "seed7 Job 44771723 过门槛后扩展三种子 Job 44771757；三种子未稳定优于主方法。",
+                "r3_overall_mean": 0.5923,
+                "r3_old_mean": 0.5479,
+                "r3_new_mean": 0.7256,
+                "r3_forgetting_mean": 0.2285,
+                "purpose": "检验 iCaRL 样本记忆分类器能否补足 RADCIL 旧类决策边界漂移；结果显示 seed7 局部收益不能跨种子稳定复现。",
             },
             {
                 "variant": "hybrid_radcil_tpcil_graph_smoothed_prototypes",
-                "status": "requires_code_change",
+                "status": "deferred_new_mechanism",
                 "backend_source": "RADCIL + TPCIL-style",
-                "run_requirement": "新增图平滑原型正则或后验融合后运行 seed 7 短验证。",
+                "run_requirement": "仅当 iCaRL fallback 不通过且仍继续后端研究时再实现；需先证明图平滑原型会带来结构性旧类保持收益。",
                 "purpose": "检验 TPCIL-style 原型拓扑平滑是否能降低旧类遗忘而不牺牲新类。",
             },
         ]
@@ -104,21 +112,22 @@ def build_plan(summary_path: Path) -> dict[str, Any]:
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "source_summary": str(summary_path),
         "source_job": data.get("job_id", "44453416"),
-        "risk_resolved_as": "backend_ceiling_exposed_and_converted_to_hybrid_ablation_plan",
+        "risk_resolved_as": "backend_ceiling_exposed_hybrid_absorption_negative",
         "selection_rule": (
             "先将 DOI-style/iCaRL/TPCIL-style 作为共享 MV-ACC 伪标签强后端参考；"
-            "新增混合后端时先跑 seed 7 短验证，只有 R3 Overall 或 Old/Forgotten 明显优于当前 MV-ACC-CIL 时才扩展三种子。"
+            "DOI-memory 与 iCaRL fallback 均已完成 seed7/三种子验证，但都未稳定优于当前 MV-ACC-CIL。"
         ),
         "candidate_matrix": matrix,
         "acceptance_gate": {
             "short_seed": 7,
             "primary_metric": "R3 Overall Acc",
             "secondary_metrics": ["R3 Old Acc", "R3 Forgetting Rate", "R3 New Acc"],
-            "minimum_next_step": "任一混合候选 seed7 R3 Overall 不低于 MV-ACC-CIL，且 Old Acc 或 Forgetting 至少一项接近强后端 reference。",
+            "minimum_next_step": "不要继续调 DOI-memory 或 iCaRL fallback；若继续后端研究，必须换成结构不同的新机制并先预注册 seed7 门槛。",
         },
         "blocked_items": [
-            "DOI-memory late fusion 已实现但尚未完成 Slurm seed7 结果验证；iCaRL/TPCIL hybrid 仍待实现。",
-            "不能直接把共享发现 frozen-feature baseline 写成新主方法，只能作为后端上限和混合设计依据。",
+            "DOI-memory late fusion 已完成 seed7 与三种子验证，但未稳定优于主方法，不能作为主后端。",
+            "iCaRL fallback seed7 通过但三种子未通过，不能作为主后端；TPCIL hybrid 仍延后。",
+            "不能直接把共享发现 frozen-feature baseline 写成新主方法，只能作为后端上限、局限说明和后续机制设计依据。",
         ],
     }
 
@@ -130,7 +139,7 @@ def render_report(plan: dict[str, Any]) -> str:
         "",
         f"- 生成时间 UTC：{plan['created_at_utc']}",
         f"- 来源 Job：`{plan['source_job']}`",
-        "- 目标：把共享发现后端 baseline 强于当前 RADCIL 的风险，转化为可执行的混合后端消融。",
+        "- 目标：把共享发现后端 baseline 强于当前 RADCIL 的风险，转化为可执行消融，并记录 DOI-memory 与 iCaRL fallback 的负消融边界。",
         "",
         "## 候选矩阵",
         "",

@@ -33,7 +33,7 @@
 - WiSig 当前发现前端质量较高，MV-ACC 仍强；阶段 1 最大瓶颈转为网络增量后的旧类遗忘。
 - RADCIL 后端细化已经取得阶段性提升；多种子确认显示 `ratio_2p0_replay_3p0` 与 `ratio_3p0_replay_3p0` Overall 基本持平，但前者旧类保持更好、遗忘更低。
 - SimGCD-style 和 IGCD-minimal 都已按 strict 协议接入真实 WiSig 特征，但结果弱于 MV-ACC，因此会作为 baseline 和边界分析，而不是包装成主方法。
-- WiSig DOI-memory hybrid 的 seed7 局部收益未在三种子稳定复现，R3 Overall 与主方法同为 `0.6088`，Old/Forgetting 还略差，因此记录为负消融；后端风险已收敛为“强后端上限存在，但当前 late-fusion 吸收方案无效”。
+- WiSig DOI-memory hybrid 和 iCaRL 低置信回退都已完成 seed7 与三种子验证；iCaRL fallback seed7 有局部收益，但三种子 R3 Overall `0.5923±0.0514` 低于主方法 `0.6088±0.0415`，因此记录为负消融，停止继续调这两类混合后端。
 - ADS-B Long-RADCIL 已完成正式三种子，R3 Overall `0.4824±0.0074`、Forgetting `0.1168±0.0138`；相较历史 legacy seed31 的 R3 Overall `0.3273` 有明显改善。
 
 需要谨慎表述：
@@ -214,6 +214,7 @@
 - [x] 设计 DOI/iCaRL/TPCIL 强后端吸收或混合消融：`tools/stage3_wisig_strong_backend_plan.py`、`results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md` 和 `results/stage3/stage3_wisig_strong_backend_plan.json`。
 - [x] 实现 `hybrid_radcil_doi_memory_alignment`：网络 logits 与伪标签 replay 原型概率 late fusion，保留历史原型对齐；新增 seed7 计划、报告和 Slurm 入口。
 - [x] 完成 hybrid DOI seed7 Job `44465809` 和正式三种子 Job `44465982`；三种子 R3 Overall `0.6088±0.0454`，未稳定优于主方法，记录为负消融。
+- [x] 实现并验证 `hybrid_radcil_icarl_exemplar_classifier_fallback`：seed7 Job `44771723` 通过扩展门槛，但三种子 Job `44771757` 未稳定优于主方法，正式归档为负消融。
 - [x] 完成 3 个正式随机种子。
 - [x] 输出聚类、整体准确率、新类准确率、旧类准确率和遗忘指标。
 - [ ] 输出每轮 t-SNE 聚类图。
@@ -338,7 +339,7 @@
 
 已生成 `results/stage3/STAGE3_WISIG_STRICT_BASELINE_TABLE.md`，将 Deep-HDBSCAN、MV-ACC、SimGCD-style 和 IGCD-minimal 放入同一 strict 前端 baseline 表，并明确 SimGCD-style 是 learning-style adaptation、IGCD-minimal 是 minimal strict adaptation，二者均不能写成完整论文复现。表中 MV-ACC 三轮平均 NMI `0.9164`、ARI `0.8642`、Hungarian Acc `0.9010`，仍是正式主前端。
 
-`results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md` 已从“待验证计划”更新为风险收口记录：`RADCIL + DOI-style` 已完成 seed7 Job `44465809` 和正式三种子 Job `44465982`。三种子 R3 Overall `0.6088` 与主方法持平，但 Old `0.5451` 低于主方法 `0.5516`、Forgetting `0.2311` 高于主方法 `0.2285`，因此 DOI-memory late fusion 不能作为主后端。后续若继续后端研究，需要更换机制假设，例如真正的 exemplar fallback 或图平滑正则，而不是继续调 late-fusion 权重。
+`results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md` 已从“待验证计划”更新为风险收口记录：`RADCIL + DOI-style` 已完成 seed7 Job `44465809` 和正式三种子 Job `44465982`。三种子 R3 Overall `0.6088` 与主方法持平，但 Old `0.5451` 低于主方法 `0.5516`、Forgetting `0.2311` 高于主方法 `0.2285`，因此 DOI-memory late fusion 不能作为主后端。`RADCIL + iCaRL fallback` seed7 Job `44771723` 虽提升 R3 Overall `+0.0133`、Old `+0.0252`、Forgetting `-0.0211`，但三种子 Job `44771757` 的 R3 Overall `0.5923±0.0514`、Old `0.5479±0.0646`、New `0.7256±0.0206`、Macro F1 `0.5603±0.0491` 均低于主方法，正式归档为负消融。后续不再继续调 DOI-memory 或 iCaRL fallback。
 
 ### ADS-B 阶段 4 Long-RADCIL 正式结果
 
@@ -364,7 +365,7 @@ Job `44767309` 对更保守的 target split 参数做了消融：`max_added=2, s
 
 | 风险                             | 影响                                                               | 当前应对                                                   |
 | ------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------ |
-| WiSig 共享发现后端 baseline 强于当前网络后端 | DOI-style 在共享 MV-ACC 伪标签下高于 MV-ACC-CIL，且 DOI-memory hybrid 三种子未稳定提升 | 风险已收敛为后端上限与叙事局限；保留 hybrid 负消融，后续若继续后端研究必须更换机制而非继续调 late-fusion 权重 |
+| WiSig 共享发现后端 baseline 强于当前网络后端 | DOI-style/iCaRL/TPCIL-style 在共享 MV-ACC 伪标签下高于 MV-ACC-CIL；DOI-memory 和 iCaRL fallback 混合吸收均未稳定提升 | 两条混合后端均已归档为负消融；不继续调 late-fusion 或低置信回退，后续若研究后端需换结构不同的新机制 |
 | IGCD-minimal 不是完整复现            | 客户或论文审稿可能质疑 SOTA 公平性                                             | 明确标注为 minimal strict adaptation，必要时后续补齐更完整适配           |
 | ADS-B R2/R3 发现欠聚类              | 原正式三种子 R3 仅发现 6–7/10 类；target split 已补齐 R3，但 seed7/13 新类收益不稳定且 CV 上升 | 采用默认 target split 作为欠聚类收敛候选；保守门控已验证不优，停止继续小参数搜索并如实报告局限 |
 | ADS-B 遗忘控制仍弱于 DOI-style        | 主方法 Overall/New Acc 更高，但 Forgetting 明显更高                         | 在结果表中同时报告优势与局限；后续跨体制验证不以牺牲协议隔离换取更低遗忘                   |
@@ -377,12 +378,12 @@ Job `44767309` 对更保守的 target split 参数做了消融：`max_added=2, s
 短期优先级：
 
 1. ADS-B 欠聚类风险已收束：正式 ratio 0.03 不变，自适应密度归档为负消融，默认 target split 作为欠聚类收敛候选，保守门控消融归档为未优于默认。
-2. WiSig 后端上限风险已收束：共享发现 DOI-style 仍是后端上限参考，但 DOI-memory late fusion 三种子失败，不再继续该类权重搜索。
+2. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 3. LoRa seed7 正式链路、表征筛选、冻结消融与后端矩阵已完成；两个后端修复均严格失败，不扩三种子，不继续原型锚定或 late-fusion 调参。
 
 中期优先级：
 
-1. 若继续收敛 WiSig 后端，只接受“新机制”方向，例如 exemplar fallback 或图平滑正则；不再做 DOI-memory/late-fusion 小参数搜索。
+1. 停止 WiSig DOI-memory 和 iCaRL fallback 小机制搜索；保留三种子负消融证据，后续若继续后端研究必须先提出结构不同且可预注册的新机制。
 2. 将 LoRa 两轮严格负消融保留为跨体制局限，不继续原型锚定或 late-fusion 后端调参。
 3. ManyRx 当前仅保留既有结果汇总；如需重新运行，再恢复受维护入口，不把 runner 缺失误判为主实验风险。
 4. 为严格协议和核心报告器补充轻量级自动化测试。
