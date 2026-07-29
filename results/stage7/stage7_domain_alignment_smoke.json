@@ -1,0 +1,15 @@
+{
+  "loss_finite": true,
+  "loss_positive": true,
+  "gradient_finite": true,
+  "source_shape": [
+    12,
+    16
+  ],
+  "target_shape": [
+    12,
+    16
+  ],
+  "uses_labels": false,
+  "uses_heldout": false
+}

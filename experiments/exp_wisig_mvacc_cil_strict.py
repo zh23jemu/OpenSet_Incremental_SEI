@@ -1861,6 +1861,27 @@ def _feature_view_consistency_loss(features, augmented_features):
     return (1.0 - cosine).mean()
 
 
+def _feature_domain_alignment_loss(source_features, target_features):
+    """对齐当前轮与 replay 的无标签特征分布，缓解跨天采集漂移。
+
+    先比较单位化特征的一阶均值，再比较二阶协方差。两组样本都来自当前
+    在线训练可见的数据，不读取 held-out evaluation，也不需要未知类真值。
+    """
+    if source_features.numel() == 0 or target_features.numel() == 0:
+        return source_features.sum() * 0.0
+    source = F.normalize(source_features, dim=1)
+    target = F.normalize(target_features, dim=1)
+    mean_loss = (source.mean(dim=0) - target.mean(dim=0)).pow(2).mean()
+    if source.shape[0] < 2 or target.shape[0] < 2:
+        return mean_loss
+    source_centered = source - source.mean(dim=0, keepdim=True)
+    target_centered = target - target.mean(dim=0, keepdim=True)
+    source_cov = source_centered.T @ source_centered / float(source.shape[0] - 1)
+    target_cov = target_centered.T @ target_centered / float(target.shape[0] - 1)
+    covariance_loss = (source_cov - target_cov).pow(2).mean()
+    return mean_loss + covariance_loss
+
+
 def _compute_pseudo_sample_weights(
     labels,
     raw_probabilities,
@@ -2082,6 +2103,15 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                     view_consistency = _feature_view_consistency_loss(feat, feat_aug)
                 else:
                     view_consistency = logits_m.sum() * 0.0
+                if float(args.radcil_domain_alignment_weight) > 0:
+                    # 当前轮 discovery 和历史 replay 代表不同采集日。
+                    # 只对齐无标签分布统计，不把未知类强行拉到旧类中心。
+                    domain_alignment = _feature_domain_alignment_loss(
+                        feat[:len(xc)],
+                        feat[len(xc):],
+                    )
+                else:
+                    domain_alignment = logits_m.sum() * 0.0
                 high = wc >= float(args.cil_supcon_threshold)
                 feat_con = torch.cat([feat[:len(xc)][high], feat[len(xc):]], dim=0)
                 y_con = torch.cat([yc[high], ym], dim=0)
@@ -2094,6 +2124,7 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                     + float(args.radcil_feature_distill_weight) * feature_distill
                     + float(args.radcil_prototype_anchor_weight) * prototype_anchor
                     + float(args.radcil_aug_consistency_weight) * view_consistency
+                    + float(args.radcil_domain_alignment_weight) * domain_alignment
                     + float(args.cil_supcon_weight) * con
                 )
                 opt.zero_grad()
@@ -3346,6 +3377,12 @@ def main():
         help="Incremental dual-view feature consistency weight; 0 preserves historical RADCIL behavior.",
     )
     parser.add_argument(
+        "--radcil_domain_alignment_weight",
+        type=float,
+        default=0.0,
+        help="Cross-day CORAL-style feature alignment weight between current discovery and replay; 0 preserves historical RADCIL behavior.",
+    )
+    parser.add_argument(
         "--pseudo_weight_use_cluster_reliability",
         action="store_true",
         help="Multiply pseudo-label weights by discovery-side cluster reliability; disabled by default.",
@@ -3469,6 +3506,10 @@ def main():
     print(
         "Incremental dual-view consistency weight: "
         f"{args.radcil_aug_consistency_weight}"
+    )
+    print(
+        "Cross-day feature domain alignment weight: "
+        f"{args.radcil_domain_alignment_weight}"
     )
     print(
         "Pseudo-label cluster reliability weighting: "
@@ -4053,6 +4094,7 @@ def main():
             "radcil_grouped_doi_fusion": bool(args.radcil_grouped_doi_fusion),
             "radcil_prototype_anchor_weight": float(args.radcil_prototype_anchor_weight),
             "radcil_aug_consistency_weight": float(args.radcil_aug_consistency_weight),
+            "radcil_domain_alignment_weight": float(args.radcil_domain_alignment_weight),
             "pseudo_weight_use_cluster_reliability": bool(args.pseudo_weight_use_cluster_reliability),
             "pseudo_weight_cluster_reliability_floor": float(
                 args.pseudo_weight_cluster_reliability_floor

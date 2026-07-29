@@ -1,0 +1,41 @@
+{
+  "stage": "stage7",
+  "experiment": "lora_domain_alignment_seed7",
+  "dataset": "LoRa RFFP Different Days Indoor compact subset",
+  "protocol": "10 known + 5x3 strict; IQ_7 validation; IQ_8-10 held-out evaluation",
+  "mechanism": {
+    "name": "training-time cross-day CORAL-style alignment",
+    "source": "current discovery features",
+    "target": "historical replay features",
+    "statistics": "normalized feature mean and covariance",
+    "uses_heldout_for_training": false,
+    "uses_unknown_ground_truth": false
+  },
+  "fixed_backend": {
+    "radcil_old_new_batch_ratio": 2.0,
+    "cil_replay_weight": 3.0,
+    "mvacc_enforce_round_size": true,
+    "representation_checkpoint": "results/stage5/lora_representation_screen_seed7_44573249/supcon_rf_aug.pth"
+  },
+  "candidates": [
+    {
+      "name": "alignment_off",
+      "weight": 0.0
+    },
+    {
+      "name": "alignment_on",
+      "weight": 0.05
+    }
+  ],
+  "selection_rule": [
+    "只使用 IQ_7 R3 Old-Class Acc 选择是否采用。",
+    "IQ_8-10 只做最终事后审计，不参与选参。",
+    "候选必须提升 IQ_7 旧类保持，并满足 held-out Overall 不下降超过 0.01、New 不下降超过 0.03、Forgetting 严格下降。"
+  ],
+  "pass_gate": {
+    "validation_old_acc_must_improve": true,
+    "heldout_overall_drop_max": 0.01,
+    "heldout_new_acc_drop_max": 0.03,
+    "heldout_forgetting_must_decrease": true
+  }
+}
