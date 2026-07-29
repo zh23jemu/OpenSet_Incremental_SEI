@@ -21,7 +21,7 @@ module load slurm
 PROJECT_ROOT="${PROJECT_ROOT:-/mnt/users/xj62kv/OpenSet_Incremental_SEI}"
 cd "${PROJECT_ROOT}"
 
-PYTHON_BIN="${PROJECT_ROOT}/.venv/bin/python"
+PYTHON_BIN="${PYTHON_BIN:-${PROJECT_ROOT}/.venv/bin/python}"
 JOB_ID="${SLURM_JOB_ID:-manual}"
 LORA_NPZ="${LORA25_NPZ:-datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz}"
 CHECKPOINT="${LORA_GPCC_CHECKPOINT:-results/stage5/lora_representation_screen_seed7_44573249/supcon_rf_aug.pth}"

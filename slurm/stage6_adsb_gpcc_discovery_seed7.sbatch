@@ -21,7 +21,7 @@ module load slurm
 PROJECT_ROOT="${PROJECT_ROOT:-/mnt/users/xj62kv/OpenSet_Incremental_SEI}"
 cd "${PROJECT_ROOT}"
 
-PYTHON_BIN="${PROJECT_ROOT}/.venv/bin/python"
+PYTHON_BIN="${PYTHON_BIN:-${PROJECT_ROOT}/.venv/bin/python}"
 JOB_ID="${SLURM_JOB_ID:-manual}"
 DATA_ROOT="${ADSB_DATA_ROOT:-数据集/ADS-B/Dataset}"
 CHECKPOINT="${ADSB_GPCC_CHECKPOINT:-results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth}"
