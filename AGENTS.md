@@ -122,6 +122,7 @@
 - 阶段 6 已完成 LoRa 实验必要子集审计：`datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz` 约 9.7 MB，覆盖 Different Days Indoor 25 设备和 10+5×3 strict 协议；审计报告为 `results/stage6/lora_required_subset_audit.json`，说明为 `results/stage6/LORA_REQUIRED_SUBSET_READY.md`。
 - 阶段 6 已完成 LoRa old-logit bias 诊断：seed7 Job `44881172` R3 Overall/Old/New/Forgetting 为 `0.1676/0.1619/0.1905/0.4214`，通过扩展门槛；三种子 Job `44893894` R3 均值为 `0.1714/0.2016/0.0508/0.3175`，Old 提升但 New 明显塌缩且 seed31 R3 仅 3 簇，最终归档为负消融。
 - 阶段 6 已完成 LoRa BatchNorm 统计重校准验证：seed7 Job `44919835` R3 Overall/Old/New/Forgetting 为 `0.1638/0.0917/0.4524/0.4976` 且三轮均 5 簇；三种子 Job `44932580` R3 均值为 `0.1362/0.0984/0.2873/0.4024`，seed13 R3 仅 3 簇，未通过平衡候选门槛，归档为负消融。
+- 阶段 6 已按客户“聚类影响大，HDBSCAN 不行就去掉”的反馈启动发现前端重设计：新增 GPCC（Graph-Prototype Controlled Clustering）候选，固定输出协议公开的每轮目标簇数，使用 deep/RF/谱图特征和 KMeans/Agglomerative consensus，不调用 HDBSCAN；ADS-B/LoRa strict 入口已支持 `--discovery_backend gpcc` 与 `--discovery_only`，下一步通过 Slurm seed7 discovery-only 比较 MV-ACC 与 GPCC 聚类质量。
 
 ## Recent Changes
 
@@ -203,13 +204,14 @@
 - 2026-07-29：执行 LoRa 必要子集审计，确认当前紧凑 NPZ 已覆盖实验需要的 Different Days Indoor 子集，无需下载完整 LoRa；新增 `results/stage6/LORA_REQUIRED_SUBSET_READY.md` 并同步实施计划、交接和 AGENTS。
 - 2026-07-29：新增并完成 LoRa old-logit bias 诊断后端、报告器、seed7 入口和三种子入口；Job `44881172` seed7 通过门槛，但 Job `44893894` 三种子确认 New Acc 均值塌缩到 `0.0508`，不采用为正式后端。
 - 2026-07-29：新增并完成 LoRa BatchNorm 统计重校准 seed7 与三种子验证；Job `44919835` seed7 通过门槛，但 Job `44932580` 三种子 Overall 均值降至 `0.1362` 且 seed13 R3 仅 3 簇，不采用为正式候选。
+- 2026-07-29：新增 `utils/graph_prototype_discovery_adapter.py`、`tools/stage6_gpcc_adapter_smoke.py`、`tools/stage6_gpcc_discovery_report.py`、`slurm/stage6_lora_gpcc_discovery_seed7.sbatch` 和 `slurm/stage6_adsb_gpcc_discovery_seed7.sbatch`；ADS-B strict 与 WiSig/LoRa strict 入口新增 `--discovery_backend {mvacc,gpcc}` 和 `--discovery_only`。本地 `py_compile`、合成 5/10 类 smoke、CLI help 和报告器 smoke 已通过。
 
 ## Next TODO
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
 - 阶段 4 ADS-B ratio 0.03 和自适应密度结论保持不变；默认 target split 已作为 ADS-B 欠聚类收敛候选，保守门控、max-added 消融和训练期旧类原型锚定均未找到更优折中。固定 target split 后端对照显示剩余风险是 RADCIL 偏新类、DOI-style 遗忘更低的后端旧新类权衡；当前进入阶段 6 交付整理，不继续 target split 小参数或原型锚定权重搜索。
-- LoRa BN 重校准已归档为负消融；下一步如果继续攻 LoRa，应转向更明确的跨天表征/域适应训练机制，而不是继续后验校准或 BN 统计细调。
+- LoRa BN 重校准已归档为负消融；当前下一步先按客户要求验证 GPCC 聚类前端是否能改善 LoRa/ADS-B 发现质量，若 seed7 聚类不优于旧前端则归档为负消融；若通过门槛，再进入完整增量 seed7。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
 - 阶段 5 补充风险已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，当前继续以风险收敛和结果一致性为主。
 - 使用 `CUSTOMER_PROGRESS_REPORT.html` 进行阶段汇报；每次关键正式结果变化后，从实施计划同步更新该派生页面并复核图表数值。
@@ -229,6 +231,7 @@
 - RecallLoom 结构校验和完整 provenance 校验已通过；`legacy_optional_metadata_missing` 仅为协议 1.0 旧侧车可省略字段的兼容性警告。
 - 当前 C 盘可用空间约 8.53 GB，不适合同时展开 ADS-B、ManyTx 和 ManyRx；完整解压应优先在训练服务器进行。
 - LoRa BN 重校准三种子未通过采用门槛；它说明跨天统计漂移存在，但仅刷新 BN 无法稳定解决发现不稳和旧新类权衡。
+- GPCC 目前只完成本地合成 smoke 和 strict 入口接入，真实 ADS-B/LoRa seed7 discovery-only Slurm 尚未运行；不能提前声称已改善 ADS-B 约 50% 或 LoRa 低结果。
 - Slurm `.venv` 当前安装的是 2026-07-26 可用的较新依赖组合，尚未通过旧版端到端实验验证；如出现兼容问题，应基于成功环境生成锁文件后做最小范围降级。
 - ADS-B 已在 Slurm 解压并通过 strict loader 审计；ManyTx/ManyRx 完整 ZIP 结构有效但未解压，后续仅在补充实验需要时按需展开，不作为阶段 1 阻塞风险。
 - SimGCD-style 最小适配器在 WiSig frozen embeddings 上弱于 MV-ACC；学习式发现头直接迁移到 RF 特征的收益不足，后续若继续改进需证明稳定超过 Deep-HDBSCAN/MV-ACC。
@@ -273,6 +276,7 @@
 - ADS-B 自适应密度三种子验证未通过收益门槛；正式 ratio 固定为 0.03，停止继续调固定密度参数，避免在同一数据集上反复事后选参。
 - ADS-B target split 选择只使用公开协议目标新类数和 discovery 侧无标签 silhouette 门控；固定 target split 后端对照不得使用 held-out 真值选参，剩余遗忘风险需通过结构不同的后端机制处理。
 - ADS-B 训练期旧类原型锚定沿用 Teacher replay 类中心约束，默认权重为 0 以保持历史行为；seed7 预注册矩阵未通过扩展门槛，因此只作为负消融保留，不继续调权重。
+- GPCC 是阶段 6 新发现前端候选，显式开关为 `--discovery_backend gpcc`，默认仍为 `mvacc`；`--discovery_only` 用于只跑聚类并在抽取 held-out eval embedding 前提前退出，避免把后端训练或评估集特征混入前端验证。
 - 主实验优先 WiSig 10+10×3 和 ADS-B 90+10×3；LoRa25 默认 10+5×3，ManyTx/ManyRx 沿用现有协议作为补充验证。
 - LoRa 跨体制验证优先使用 LoRa RFFP Different Days Indoor Scenario；完整数据较大时只下载或切分必要 Setup 1 子集，不因完整 LoRa 全量下载延迟 WiSig/ADS-B 主线。
 - LoRa 当前固定为已审计的 Different Days Indoor 必要紧凑子集；除非客户明确要求扩展设备或场景，否则不下载完整 LoRa 数据集。

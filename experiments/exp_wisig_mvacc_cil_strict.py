@@ -78,6 +78,7 @@ if PROJECT_ROOT not in sys.path:
 
 from features.rf_features import extract_rf_features_batch
 from utils.classic_feature_gating import select_classic_feature_view, save_selection, local_cross_view_consistency
+from utils.graph_prototype_discovery_adapter import run_gpcc
 from utils.incremental_visualization import save_seen_class_visualizations, save_paper_method_visualizations
 from models.vup_model import ClosedSetSEI
 from datasets.lora25_strict_loader import load_lora25_diffdays_3round
@@ -2933,6 +2934,51 @@ def run_discovery(method, round_name, day_name, true_new_classes, X_round, y_rou
         proto_feat_type = "hybrid"
 
     mv_acc_method = base_method in {"No CF-LCG (MV-ACC)", "Global CF-LCG (MV-ACC)", "MV-ACC"}
+    gpcc_method = mv_acc_method and str(getattr(args, "discovery_backend", "mvacc")).lower() == "gpcc"
+    if gpcc_method:
+        gpcc = run_gpcc(feats, target_clusters=int(true_new_classes), seed=int(args.seed))
+        labels_for_metrics = gpcc.labels.astype(np.int64)
+        probs = gpcc.confidence.astype(np.float32)
+        raw_metrics = clustering_metrics(y_round, labels_for_metrics)
+        raw_cluster_count = int(raw_metrics["Clusters"])
+        initial_cluster_count = int(raw_cluster_count)
+        enrolled_ids, details_final = all_non_noise_as_accepted(labels_for_metrics)
+        reliability_map = {
+            int(d["cluster_id"]): float(d.get("reliability_score", 1.0))
+            for d in details_final
+        }
+        final_metrics = clustering_metrics(y_round, labels_for_metrics)
+        cluster_row = {
+            "Method": method,
+            "Round": round_name,
+            "Discovery Day": day_name,
+            "True New Classes": int(true_new_classes),
+            "Samples": int(len(y_round)),
+            "Initial Cluster Count": int(initial_cluster_count),
+            "Final Cluster Count": int(final_metrics["Clusters"]),
+            "Cluster Count Error": int(abs(int(final_metrics["Clusters"]) - int(true_new_classes))),
+            "Over-clustering Ratio": float(final_metrics["Clusters"] / max(int(true_new_classes), 1)),
+            **final_metrics,
+            "Discovery Backend": "GPCC",
+            **gpcc.diagnostics,
+        }
+        info = {
+            "labels": labels_for_metrics,
+            "accepted_ids": enrolled_ids,
+            "reliability": reliability_map,
+            "merge_rows": [],
+            "features": feats,
+            "proto_feat_type": proto_feat_type,
+            "raw_hdbscan_probabilities": probs,
+            "raw_noise_mask": np.zeros(len(labels_for_metrics), dtype=bool),
+            "discovered_clusters": int(final_metrics["Clusters"]),
+            "enrolled_clusters": int(len(enrolled_ids)),
+            "cluster_pseudo_pairs": [],
+            "gpcc_diagnostics": gpcc.diagnostics,
+        }
+        info["discovery_features"] = discovery_feat
+        return cluster_row, info
+
     if mv_acc_method:
         # Scale the density prior with batch size.  The ratio and the remaining
         # hyperparameters are calibrated on Day1 known-class validation data,
@@ -3168,6 +3214,8 @@ def main():
     parser.add_argument("--initial_known_classes", type=int, default=10)
     parser.add_argument("--round_size", type=int, default=10)
     parser.add_argument("--num_rounds", type=int, default=3)
+    parser.add_argument("--discovery_backend", choices=["mvacc", "gpcc"], default="mvacc", help="Discovery front-end for the main MV-ACC-CIL path; gpcc fixes K=round_size without HDBSCAN.")
+    parser.add_argument("--discovery_only", action="store_true", help="只运行严格发现前端并保存聚类表；用于先验证聚类质量，不进入增量训练后端。")
     parser.add_argument("--development_ratio", type=float, default=0.70, help="Per-day development ratio: Day1 becomes 60%% backbone training + 10%% validation; remaining 30%% is held-out evaluation.")
     parser.add_argument(
         "--selected_rx_list",
@@ -3502,6 +3550,29 @@ def main():
     for rd in round_data:
         rd["Z"], rd["y"] = extract_deep_features(model, rd["X"], rd["y"], args.test_batch_size, device)
 
+    if args.discovery_only:
+        # 前端质量验证到这里就可以停止：只使用 Day1 train/validation 与当前轮
+        # discovery 特征，不抽取 held-out eval embedding，也不进入 RADCIL/DOI 后端。
+        discovery_rows = []
+        print("\n[discovery_only] Strict GPCC/MV-ACC front-end evaluation")
+        for i, rd in enumerate(round_data, start=1):
+            row, _ = run_discovery(
+                "MV-ACC",
+                f"R{i}",
+                f"Day {i + 1}",
+                args.round_size,
+                rd["X"],
+                rd["y"],
+                rd["Z"],
+                args,
+            )
+            row["Method"] = "MV-ACC-CIL discovery"
+            discovery_rows.append(row)
+        save_csv(discovery_rows, os.path.join(args.save_dir, "clustering_results.csv"))
+        print("[discovery_only] Saved strict discovery outputs; skipped held-out eval feature extraction and CIL training.")
+        print(f"Saved: {os.path.join(args.save_dir, 'clustering_results.csv')}")
+        return
+
     eval_Z_dict = {}
     eval_X_dict = {}
     eval_y_dict = {}
@@ -3691,6 +3762,10 @@ def main():
         row["Method"] = "MV-ACC-CIL discovery"
         clustering_rows.append(row)
         graph_fusion_round_infos.append(info)
+        if args.discovery_only:
+            # LoRa/WiSig 发现前端验证只比较聚类标签和离线聚类指标；这里跳过
+            # RADCIL/混合后端训练，保证 seed7 短任务聚焦在 GPCC 是否改善聚类。
+            continue
         labels = np.asarray(info["labels"], dtype=np.int64)
         if np.any(labels < 0):
             raise RuntimeError("MV-ACC-CIL requires no-drop labels; found an unassigned noise sample.")
@@ -3870,6 +3945,10 @@ def main():
             )
 
     clustering_df = save_csv(clustering_rows, os.path.join(args.save_dir, "clustering_results.csv"))
+    if args.discovery_only:
+        print("[discovery_only] Saved strict discovery outputs; skipped CIL training and evaluation.")
+        print(f"Saved: {os.path.join(args.save_dir, 'clustering_results.csv')}")
+        return
     incremental_df = save_csv(incremental_rows, os.path.join(args.save_dir, "incremental_results.csv"))
     save_csv(retention_rows, os.path.join(args.save_dir, "fixed_day1_retention.csv"))
     if validation_retention_rows:

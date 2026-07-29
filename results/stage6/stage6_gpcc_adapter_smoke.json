@@ -1,0 +1,115 @@
+{
+  "ok": true,
+  "uses_hdbscan": false,
+  "cases": [
+    {
+      "classes": 5,
+      "samples": 120,
+      "unique_labels": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "cluster_count": 5,
+      "has_noise": false,
+      "same_seed_reproducible": true,
+      "confidence_min": 0.8711752891540527,
+      "confidence_mean": 0.9151044487953186,
+      "diagnostics": {
+        "GPCC Backend": "graph_prototype_controlled_clustering",
+        "GPCC Target Clusters": 5,
+        "GPCC Selected Candidate": "kmeans_joint",
+        "GPCC Candidate Scores": {
+          "kmeans_joint": {
+            "score": 0.9220167607069016,
+            "silhouette": 0.8582122921943665,
+            "balance": 1.0,
+            "stability": 1.0,
+            "cluster_size_cv": 0.0
+          },
+          "kmeans_graph": {
+            "score": 0.9220167607069016,
+            "silhouette": 0.8582122921943665,
+            "balance": 1.0,
+            "stability": 1.0,
+            "cluster_size_cv": 0.0
+          },
+          "agglomerative_joint": {
+            "score": 0.9220167607069016,
+            "silhouette": 0.8582122921943665,
+            "balance": 1.0,
+            "stability": 1.0,
+            "cluster_size_cv": 0.0
+          }
+        },
+        "GPCC Silhouette": 0.8582122921943665,
+        "GPCC Prototype Margin Mean": 0.901339590549469,
+        "GPCC Silhouette Confidence Mean": 0.9291061162948608,
+        "GPCC Confidence Mean": 0.9151044487953186,
+        "GPCC Confidence Min": 0.8711752891540527,
+        "GPCC Cluster Stability": 1.0,
+        "GPCC Cluster Size CV": 0.0,
+        "GPCC Uses HDBSCAN": false
+      }
+    },
+    {
+      "classes": 10,
+      "samples": 240,
+      "unique_labels": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "cluster_count": 10,
+      "has_noise": false,
+      "same_seed_reproducible": true,
+      "confidence_min": 0.7291141748428345,
+      "confidence_mean": 0.8901038765907288,
+      "diagnostics": {
+        "GPCC Backend": "graph_prototype_controlled_clustering",
+        "GPCC Target Clusters": 10,
+        "GPCC Selected Candidate": "kmeans_joint",
+        "GPCC Candidate Scores": {
+          "kmeans_joint": {
+            "score": 0.8994410872459411,
+            "silhouette": 0.8171656131744385,
+            "balance": 1.0,
+            "stability": 1.0,
+            "cluster_size_cv": 0.0
+          },
+          "kmeans_graph": {
+            "score": 0.8994410872459411,
+            "silhouette": 0.8171656131744385,
+            "balance": 1.0,
+            "stability": 1.0,
+            "cluster_size_cv": 0.0
+          },
+          "agglomerative_joint": {
+            "score": 0.8994410872459411,
+            "silhouette": 0.8171656131744385,
+            "balance": 1.0,
+            "stability": 1.0,
+            "cluster_size_cv": 0.0
+          }
+        },
+        "GPCC Silhouette": 0.8171656131744385,
+        "GPCC Prototype Margin Mean": 0.8721234202384949,
+        "GPCC Silhouette Confidence Mean": 0.9085828065872192,
+        "GPCC Confidence Mean": 0.8901038765907288,
+        "GPCC Confidence Min": 0.7291141748428345,
+        "GPCC Cluster Stability": 1.0,
+        "GPCC Cluster Size CV": 0.0,
+        "GPCC Uses HDBSCAN": false
+      }
+    }
+  ]
+}
