@@ -329,6 +329,36 @@ def extract_deep_features(model, X, y, batch_size, device):
     return np.concatenate(feats, axis=0).astype(np.float32), np.concatenate(ys, axis=0).astype(np.int64)
 
 
+@torch.no_grad()
+def _recalibrate_batchnorm(model, X, batch_size, device, passes=1, reset_running_stats=False):
+    """用允许的训练/发现样本刷新 BatchNorm 统计量。
+
+    LoRa 的主要风险来自跨天分布漂移。该函数只读取 Day1 train/replay 和
+    当前轮 discovery/enrollment IQ，不读取 IQ_8-10 held-out evaluation。
+    它不反向传播、不使用标签，只让 BatchNorm 层的 running mean/var 对
+    当前可用训练域重新估计；默认关闭，保持历史实验行为不变。
+    """
+    if X is None or len(X) == 0:
+        return model
+    bn_layers = [m for m in model.modules() if isinstance(m, torch.nn.modules.batchnorm._BatchNorm)]
+    if not bn_layers:
+        return model
+    if reset_running_stats:
+        for layer in bn_layers:
+            layer.reset_running_stats()
+    was_training = model.training
+    loader = DataLoader(
+        TensorDataset(torch.as_tensor(np.asarray(X, dtype=np.float32))),
+        batch_size=int(batch_size), shuffle=False, drop_last=False, num_workers=0,
+    )
+    model.train()
+    for _ in range(max(1, int(passes))):
+        for (xb,) in loader:
+            model(xb.to(device))
+    model.train(was_training)
+    return model
+
+
 # ============================================================
 # Clustering metrics and HDBSCAN
 # ============================================================
@@ -3180,6 +3210,9 @@ def main():
     parser.add_argument("--radcil_icarl_fallback_threshold", type=float, default=0.60, help="Confidence threshold for exemplar fallback when validation-based calibration is not used.")
     parser.add_argument("--radcil_icarl_fallback_candidates", type=str, default="0.45,0.55,0.65,0.75,0.85", help="Day1-validation candidates for confidence-gated exemplar fallback.")
     parser.add_argument("--radcil_old_logit_bias_candidates", type=str, default="", help="Comma-separated old-class logit bias candidates calibrated on Day1/IQ_7 validation; empty disables this diagnostic backend.")
+    parser.add_argument("--radcil_bn_recalibration", action="store_true", help="Refresh BatchNorm statistics with replay/current discovery data before discovery and evaluation.")
+    parser.add_argument("--radcil_bn_recalibration_passes", type=int, default=1, help="Number of no-grad passes used for BatchNorm statistic recalibration.")
+    parser.add_argument("--radcil_bn_recalibration_reset", action="store_true", help="Reset BatchNorm running stats before recalibration; default keeps source-domain stats as a prior.")
     parser.add_argument("--pseudo_weight_floor", type=float, default=0.20)
 
 
@@ -3641,6 +3674,17 @@ def main():
 
     for i, rd in enumerate(round_data, start=1):
         teacher = copy.deepcopy(student).to(device).eval()
+        if args.radcil_bn_recalibration:
+            bn_recalibration_x = np.concatenate([memory_x, rd["X"]], axis=0)
+            _recalibrate_batchnorm(
+                teacher, bn_recalibration_x, args.test_batch_size, device,
+                passes=args.radcil_bn_recalibration_passes,
+                reset_running_stats=args.radcil_bn_recalibration_reset,
+            )
+            print(
+                f"[BN recalibration] stage=Before R{i} discovery | "
+                f"samples={len(bn_recalibration_x)} | reset={args.radcil_bn_recalibration_reset}"
+            )
         # Teacher is frozen during discovery. This prevents moving representations from changing clusters.
         rd["Z"], _ = extract_deep_features(teacher, rd["X"], rd["y"], args.test_batch_size, device)
         row, info = run_discovery("MV-ACC", f"R{i}", f"Day {i + 1}", args.round_size, rd["X"], rd["y"], rd["Z"], args)
@@ -3665,6 +3709,16 @@ def main():
         student = _expand_closedset_classifier(teacher, next_label, device, imprinted_means)
         student = _train_end_to_end_cil(student, teacher, rd["X"], pseudo_y, current_w, memory_x, memory_y, old_out, args, device)
         memory_x, memory_y = _update_iq_memory(memory_x, memory_y, rd["X"], pseudo_y, args.memory_per_class, args.seed + i)
+        if args.radcil_bn_recalibration:
+            _recalibrate_batchnorm(
+                student, memory_x, args.test_batch_size, device,
+                passes=args.radcil_bn_recalibration_passes,
+                reset_running_stats=args.radcil_bn_recalibration_reset,
+            )
+            print(
+                f"[BN recalibration] stage=After R{i} training | "
+                f"samples={len(memory_x)} | reset={args.radcil_bn_recalibration_reset}"
+            )
         eval_key = f"eval_r{i}"
         if hybrid_doi_enabled:
             doi_prototype_bank = _build_aligned_doi_prototype_bank(
