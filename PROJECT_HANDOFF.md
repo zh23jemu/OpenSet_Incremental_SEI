@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-29
-- 当前阶段：阶段 6 交付整理；ADS-B 欠聚类已收为默认 target split 候选，后端遗忘风险已进一步定位为旧新类权衡，WiSig DOI-memory hybrid 与 iCaRL fallback 均已归档为三种子负消融，ADS-B/LoRa 低结果风险已有客户解释口径；LoRa old-logit bias 诊断入口已新增但尚未跑 Slurm
+- 当前阶段：阶段 6 交付整理；ADS-B 欠聚类已收为默认 target split 候选，后端遗忘风险已进一步定位为旧新类权衡，WiSig DOI-memory hybrid 与 iCaRL fallback 均已归档为三种子负消融，ADS-B/LoRa 低结果风险已有客户解释口径；LoRa old-logit bias 已完成三种子验证并归档为负消融
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -136,7 +136,7 @@ Strict loader 审计：
 - 已新增 `CUSTOMER_PROGRESS_REPORT.html` 单文件客户汇报，内嵌阶段状态、正式指标对比、发现链路和风险表格；页面可离线打开和打印，但内容仍以实施计划为唯一事实源。
 - 已新增 `results/stage6/CUSTOMER_QA_RISK_RESPONSE.md`，单独整理 DOI-style 简化 baseline、LoRa 数据下载和 ADS-B/LoRa 低结果的客户问答口径；`CUSTOMER_PROGRESS_REPORT.html` 已同步修正 ADS-B target split 最新结果和低结果局限。
 - 已新增 `results/stage6/LORA_REQUIRED_SUBSET_READY.md`，明确 LoRa 当前只使用约 9.7 MB 的 Different Days Indoor 必要子集，并列出 10+5×3 协议覆盖范围。
-- 已新增 LoRa old-logit bias 诊断入口：`experiments/exp_wisig_mvacc_cil_strict.py` 的 `--radcil_old_logit_bias_candidates`、`slurm/stage5_lora_old_logit_bias_seed7.sbatch` 和 `tools/stage5_lora_old_logit_bias_report.py`。该候选只用 Day1 IQ_7 校准旧类 logit 偏置，当前本地语法和合成测试通过，待 Git 推送后在 Slurm 跑 seed7。
+- LoRa old-logit bias 诊断已完成：seed7 Job `44881172` 通过扩展门槛；随后新增并完成三种子 Job `44893894`，R3 Overall/Old/New/Forgetting 均值为 `0.1714/0.2016/0.0508/0.3175`，Old 提升但 New 塌缩且 seed31 R3 仅 3 簇，最终不采用为正式后端。
 - 已新增 `tools/stage5_manytx_manyrx_supplement_report.py`、`results/stage5/STAGE5_MANYTX_MANYRX_SUPPLEMENT_REPORT.md` 和 JSON 摘要，只读汇总既有 ManyTx/ManyRx seed7 三轮结果；ManyTx R3 Overall/New/Forgetting=`0.2700/0.5600/0.4267`，ManyRx R3 Overall/New/Forgetting=`0.5700/0.9500/0.5250`，阶段 5 补充稳定性验证已关闭。
 - 已生成只读服务器产物清单：553 个模型/回放二进制、约 5.21 GB、54 个超 50 MB 和 9 个非空错误日志。未删除任何文件，仅精确忽略新矩阵二进制并保留小型审计结果。
 - 已在 WiSig strict 入口实现可选 DOI-memory hybrid：使用伪标签 replay 记忆构建原型、跨轮对齐历史原型，并与网络 logits 做 late fusion；默认融合权重为 0，不改变历史 RADCIL 行为。该分支已完成 seed7 和三种子验证，正式结论为负消融。
@@ -150,7 +150,7 @@ Strict loader 审计：
 
 1. ADS-B 欠聚类风险已收束；固定 ratio 0.03 为正式配置，自适应密度作为负消融保留，默认 target split 作为候选并保留 seed7/13 局限。固定 target split 后端对照已证明剩余问题是后端旧新类权衡；训练期旧类原型锚定 seed7 已失败，后续不要继续调 target split 小参数或 anchor 权重。
 2. WiSig 后端上限风险继续收敛；DOI-memory late fusion 与 iCaRL fallback 都不能解决三种子后端上限，后续不继续调这两类小机制。
-3. LoRa 暂不扩种子，ManyTx/ManyRx 补充结果仅作为辅助稳定性证据；不再扩展 LoRa 原型锚定或 late-fusion 后端调参。新增 old-logit bias 仅用于验证旧类 logits 被新类头压低的可修复假设，seed7 不过门槛则停止 LoRa 后端追分。
+3. LoRa 不再扩后端小机制，ManyTx/ManyRx 补充结果仅作为辅助稳定性证据；原型锚定、late-fusion、分组双头和 old-logit bias 均未形成稳定解决方案。若后续继续攻 LoRa，应转向跨天表征/域适应，而不是继续调旧/新类推理偏置。
 4. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。当前 DOI-style、LoRa 数据和 ADS-B/LoRa 低结果问答已在阶段 6 风险说明中收口。
 5. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 6. 若后续补充实验需要 ManyTx/ManyRx 完整数据，再在 Slurm 按需解压；LoRa 当前不下载完整数据，继续使用已审计通过的 Different Days Indoor 必要子集。

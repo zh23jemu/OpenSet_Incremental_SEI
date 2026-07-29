@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划与项目进度总表
 
-- 状态：阶段 6 交付整理中；阶段 0–5 已收束；ADS-B/LoRa 低结果风险已形成客户解释口径；LoRa 已新增 old-logit bias 诊断入口，用于验证旧类 logits 被新类头压低这一可修复假设
+- 状态：阶段 6 交付整理中；阶段 0–5 已收束；ADS-B/LoRa 低结果风险已形成客户解释口径；LoRa old-logit bias 已完成 seed7 与三种子验证，确认旧类打分偏置能解释部分低分但不能稳定解决新旧类权衡
 - 版本：1.1
 - 创建日期：2026-07-26
 - 最近更新：2026-07-28
@@ -44,7 +44,7 @@
 - IGCD-minimal 是最小严格适配，不是完整 IGCD 论文复现。
 - ADS-B 原正式三种子 R3 只发现 6–7 个簇；默认 target split 已将 R3 欠聚类收敛到 10 簇，保守门控没有更优折中。剩余局限不再是“欠聚类未解”，而是 RADCIL 更偏新类、DOI-style 更低遗忘的后端权衡。
 - LoRa 不下载完整数据集；当前已保留实验需要的 Different Days Indoor 紧凑子集，阶段 6 审计 `results/stage6/lora_required_subset_audit.json` 显示 `ok=true`，可支撑当前 10+5×3 跨体制验证。
-- LoRa 已新增 `--radcil_old_logit_bias_candidates` 诊断后端和 seed7 Slurm 入口，用 Day1 IQ_7 校准旧类 logit 偏置；该候选待推送到 Slurm 验证，当前不能写成已改善结果。
+- LoRa `--radcil_old_logit_bias_candidates` 诊断后端已完成 seed7 与三种子验证：seed7 一度通过扩展门槛，但三种子 R3 New 均值仅 `0.0508` 且 seed31 R3 只发现 3 簇，因此归档为负消融，不作为最终解决方案。
 
 ## 2. 已锁定的实施原则
 
@@ -259,7 +259,7 @@
 
 - [x] 聚合当前客户问答风险：DOI-style 简化复现口径、LoRa 数据下载范围、ADS-B/LoRa 低结果解释。
 - [x] 审计 LoRa 实验必要子集：`datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz` 已覆盖 25 设备、10+5×3 strict 协议，结果见 `results/stage6/lora_required_subset_audit.json` 和 `results/stage6/LORA_REQUIRED_SUBSET_READY.md`。
-- [ ] 运行 LoRa old-logit bias seed7 诊断：入口为 `slurm/stage5_lora_old_logit_bias_seed7.sbatch`，报告器为 `tools/stage5_lora_old_logit_bias_report.py`；若 R3 Overall/Old 同时改善且 New 不塌缩，再扩 seed13/31。
+- [x] 完成 LoRa old-logit bias seed7 与三种子诊断：seed7 Job `44881172` 通过扩展门槛；三种子 Job `44893894` 的 R3 Overall/Old/New/Forgetting 均值为 `0.1714/0.2016/0.0508/0.3175`，Old 提升但 New 塌缩且 seed31 R3 仅 3 簇，不采用为正式后端。
 - [ ] 提供 `gpu` 分区、`gpo-ifv7xx` 账号、`normal` QOS 的正式 Slurm 脚本；一小时内验证任务使用 `shortjobs`。
 - [ ] 汇总多种子均值、标准差、对照和消融表格。
 - [ ] 整理可直接用于论文的 t-SNE 图和结果图表。
@@ -381,7 +381,7 @@ Job `44781083` 在默认 target split 与 Long-RADCIL 配置下验证训练期�
 | IGCD-minimal 不是完整复现            | 客户或论文审稿可能质疑 SOTA 公平性                                             | 明确标注为 minimal strict adaptation，必要时后续补齐更完整适配           |
 | ADS-B R2/R3 发现欠聚类              | 原正式三种子 R3 仅发现 6–7/10 类；target split 已补齐 R3，并在后端对照中保持 Overall/New 优势 | 采用默认 target split 作为欠聚类收敛候选；保守门控已验证不优，停止继续小参数搜索并如实报告局限 |
 | ADS-B 后端旧新类权衡                  | target split 下 MV-ACC-CIL Overall/New 高于 DOI-style，但 Forgetting 仍高约 `0.0522`；训练期旧类原型锚定 seed7 未降低遗忘 | 风险已从发现前端转为后端权衡；后续若继续改 ADS-B，应换结构不同的遗忘控制机制，而不是继续调 target split 或 anchor 权重 |
-| LoRa 新旧类后端权衡                   | Grouped fusion 与训练期类中心锚定均未通过 seed7 门槛；后者 IQ_7 已选择权重 0；old-logit bias 诊断入口已新增但未跑 Slurm | 停止原型/late-fusion 后端调参；先验证旧类 logits 被新类头压低这一可修复假设，若失败则保留跨体制局限 |
+| LoRa 新旧类后端权衡                   | Grouped fusion、训练期类中心锚定和 old-logit bias 均未通过最终门槛；old-logit bias 三种子 Old 提升但 New 均值塌到 `0.0508`，seed31 R3 仅 3 簇 | 当前低结果由跨天表征漂移、发现不稳和旧/新类后端冲突共同造成；停止 LoRa 小机制追分，作为跨体制局限和后续机制方向 |
 | ManyRx 正式 runner 缺失            | 阶段 5 已用既有结果完成补充稳定性汇总，但复现实验入口仍不够直观                              | 阶段 6 文档中标明历史 runner 位置，必要时再恢复受维护入口                       |
 | Slurm 端保留多份大数据分片               | 占用存储                                                             | 未经确认不删除，后续只做保留策略建议                                     |
 
@@ -391,15 +391,15 @@ Job `44781083` 在默认 target split 与 Long-RADCIL 配置下验证训练期�
 
 1. ADS-B 欠聚类风险已收束：正式 ratio 0.03 不变，自适应密度归档为负消融，默认 target split 作为欠聚类收敛候选，保守门控消融未优于默认；固定 target split 后端对照和训练期旧类原型锚定 seed7 结果显示剩余问题是旧新类后端权衡，不能靠继续调 target split 或 anchor 权重解决。
 2. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
-3. LoRa seed7 正式链路、表征筛选、冻结消融与后端矩阵已完成；原型锚定和 late-fusion 均严格失败，新增 old-logit bias 只作为旧/新打分尺度诊断，待 seed7 结果决定是否扩三种子。
+3. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头和 old-logit bias 均已完成；old-logit bias 说明旧类打分偏置确实存在，但三种子新类塌缩，不能作为正式解决方案。
 
 中期优先级：
 
 1. 停止 WiSig DOI-memory 和 iCaRL fallback 小机制搜索；保留三种子负消融证据，后续若继续后端研究必须先提出结构不同且可预注册的新机制。
-2. 将 LoRa 两轮严格负消融保留为跨体制局限，不继续原型锚定或 late-fusion 后端调参；old-logit bias 若不能同时改善 Overall/Old 且保持 New，则停止 LoRa 后端追分。
+2. 将 LoRa 多轮严格负消融保留为跨体制局限，不继续原型锚定、late-fusion 或 old-logit bias 后端调参；后续若继续攻 LoRa，应转向跨天表征/域适应机制。
 3. ManyRx 当前仅保留既有结果汇总；如需重新运行，再恢复受维护入口，不把 runner 缺失误判为主实验风险。
 4. 为严格协议和核心报告器补充轻量级自动化测试。
-5. 对 ADS-B/LoRa 低结果只做诚实解释和局限分析；LoRa old-logit bias 只用 IQ_7 校准，不用 held-out 真值追结果。
+5. 对 ADS-B/LoRa 低结果只做诚实解释和局限分析；LoRa old-logit bias 证明旧类偏置可解释部分问题，但不能解决整体跨体制低分。
 
 ## 9. 代码与变更控制
 

@@ -120,7 +120,7 @@
 - Slurm Job `44781083` 已完成 ADS-B 默认 target split 下训练期旧类 Teacher 原型锚定 seed7 矩阵；权重 `0.10/0.25` 相对 `0` 的 R3 Overall 均为 `-0.0070`，Old 分别为 `-0.0079/-0.0083`，Forgetting 为 `+0.0008/+0.0000`，均未通过扩展门槛。该结构性后端候选归档为负消融，不扩 seed13/31。
 - 阶段 6 已启动客户风险口径收口：新增 `results/stage6/CUSTOMER_QA_RISK_RESPONSE.md`，明确 DOI-style 是 DOI-inspired 简化 baseline、LoRa 完整数据可按需下载、ADS-B/LoRa 当前低结果应作为局限如实报告；`CUSTOMER_PROGRESS_REPORT.html` 已同步修正 ADS-B target split 最新结果和风险表述。
 - 阶段 6 已完成 LoRa 实验必要子集审计：`datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz` 约 9.7 MB，覆盖 Different Days Indoor 25 设备和 10+5×3 strict 协议；审计报告为 `results/stage6/lora_required_subset_audit.json`，说明为 `results/stage6/LORA_REQUIRED_SUBSET_READY.md`。
-- 阶段 6 已新增 LoRa old-logit bias 诊断入口：`--radcil_old_logit_bias_candidates` 只用 Day1 IQ_7 验证集选择旧类 logit 偏置，`slurm/stage5_lora_old_logit_bias_seed7.sbatch` 和 `tools/stage5_lora_old_logit_bias_report.py` 已提交，待 Git 推送/Slurm seed7 验证。
+- 阶段 6 已完成 LoRa old-logit bias 诊断：seed7 Job `44881172` R3 Overall/Old/New/Forgetting 为 `0.1676/0.1619/0.1905/0.4214`，通过扩展门槛；三种子 Job `44893894` R3 均值为 `0.1714/0.2016/0.0508/0.3175`，Old 提升但 New 明显塌缩且 seed31 R3 仅 3 簇，最终归档为负消融。
 
 ## Recent Changes
 
@@ -200,7 +200,7 @@
 - 2026-07-29：新增并完成 ADS-B target split 训练期旧类原型锚定 seed7 消融：`tools/stage4_adsb_target_split_anchor_plan.py`、`tools/stage4_adsb_target_split_anchor_report.py`、`slurm/stage4_adsb_target_split_anchor_seed7.sbatch` 和 `results/stage4/STAGE4_ADSB_TARGET_SPLIT_ANCHOR_SEED7_REPORT_44781083.md`；非零锚定权重未降低遗忘且降低 Overall/Old，归档为负消融。
 - 2026-07-29：新增阶段 6 客户问答风险说明 `results/stage6/CUSTOMER_QA_RISK_RESPONSE.md`，并更新 `CUSTOMER_PROGRESS_REPORT.html`、实施计划、交接和 AGENTS；将客户关心的 DOI-style 来源、LoRa 数据下载和 ADS-B/LoRa 低结果统一为诚实交付口径。
 - 2026-07-29：执行 LoRa 必要子集审计，确认当前紧凑 NPZ 已覆盖实验需要的 Different Days Indoor 子集，无需下载完整 LoRa；新增 `results/stage6/LORA_REQUIRED_SUBSET_READY.md` 并同步实施计划、交接和 AGENTS。
-- 2026-07-29：新增 LoRa old-logit bias 诊断后端、报告器和 Slurm seed7 入口，用 IQ_7 校准旧类 logits 偏置，验证 LoRa 低分是否主要由旧类分数被新类头压低造成；本地 `py_compile` 和合成校准测试通过，尚未推送到 Slurm 运行。
+- 2026-07-29：新增并完成 LoRa old-logit bias 诊断后端、报告器、seed7 入口和三种子入口；Job `44881172` seed7 通过门槛，但 Job `44893894` 三种子确认 New Acc 均值塌缩到 `0.0508`，不采用为正式后端。
 
 ## Next TODO
 
@@ -237,7 +237,7 @@
 - LoRa 旧类漂移仍未解决：训练期类中心锚定在 IQ_7 即未改善，且 held-out Old/Overall 退化；继续沿该类原型约束调权重价值有限。
 - 客户关于 ADS-B/LoRa 低结果的疑问已作为交付风险处理：ADS-B 接近 50%、LoRa 约 0.15-0.17 的事实不包装为强结果，而是作为局限和下一步机制方向说明。
 - LoRa 数据范围风险已关闭：当前交付只使用已审计的必要紧凑子集，不下载完整 LoRa；若后续改变 LoRa 协议或设备范围，需要重新生成子集和审计报告。
-- LoRa old-logit bias 诊断尚未产生 Slurm 结果；如果 seed7 不能同时改善 Overall/Old 且保持 New 不塌缩，应停止 LoRa 后端追分并只保留局限分析。
+- LoRa old-logit bias 三种子未通过采用门槛；它说明旧类 logits 被新类头压低是低分因素之一，但单纯推理期偏置会牺牲新类识别，不能作为完整解决方案。
 - Slurm 端仍保留若干历史 failed smoke 日志和大型 `.pth`/`.npz` 运行产物；本次只同步成功阶段 5 小型 JSON/stdout/stderr，未删除、未提交大型产物。
 - IGCD-minimal 已接入真实 WiSig frozen embeddings 并完成 Job `44422704`，但当前仍是 minimal strict adaptation，不是完整 IGCD 论文复现。
 - `experiments/README_MAIN_EXPERIMENTS.md` 引用 `experiments/run_manyrx_mvacc.ps1`，但当前正式目录中没有该文件；阶段 5 已用既有结果完成补充汇总，对应历史 runner 和实验脚本位于 `results/code_archives/manyrx_retired_20260721/`，后续复现说明仍需避免误导。
