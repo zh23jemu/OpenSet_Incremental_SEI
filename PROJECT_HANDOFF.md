@@ -122,6 +122,8 @@ Strict loader 审计：
 - 已修复 ADS-B baseline 分支的冻结特征银行和发现信息未初始化问题；本地提交为 `90bac09`，三种子入口为 `slurm/stage4_adsb_cil_baselines_multiseed.sbatch`。
 - Job `44517848` 已完成自适应密度三种子验证；候选仅在 seed7 R2 通过门控，R3 Overall `+0.0007`、New Acc `-0.0290`、Forgetting `+0.0003`，正式记录为负消融并保持 ratio 0.03。
 - Job `44517860` 已完成 ADS-B strict baseline 三种子实验；MV-ACC-CIL R3 Overall `0.4831±0.0089`，高于共享发现 DOI-style `0.4621±0.0273` 和 Deep-HDBSCAN + DOI-style `0.4759±0.0168`，但 Forgetting 高于 DOI-style。
+- Job `44670427` 与 Job `44766923` 已完成 ADS-B target split 单种子和三种子验证；默认 target split 将 R3 最终簇数从 `6.6667±0.5774` 补到 `10.0000±0.0000`，九轮绝对簇误差 `17->5`，R3 Overall `0.4820±0.0091 -> 0.4927±0.0137`，New Acc `0.4423±0.0131 -> 0.4930±0.0869`。
+- Job `44767309` 已完成 ADS-B 保守 target split 消融；`max_added=2`、`silhouette=0.34/0.38` 均未优于默认 `max_added=4, silhouette=0.26`。ADS-B 欠聚类风险已收敛为默认 target split 候选，剩余局限为 seed7/13 新类收益不稳定和簇大小 CV 上升。
 - 已新增 `tools/stage3_wisig_strict_baseline_table.py` 并生成 `results/stage3/STAGE3_WISIG_STRICT_BASELINE_TABLE.md`，将 SimGCD-style 标注为 learning-style adaptation、IGCD-minimal 标注为 minimal strict adaptation，二者均不作为完整论文复现；MV-ACC 仍是正式主前端。
 - 已新增 `tools/stage3_wisig_strong_backend_plan.py` 并生成 `results/stage3/STAGE3_WISIG_STRONG_BACKEND_PLAN.md`，把共享发现后端风险收束为 `RADCIL + DOI-style`、`RADCIL + iCaRL`、`RADCIL + TPCIL-style` 三个待实现混合候选；下一步先做 seed 7 短验证。
 - ADS-B strict 主入口已使用 `ADSBLongClosedSet`，并支持 RADCIL old:new batch ratio；阶段 4 单种子和正式三种子计划、报告、Slurm 入口均已同步。

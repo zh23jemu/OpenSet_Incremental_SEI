@@ -19,7 +19,7 @@
 | ------------- | -------------- | ----------------------------------------------------------------------------------- |
 | 数据与环境         | 已完成阶段 0        | WiSig、ADS-B、ManyTx、ManyRx 大数据哈希和结构已校验；WiSig/ADS-B strict loader 审计已通过               |
 | WiSig 阶段 1    | 已完成多轮短实验       | 已比较表征、发现前端、后端消融、RADCIL ratio/weight、多种子确认和 IGCD strict baseline                     |
-| ADS-B         | 阶段 4 三种子已完成    | 已迁移 `ADSBLongClosedSet` 与 old:new=2.0；R3 Overall `0.4824±0.0074`，当前瓶颈为 R3 仅发现 6–7 簇 |
+| ADS-B         | 阶段 4 风险已收敛      | Long-RADCIL 正式三种子 R3 Overall `0.4824±0.0074`；默认 target split 将 R3 簇数稳定补到 `10.0000±0.0000`，R3 Overall 提升到 `0.4927±0.0137` |
 | LoRa          | 阶段 5 seed7 已完成 | 分组双头 Job `44578823` 将簇数固定至 5、New 提升至 `0.4286`，但 Overall/Old 门槛未通过，归档为负消融            |
 | ManyTx/ManyRx | 阶段 5 补充验证已完成 | 已只读汇总既有 seed7 三轮结果；ManyTx R3 Overall `0.2700`、ManyRx R3 Overall `0.5700`，作为辅助稳定性证据       |
 | 项目记忆与交接       | 已维护            | `AGENTS.md`、`PROJECT_HANDOFF.md`、RecallLoom rolling summary 均已同步最新状态                |
@@ -40,7 +40,7 @@
 
 - WiSig 网络后端仍低于共享 MV-ACC 伪标签下的 DOI-style reference，DOI-memory late fusion 未稳定缩小该差距。
 - IGCD-minimal 是最小严格适配，不是完整 IGCD 论文复现。
-- ADS-B 三种子 R3 均只发现 6–7 个簇，正式结果仍受后期发现欠聚类限制。
+- ADS-B 原正式三种子 R3 只发现 6–7 个簇；默认 target split 已将 R3 欠聚类收敛到 10 簇，但需要如实保留 seed7/13 新类收益不稳定和簇大小 CV 上升的局限。
 - LoRa 完整数据尚未下载或切分，但不阻塞 WiSig/ADS-B 主线。
 
 ## 2. 已锁定的实施原则
@@ -233,6 +233,8 @@
 - [x] 修复 ADS-B strict baseline 执行链路并准备共享发现后端、Deep-HDBSCAN 端到端 baseline 与前端消融三种子报告入口。
 - [x] 完成自适应密度三种子 Job `44517848`；候选仅在 1/9 个轮次通过门控，New Acc 下降，记录为负消融并保持 ratio 0.03。
 - [x] 完成 ADS-B strict baseline 三种子 Job `44517860`；生成共享发现后端、Deep-HDBSCAN 端到端和发现前端消融总表。
+- [x] 完成 target split seed31 与配对三种子验证：Job `44670427`、`44766923`；默认 target split 将 R3 最终簇稳定到 `10.0000±0.0000`，九轮绝对簇误差 `17->5`。
+- [x] 完成保守 target split 参数消融 Job `44767309`；`max_added=2`、`silhouette=0.34/0.38` 均未优于默认 `max_added=4, silhouette=0.26`，停止继续小参数搜索。
 
 ### 阶段 5：LoRa 与 WiSig 补充划分，2–4 天
 
@@ -354,13 +356,17 @@ Job `44517848` 已完成无标签轮次自适应密度三种子验证。候选 r
 
 Job `44517860` 已完成 ADS-B strict baseline 与前端消融三种子实验。MV-ACC-CIL R3 Overall `0.4831±0.0089`，高于共享 MV-ACC 发现的 DOI-style `0.4621±0.0273`，也高于 Deep-HDBSCAN + DOI-style `0.4759±0.0168`；其 New Acc `0.4420±0.0118` 同样更高。但 MV-ACC-CIL Forgetting `0.1159±0.0108` 高于 DOI-style `0.0551±0.0032`，因此结论应表述为整体识别性能领先、遗忘控制仍有局限。
 
+Job `44670427` 与 Job `44766923` 验证了协议目标簇数补齐分裂（target split）：该分支不使用真实标签，只使用公开协议的每轮目标新类数 `round_size=10` 和无标签 silhouette 门控。三种子配对结果显示，默认 target split 将 R3 最终簇数从 `6.6667±0.5774` 稳定补到 `10.0000±0.0000`，九轮绝对簇误差从 `17` 降到 `5`，R3 Overall 从 `0.4820±0.0091` 提升到 `0.4927±0.0137`，New Acc 从 `0.4423±0.0131` 提升到 `0.4930±0.0869`。因此 ADS-B 的主要欠聚类风险已从“未解决瓶颈”收敛为“有明确候选方案”。
+
+Job `44767309` 对更保守的 target split 参数做了消融：`max_added=2, silhouette=0.26`、`max_added=4, silhouette=0.34` 和 `max_added=4, silhouette=0.38` 均未优于默认 `max_added=4, silhouette=0.26`。其中自动排序下较好的 `target_split_m4_s034` 九轮绝对簇误差为 `6`，R3 New Acc 为 `0.4617±0.0312`，低于默认 target split 的 `5` 和 `0.4930±0.0869`。因此不继续小参数搜索；正式结论采用默认 target split 作为 ADS-B 欠聚类收敛候选，同时报告 seed7/13 新类收益不稳定和簇大小 CV 上升的局限。
+
 ## 8.2 当前风险与应对
 
 | 风险                             | 影响                                                               | 当前应对                                                   |
 | ------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------ |
 | WiSig 共享发现后端 baseline 强于当前网络后端 | DOI-style 在共享 MV-ACC 伪标签下高于 MV-ACC-CIL，且 DOI-memory hybrid 未稳定提升 | 将 hybrid 记录为负消融；后续若继续后端研究，需更换机制而非继续调 late-fusion 权重    |
 | IGCD-minimal 不是完整复现            | 客户或论文审稿可能质疑 SOTA 公平性                                             | 明确标注为 minimal strict adaptation，必要时后续补齐更完整适配           |
-| ADS-B R2/R3 发现欠聚类              | 三种子 R3 仅发现 6–7/10 类，限制 New Acc 和 Overall                         | 固定 Long-RADCIL 后端与 ratio 0.03；自适应密度已证实为负消融，停止继续调固定密度参数 |
+| ADS-B R2/R3 发现欠聚类              | 原正式三种子 R3 仅发现 6–7/10 类；target split 已补齐 R3，但 seed7/13 新类收益不稳定且 CV 上升 | 采用默认 target split 作为欠聚类收敛候选；保守门控已验证不优，停止继续小参数搜索并如实报告局限 |
 | ADS-B 遗忘控制仍弱于 DOI-style        | 主方法 Overall/New Acc 更高，但 Forgetting 明显更高                         | 在结果表中同时报告优势与局限；后续跨体制验证不以牺牲协议隔离换取更低遗忘                   |
 | LoRa 新旧类后端权衡                   | Grouped fusion 与训练期类中心锚定均未通过 seed7 门槛；后者 IQ_7 已选择权重 0            | 停止原型/late-fusion 后端调参，保留严格负消融并如实分析跨体制局限                |
 | ManyRx 正式 runner 缺失            | 阶段 5 已用既有结果完成补充稳定性汇总，但复现实验入口仍不够直观                              | 阶段 6 文档中标明历史 runner 位置，必要时再恢复受维护入口                       |
@@ -370,7 +376,7 @@ Job `44517860` 已完成 ADS-B strict baseline 与前端消融三种子实验。
 
 短期优先级：
 
-1. ADS-B 阶段 4 已收束：正式 ratio 0.03 不变，自适应密度归档为负消融，baseline 总表已完成。
+1. ADS-B 阶段 4 已收束：正式 ratio 0.03 不变，自适应密度归档为负消融，默认 target split 作为欠聚类收敛候选，保守门控消融归档为未优于默认。
 2. LoRa seed7 正式链路、表征筛选、冻结消融与后端矩阵已完成；当前不直接扩三种子。
 3. LoRa 两个后端修复均已严格失败；停止该方向，优先整理跨体制结果和局限。
 

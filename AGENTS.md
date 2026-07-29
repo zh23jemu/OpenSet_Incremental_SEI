@@ -194,7 +194,7 @@
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
-- 阶段 4 ADS-B ratio 0.03 和自适应密度结论保持不变；target split 三种子已确认能稳定补齐 R3 欠聚类并提升 Overall/New 均值，保守门控和 max-added 消融未找到更优折中。下一步应将默认 target split 作为 ADS-B 欠聚类收敛候选写入阶段结论，同时如实保留 seed7/13 新类收益不稳定和 CV 上升的局限。
+- 阶段 4 ADS-B ratio 0.03 和自适应密度结论保持不变；target split 三种子已确认能稳定补齐 R3 欠聚类并提升 Overall/New 均值，保守门控和 max-added 消融未找到更优折中。默认 target split 已写入阶段结论作为 ADS-B 欠聚类收敛候选，同时保留 seed7/13 新类收益不稳定和 CV 上升的局限。
 - 阶段 5 已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，后续进入阶段 6 结果整理与交付。
 - 使用 `CUSTOMER_PROGRESS_REPORT.html` 进行阶段汇报；每次关键正式结果变化后，从实施计划同步更新该派生页面并复核图表数值。
 - 将 IGCD-minimal 纳入 strict baseline 表，但正式主前端继续优先使用 MV-ACC 或稳定 Deep-HDBSCAN。
