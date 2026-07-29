@@ -1,0 +1,54 @@
+{
+  "job_id": "45047897",
+  "matrix_root": "results/stage6/lora_aug_consistency_seed7_45047897",
+  "selection_source": "IQ_7 R3 old-class validation accuracy only",
+  "rows": [
+    {
+      "weight": 0.0,
+      "variant": "consistency_0p00",
+      "iq7_r3_old_acc": 0.1357142857142857,
+      "cluster_count": 5,
+      "overall": 0.1666666666666666,
+      "old": 0.0916666666666666,
+      "new": 0.4666666666666667,
+      "forgetting": 0.4857142857142857,
+      "macro_f1": 0.0943861177301691
+    },
+    {
+      "weight": 0.05,
+      "variant": "consistency_0p05",
+      "iq7_r3_old_acc": 0.1142857142857142,
+      "cluster_count": 5,
+      "overall": 0.1638095238095238,
+      "old": 0.0904761904761904,
+      "new": 0.4571428571428571,
+      "forgetting": 0.4880952380952381,
+      "macro_f1": 0.092572085178551
+    },
+    {
+      "weight": 0.1,
+      "variant": "consistency_0p10",
+      "iq7_r3_old_acc": 0.1142857142857142,
+      "cluster_count": 5,
+      "overall": 0.1647619047619047,
+      "old": 0.0904761904761904,
+      "new": 0.4619047619047619,
+      "forgetting": 0.4880952380952381,
+      "macro_f1": 0.093013775999138
+    }
+  ],
+  "selected": {
+    "weight": 0.0,
+    "variant": "consistency_0p00",
+    "iq7_r3_old_acc": 0.1357142857142857,
+    "cluster_count": 5,
+    "overall": 0.1666666666666666,
+    "old": 0.0916666666666666,
+    "new": 0.4666666666666667,
+    "forgetting": 0.4857142857142857,
+    "macro_f1": 0.0943861177301691
+  },
+  "validation_improved": false,
+  "heldout_gate": false,
+  "expand_multiseed": false
+}
