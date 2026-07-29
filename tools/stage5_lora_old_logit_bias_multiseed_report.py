@@ -35,9 +35,10 @@ def _read_r3(seed: int, root: Path) -> dict:
         ascending=[True, False, True],
     ).groupby("Stage", sort=False).head(1)
     selected_r3 = selected.loc[selected["Stage"] == "After R3"].iloc[0]
+    cluster_column = "Discovered Clusters" if "Discovered Clusters" in c3.index else "Final Cluster Count"
     return {
         "seed": int(seed),
-        "cluster_count": int(c3["Discovered Clusters"]),
+        "cluster_count": int(c3[cluster_column]),
         "overall": float(r3["Overall Acc"]),
         "old": float(r3["Old Acc"]),
         "new": float(r3["New Acc"]),
