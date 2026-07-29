@@ -124,6 +124,7 @@
 - 阶段 6 已完成 LoRa BatchNorm 统计重校准验证：seed7 Job `44919835` R3 Overall/Old/New/Forgetting 为 `0.1638/0.0917/0.4524/0.4976` 且三轮均 5 簇；三种子 Job `44932580` R3 均值为 `0.1362/0.0984/0.2873/0.4024`，seed13 R3 仅 3 簇，未通过平衡候选门槛，归档为负消融。
 - 阶段 6 已按客户“聚类影响大，HDBSCAN 不行就去掉”的反馈完成 GPCC（Graph-Prototype Controlled Clustering）候选验证：该前端固定输出协议公开的每轮目标簇数，使用 deep/RF/谱图特征和 KMeans/Agglomerative consensus，不调用 HDBSCAN。ADS-B seed7 discovery-only Job `44997092` 中 GPCC 将三轮簇数稳定为 `10/10/10`，mean ARI `0.6672`、Hungarian `0.7364`，优于 MV-ACC 的 `0.6436/0.6902`；但完整增量 Job `44999118` R3 Overall 为 `0.4839`，低于默认 target split 对照约 `0.4932`，因此暂不扩三种子。LoRa seed7 discovery-only Job `44998998` 中 GPCC 固定 `5/5/5` 且 Hungarian `0.4177` 高于 MV-ACC `0.3755`，但 ARI `0.1471` 低于 MV-ACC `0.1588`，未过预注册门槛，不进入完整增量。
 - 阶段 6 已完成 LoRa discovery 簇可靠性伪标签加权 Job `45048052`：开启/关闭结果完全一致，IQ_7 R3 Old 均为 `0.1357`，held-out R3 Overall/Old/New/Forgetting 均为 `0.1667/0.0917/0.4667/0.4857`，未通过双门槛，不扩 seed13/31，LoRa 后端小机制搜索正式停止。
+- 阶段 7 已新增训练期跨天 CORAL-style discovery/replay 特征分布对齐候选；默认权重为 0，seed7 二元 Job `45049066` 已提交，当前等待 Slurm GPU 资源，尚无结果。
 
 ## Recent Changes
 
@@ -209,6 +210,7 @@
 - 2026-07-29：完成 GPCC 真实数据 seed7 验证并同步小型结果。ADS-B discovery-only Job `44997092` 通过聚类门槛，但完整增量 Job `44999118` R3 Overall `0.4839` 未超过 target split 对照约 `0.4932`；LoRa discovery-only Job `44998998` 固定簇数但 ARI 下降，未通过门槛。GPCC 当前记录为“聚类结构有收益但未解决最终低分”的候选，不扩三种子。
 - 2026-07-29：新增增量双视图一致性损失和 LoRa seed7 预注册矩阵；Job `45047897` 中权重 `0.05/0.10` 的 IQ_7 R3 Old、Overall 均低于基线 `0`，记录为负消融，不扩 seed13/31。
 - 2026-07-29：新增 discovery 簇可靠性伪标签加权入口、LoRa seed7 二元计划并完成 Job `45048052`；开启/关闭逐项完全一致，按预注册 IQ_7/held-out 双门槛归档为负消融，停止 LoRa 后端小机制搜索。
+- 2026-07-29：新增阶段 7 LoRa 训练期跨天特征分布对齐入口、预注册计划、报告器和 smoke test；本地编译/合成梯度验证通过，Job `45049066` 已提交等待资源。
 
 ## Next TODO
 
@@ -216,6 +218,7 @@
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
 - 阶段 4 ADS-B ratio 0.03 和自适应密度结论保持不变；默认 target split 已作为 ADS-B 欠聚类收敛候选，保守门控、max-added 消融和训练期旧类原型锚定均未找到更优折中。固定 target split 后端对照显示剩余风险是 RADCIL 偏新类、DOI-style 遗忘更低的后端旧新类权衡；当前进入阶段 6 交付整理，不继续 target split 小参数或原型锚定权重搜索。
 - GPCC 已完成 LoRa/ADS-B seed7 验证：LoRa 不进入完整增量，ADS-B 完整增量未超过 target split。增量双视图一致性和 discovery 簇可靠性加权均未改善 LoRa；后续不继续围绕 HDBSCAN 替换、可靠性权重或一致性权重做小参数搜索，若继续攻 LoRa 必须转向训练期跨天表征/联合发现机制。
+- 阶段 7 只验证训练期当前 discovery/replay 分布对齐；若 Job `45049066` 不通过 IQ_7/held-out 双门槛，则 LoRa 进入最终局限报告，不再继续新增后端小机制。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
 - 阶段 5 补充风险已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，当前继续以风险收敛和结果一致性为主。
 - 使用 `CUSTOMER_PROGRESS_REPORT.html` 进行阶段汇报；每次关键正式结果变化后，从实施计划同步更新该派生页面并复核图表数值。
