@@ -1,0 +1,60 @@
+
+========== LoRa25 Different Days Indoor 10-Known 3-Round Incremental Experiment ==========
+Dataset: /mnt/users/xj62kv/OpenSet_Incremental_SEI/datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz
+Save dir: results/stage5/lora_bn_recalibration_seed7_44919835
+Device: cpu
+Protocol: 10 known + 5 unknown R1 + 5 unknown R2 + 5 unknown R3
+LoRa split: IQ_1-6 train | IQ_7 validation | IQ_8-10 held-out evaluation
+Old-class prototype bonus beta: 0.0
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.03, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train IQ_1-6 train: (840, 2, 256), classes=10, labels=0-9
+Initial eval 30%:     (420, 2, 256), classes=10, labels=0-9, day=Day 1
+Unknown R1 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=10-14, day=Day 2
+After R1 IQ_8-10 eval: (630, 2, 256), classes=15, labels=0-14, day=Day 2
+Unknown R2 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=15-19, day=Day 3
+After R2 IQ_8-10 eval: (840, 2, 256), classes=20, labels=0-19, day=Day 3
+Unknown R3 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=20-24, day=Day 4
+After R3 IQ_8-10 eval: (1050, 2, 256), classes=25, labels=0-24, day=Day 4
+[Load] checkpoint=/mnt/users/xj62kv/OpenSet_Incremental_SEI/results/stage5/lora_representation_screen_seed7_44573249/supcon_rf_aug.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.347 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+[BN recalibration] stage=Before R1 discovery | samples=690 | reset=False
+[BN recalibration] stage=After R1 training | samples=300 | reset=False
+[BN recalibration] stage=Before R2 discovery | samples=790 | reset=False
+[BN recalibration] stage=After R2 training | samples=400 | reset=False
+[BN recalibration] stage=Before R3 discovery | samples=890 | reset=False
+[BN recalibration] stage=After R3 training | samples=500 | reset=False
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc      Fusion  Alpha  Iter Merge Rounds  Iter Merge Total Merges  Iter Merge Threshold  Noise Before Reassignment  Noise Reassigned  Assignment Coverage  Assignment Score Mean  Assignment Score Min  No-cluster Fallback  Adaptive Split Count  Adaptive Split Size Factor  Adaptive Split Silhouette Threshold  Adaptive Split Silhouette Mean  Target Cluster Count  Target Count Merges  Target Count Last Merge Similarity  MVACC Min Cluster Size  MVACC Min Cluster Ratio  MVACC Min Samples
+MV-ACC-CIL discovery    R1         Day 2                 5      490                      7                    5                    0                    1.0         5    0.0 0.138976 0.104786 0.408163       0.393878 fixed_alpha    0.7                 12                        0                  0.74                        126               126                  1.0               0.731610              0.494131                False                     0                        1.75                                  0.3                             NaN                     5                    2                            0.680497                      15                     0.03                  5
+MV-ACC-CIL discovery    R2         Day 3                 5      490                      5                    5                    0                    1.0         5    0.0 0.112622 0.092731 0.371429       0.371429 fixed_alpha    0.7                 12                        0                  0.74                        169               169                  1.0               0.700349              0.402859                False                     0                        1.75                                  0.3                             NaN                     5                    0                                 NaN                      15                     0.03                  5
+MV-ACC-CIL discovery    R3         Day 4                 5      490                      9                    5                    0                    1.0         5    0.0 0.320287 0.267296 0.495918       0.493878 fixed_alpha    0.7                 12                        1                  0.74                        170               170                  1.0               0.743780              0.446804                False                     0                        1.75                                  0.3                             NaN                     5                    3                            0.691923                      15                     0.03                  5
+Saved: results/stage5/lora_bn_recalibration_seed7_44919835/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.526190 0.526190      NaN           0.526190         0.000000  0.507408
+MV-ACC-CIL After R1    Day 2   eval_r1_30pct_15_seen            15                5                   5                 5           630     0.239683 0.159524 0.400000           0.159524         0.366667  0.175148
+MV-ACC-CIL After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.220238 0.171429 0.366667           0.185714         0.340476  0.158639
+MV-ACC-CIL After R3    Day 4   eval_r3_30pct_25_seen            25                5                   5                 5          1050     0.163810 0.091667 0.452381           0.028571         0.497619  0.099738
+Saved: results/stage5/lora_bn_recalibration_seed7_44919835/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1              5                                 5                    0         1.000000 0.408163 0.138976 0.104786       0.393878     0.239683 0.400000         0.366667
+MV-ACC-CIL    R2              5                                 5                    0         1.000000 0.371429 0.112622 0.092731       0.371429     0.220238 0.366667         0.340476
+MV-ACC-CIL    R3              5                                 5                    0         1.000000 0.495918 0.320287 0.267296       0.493878     0.163810 0.452381         0.497619
+Saved: results/stage5/lora_bn_recalibration_seed7_44919835/per_round_summary_results.csv
+LoRa BN 重校准报告：results/stage5/STAGE5_LORA_BN_RECALIBRATION_SEED7_REPORT_44919835.md

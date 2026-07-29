@@ -1,0 +1,82 @@
+{
+  "job_id": "44932580",
+  "matrix_root": "results/stage5/lora_bn_recalibration_multiseed_44932580",
+  "seeds": [
+    7,
+    13,
+    31
+  ],
+  "rows": [
+    {
+      "seed": 7,
+      "cluster_count": 5,
+      "overall": 0.16,
+      "old": 0.0821428571428571,
+      "new": 0.4714285714285714,
+      "forgetting": 0.4738095238095238,
+      "macro_f1": 0.0934343235564503
+    },
+    {
+      "seed": 13,
+      "cluster_count": 3,
+      "overall": 0.1304761904761904,
+      "old": 0.1535714285714285,
+      "new": 0.0380952380952381,
+      "forgetting": 0.3,
+      "macro_f1": 0.0725478891800248
+    },
+    {
+      "seed": 31,
+      "cluster_count": 5,
+      "overall": 0.1180952380952381,
+      "old": 0.0595238095238095,
+      "new": 0.3523809523809524,
+      "forgetting": 0.4333333333333333,
+      "macro_f1": 0.072415093333052
+    }
+  ],
+  "summary": {
+    "overall": {
+      "mean": 0.13619047619047617,
+      "std": 0.017578245333215406
+    },
+    "old": {
+      "mean": 0.09841269841269835,
+      "std": 0.04008132951338557
+    },
+    "new": {
+      "mean": 0.28730158730158734,
+      "std": 0.18279485270614962
+    },
+    "forgetting": {
+      "mean": 0.40238095238095234,
+      "std": 0.07425620089343533
+    },
+    "macro_f1": {
+      "mean": 0.07946576868984238,
+      "std": 0.009877408650731575
+    }
+  },
+  "references": {
+    "selected_radcil_seed7": {
+      "overall": 0.1419,
+      "old": 0.0798,
+      "new": 0.3905,
+      "forgetting": 0.519
+    },
+    "grouped_hybrid_seed7": {
+      "overall": 0.1495,
+      "old": 0.0798,
+      "new": 0.4286,
+      "forgetting": 0.4357
+    },
+    "old_logit_bias_multiseed": {
+      "overall": 0.1714,
+      "old": 0.2016,
+      "new": 0.0508,
+      "forgetting": 0.3175
+    }
+  },
+  "cluster_count_gate_passed": false,
+  "balanced_candidate": false
+}
