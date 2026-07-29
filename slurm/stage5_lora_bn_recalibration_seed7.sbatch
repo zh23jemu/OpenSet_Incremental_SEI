@@ -27,7 +27,9 @@ cd "${PROJECT_ROOT}"
 PYTHON_BIN="${PROJECT_ROOT}/.venv/bin/python"
 JOB_ID="${SLURM_JOB_ID:-manual}"
 OUTPUT_DIR="results/stage5/lora_bn_recalibration_seed7_${JOB_ID}"
-CHECKPOINT="results/stage5/lora_representation_screen_seed7_44573249/supcon_rf_aug.pth"
+# 预选表征 checkpoint 可能保存在原始 Slurm 工作区；允许提交时通过
+# LORA_CHECKPOINT 传入绝对路径，避免为了小验证复制模型权重。
+CHECKPOINT="${LORA_CHECKPOINT:-results/stage5/lora_representation_screen_seed7_44573249/supcon_rf_aug.pth}"
 LORA_NPZ="${LORA25_NPZ:-datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz}"
 
 if [[ ! -f "${CHECKPOINT}" ]]; then
