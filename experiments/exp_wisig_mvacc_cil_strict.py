@@ -80,6 +80,7 @@ from features.rf_features import extract_rf_features_batch
 from utils.classic_feature_gating import select_classic_feature_view, save_selection, local_cross_view_consistency
 from utils.graph_prototype_discovery_adapter import run_gpcc
 from utils.incremental_visualization import save_seen_class_visualizations, save_paper_method_visualizations
+from utils.incremental_metric_learning import cosine_proxy_metric_loss
 from models.vup_model import ClosedSetSEI
 from datasets.lora25_strict_loader import load_lora25_diffdays_3round
 from utils.improved_closedset_training import (
@@ -2116,6 +2117,15 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                 feat_con = torch.cat([feat[:len(xc)][high], feat[len(xc):]], dim=0)
                 y_con = torch.cat([yc[high], ym], dim=0)
                 con = _supcon_incremental(feat_con, y_con, args.supcon_temperature)
+                # 只使用高置信新类伪标签和 replay 旧类标签做代理度量，
+                # 让跨天增量训练直接优化类别角度间隔。
+                metric_loss = cosine_proxy_metric_loss(
+                    feat_con,
+                    y_con,
+                    student.classifier.weight,
+                    scale=float(args.radcil_metric_scale),
+                    margin=float(args.radcil_metric_margin),
+                )
                 kd_weight = scheduled_kd_weight(epoch_index, epochs)
                 loss = (
                     ce_current
@@ -2126,6 +2136,7 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                     + float(args.radcil_aug_consistency_weight) * view_consistency
                     + float(args.radcil_domain_alignment_weight) * domain_alignment
                     + float(args.cil_supcon_weight) * con
+                    + float(args.radcil_metric_weight) * metric_loss
                 )
                 opt.zero_grad()
                 loss.backward()
@@ -3365,6 +3376,24 @@ def main():
     parser.add_argument("--cil_temperature", type=float, default=2.0)
     parser.add_argument("--cil_supcon_weight", type=float, default=0.05)
     parser.add_argument("--cil_supcon_threshold", type=float, default=0.60)
+    parser.add_argument(
+        "--radcil_metric_weight",
+        type=float,
+        default=0.0,
+        help="Incremental normalized cosine-proxy metric loss weight; 0 preserves historical RADCIL behavior.",
+    )
+    parser.add_argument(
+        "--radcil_metric_scale",
+        type=float,
+        default=16.0,
+        help="Scale applied to normalized cosine-proxy logits.",
+    )
+    parser.add_argument(
+        "--radcil_metric_margin",
+        type=float,
+        default=0.05,
+        help="True-class cosine margin for the metric loss; must be in [0, 1).",
+    )
     parser.add_argument("--radcil_old_new_batch_ratio", type=float, default=0.0, help="RADCIL replay old:new batch ratio; 0 keeps the legacy equal batch-size behavior.")
     parser.add_argument("--radcil_masked_kd", action="store_true", help="Apply KD only on replay samples whose labels are inside the teacher output range.")
     parser.add_argument("--radcil_kd_schedule", choices=["constant", "cosine", "linear_decay"], default="constant", help="Schedule for the end-to-end CIL KD weight inside each training stage.")
@@ -4095,6 +4124,9 @@ def main():
             "radcil_prototype_anchor_weight": float(args.radcil_prototype_anchor_weight),
             "radcil_aug_consistency_weight": float(args.radcil_aug_consistency_weight),
             "radcil_domain_alignment_weight": float(args.radcil_domain_alignment_weight),
+            "radcil_metric_weight": float(args.radcil_metric_weight),
+            "radcil_metric_scale": float(args.radcil_metric_scale),
+            "radcil_metric_margin": float(args.radcil_metric_margin),
             "pseudo_weight_use_cluster_reliability": bool(args.pseudo_weight_use_cluster_reliability),
             "pseudo_weight_cluster_reliability_floor": float(
                 args.pseudo_weight_cluster_reliability_floor

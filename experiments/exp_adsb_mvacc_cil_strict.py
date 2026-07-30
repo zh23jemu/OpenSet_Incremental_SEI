@@ -80,6 +80,7 @@ from features.rf_features import extract_rf_features_batch
 from utils.classic_feature_gating import select_classic_feature_view, save_selection, local_cross_view_consistency
 from utils.graph_prototype_discovery_adapter import run_gpcc
 from utils.incremental_visualization import save_seen_class_visualizations, save_paper_method_visualizations
+from utils.incremental_metric_learning import cosine_proxy_metric_loss
 from models.vup_model import ClosedSetSEI
 from models.adsb_long_model import ADSBLongClosedSet
 from utils.improved_closedset_training import (
@@ -2013,6 +2014,15 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                 feat_con = torch.cat([feat[:len(xc)][high], feat[len(xc):]], dim=0)
                 y_con = torch.cat([yc[high], ym], dim=0)
                 con = _supcon_incremental(feat_con, y_con, args.supcon_temperature)
+                # 只使用高置信新类伪标签和 replay 旧类标签做代理度量，
+                # 直接重塑增量后的特征角度空间，避免低置信样本传播错误约束。
+                metric_loss = cosine_proxy_metric_loss(
+                    feat_con,
+                    y_con,
+                    student.classifier.weight,
+                    scale=float(args.radcil_metric_scale),
+                    margin=float(args.radcil_metric_margin),
+                )
                 if anchor_prototypes is not None and anchor_valid is not None:
                     anchor_mask = (ym < int(old_out_dim)) & anchor_valid[ym.clamp(max=int(old_out_dim) - 1)]
                     if torch.any(anchor_mask):
@@ -2031,6 +2041,7 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                     + float(args.cil_kd_weight) * kd
                     + float(args.radcil_prototype_anchor_weight) * prototype_anchor
                     + float(args.cil_supcon_weight) * con
+                    + float(args.radcil_metric_weight) * metric_loss
                 )
                 opt.zero_grad()
                 loss.backward()
@@ -3127,6 +3138,24 @@ def main():
     parser.add_argument("--cil_supcon_weight", type=float, default=0.05)
     parser.add_argument("--cil_supcon_threshold", type=float, default=0.60)
     parser.add_argument(
+        "--radcil_metric_weight",
+        type=float,
+        default=0.0,
+        help="增量归一化代理度量损失权重；0 保持历史 RADCIL 行为。",
+    )
+    parser.add_argument(
+        "--radcil_metric_scale",
+        type=float,
+        default=16.0,
+        help="归一化代理余弦 logits 的缩放系数。",
+    )
+    parser.add_argument(
+        "--radcil_metric_margin",
+        type=float,
+        default=0.05,
+        help="归一化代理度量的真实类余弦间隔，范围为 [0, 1)。",
+    )
+    parser.add_argument(
         "--radcil_old_new_batch_ratio",
         type=float,
         default=0.0,
@@ -3624,6 +3653,9 @@ def main():
             "round": i,
             "num_outputs": int(student.classifier.out_features),
             "radcil_prototype_anchor_weight": float(args.radcil_prototype_anchor_weight),
+            "radcil_metric_weight": float(args.radcil_metric_weight),
+            "radcil_metric_scale": float(args.radcil_metric_scale),
+            "radcil_metric_margin": float(args.radcil_metric_margin),
         }, os.path.join(args.save_dir, f"mvacc_cil_after_r{i}.pth"))
         np.savez_compressed(os.path.join(args.save_dir, f"replay_memory_after_r{i}.npz"), X=memory_x, y=memory_y)
 

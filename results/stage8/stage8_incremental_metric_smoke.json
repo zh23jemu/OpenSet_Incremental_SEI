@@ -1,0 +1,7 @@
+{
+  "ok": true,
+  "loss": 6.666170597076416,
+  "empty_loss": 0.0,
+  "invalid_label_loss": -0.0,
+  "reproducible": true
+}
