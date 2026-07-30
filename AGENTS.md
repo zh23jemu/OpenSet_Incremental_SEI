@@ -135,6 +135,7 @@
 - Stage 16 Job `45151632` 已完成并同步小型结果：最佳 `branch_w0p30` R3 Overall/Old/New 为 `0.5008/0.4977/0.5260`，相对 seed7 对照 Overall `-0.0049`、New `-0.0323`，未通过门槛，旧/新双分支归档为负消融。
 - Stage 17 已新增 ADS-B 高置信伪标签注册候选：每个当前轮新伪类按 GPCC confidence 仅保留 top fraction 样本用于 imprint、当前轮训练和 replay memory 更新；默认 `1.0` 保持历史全量注册，本地语法、CLI 和 diff check 已通过，待提交 Slurm。
 - Stage 17 Job `45153814` 已完成并同步小型结果：`top0p60` R3 Overall/Old/New/Forgetting 为 `0.5063/0.5077/0.4950/0.0926`，Overall 仅比 seed7 对照高 `+0.0006`，但 New 下降 `-0.0633`；`top0p80` 也压低 New，未通过门槛，不扩三种子。
+- Stage 18 已新增 ADS-B discovery backbone 重训 discovery-only 候选：只用 Day1 已知类训练/验证重训 seed7 closed-set backbone，再用 GPCC 评估 R1-R3 聚类质量；先跑 `supcon_w0p30_rfaug` 与 `supcon_w0p30_noaug` 两个短候选，过 discovery 门槛才进入 CIL。
 
 ## Recent Changes
 
@@ -243,6 +244,7 @@
 - 2026-07-30：Stage 16 Job `45151632` 已完成，权重 `0.30/0.70` 的 R3 Overall 为 `0.5008/0.4955`，均低于 `cross_day + GPCC` seed7 对照 `0.5057`；最佳权重虽让 Old 达到 `0.4977`，但 New 降到 `0.5260`，归档为负消融。
 - 2026-07-30：新增 Stage 17 ADS-B 高置信伪标签注册入口：`--radcil_pseudo_register_top_fraction` 和 `--radcil_pseudo_register_min_per_class`，配套 `slurm/stage17_adsb_pseudo_register_seed7.sbatch` 与报告器；该候选只依赖伪标签和 GPCC 无标签 confidence，默认关闭。
 - 2026-07-30：Stage 17 Job `45153814` 已完成，top fraction `0.60/0.80` 的 R3 Overall 为 `0.5063/0.5049`，最佳候选只微幅超过 seed7 对照但 New 降到 `0.4950`，未通过 Old/New 平衡门槛，归档为负消融。
+- 2026-07-31：新增 Stage 18 ADS-B discovery backbone 重训入口 `slurm/stage18_adsb_backbone_discovery_seed7.sbatch` 与报告器 `tools/stage18_adsb_backbone_discovery_report.py`；本地 `py_compile`、CLI 参数检查和 diff check 已通过，下一步提交 Slurm seed7 discovery-only。
 
 ## Next TODO
 
@@ -284,6 +286,7 @@
 - Stage 13 已运行完成；ADS-B cross_day 的三种子均值仅约 `0.4930`，与现有 target split 主线基本持平，当前仍不能声称已根本解决 ADS-B 低分。
 - Stage 14 证明直接叠加 `cross_day` 和 target split 会损害新类识别；后续若继续攻 ADS-B，应改类均衡伪标签注册/训练或更大联合表征发现结构，而不是继续排列组合已有前端。
 - Stage 17 已未过门槛；ADS-B seed7 的后端/注册结构已多次表现为“Old 变好、New 下降”。下一步若继续攻低分，应转向更激进的联合表征发现或重新训练 discovery backbone，而不是继续加权/过滤当前伪标签。
+- Stage 18 尚无真实 Slurm 结果；重训 backbone 可能提高 discovery 聚类，也可能因只优化 Day1 known validation 而过拟合已知类。采用 discovery-only 先验门槛：R3 Hungarian 至少超过 static GPCC `0.6270` 约 0.015，且 R3 Purity 不明显下降，才进入完整 CIL。
 - Stage 11 首次提交 Job `45068164` 暴露旧 worktree 默认路径问题，已修复；重提后仍需先确认作业启动，再判断聚类收益。
 - Stage 11 Job `45068213` 暴露 ADS-B loader 参数名兼容问题，已修复；下一次重提需确认 LoRa 与 ADS-B 两个 profile 都能正常进入 discovery。
 - 增量双视图一致性已完成 LoRa seed7 负消融：基线权重 `0` 的 R3 Overall/Old/New/Forgetting 为 `0.1667/0.0917/0.4667/0.4857`，权重 `0.05/0.10` 均降低 Overall 和 IQ_7 Old；不作为跨天域适应解决方案。
