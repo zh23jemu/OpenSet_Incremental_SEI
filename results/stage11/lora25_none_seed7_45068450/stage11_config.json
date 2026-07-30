@@ -1,0 +1,17 @@
+{
+  "dataset_profile": "lora25",
+  "dataset_path": "/mnt/users/xj62kv/OpenSet_Incremental_SEI/datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz",
+  "data_root": null,
+  "checkpoint": "/mnt/users/xj62kv/OpenSet_Incremental_SEI/results/stage5/lora_representation_screen_seed7_44573249/supcon_rf_aug.pth",
+  "save_dir": "results/stage11/lora25_none_seed7_45068450",
+  "method": "none",
+  "seed": 7,
+  "feat_dim": 128,
+  "epochs": 2,
+  "batch_size": 128,
+  "test_batch_size": 256,
+  "lr": 1e-05,
+  "consistency_weight": 0.5,
+  "coral_weight": 0.05,
+  "device": "cuda"
+}
