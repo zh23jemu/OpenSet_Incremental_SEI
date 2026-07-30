@@ -231,6 +231,7 @@
 - 2026-07-30：Stage 13 Job `45090123` 已完成。ADS-B 三种子 R3 Overall 为 `0.5057/0.4887/0.4846`，均值 `0.4930±0.0091`；Old `0.4850±0.0095`、New `0.5583±0.0058`，未出现明显塌缩，但相对 target split baseline 的总体提升不足以锁定正式主方案。该候选作为结构性正向但不稳定结果归档，停止继续相邻小参数搜索。
 - 2026-07-30：更新 `CUSTOMER_PROGRESS_REPORT.html`，加入 ADS-B `cross_day + GPCC + RADCIL` 三种子结果和客户口径：seed7 有结构性改善，但三种子总体未超过 target split，不包装为正式主方案。
 - 2026-07-30：更新 `results/stage6/CUSTOMER_QA_RISK_RESPONSE.md`，将 ADS-B 最新三种子结论和“后续只考虑联合表征/发现结构，不再做局部小参数搜索”写入客户问答。
+- 2026-07-30：通过 Git 部分对象过滤同步 Stage 13 报告及 6 个小型 CSV，提交 `ed748d3` 并推送到主分支；大型 checkpoint/回放文件仍保留在远端结果分支，不重复拉取。
 
 ## Next TODO
 
