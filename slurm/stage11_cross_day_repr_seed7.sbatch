@@ -20,7 +20,9 @@ module load slurm
 
 # 使用独立 worktree 执行脚本，但数据和 checkpoint 仍从主项目绝对路径读取，
 # 避免 worktree 没有 .venv 或大文件时出现隐式回退到旧代码的问题。
-PROJECT_ROOT="${PROJECT_ROOT:-/mnt/users/xj62kv/osei_stage11_166315b}"
+# 默认使用提交作业时所在的 worktree；如果从外部封装脚本提交，
+# 仍可通过 PROJECT_ROOT 显式覆盖，避免路径写死到旧 worktree。
+PROJECT_ROOT="${PROJECT_ROOT:-${SLURM_SUBMIT_DIR:-$(pwd)}}"
 DATA_ROOT="${DATA_ROOT:-/mnt/users/xj62kv/OpenSet_Incremental_SEI}"
 cd "${PROJECT_ROOT}"
 PYTHON_BIN="${PYTHON_BIN:-/mnt/users/xj62kv/OpenSet_Incremental_SEI/.venv/bin/python}"
