@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划与项目进度总表
 
-- 状态：阶段 7 训练期跨天表征验证已完成；Job `45049135` 未通过双门槛，LoRa 机制搜索停止，当前转入最终局限报告和交付整理
+- 状态：阶段 7 训练期跨天表征验证已完成；Job `45049135` 未通过双门槛，LoRa 机制搜索停止，最终风险收口报告已生成，当前转入交付整理
 - 版本：1.1
 - 创建日期：2026-07-26
 - 最近更新：2026-07-29
@@ -272,6 +272,7 @@
 - [x] 完成 LoRa 增量双视图一致性 seed7 矩阵 Job `45047897`；权重 `0.05/0.10` 未改善 IQ_7 Old 或 held-out Overall，记录为负消融，不扩 seed13/31。
 - [x] 完成 LoRa discovery 簇可靠性伪标签加权二元 Job `45048052`；开启/关闭结果完全一致，IQ_7/held-out 双门槛均未通过，停止 LoRa 后端小机制搜索。
 - [x] 完成 LoRa 训练期跨天特征分布对齐 Job `45049135`；未改善 IQ_7 旧类保持或 held-out Overall，归档为负消融，不扩 seed13/31。
+- [x] 生成最终风险收口报告 `results/stage7/STAGE7_FINAL_RISK_CLOSURE_REPORT.md`，统一 ADS-B、LoRa、DOI-style 和客户问答口径。
 - [ ] 提供 `gpu` 分区、`gpo-ifv7xx` 账号、`normal` QOS 的正式 Slurm 脚本；一小时内验证任务使用 `shortjobs`。
 - [ ] 汇总多种子均值、标准差、对照和消融表格。
 - [ ] 整理可直接用于论文的 t-SNE 图和结果图表。

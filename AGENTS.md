@@ -211,6 +211,7 @@
 - 2026-07-29：新增增量双视图一致性损失和 LoRa seed7 预注册矩阵；Job `45047897` 中权重 `0.05/0.10` 的 IQ_7 R3 Old、Overall 均低于基线 `0`，记录为负消融，不扩 seed13/31。
 - 2026-07-29：新增 discovery 簇可靠性伪标签加权入口、LoRa seed7 二元计划并完成 Job `45048052`；开启/关闭逐项完全一致，按预注册 IQ_7/held-out 双门槛归档为负消融，停止 LoRa 后端小机制搜索。
 - 2026-07-29：完成阶段 7 LoRa 训练期跨天特征分布对齐验证；Job `45049066` 因 worktree 缺少 `.venv` 以退出码 127 失败，修正 `PYTHON_BIN` 后 Job `45049135` 正常完成。对齐未改善 IQ_7 旧类保持或 held-out Overall，归档为负消融，不扩种子。
+- 2026-07-29：新增 `results/stage7/STAGE7_FINAL_RISK_CLOSURE_REPORT.md`，同步客户汇报页和客户问答，明确 LoRa 机制搜索停止、ADS-B/LoRa 低结果局限及 DOI-style 简化 baseline 口径。
 
 ## Next TODO
 

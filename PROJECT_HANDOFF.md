@@ -142,6 +142,7 @@ Strict loader 审计：
 - 已新增增量双视图一致性损失、LoRa seed7 矩阵和报告：Job `45047897` 基线权重 `0` 的 R3 Overall/Old/New/Forgetting 为 `0.1667/0.0917/0.4667/0.4857`；权重 `0.05/0.10` 的 IQ_7 Old 和 Overall 均退化，记录为负消融，不扩三种子。
 - 已新增并完成 discovery 簇可靠性伪标签加权入口和 LoRa 二元计划；Job `45048052` 已完成。开启/关闭结果完全一致：IQ_7 R3 Old `0.1357`，held-out R3 Overall/Old/New/Forgetting `0.1667/0.0917/0.4667/0.4857`，未通过双门槛，不扩 seed13/31。
 - 已完成阶段 7 训练期跨天 CORAL-style discovery/replay 特征分布对齐：Job `45049135` 开启/关闭 IQ_7 R3 Old 均为 `0.1357`，held-out R3 Overall 均为 `0.1667`，开启后 Old `0.0905`、New `0.4714`、Forgetting `0.4857`，未通过双门槛，归档为负消融。Job `45049066` 仅为 worktree 环境失败，不计入算法结论。
+- 已生成最终风险收口报告 `results/stage7/STAGE7_FINAL_RISK_CLOSURE_REPORT.md`，汇总 ADS-B/LoRa 低结果原因、负消融边界、DOI-style 简化 baseline 和客户回答口径。
 - 已新增 `tools/stage5_manytx_manyrx_supplement_report.py`、`results/stage5/STAGE5_MANYTX_MANYRX_SUPPLEMENT_REPORT.md` 和 JSON 摘要，只读汇总既有 ManyTx/ManyRx seed7 三轮结果；ManyTx R3 Overall/New/Forgetting=`0.2700/0.5600/0.4267`，ManyRx R3 Overall/New/Forgetting=`0.5700/0.9500/0.5250`，阶段 5 补充稳定性验证已关闭。
 - 已生成只读服务器产物清单：553 个模型/回放二进制、约 5.21 GB、54 个超 50 MB 和 9 个非空错误日志。未删除任何文件，仅精确忽略新矩阵二进制并保留小型审计结果。
 - 已在 WiSig strict 入口实现可选 DOI-memory hybrid：使用伪标签 replay 记忆构建原型、跨轮对齐历史原型，并与网络 logits 做 late fusion；默认融合权重为 0，不改变历史 RADCIL 行为。该分支已完成 seed7 和三种子验证，正式结论为负消融。
@@ -156,7 +157,7 @@ Strict loader 审计：
 1. GPCC 阶段代码和 seed7 结果已通过 Git 同步；继续保持远端小文件走 Git、大型 checkpoint/replay 不入库。
 2. LoRa GPCC discovery-only 未过门槛，不进入完整增量；ADS-B GPCC 完整增量 seed7 未超过 target split，不扩 seed 13/31。
 3. 下一步整理客户口径：HDBSCAN 替换已做结构性验证，但最终低分不只来自簇数，ADS-B 仍以 target split 为当前最佳收敛候选，LoRa 作为跨体制局限报告。
-4. LoRa 阶段 7 未通过双门槛，停止继续加机制；整理最终局限报告，后续只有全新的训练期表征学习方案才重新开实验。
+4. LoRa 阶段 7 未通过双门槛，停止继续加机制；最终风险收口报告已生成，后续只有全新的训练期表征学习方案才重新开实验。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳收敛候选，不继续 target split/anchor 小参数搜索；最终报告中单独说明旧新类遗忘权衡。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
