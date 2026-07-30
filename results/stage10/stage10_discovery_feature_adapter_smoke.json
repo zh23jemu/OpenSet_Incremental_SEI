@@ -1,0 +1,53 @@
+{
+  "ok": true,
+  "checks": {
+    "none": {
+      "shape": [
+        75,
+        16
+      ],
+      "finite": true,
+      "diagnostics": {
+        "Discovery Feature Adapter": "none",
+        "DFA Smooth K": 12,
+        "DFA Smooth Weight": 0.2,
+        "DFA Repulsion Weight": 0.15,
+        "DFA Known Samples": 0,
+        "DFA Known Classes": 0
+      }
+    },
+    "mn_smooth": {
+      "shape": [
+        75,
+        16
+      ],
+      "finite": true,
+      "diagnostics": {
+        "Discovery Feature Adapter": "mn_smooth",
+        "DFA Smooth K": 12,
+        "DFA Smooth Weight": 0.2,
+        "DFA Repulsion Weight": 0.15,
+        "DFA Known Samples": 120,
+        "DFA Known Classes": 4,
+        "DFA Output Dim": 16
+      }
+    },
+    "proto_repulse": {
+      "shape": [
+        75,
+        16
+      ],
+      "finite": true,
+      "diagnostics": {
+        "Discovery Feature Adapter": "proto_repulse",
+        "DFA Smooth K": 8,
+        "DFA Smooth Weight": 0.25,
+        "DFA Repulsion Weight": 0.2,
+        "DFA Known Samples": 120,
+        "DFA Known Classes": 4,
+        "DFA Mean Nearest Known Cosine": 0.1549025923013687,
+        "DFA Output Dim": 16
+      }
+    }
+  }
+}

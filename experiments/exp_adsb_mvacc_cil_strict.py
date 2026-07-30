@@ -78,6 +78,7 @@ if PROJECT_ROOT not in sys.path:
 
 from features.rf_features import extract_rf_features_batch
 from utils.classic_feature_gating import select_classic_feature_view, save_selection, local_cross_view_consistency
+from utils.discovery_feature_adaptation import adapt_discovery_features
 from utils.graph_prototype_discovery_adapter import run_gpcc
 from utils.incremental_visualization import save_seen_class_visualizations, save_paper_method_visualizations
 from utils.incremental_metric_learning import cosine_proxy_metric_loss
@@ -641,7 +642,25 @@ def extract_rf_view(X, args, cflcg_mode="none"):
 
 def build_round_features(X_round, Z_round, args, cflcg_mode="none"):
     rf = extract_rf_view(X_round, args, cflcg_mode)
-    z_deep = clean_scale(Z_round)
+    adapter_name = str(getattr(args, "discovery_feature_adapter", "none")).lower()
+    if adapter_name == "none":
+        # 默认路径保持历史 clean_scale 行为，确保已有实验不受新开关影响。
+        z_deep = clean_scale(Z_round)
+        adapter_diagnostics = {"Discovery Feature Adapter": "none"}
+    else:
+        adapter_result = adapt_discovery_features(
+            getattr(args, "discovery_adapter_known_Z", None),
+            getattr(args, "discovery_adapter_known_y", None),
+            Z_round,
+            method=adapter_name,
+            smooth_k=getattr(args, "discovery_adapter_smooth_k", 12),
+            smooth_weight=getattr(args, "discovery_adapter_smooth_weight", 0.20),
+            repulsion_weight=getattr(args, "discovery_adapter_repulsion_weight", 0.15),
+        )
+        # discovery 特征适配只作用在当前轮 deep view；RF view 保持原始统计特征，
+        # graph view 再基于适配后的 deep view 与 RF view 构造，避免接触 eval。
+        z_deep = adapter_result.features
+        adapter_diagnostics = adapter_result.diagnostics
     z_rf = clean_scale(rf)
     local_consistency = local_cross_view_consistency(z_deep, z_rf, args.cflcg_local_k) if cflcg_mode == "local" else None
     z_graph, fusion_stats = graph_embedding(
@@ -663,6 +682,7 @@ def build_round_features(X_round, Z_round, args, cflcg_mode="none"):
         "hybrid": np.concatenate([z_deep, z_rf], axis=1).astype(np.float32),
         "fusion_stats": fusion_stats,
         "local_rf_consistency": local_consistency,
+        "feature_adapter_diagnostics": adapter_diagnostics,
     }
 
 
@@ -2850,6 +2870,7 @@ def run_discovery(method, round_name, day_name, true_new_classes, X_round, y_rou
             **final_metrics,
             **label_free_metrics,
             "Discovery Backend": "GPCC",
+            **feats.get("feature_adapter_diagnostics", {}),
             **gpcc.diagnostics,
         }
         info = {
@@ -3020,6 +3041,7 @@ def run_discovery(method, round_name, day_name, true_new_classes, X_round, y_rou
         "Over-clustering Ratio": float(final_metrics["Clusters"] / max(int(true_new_classes), 1)),
         **final_metrics,
         **label_free_metrics,
+        **feats.get("feature_adapter_diagnostics", {}),
     }
 
     graph_based = base_method in [
@@ -3115,6 +3137,10 @@ def main():
     parser.add_argument("--round_size", type=int, default=10)
     parser.add_argument("--num_rounds", type=int, default=3)
     parser.add_argument("--discovery_backend", choices=["mvacc", "gpcc"], default="mvacc", help="Discovery front-end for the main MV-ACC-CIL path; gpcc fixes K=round_size without HDBSCAN.")
+    parser.add_argument("--discovery_feature_adapter", choices=["none", "mn_smooth", "proto_repulse"], default="none", help="Strict discovery feature adapter before MV-ACC/GPCC; uses only known train and current discovery features.")
+    parser.add_argument("--discovery_adapter_smooth_k", type=int, default=12, help="kNN size for discovery-only local feature smoothing.")
+    parser.add_argument("--discovery_adapter_smooth_weight", type=float, default=0.20, help="Blend weight for discovery-only local feature smoothing.")
+    parser.add_argument("--discovery_adapter_repulsion_weight", type=float, default=0.15, help="Known-prototype repulsion weight for proto_repulse adapter.")
     parser.add_argument("--discovery_only", action="store_true", help="只运行严格发现前端并保存聚类表；用于先验证聚类质量，不进入增量训练后端。")
     parser.add_argument("--development_ratio", type=float, default=0.70, help="Per-day development ratio: Day1 becomes 60%% backbone training + 10%% validation; remaining 30%% is held-out evaluation.")
     parser.add_argument("--old_class_bonus", type=float, default=0.0, help="Old-class prototype score bonus beta for reducing forgetting. Recommended: 0.00, 0.02, 0.04, 0.06.")
@@ -3483,6 +3509,10 @@ def main():
 
     print("\n[Extract] Deep embeddings")
     Z_train, y_train = extract_deep_features(model, X_train, y_train, args.test_batch_size, device)
+    # discovery 特征适配只允许访问 Day1 已知训练特征和当前轮 discovery 特征；
+    # held-out eval embedding 在 discovery_only 分支之后才会抽取。
+    args.discovery_adapter_known_Z = Z_train
+    args.discovery_adapter_known_y = y_train
     day1_training_subset, day1_validation_subset = stratified_train_validation_split(
         train_set, validation_fraction=args.closedset_val_ratio, seed=args.seed
     )
