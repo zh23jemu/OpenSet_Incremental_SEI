@@ -132,6 +132,8 @@
 - Stage 10 Job `45066631` 已完成并通过 Git 同步；LoRa `mn_smooth/proto_repulse` 的 mean Hungarian 分别为 `0.4197/0.3878`，低于 `none=0.4177` 或未形成稳定收益；ADS-B 三种配置 mean Hungarian 均约 `0.733-0.737`，R3 也未超过 `none=0.6270`。该候选归档为负消融，不进入 CIL。
 - Stage 15 Job `45149433` 已完成并同步小型结果：ADS-B 类均衡伪标签训练 seed7 R3 Overall/Old/New 为 `0.4995/0.4985/0.5070`，低于 `cross_day + GPCC` seed7 对照约 `0.5057/0.4850/0.5583`；Old 略稳但 New 明显下降，归档为负消融，不扩三种子。
 - Stage 16 已新增默认关闭的 ADS-B 旧/新双分支训练候选：在 RADCIL 训练期把当前轮之前的已注册类作为 old branch、当前轮新伪类作为 new branch，增加二分类分支判别损失；入口、报告器和 Slurm seed7 矩阵已完成本地语法与 CLI 校验，待提交 Slurm。
+- Stage 16 Job `45151632` 已完成并同步小型结果：最佳 `branch_w0p30` R3 Overall/Old/New 为 `0.5008/0.4977/0.5260`，相对 seed7 对照 Overall `-0.0049`、New `-0.0323`，未通过门槛，旧/新双分支归档为负消融。
+- Stage 17 已新增 ADS-B 高置信伪标签注册候选：每个当前轮新伪类按 GPCC confidence 仅保留 top fraction 样本用于 imprint、当前轮训练和 replay memory 更新；默认 `1.0` 保持历史全量注册，本地语法、CLI 和 diff check 已通过，待提交 Slurm。
 
 ## Recent Changes
 
@@ -237,6 +239,8 @@
 - 2026-07-30：新增并完成 Stage 14 ADS-B seed7 `cross_day + target split + RADCIL` 结构组合验证，Job `45146197` R3 Overall/Old/New 为 `0.4865/0.4990/0.3840`，New 被明显压低，未通过 `Overall > 0.50 且 Old/New 不塌缩` 门槛，归档为负消融，不扩三种子。
 - 2026-07-30：新增 Stage 15 ADS-B 类均衡伪标签训练入口：`--radcil_balance_current_pseudo_classes` 与当前轮新伪类 CE 反频率权重，配套 `slurm/stage15_adsb_balanced_pseudo_seed7.sbatch` 和报告器；Job `45149433` 已完成，R3 Overall `0.4995`、Old `0.4985`、New `0.5070`，未超过 cross_day + GPCC seed7 对照，归档为负消融。
 - 2026-07-30：新增 Stage 16 ADS-B 旧/新双分支训练入口：`--radcil_old_new_dual_branch` 与 `--radcil_old_new_branch_weight`，配套 `slurm/stage16_adsb_old_new_branch_seed7.sbatch` 和 `tools/stage16_adsb_old_new_branch_report.py`；本地 `py_compile`、CLI help 和 diff check 已通过，下一步提交并跑 seed7 矩阵。
+- 2026-07-30：Stage 16 Job `45151632` 已完成，权重 `0.30/0.70` 的 R3 Overall 为 `0.5008/0.4955`，均低于 `cross_day + GPCC` seed7 对照 `0.5057`；最佳权重虽让 Old 达到 `0.4977`，但 New 降到 `0.5260`，归档为负消融。
+- 2026-07-30：新增 Stage 17 ADS-B 高置信伪标签注册入口：`--radcil_pseudo_register_top_fraction` 和 `--radcil_pseudo_register_min_per_class`，配套 `slurm/stage17_adsb_pseudo_register_seed7.sbatch` 与报告器；该候选只依赖伪标签和 GPCC 无标签 confidence，默认关闭。
 
 ## Next TODO
 
@@ -276,7 +280,7 @@
 - Stage 13 尚未运行；确认重点是 ADS-B 三种子 R3 Overall 是否稳定超过同 seed target split baseline，同时 Old/New 不出现新的塌缩。
 - Stage 13 已运行完成；ADS-B cross_day 的三种子均值仅约 `0.4930`，与现有 target split 主线基本持平，当前仍不能声称已根本解决 ADS-B 低分。
 - Stage 14 证明直接叠加 `cross_day` 和 target split 会损害新类识别；后续若继续攻 ADS-B，应改类均衡伪标签注册/训练或更大联合表征发现结构，而不是继续排列组合已有前端。
-- Stage 15 已未过门槛；下一步提交并运行 Stage 16 ADS-B 旧/新双分支 seed7 矩阵。只有最佳候选 R3 Overall 超过 `0.5057`，且 Old 不低于对照 0.01、New 不低于对照 0.03，才扩 seed13/31。
+- Stage 16 已未过门槛；下一步提交并运行 Stage 17 ADS-B 高置信伪标签注册 seed7 矩阵。只有最佳候选 R3 Overall 超过 `0.5057`，且 Old 不低于对照 0.01、New 不低于对照 0.03，才扩 seed13/31。
 - Stage 11 首次提交 Job `45068164` 暴露旧 worktree 默认路径问题，已修复；重提后仍需先确认作业启动，再判断聚类收益。
 - Stage 11 Job `45068213` 暴露 ADS-B loader 参数名兼容问题，已修复；下一次重提需确认 LoRa 与 ADS-B 两个 profile 都能正常进入 discovery。
 - 增量双视图一致性已完成 LoRa seed7 负消融：基线权重 `0` 的 R3 Overall/Old/New/Forgetting 为 `0.1667/0.0917/0.4667/0.4857`，权重 `0.05/0.10` 均降低 Overall 和 IQ_7 Old；不作为跨天域适应解决方案。

@@ -1952,6 +1952,39 @@ def _old_new_branch_loss(logits, labels, old_out_dim):
     return F.cross_entropy(branch_logits, branch_targets)
 
 
+def _select_pseudo_registration_mask(pseudo_y, confidence, top_fraction, min_per_class):
+    """按伪类置信度选择当前轮注册/训练样本。
+
+    GPCC 会给每个 discovery 样本输出基于 prototype margin 与 silhouette 的无标签
+    置信度。历史流程把所有样本都送进当前轮训练，低置信边界样本会把错误伪标签
+    直接写进新增分类头。这里改成“每个伪类内部排序、只保留高置信部分”：
+
+    - 选择只依赖伪标签和无标签置信度，不读取未知真实标签；
+    - 每个伪类至少保留 ``min_per_class`` 个样本，避免小簇被过滤空；
+    - ``top_fraction >= 1`` 时返回全量 mask，保持历史行为。
+    """
+    pseudo_y = np.asarray(pseudo_y, dtype=np.int64)
+    confidence = np.asarray(confidence, dtype=np.float32)
+    if len(pseudo_y) == 0:
+        return np.zeros(0, dtype=bool)
+    if float(top_fraction) >= 0.999:
+        return np.ones(len(pseudo_y), dtype=bool)
+    if confidence.shape[0] != pseudo_y.shape[0]:
+        confidence = np.ones(len(pseudo_y), dtype=np.float32)
+
+    keep = np.zeros(len(pseudo_y), dtype=bool)
+    frac = float(np.clip(top_fraction, 0.01, 1.0))
+    min_keep = max(1, int(min_per_class))
+    for class_id in sorted(np.unique(pseudo_y).tolist()):
+        idx = np.where(pseudo_y == int(class_id))[0]
+        if len(idx) == 0:
+            continue
+        take = min(len(idx), max(min_keep, int(np.ceil(len(idx) * frac))))
+        order = np.argsort(-confidence[idx], kind="mergesort")
+        keep[idx[order[:take]]] = True
+    return keep
+
+
 def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, memory_x, memory_y, old_out_dim, args, device):
     """Head warm-up followed by last-block backbone adaptation on raw IQ samples."""
     current_x = np.asarray(current_x, dtype=np.float32)
@@ -3309,6 +3342,18 @@ def main():
         default=0.0,
         help="旧/新分支判别损失权重；0 保持历史 RADCIL 行为。",
     )
+    parser.add_argument(
+        "--radcil_pseudo_register_top_fraction",
+        type=float,
+        default=1.0,
+        help="每个当前轮新伪类仅保留置信度最高的比例进入注册和训练；1.0 保持全量历史行为。",
+    )
+    parser.add_argument(
+        "--radcil_pseudo_register_min_per_class",
+        type=int,
+        default=30,
+        help="伪标签注册过滤时每个新伪类至少保留的样本数，避免小簇被过滤为空。",
+    )
     parser.add_argument("--pseudo_weight_floor", type=float, default=0.20)
 
 
@@ -3795,11 +3840,29 @@ def main():
         current_w = np.maximum(float(args.pseudo_weight_floor), np.nan_to_num(raw_probs, nan=0.0))
         current_w[raw_noise] = float(args.pseudo_weight_floor)
         old_out = int(student.classifier.out_features)
-        imprinted_means = np.stack([rd["Z"][pseudo_y == int(next_label + j)].mean(axis=0) for j in range(len(cluster_ids))]).astype(np.float32)
+        register_mask = _select_pseudo_registration_mask(
+            pseudo_y,
+            current_w,
+            top_fraction=float(args.radcil_pseudo_register_top_fraction),
+            min_per_class=int(args.radcil_pseudo_register_min_per_class),
+        )
+        if not np.all(register_mask):
+            kept = int(np.sum(register_mask))
+            print(
+                f"[pseudo register] R{i}: kept={kept}/{len(register_mask)} "
+                f"top_fraction={float(args.radcil_pseudo_register_top_fraction):.2f}"
+            )
+        imprinted_means = np.stack([
+            rd["Z"][(pseudo_y == int(next_label + j)) & register_mask].mean(axis=0)
+            for j in range(len(cluster_ids))
+        ]).astype(np.float32)
+        current_x_train = rd["X"][register_mask]
+        pseudo_y_train = pseudo_y[register_mask]
+        current_w_train = current_w[register_mask]
         next_label += len(cluster_ids)
         student = _expand_closedset_classifier(teacher, next_label, device, imprinted_means)
-        student = _train_end_to_end_cil(student, teacher, rd["X"], pseudo_y, current_w, memory_x, memory_y, old_out, args, device)
-        memory_x, memory_y = _update_iq_memory(memory_x, memory_y, rd["X"], pseudo_y, args.memory_per_class, args.seed + i)
+        student = _train_end_to_end_cil(student, teacher, current_x_train, pseudo_y_train, current_w_train, memory_x, memory_y, old_out, args, device)
+        memory_x, memory_y = _update_iq_memory(memory_x, memory_y, current_x_train, pseudo_y_train, args.memory_per_class, args.seed + i)
         eval_key = f"eval_r{i}"
         pred = _predict_end_to_end(student, eval_data[eval_key]["X"], args.test_batch_size, device)
         incremental_rows.append(_evaluate_raw_predictions(
