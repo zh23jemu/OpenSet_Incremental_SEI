@@ -45,7 +45,7 @@ def _load_profile(args):
             args.data_root,
             initial_known_classes=90,
             round_size=10,
-            development_ratio=0.70,
+            train_ratio=0.70,
             known_selection_seed=args.seed,
         )
         model = exp.load_closedset_model(
