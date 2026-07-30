@@ -397,6 +397,10 @@ Job `44781083` 在默认 target split 与 Long-RADCIL 配置下验证训练期�
 
 Stage 11 已新增训练期跨天表征适配 discovery-only 候选。Student 从原始 closed-set checkpoint 拷贝，Teacher 固定为原模型；每轮只使用 Day1 known train 标签和当前轮 discovery 无标签样本，联合优化已知类 CE、两种 IQ 增强视图一致性、Student/Teacher 特征保持和 CORAL 二阶统计对齐。入口、计划、报告器和 Slurm 短任务已完成本地语法与合成 smoke，真实 seed7 结果待 Slurm 验证；只有聚类 Hungarian/Purity 明显提升才进入 CIL。
 
+Stage 11 Job `45068450` 已完成真实 seed7 discovery-only。LoRa `none/cross_day` 的 mean Hungarian 为 `0.4163/0.4279`，mean Purity 为 `0.4299/0.4449`，三轮均保持 5 簇；ADS-B `none/cross_day` 的 R3 Hungarian 为 `0.5923/0.6074`，R3 Purity 为 `0.7157/0.7283`，三轮均保持 10 簇。该候选通过预注册 discovery 门槛，下一步只验证它是否能传递到完整 CIL。
+
+Stage 12 已将 `--cross_day_repr_adaptation` 接入 ADS-B/LoRa strict 完整 CIL 入口；每轮 Teacher discovery 前做同样的训练期适配，默认关闭，显式打开才运行。seed7 Slurm 入口固定 GPCC、当前 RADCIL replay 配置和 `cross_day`，不过完整 CIL 门槛不扩展 seed13/31。
+
 ## 8.2 当前风险与应对
 
 | 风险                             | 影响                                                               | 当前应对                                                   |
@@ -423,6 +427,7 @@ Stage 11 已新增训练期跨天表征适配 discovery-only 候选。Student �
 4. 先跑 Stage 10 GPCC + `none/mn_smooth/proto_repulse` seed7 discovery-only 矩阵；LoRa 看三轮 mean Hungarian/Purity，ADS-B 看 R3，未过门槛不进入 CIL。
 5. Stage 10 已未过门槛；不扩 seed13/31，不进入 CIL，下一步转向训练期跨天表征重训或表征-发现联合学习。
 6. Stage 11 先在 ADS-B/LoRa seed7 跑 `none/cross_day` discovery-only；严格使用独立 worktree、主项目绝对数据/checkpoint 路径和项目 `.venv`，通过门槛后才考虑完整增量。
+7. Stage 12 运行 `cross_day + GPCC + 当前 RADCIL` 的 ADS-B/LoRa seed7 完整 CIL；只有 R3 Overall 提升且 Old/New 不塌缩，才考虑扩展三种子。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 

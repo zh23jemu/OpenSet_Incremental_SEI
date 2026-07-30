@@ -224,6 +224,8 @@
 - 2026-07-30：新增 Stage 11 训练期跨天表征适配 discovery-only 入口 `utils/cross_day_representation_adaptation.py`、`tools/stage11_cross_day_repr_discovery.py`、计划/报告器和 `slurm/stage11_cross_day_repr_seed7.sbatch`。适配只使用 Day1 known train 标签和当前轮 discovery 无标签样本，加入增强一致性、Teacher 特征保持和 CORAL 对齐；本地 `py_compile`、合成适配 smoke、计划/报告 smoke 已通过，尚未提交 Slurm。
 - 2026-07-30：Stage 11 首次 Job `45068164` 因 Slurm 脚本残留旧 worktree 路径而立即失败，已修复为默认使用 `SLURM_SUBMIT_DIR`，并保留 `PROJECT_ROOT` 显式覆盖；该失败属于入口路径问题，不是算法结果。
 - 2026-07-30：Stage 11 Job `45068213` 已成功启动但因 ADS-B strict loader 参数名仍使用旧的 `development_ratio` 退出，已修正为当前接口的 `train_ratio`；该失败仍属于入口兼容性问题，不代表算法结果。
+- 2026-07-30：Stage 11 Job `45068450` 已成功完成。LoRa `cross_day` 相对 `none` 的 mean Hungarian/Purity 为 `0.4279/0.4449` 对 `0.4163/0.4299`；ADS-B R3 Hungarian/Purity 为 `0.6074/0.7283` 对 `0.5923/0.7157`，两者簇数均保持协议目标值。该结构性候选通过 discovery 门槛，进入 seed7 完整 CIL 验证。
+- 2026-07-30：完整 CIL 入口已接入默认关闭的 `--cross_day_repr_adaptation`，并新增 `tools/stage12_cross_day_cil_report.py` 与 `slurm/stage12_cross_day_cil_seed7.sbatch`；本地语法、CLI 和报告 smoke 已通过，尚未提交 Slurm。
 
 ## Next TODO
 
@@ -258,6 +260,7 @@
 - Stage 10 当前只有本地工程验证，尚无真实 ADS-B/LoRa 结果；适配器可能改善无标签局部结构但也可能放大错误近邻，必须以 discovery-only Slurm 结果判定，不能提前宣称有效。
 - Stage 10 真实 seed7 已证明局部近邻平滑和已知类原型排斥不能稳定改善聚类；当前根因仍是跨天表征漂移与 discovery 伪标签纯度，不再继续做相邻小参数搜索。
 - Stage 11 尚无真实 Slurm 结果；训练期跨天适配可能改善跨日统计，也可能破坏已知类判别，不能在实验完成前声称能解决 ADS-B/LoRa 低分。
+- Stage 11 discovery-only 已通过门槛，但完整 CIL 是否改善 Overall/Old/New/Forgetting 尚未验证；Stage 12 只跑 seed7，不提前扩展三种子。
 - Stage 11 首次提交 Job `45068164` 暴露旧 worktree 默认路径问题，已修复；重提后仍需先确认作业启动，再判断聚类收益。
 - Stage 11 Job `45068213` 暴露 ADS-B loader 参数名兼容问题，已修复；下一次重提需确认 LoRa 与 ADS-B 两个 profile 都能正常进入 discovery。
 - 增量双视图一致性已完成 LoRa seed7 负消融：基线权重 `0` 的 R3 Overall/Old/New/Forgetting 为 `0.1667/0.0917/0.4667/0.4857`，权重 `0.05/0.10` 均降低 Overall 和 IQ_7 Old；不作为跨天域适应解决方案。

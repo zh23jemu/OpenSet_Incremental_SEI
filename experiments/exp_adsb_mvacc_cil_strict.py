@@ -80,6 +80,7 @@ from features.rf_features import extract_rf_features_batch
 from utils.classic_feature_gating import select_classic_feature_view, save_selection, local_cross_view_consistency
 from utils.discovery_feature_adaptation import adapt_discovery_features
 from utils.graph_prototype_discovery_adapter import run_gpcc
+from utils.cross_day_representation_adaptation import adapt_model_cross_day
 from utils.incremental_visualization import save_seen_class_visualizations, save_paper_method_visualizations
 from utils.incremental_metric_learning import cosine_proxy_metric_loss
 from models.vup_model import ClosedSetSEI
@@ -3138,6 +3139,12 @@ def main():
     parser.add_argument("--num_rounds", type=int, default=3)
     parser.add_argument("--discovery_backend", choices=["mvacc", "gpcc"], default="mvacc", help="Discovery front-end for the main MV-ACC-CIL path; gpcc fixes K=round_size without HDBSCAN.")
     parser.add_argument("--discovery_feature_adapter", choices=["none", "mn_smooth", "proto_repulse"], default="none", help="Strict discovery feature adapter before MV-ACC/GPCC; uses only known train and current discovery features.")
+    parser.add_argument("--cross_day_repr_adaptation", action="store_true", help="每轮 Teacher discovery 前做训练期跨天表征适配，只使用 Day1 known train 标签和当前 discovery 无标签样本。")
+    parser.add_argument("--cross_day_repr_epochs", type=int, default=2)
+    parser.add_argument("--cross_day_repr_batch_size", type=int, default=128)
+    parser.add_argument("--cross_day_repr_lr", type=float, default=1e-5)
+    parser.add_argument("--cross_day_repr_consistency_weight", type=float, default=0.5)
+    parser.add_argument("--cross_day_repr_coral_weight", type=float, default=0.05)
     parser.add_argument("--discovery_adapter_smooth_k", type=int, default=12, help="kNN size for discovery-only local feature smoothing.")
     parser.add_argument("--discovery_adapter_smooth_weight", type=float, default=0.20, help="Blend weight for discovery-only local feature smoothing.")
     parser.add_argument("--discovery_adapter_repulsion_weight", type=float, default=0.15, help="Known-prototype repulsion weight for proto_repulse adapter.")
@@ -3637,6 +3644,24 @@ def main():
 
     for i, rd in enumerate(round_data, start=1):
         teacher = copy.deepcopy(student).to(device).eval()
+        if args.cross_day_repr_adaptation:
+            # 适配发生在当前轮 discovery 之前。未知真实标签只在后续离线
+            # clustering metrics 中使用，不进入适配损失、伪标签或模型选择。
+            adaptation_result = adapt_model_cross_day(
+                teacher,
+                X_train,
+                y_train,
+                rd["X"],
+                device=device,
+                epochs=args.cross_day_repr_epochs,
+                batch_size=args.cross_day_repr_batch_size,
+                lr=args.cross_day_repr_lr,
+                consistency_weight=args.cross_day_repr_consistency_weight,
+                coral_weight=args.cross_day_repr_coral_weight,
+                seed=args.seed + i,
+            )
+            teacher = adaptation_result.model
+            rd["cross_day_adaptation_diagnostics"] = adaptation_result.diagnostics
         # Teacher is frozen during discovery. This prevents moving representations from changing clusters.
         rd["Z"], _ = extract_deep_features(teacher, rd["X"], rd["y"], args.test_batch_size, device)
         row, info = run_discovery("MV-ACC", f"R{i}", f"Day {i + 1}", args.round_size, rd["X"], rd["y"], rd["Z"], args)
