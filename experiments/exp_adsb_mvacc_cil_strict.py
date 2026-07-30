@@ -51,7 +51,7 @@ import matplotlib.pyplot as plt
 
 import torch
 import torch.nn.functional as F
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader, TensorDataset, WeightedRandomSampler
 
 from sklearn.preprocessing import StandardScaler, normalize
 from sklearn.manifold import SpectralEmbedding, TSNE
@@ -1946,9 +1946,34 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
         )
     else:
         memory_batch_size = current_batch_size
+    current_dataset = TensorDataset(
+        torch.as_tensor(current_x),
+        torch.as_tensor(current_y),
+        torch.as_tensor(current_w),
+    )
+    current_sampler = None
+    if bool(args.radcil_balance_current_pseudo_classes):
+        # 当前轮 discovery 的伪标签簇大小可能非常不均衡。这里按新伪类反频率
+        # 采样，让小簇在每个 epoch 中有更接近大簇的出现机会；该权重只来自
+        # 伪标签计数，不读取 held-out eval 或未知真实标签。
+        unique_y, counts_y = np.unique(current_y, return_counts=True)
+        count_map = {int(label): int(count) for label, count in zip(unique_y, counts_y)}
+        sample_weights = np.asarray(
+            [1.0 / float(max(count_map[int(label)], 1)) for label in current_y],
+            dtype=np.float64,
+        )
+        current_sampler = WeightedRandomSampler(
+            weights=torch.as_tensor(sample_weights, dtype=torch.double),
+            num_samples=len(sample_weights),
+            replacement=True,
+        )
     cur_loader = DataLoader(
-        TensorDataset(torch.as_tensor(current_x), torch.as_tensor(current_y), torch.as_tensor(current_w)),
-        batch_size=current_batch_size, shuffle=True, drop_last=False, num_workers=0,
+        current_dataset,
+        batch_size=current_batch_size,
+        shuffle=current_sampler is None,
+        sampler=current_sampler,
+        drop_last=False,
+        num_workers=0,
     )
     mem_loader = DataLoader(
         TensorDataset(torch.as_tensor(memory_x), torch.as_tensor(memory_y)),
@@ -2022,7 +2047,28 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                 x = torch.cat([xc, xm], dim=0)
                 feat, logits = student(x)
                 logits_c, logits_m = logits[:len(xc)], logits[len(xc):]
-                ce_current = (F.cross_entropy(logits_c, yc, reduction="none") * wc).sum() / (wc.sum() + 1e-8)
+                current_ce_weight = wc
+                if float(args.radcil_current_class_balance_weight) > 0:
+                    # CE 层再加入温和的反频率类权重，补偿小新簇的梯度贡献。
+                    # 上限用于避免极小簇被过度放大，默认关闭，显式实验才启用。
+                    batch_labels, batch_counts = torch.unique(yc, return_counts=True)
+                    inverse = {int(label): 1.0 / float(count) for label, count in zip(batch_labels.cpu(), batch_counts.cpu())}
+                    class_weight = torch.as_tensor(
+                        [inverse[int(label)] for label in yc.detach().cpu()],
+                        dtype=current_ce_weight.dtype,
+                        device=device,
+                    )
+                    class_weight = class_weight / (class_weight.mean() + 1e-8)
+                    class_weight = torch.clamp(
+                        class_weight,
+                        max=float(args.radcil_current_class_balance_max_weight),
+                    )
+                    current_ce_weight = current_ce_weight * (
+                        1.0
+                        + float(args.radcil_current_class_balance_weight)
+                        * (class_weight - 1.0)
+                    )
+                ce_current = (F.cross_entropy(logits_c, yc, reduction="none") * current_ce_weight).sum() / (current_ce_weight.sum() + 1e-8)
                 ce_memory = F.cross_entropy(logits_m, ym)
                 with torch.no_grad():
                     _, teacher_logits = teacher(xm)
@@ -3199,6 +3245,23 @@ def main():
         type=float,
         default=0.0,
         help="训练期 Teacher replay 类中心锚定权重；0 保持历史 ADS-B RADCIL 行为。",
+    )
+    parser.add_argument(
+        "--radcil_balance_current_pseudo_classes",
+        action="store_true",
+        help="对当前轮新伪类按簇反频率均衡采样，缓解大簇压制小新类；默认关闭以保持历史结果。",
+    )
+    parser.add_argument(
+        "--radcil_current_class_balance_weight",
+        type=float,
+        default=0.0,
+        help="当前轮新伪类 CE 的反频率类权重强度；0 表示关闭。",
+    )
+    parser.add_argument(
+        "--radcil_current_class_balance_max_weight",
+        type=float,
+        default=2.0,
+        help="当前轮新伪类 CE 反频率权重上限，避免极小伪簇被过度放大。",
     )
     parser.add_argument("--pseudo_weight_floor", type=float, default=0.20)
 
