@@ -129,6 +129,7 @@
 - Stage 8 seed7 Job `45058068` 已完成且未过门槛；Stage 9 本地前端瓶颈诊断确认 LoRa 伪标签噪声下界约 58%-67%，ADS-B R3 仍约 38%-40%，下一步应转向 discovery 表征重训/域不变表征。
 - Stage 10 已新增默认关闭的 discovery 特征适配器：`none` 保持历史 `clean_scale`，`mn_smooth` 做当前轮局部近邻平滑，`proto_repulse` 结合 Day1 已知类原型排斥与局部平滑；严格不读取 held-out eval 或未知真值。
 - Stage 10 本地 `.venv` 语法检查、合成 smoke、计划生成和报告器 smoke 均通过；待 Git 同步后提交 ADS-B/LoRa seed7 discovery-only Slurm 矩阵。
+- Stage 10 Job `45066631` 已完成并通过 Git 同步；LoRa `mn_smooth/proto_repulse` 的 mean Hungarian 分别为 `0.4197/0.3878`，低于 `none=0.4177` 或未形成稳定收益；ADS-B 三种配置 mean Hungarian 均约 `0.733-0.737`，R3 也未超过 `none=0.6270`。该候选归档为负消融，不进入 CIL。
 
 ## Recent Changes
 
@@ -219,6 +220,7 @@
 - 2026-07-30：新增 `utils/incremental_metric_learning.py`、Stage 8 seed7 计划/报告器和 Slurm 矩阵脚本，在 ADS-B 与 LoRa 增量训练中接入默认关闭的 cosine-proxy metric loss；本地 `py_compile`、合成 smoke、计划生成和 CLI 参数校验通过。
 - 2026-07-30：完成 Stage 8 seed7 Job `45058068` 并同步小型结果；非零代理度量权重均未通过 ADS-B/LoRa 预注册门槛。新增 `tools/stage9_frontend_bottleneck_diagnosis.py` 和 `results/stage9/STAGE9_FRONTEND_BOTTLENECK_DIAGNOSIS.md`，将下一步收敛到 discovery 表征重训。
 - 2026-07-30：新增 `utils/discovery_feature_adaptation.py`，并接入 ADS-B/WiSig-LoRa strict 入口；新增 `tools/stage10_discovery_feature_adapter_smoke.py`、Stage 10 seed7 计划/报告器和 `slurm/stage10_discovery_feature_adapter_seed7.sbatch`。默认适配器关闭，历史路径保持不变；本地 `py_compile`、合成 smoke、计划/报告 smoke 通过。
+- 2026-07-30：提交并完成 Stage 10 Job `45066631`；修正独立 worktree 的 `PROJECT_ROOT/PYTHON_BIN` 路径后任务成功。结果显示 `mn_smooth/proto_repulse` 未稳定超过 `none`，已同步 `results/stage10/STAGE10_DISCOVERY_FEATURE_ADAPTER_SEED7_REPORT_45066631.md`，停止该局部适配器线。
 
 ## Next TODO
 
@@ -228,6 +230,7 @@
 - GPCC 已完成 LoRa/ADS-B seed7 验证：LoRa 不进入完整增量，ADS-B 完整增量未超过 target split。增量双视图一致性和 discovery 簇可靠性加权均未改善 LoRa；后续不继续围绕 HDBSCAN 替换、可靠性权重或一致性权重做小参数搜索，若继续攻 LoRa 必须转向训练期跨天表征/联合发现机制。
 - 阶段 7 训练期当前 discovery/replay 分布对齐和 Stage 8 代理度量均未通过双门槛；旧后端小机制停止。下一步先做 discovery 表征重训/域不变表征的 discovery-only 验证，过门槛后再跑 CIL。
 - Stage 10 seed7 先跑 GPCC + `none/mn_smooth/proto_repulse` discovery-only 矩阵；LoRa 以三轮 mean Hungarian/Purity 为主门槛，ADS-B 重点看 R3，未过门槛不进入 CIL。
+- Stage 10 已未过门槛；下一步不再扩展 seed13/31，也不进入 CIL，转向训练期跨天表征重训或表征-发现联合学习。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
 - 阶段 5 补充风险已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，当前继续以风险收敛和结果一致性为主。
 - 使用 `CUSTOMER_PROGRESS_REPORT.html` 进行阶段汇报；每次关键正式结果变化后，从实施计划同步更新该派生页面并复核图表数值。
@@ -249,6 +252,7 @@
 - LoRa BN 重校准三种子未通过采用门槛；它说明跨天统计漂移存在，但仅刷新 BN 无法稳定解决发现不稳和旧新类权衡。
 - GPCC 真实 seed7 结果已闭环：ADS-B discovery-only 聚类指标有提升，但完整增量 R3 Overall `0.4839` 低于 target split 对照约 `0.4932`；LoRa discovery-only Hungarian 提升但 ARI 下降。不能声称 GPCC 已解决 ADS-B 约 50% 或 LoRa 低结果，只能作为结构性尝试和负/弱正消融报告。
 - Stage 10 当前只有本地工程验证，尚无真实 ADS-B/LoRa 结果；适配器可能改善无标签局部结构但也可能放大错误近邻，必须以 discovery-only Slurm 结果判定，不能提前宣称有效。
+- Stage 10 真实 seed7 已证明局部近邻平滑和已知类原型排斥不能稳定改善聚类；当前根因仍是跨天表征漂移与 discovery 伪标签纯度，不再继续做相邻小参数搜索。
 - 增量双视图一致性已完成 LoRa seed7 负消融：基线权重 `0` 的 R3 Overall/Old/New/Forgetting 为 `0.1667/0.0917/0.4667/0.4857`，权重 `0.05/0.10` 均降低 Overall 和 IQ_7 Old；不作为跨天域适应解决方案。
 - Slurm `.venv` 当前安装的是 2026-07-26 可用的较新依赖组合，尚未通过旧版端到端实验验证；如出现兼容问题，应基于成功环境生成锁文件后做最小范围降级。
 - ADS-B 已在 Slurm 解压并通过 strict loader 审计；ManyTx/ManyRx 完整 ZIP 结构有效但未解压，后续仅在补充实验需要时按需展开，不作为阶段 1 阻塞风险。

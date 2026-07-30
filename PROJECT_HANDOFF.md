@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-29
-- 当前阶段：Stage 8 代理度量 seed7 已完成且未过门槛；Stage 9 前端瓶颈诊断确认下一步应转向 discovery 表征重训；Stage 10 特征适配器已实现，待跑真实 seed7 discovery-only
+- 当前阶段：Stage 8 代理度量和 Stage 10 特征适配器 seed7 均未过门槛；Stage 9 诊断继续成立，下一步转向训练期跨天表征重训
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -147,6 +147,7 @@ Strict loader 审计：
 - Stage 8 seed7 Job `45058068` 已完成：ADS-B metric `0.10/0.25` 的 R3 Overall 相对 baseline 分别为 `-0.0031/-0.0048`；LoRa metric `0.10` 完全无变化、`0.25` Overall `-0.0019` 且 New `-0.0095`。无候选通过门槛，不扩三种子。
 - Stage 9 前端瓶颈诊断已生成 `results/stage9/STAGE9_FRONTEND_BOTTLENECK_DIAGNOSIS.md`：ADS-B target split R3 Hungarian 约 `0.6050`，GPCC R3 约 `0.6152`；LoRa MV-ACC/GPCC R1-R3 Hungarian 约 `0.33-0.49`，伪标签噪声下界过高。下一步应做 discovery 表征重训/域不变表征，先 discovery-only 过门槛再跑 CIL。
 - Stage 10 已新增 `utils/discovery_feature_adaptation.py` 及 ADS-B/WiSig-LoRa strict 接入，`none` 保持历史行为，`mn_smooth/proto_repulse` 只使用 Day1 known train 与当前 discovery；本地 smoke 已通过，真实 Slurm 结果待跑。
+- Stage 10 Job `45066631` 已完成：LoRa `none/mn_smooth/proto_repulse` mean Hungarian 为 `0.4177/0.4197/0.3878`，ADS-B 为 `0.7364/0.7329/0.7366`；两个候选均未稳定超过 `none`，不进入 CIL，不扩三种子。
 - 已新增 `tools/stage5_manytx_manyrx_supplement_report.py`、`results/stage5/STAGE5_MANYTX_MANYRX_SUPPLEMENT_REPORT.md` 和 JSON 摘要，只读汇总既有 ManyTx/ManyRx seed7 三轮结果；ManyTx R3 Overall/New/Forgetting=`0.2700/0.5600/0.4267`，ManyRx R3 Overall/New/Forgetting=`0.5700/0.9500/0.5250`，阶段 5 补充稳定性验证已关闭。
 - 已生成只读服务器产物清单：553 个模型/回放二进制、约 5.21 GB、54 个超 50 MB 和 9 个非空错误日志。未删除任何文件，仅精确忽略新矩阵二进制并保留小型审计结果。
 - 已在 WiSig strict 入口实现可选 DOI-memory hybrid：使用伪标签 replay 记忆构建原型、跨轮对齐历史原型，并与网络 logits 做 late fusion；默认融合权重为 0，不改变历史 RADCIL 行为。该分支已完成 seed7 和三种子验证，正式结论为负消融。

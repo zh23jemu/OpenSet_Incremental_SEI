@@ -28,6 +28,7 @@
 | 增量代理度量训练 | 阶段 8 seed7 已完成 | Job `45058068` 显示 ADS-B/LoRa 非零 metric 权重均未过门槛，归档为负消融，不扩三种子 |
 | 前端瓶颈诊断 | 阶段 9 本地诊断已完成 | LoRa 伪标签噪声下界约 58%-67%，ADS-B R3 仍约 38%-40%；下一步转向 discovery 表征重训/域不变表征 |
 | Stage 10 特征适配 | 已实现本地候选 | `none/mn_smooth/proto_repulse` 仅使用 Day1 known train 与当前 discovery；本地验证通过，待真实 seed7 discovery-only |
+| Stage 10 seed7 结果 | 已完成，负消融 | Job `45066631` 中 LoRa/ADS-B 两个适配器均未稳定超过 `none`，不进入 CIL，不扩三种子 |
 | ManyTx/ManyRx | 阶段 5 补充验证已完成 | 已只读汇总既有 seed7 三轮结果；ManyTx R3 Overall `0.2700`、ManyRx R3 Overall `0.5700`，作为辅助稳定性证据       |
 | 项目记忆与交接       | 已维护            | `AGENTS.md`、`PROJECT_HANDOFF.md`、RecallLoom rolling summary 均已同步最新状态                |
 
@@ -280,6 +281,7 @@
 - [x] 完成 Stage 8 seed7 Job `45058068`；ADS-B `0.10/0.25` 权重 Overall 分别下降 `0.0031/0.0048`，LoRa `0.10` 无变化、`0.25` 下降，归档为负消融。
 - [x] 新增 Stage 9 前端瓶颈诊断报告，确认低分主要受伪标签纯度和 discovery 表征限制，而不是后端单一损失权重。
 - [x] 新增 Stage 10 discovery 特征适配器、smoke、计划/报告器和 Slurm 短任务入口；默认 `none` 保持历史 `clean_scale` 行为，真实矩阵待提交。
+- [x] 完成 Stage 10 Job `45066631`；局部近邻平滑和已知类原型排斥未稳定提高 LoRa/ADS-B discovery，结果归档为负消融。
 - [ ] 提供 `gpu` 分区、`gpo-ifv7xx` 账号、`normal` QOS 的正式 Slurm 脚本；一小时内验证任务使用 `shortjobs`。
 - [ ] 汇总多种子均值、标准差、对照和消融表格。
 - [ ] 整理可直接用于论文的 t-SNE 图和结果图表。
@@ -417,6 +419,7 @@ Job `44781083` 在默认 target split 与 Long-RADCIL 配置下验证训练期�
 2. ADS-B 欠聚类风险已收束：正式 ratio 0.03 不变，自适应密度归档为负消融，默认 target split 作为当前最佳欠聚类收敛候选；固定 target split 后端对照、训练期旧类原型锚定和 GPCC 完整增量结果均显示，剩余问题不能靠继续调 target split、anchor 权重或替换聚类器解决。
 3. LoRa 双视图一致性、簇可靠性加权、训练期跨天特征分布对齐和 Stage 8 代理度量均已归档为负消融；Stage 9 诊断显示 LoRa 伪标签噪声下界过高，下一步应先做 discovery 表征重训/域不变表征。
 4. 先跑 Stage 10 GPCC + `none/mn_smooth/proto_repulse` seed7 discovery-only 矩阵；LoRa 看三轮 mean Hungarian/Purity，ADS-B 看 R3，未过门槛不进入 CIL。
+5. Stage 10 已未过门槛；不扩 seed13/31，不进入 CIL，下一步转向训练期跨天表征重训或表征-发现联合学习。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 
