@@ -1,0 +1,116 @@
+{
+  "job_id": "45058068",
+  "matrix_root": "results/stage8/incremental_metric_seed7_45058068",
+  "rows": [
+    {
+      "dataset": "adsb",
+      "variant": "metric_w0",
+      "weight": 0.0,
+      "cluster_count": null,
+      "overall": 0.4830028328611898,
+      "old": 0.4885057471264368,
+      "new": 0.438,
+      "forgetting": 0.1045645840077694,
+      "macro_f1": 0.4770007624334804
+    },
+    {
+      "dataset": "adsb",
+      "variant": "metric_w0p10",
+      "weight": 0.1,
+      "cluster_count": null,
+      "overall": 0.4799520592721726,
+      "old": 0.4855710442651015,
+      "new": 0.434,
+      "forgetting": 0.0985755908060861,
+      "macro_f1": 0.4747074808572812
+    },
+    {
+      "dataset": "adsb",
+      "variant": "metric_w0p25",
+      "weight": 0.25,
+      "cluster_count": null,
+      "overall": 0.4782087600784485,
+      "old": 0.4828808999755441,
+      "new": 0.44,
+      "forgetting": 0.1006798316607315,
+      "macro_f1": 0.4731655666481907
+    },
+    {
+      "dataset": "lora",
+      "variant": "metric_w0",
+      "weight": 0.0,
+      "cluster_count": 5,
+      "overall": 0.1666666666666666,
+      "old": 0.0916666666666666,
+      "new": 0.4666666666666667,
+      "forgetting": 0.4857142857142857,
+      "macro_f1": 0.0943861177301691
+    },
+    {
+      "dataset": "lora",
+      "variant": "metric_w0p10",
+      "weight": 0.1,
+      "cluster_count": 5,
+      "overall": 0.1666666666666666,
+      "old": 0.0916666666666666,
+      "new": 0.4666666666666667,
+      "forgetting": 0.4857142857142857,
+      "macro_f1": 0.0950313251524534
+    },
+    {
+      "dataset": "lora",
+      "variant": "metric_w0p25",
+      "weight": 0.25,
+      "cluster_count": 5,
+      "overall": 0.1647619047619047,
+      "old": 0.0916666666666666,
+      "new": 0.4571428571428571,
+      "forgetting": 0.4880952380952381,
+      "macro_f1": 0.0949079063413765
+    }
+  ],
+  "gates": [
+    {
+      "dataset": "adsb",
+      "variant": "metric_w0p10",
+      "weight": 0.1,
+      "delta_overall": -0.003050773589017175,
+      "delta_old": -0.002934702861335292,
+      "delta_new": -0.0040000000000000036,
+      "delta_forgetting": -0.005988993201683293,
+      "passed_seed7_gate": false
+    },
+    {
+      "dataset": "adsb",
+      "variant": "metric_w0p25",
+      "weight": 0.25,
+      "delta_overall": -0.004794072782741299,
+      "delta_old": -0.005624847150892676,
+      "delta_new": 0.0020000000000000018,
+      "delta_forgetting": -0.0038847523470379036,
+      "passed_seed7_gate": false
+    },
+    {
+      "dataset": "lora",
+      "variant": "metric_w0p10",
+      "weight": 0.1,
+      "delta_overall": 0.0,
+      "delta_old": 0.0,
+      "delta_new": 0.0,
+      "delta_forgetting": 0.0,
+      "passed_seed7_gate": false
+    },
+    {
+      "dataset": "lora",
+      "variant": "metric_w0p25",
+      "weight": 0.25,
+      "delta_overall": -0.001904761904761909,
+      "delta_old": 0.0,
+      "delta_new": -0.009523809523809601,
+      "delta_forgetting": 0.0023809523809523725,
+      "passed_seed7_gate": false
+    }
+  ],
+  "passing": [],
+  "adopt_any": false
+}
