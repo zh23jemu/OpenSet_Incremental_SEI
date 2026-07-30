@@ -228,6 +228,7 @@
 - 2026-07-30：完整 CIL 入口已接入默认关闭的 `--cross_day_repr_adaptation`，并新增 `tools/stage12_cross_day_cil_report.py` 与 `slurm/stage12_cross_day_cil_seed7.sbatch`；本地语法、CLI 和报告 smoke 已通过，尚未提交 Slurm。
 - 2026-07-30：Stage 12 Job `45082769` 已完成。ADS-B `cross_day + GPCC + RADCIL` R3 Overall/Old/New 为 `0.5047/0.4980/0.5590`，超过原约 `0.49` 水平；LoRa R3 Overall/Old/New 为 `0.1457/0.0619/0.4810`，Overall 仅小幅提升且 Old 继续偏低。当前结论是 ADS-B 进入三种子确认，LoRa 归档为旧新类失衡负结果，不继续盲目扩展。
 - 2026-07-30：新增 Stage 13 ADS-B 三种子确认入口 `slurm/stage13_adsb_cross_day_multiseed.sbatch` 和报告器 `tools/stage13_adsb_cross_day_multiseed_report.py`；本地语法和报告 smoke 已通过，等待提交。
+- 2026-07-30：Stage 13 Job `45090123` 已完成。ADS-B 三种子 R3 Overall 为 `0.5057/0.4887/0.4846`，均值 `0.4930±0.0091`；Old `0.4850±0.0095`、New `0.5583±0.0058`，未出现明显塌缩，但相对 target split baseline 的总体提升不足以锁定正式主方案。该候选作为结构性正向但不稳定结果归档，停止继续相邻小参数搜索。
 
 ## Next TODO
 
@@ -265,6 +266,7 @@
 - Stage 11 discovery-only 已通过门槛，但完整 CIL 是否改善 Overall/Old/New/Forgetting 尚未验证；Stage 12 只跑 seed7，不提前扩展三种子。
 - Stage 12 seed7 已显示 ADS-B 具有可继续确认的结构性收益，但尚未完成 seed7/13/31 稳定性确认；LoRa 仍未解决旧类保持，不能把 `0.1457` 写成整体解决。
 - Stage 13 尚未运行；确认重点是 ADS-B 三种子 R3 Overall 是否稳定超过同 seed target split baseline，同时 Old/New 不出现新的塌缩。
+- Stage 13 已运行完成；ADS-B cross_day 的三种子均值仅约 `0.4930`，与现有 target split 主线基本持平，当前仍不能声称已根本解决 ADS-B 低分。
 - Stage 11 首次提交 Job `45068164` 暴露旧 worktree 默认路径问题，已修复；重提后仍需先确认作业启动，再判断聚类收益。
 - Stage 11 Job `45068213` 暴露 ADS-B loader 参数名兼容问题，已修复；下一次重提需确认 LoRa 与 ADS-B 两个 profile 都能正常进入 discovery。
 - 增量双视图一致性已完成 LoRa seed7 负消融：基线权重 `0` 的 R3 Overall/Old/New/Forgetting 为 `0.1667/0.0917/0.4667/0.4857`，权重 `0.05/0.10` 均降低 Overall 和 IQ_7 Old；不作为跨天域适应解决方案。

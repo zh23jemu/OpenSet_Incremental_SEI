@@ -171,6 +171,7 @@ Strict loader 审计：
 6. 提交并运行 Stage 12 seed7 完整 CIL，读取 R3 Overall/Old/New/Forgetting，决定是否扩展三种子。
 7. ADS-B 仅扩展 `cross_day + GPCC + RADCIL` 三种子，并保留同 seed target split 对照，验证收益是否稳定。
 8. Stage 13 入口和报告器已完成本地 smoke，下一步提交 ADS-B 三种子 Slurm 作业。
+9. Stage 13 Job `45090123` 已完成：R3 Overall `0.4930±0.0091`、Old `0.4850±0.0095`、New `0.5583±0.0058`；没有明显塌缩，但未稳定超过 target split，当前不锁定为正式主方案。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
