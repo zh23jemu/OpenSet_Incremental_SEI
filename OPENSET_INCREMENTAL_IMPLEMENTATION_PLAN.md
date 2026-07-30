@@ -401,6 +401,8 @@ Stage 11 Job `45068450` 已完成真实 seed7 discovery-only。LoRa `none/cross_
 
 Stage 12 已将 `--cross_day_repr_adaptation` 接入 ADS-B/LoRa strict 完整 CIL 入口；每轮 Teacher discovery 前做同样的训练期适配，默认关闭，显式打开才运行。seed7 Slurm 入口固定 GPCC、当前 RADCIL replay 配置和 `cross_day`，不过完整 CIL 门槛不扩展 seed13/31。
 
+Stage 12 Job `45082769` 已完成。ADS-B `cross_day + GPCC + 当前 RADCIL` 的 R3 Overall/Old/New 为 `0.5047/0.4980/0.5590`，相比原约 `0.49` 的 seed7 水平有明确提升；LoRa 为 `0.1457/0.0619/0.4810`，Overall 只小幅上升且 Old 下降。因而 ADS-B 进入 seed7/13/31 三种子确认，LoRa 保留为“表征聚类有改善、旧新类后端仍失衡”的负结果。
+
 ## 8.2 当前风险与应对
 
 | 风险                             | 影响                                                               | 当前应对                                                   |
@@ -428,6 +430,8 @@ Stage 12 已将 `--cross_day_repr_adaptation` 接入 ADS-B/LoRa strict 完整 CI
 5. Stage 10 已未过门槛；不扩 seed13/31，不进入 CIL，下一步转向训练期跨天表征重训或表征-发现联合学习。
 6. Stage 11 先在 ADS-B/LoRa seed7 跑 `none/cross_day` discovery-only；严格使用独立 worktree、主项目绝对数据/checkpoint 路径和项目 `.venv`，通过门槛后才考虑完整增量。
 7. Stage 12 运行 `cross_day + GPCC + 当前 RADCIL` 的 ADS-B/LoRa seed7 完整 CIL；只有 R3 Overall 提升且 Old/New 不塌缩，才考虑扩展三种子。
+8. ADS-B seed7 已满足继续确认条件；下一步只扩 `cross_day + GPCC + 当前 RADCIL` 到 seed7/13/31，并与同 seed 的 target split baseline 对照。
+9. Stage 13 三种子入口已完成本地验证，提交后只运行 ADS-B，不再重复 LoRa 负结果矩阵。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 

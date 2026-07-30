@@ -151,6 +151,7 @@ Strict loader 审计：
 - Stage 11 已新增 `utils/cross_day_representation_adaptation.py` 和 discovery-only 入口，比较 `none/cross_day`；适配只使用 Day1 known train 标签和当前轮 discovery 无标签样本，真实结果待 Slurm 验证。
 - Stage 11 Job `45068450` 已完成：LoRa mean Hungarian/Purity `0.4163/0.4299 -> 0.4279/0.4449`；ADS-B R3 Hungarian/Purity `0.5923/0.7157 -> 0.6074/0.7283`。该候选进入完整 CIL 验证。
 - Stage 12 已把跨天适配接入两个 strict CIL 主入口，默认关闭；Slurm 任务固定 `cross_day + GPCC + 当前 RADCIL`，只跑 seed7。
+- Stage 12 Job `45082769` 已完成：ADS-B R3 Overall/Old/New `0.5047/0.4980/0.5590`，LoRa `0.1457/0.0619/0.4810`。ADS-B 进入三种子确认，LoRa 暂停扩展。
 - 已新增 `tools/stage5_manytx_manyrx_supplement_report.py`、`results/stage5/STAGE5_MANYTX_MANYRX_SUPPLEMENT_REPORT.md` 和 JSON 摘要，只读汇总既有 ManyTx/ManyRx seed7 三轮结果；ManyTx R3 Overall/New/Forgetting=`0.2700/0.5600/0.4267`，ManyRx R3 Overall/New/Forgetting=`0.5700/0.9500/0.5250`，阶段 5 补充稳定性验证已关闭。
 - 已生成只读服务器产物清单：553 个模型/回放二进制、约 5.21 GB、54 个超 50 MB 和 9 个非空错误日志。未删除任何文件，仅精确忽略新矩阵二进制并保留小型审计结果。
 - 已在 WiSig strict 入口实现可选 DOI-memory hybrid：使用伪标签 replay 记忆构建原型、跨轮对齐历史原型，并与网络 logits 做 late fusion；默认融合权重为 0，不改变历史 RADCIL 行为。该分支已完成 seed7 和三种子验证，正式结论为负消融。
@@ -168,6 +169,8 @@ Strict loader 审计：
 4. LoRa 阶段 7/8 均未通过门槛，后端和局部训练损失继续加权无效；下一步只考虑 discovery 表征重训/域不变表征。
 5. 提交并推送 Stage 11 入口后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only；不过门槛即归档，不进入 CIL。
 6. 提交并运行 Stage 12 seed7 完整 CIL，读取 R3 Overall/Old/New/Forgetting，决定是否扩展三种子。
+7. ADS-B 仅扩展 `cross_day + GPCC + RADCIL` 三种子，并保留同 seed target split 对照，验证收益是否稳定。
+8. Stage 13 入口和报告器已完成本地 smoke，下一步提交 ADS-B 三种子 Slurm 作业。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
