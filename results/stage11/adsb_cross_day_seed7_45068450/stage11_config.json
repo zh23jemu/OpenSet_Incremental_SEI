@@ -1,0 +1,17 @@
+{
+  "dataset_profile": "adsb",
+  "dataset_path": null,
+  "data_root": "/mnt/users/xj62kv/OpenSet_Incremental_SEI/数据集/ADS-B/Dataset",
+  "checkpoint": "/mnt/users/xj62kv/OpenSet_Incremental_SEI/results/stage4/adsb_main_long_radcil_seed7_44470736/closedset_adsb_90known_strict.pth",
+  "save_dir": "results/stage11/adsb_cross_day_seed7_45068450",
+  "method": "cross_day",
+  "seed": 7,
+  "feat_dim": 128,
+  "epochs": 2,
+  "batch_size": 128,
+  "test_batch_size": 256,
+  "lr": 1e-05,
+  "consistency_weight": 0.5,
+  "coral_weight": 0.05,
+  "device": "cuda"
+}
