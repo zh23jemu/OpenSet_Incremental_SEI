@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-30
-- 当前阶段：Stage 16 旧/新双分支训练已完成并归档为负消融；Stage 17 ADS-B 高置信伪标签注册入口已完成本地验证，下一步提交并跑 seed7 矩阵
+- 当前阶段：Stage 17 高置信伪标签注册已完成并归档为负消融；ADS-B 后端/注册结构连续表现为 Old 改善但 New 下降，下一步只能转联合表征发现或 discovery backbone 重训
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -177,6 +177,7 @@ Strict loader 审计：
 12. Stage 16 已新增旧/新双分支训练：`--radcil_old_new_dual_branch` 将当前轮之前所有已注册类聚合为 old branch、当前轮新伪类聚合为 new branch，训练期额外加入分支判别损失；本地语法和 CLI 校验通过，下一步跑 seed7 权重 `0.30/0.70`。
 13. Stage 16 Job `45151632` 已完成：最佳 `branch_w0p30` R3 Overall/Old/New `0.5008/0.4977/0.5260`，Overall 仍低于 `0.5057` 对照且 New 下降，归档为负消融。
 14. Stage 17 已新增高置信伪标签注册：每个当前轮新伪类按 GPCC confidence 只保留 top fraction 样本用于 imprint、训练和 replay 更新；本地语法、CLI 校验通过，下一步跑 seed7 `0.60/0.80`。
+15. Stage 17 Job `45153814` 已完成：`top0p60` R3 Overall/Old/New `0.5063/0.5077/0.4950`，Overall 只微升但 New 明显下降；`top0p80` 也未过门槛，归档为负消融，不扩三种子。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
