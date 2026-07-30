@@ -434,6 +434,8 @@ Stage 12 Job `45082769` 已完成。ADS-B `cross_day + GPCC + 当前 RADCIL` 的
 9. Stage 13 三种子入口已完成本地验证，提交后只运行 ADS-B，不再重复 LoRa 负结果矩阵。
 
 Stage 13 Job `45090123` 已完成：ADS-B `cross_day + GPCC + RADCIL` 的 R3 Overall 为 seed7/13/31 `0.5057/0.4887/0.4846`，均值 `0.4930±0.0091`；Old `0.4850±0.0095`，New `0.5583±0.0058`。三种子没有明显 Old/New 塌缩，但总体均值相对 target split baseline 基本持平，因此该方案作为结构性正向证据和稳定性边界记录，不继续做相邻权重搜索或扩展更多种子。
+
+Stage 14 Job `45146197` 验证 `cross_day + target split + RADCIL` 组合，R3 Overall/Old/New 为 `0.4865/0.4990/0.3840`。该组合虽然 Old 保持尚可，但明显压低 New，低于 `cross_day + GPCC` seed7 和 target split 对照，因此归档为负消融，不扩三种子。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 

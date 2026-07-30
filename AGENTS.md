@@ -232,6 +232,7 @@
 - 2026-07-30：更新 `CUSTOMER_PROGRESS_REPORT.html`，加入 ADS-B `cross_day + GPCC + RADCIL` 三种子结果和客户口径：seed7 有结构性改善，但三种子总体未超过 target split，不包装为正式主方案。
 - 2026-07-30：更新 `results/stage6/CUSTOMER_QA_RISK_RESPONSE.md`，将 ADS-B 最新三种子结论和“后续只考虑联合表征/发现结构，不再做局部小参数搜索”写入客户问答。
 - 2026-07-30：通过 Git 部分对象过滤同步 Stage 13 报告及 6 个小型 CSV，提交 `ed748d3` 并推送到主分支；大型 checkpoint/回放文件仍保留在远端结果分支，不重复拉取。
+- 2026-07-30：新增并完成 Stage 14 ADS-B seed7 `cross_day + target split + RADCIL` 结构组合验证，Job `45146197` R3 Overall/Old/New 为 `0.4865/0.4990/0.3840`，New 被明显压低，未通过 `Overall > 0.50 且 Old/New 不塌缩` 门槛，归档为负消融，不扩三种子。
 
 ## Next TODO
 
@@ -270,6 +271,7 @@
 - Stage 12 seed7 已显示 ADS-B 具有可继续确认的结构性收益，但尚未完成 seed7/13/31 稳定性确认；LoRa 仍未解决旧类保持，不能把 `0.1457` 写成整体解决。
 - Stage 13 尚未运行；确认重点是 ADS-B 三种子 R3 Overall 是否稳定超过同 seed target split baseline，同时 Old/New 不出现新的塌缩。
 - Stage 13 已运行完成；ADS-B cross_day 的三种子均值仅约 `0.4930`，与现有 target split 主线基本持平，当前仍不能声称已根本解决 ADS-B 低分。
+- Stage 14 证明直接叠加 `cross_day` 和 target split 会损害新类识别；后续若继续攻 ADS-B，应改类均衡伪标签注册/训练或更大联合表征发现结构，而不是继续排列组合已有前端。
 - Stage 11 首次提交 Job `45068164` 暴露旧 worktree 默认路径问题，已修复；重提后仍需先确认作业启动，再判断聚类收益。
 - Stage 11 Job `45068213` 暴露 ADS-B loader 参数名兼容问题，已修复；下一次重提需确认 LoRa 与 ADS-B 两个 profile 都能正常进入 discovery。
 - 增量双视图一致性已完成 LoRa seed7 负消融：基线权重 `0` 的 R3 Overall/Old/New/Forgetting 为 `0.1667/0.0917/0.4667/0.4857`，权重 `0.05/0.10` 均降低 Overall 和 IQ_7 Old；不作为跨天域适应解决方案。
