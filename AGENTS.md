@@ -229,6 +229,7 @@
 - 2026-07-30：Stage 12 Job `45082769` 已完成。ADS-B `cross_day + GPCC + RADCIL` R3 Overall/Old/New 为 `0.5047/0.4980/0.5590`，超过原约 `0.49` 水平；LoRa R3 Overall/Old/New 为 `0.1457/0.0619/0.4810`，Overall 仅小幅提升且 Old 继续偏低。当前结论是 ADS-B 进入三种子确认，LoRa 归档为旧新类失衡负结果，不继续盲目扩展。
 - 2026-07-30：新增 Stage 13 ADS-B 三种子确认入口 `slurm/stage13_adsb_cross_day_multiseed.sbatch` 和报告器 `tools/stage13_adsb_cross_day_multiseed_report.py`；本地语法和报告 smoke 已通过，等待提交。
 - 2026-07-30：Stage 13 Job `45090123` 已完成。ADS-B 三种子 R3 Overall 为 `0.5057/0.4887/0.4846`，均值 `0.4930±0.0091`；Old `0.4850±0.0095`、New `0.5583±0.0058`，未出现明显塌缩，但相对 target split baseline 的总体提升不足以锁定正式主方案。该候选作为结构性正向但不稳定结果归档，停止继续相邻小参数搜索。
+- 2026-07-30：更新 `CUSTOMER_PROGRESS_REPORT.html`，加入 ADS-B `cross_day + GPCC + RADCIL` 三种子结果和客户口径：seed7 有结构性改善，但三种子总体未超过 target split，不包装为正式主方案。
 
 ## Next TODO
 

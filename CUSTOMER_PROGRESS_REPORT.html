@@ -284,7 +284,7 @@
       <div class="kpi"><span>ADS-B R3 Overall</span><strong>0.4932</strong><span>默认 target split 后；仍接近 50%，需报告局限</span></div>
       <div class="kpi"><span>LoRa 验证状态</span><strong>Seed 7</strong><span>完整链路已打通，但跨天旧类漂移仍未解决</span></div>
     </div>
-    <div class="callout"><strong>当前结论：</strong>数据、协议、训练环境、发现前端和增量学习链路均已形成可复现闭环。WiSig 的主结果最适合作为正向主线；ADS-B 通过 target split 缓解欠聚类但整体仍接近 50%；LoRa 证明跨体制链路可执行，但当前更适合作为局限分析和补充验证。</div>
+    <div class="callout"><strong>当前结论：</strong>数据、协议、训练环境、发现前端和增量学习链路均已形成可复现闭环。WiSig 的主结果最适合作为正向主线；ADS-B 的训练期跨天表征适配在 seed7 有改善，但三种子均值与 target split 基本持平，暂不锁定为正式主方案；LoRa 证明跨体制链路可执行，但当前更适合作为局限分析和补充验证。</div>
   </section>
 
   <section>
@@ -317,6 +317,7 @@
           <tr><td>WiSig：MV-ACC + RADCIL</td><td>3 seeds</td><td class="num good">0.6088±0.0415</td><td class="num">0.5516</td><td class="num good">0.7804</td><td class="num">0.2285</td><td>端到端主链路稳定，发现前端贡献明确</td></tr>
           <tr><td>WiSig：共享发现 DOI-style</td><td>3 seeds</td><td class="num good">0.6579±0.0350</td><td class="num">0.5721</td><td class="num">0.9152</td><td class="num">0.1959</td><td>证明当前网络后端仍不是性能上限</td></tr>
           <tr><td>ADS-B：target split MV-ACC-CIL</td><td>3 seeds</td><td class="num warn">0.4932±0.0128</td><td class="num">0.4902</td><td class="num">0.4930</td><td class="num risk">0.1151</td><td>欠聚类已缓解，但整体仍接近 50%，遗忘控制弱于 DOI-style</td></tr>
+          <tr><td>ADS-B：cross_day + GPCC + RADCIL</td><td>3 seeds</td><td class="num warn">0.4930±0.0091</td><td class="num">0.4850</td><td class="num good">0.5583</td><td class="num">未单独汇总</td><td>seed7 有结构性收益，但三种子总体未超过 target split</td></tr>
           <tr><td>ADS-B：target split DOI-style</td><td>3 seeds</td><td class="num">0.4722±0.0295</td><td class="num">0.4895</td><td class="num">0.3277</td><td class="num good">0.0629</td><td>遗忘更低，但整体和新类识别较弱</td></tr>
           <tr><td>LoRa：Grouped hybrid</td><td>Seed 7</td><td class="num warn">0.1495</td><td class="num">0.0798</td><td class="num">0.4286</td><td class="num risk">0.4357</td><td>过聚类已解决，但新旧类权衡门槛未通过</td></tr>
         </tbody>
