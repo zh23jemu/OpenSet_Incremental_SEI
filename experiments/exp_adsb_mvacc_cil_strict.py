@@ -1929,6 +1929,29 @@ def _supcon_incremental(features, labels, temperature=0.2):
     return -(log_prob * same.float()).sum(dim=1)[valid].div(positives[valid].float()).mean()
 
 
+def _old_new_branch_loss(logits, labels, old_out_dim):
+    """训练期旧/新分支判别损失。
+
+    ADS-B 当前瓶颈不是单纯少几个样本，而是旧类 replay 和当前轮新伪类在同一个
+    扩展分类头里互相竞争：旧类容易压制新类，新类过强又会带来遗忘。这里不新增
+    任何 eval 真值或未知类真值依赖，只把分类头 logits 按协议时序切成两组：
+
+    - old branch：当前轮之前已经注册的所有类别，索引范围 ``[0, old_out_dim)``；
+    - new branch：当前轮刚发现并注册的新伪类，索引范围 ``[old_out_dim, C)``。
+
+    损失只判断样本应该落在旧分支还是新分支，具体类内区分仍由原来的 CE、replay
+    CE、KD 和 SupCon 负责。这样可以直接约束旧/新决策边界，同时避免把伪标签噪声
+    进一步放大成更细的人工规则。
+    """
+    if int(old_out_dim) <= 0 or logits.shape[1] <= int(old_out_dim) or logits.shape[0] == 0:
+        return logits.sum() * 0.0
+    old_scores = torch.logsumexp(logits[:, :int(old_out_dim)], dim=1)
+    new_scores = torch.logsumexp(logits[:, int(old_out_dim):], dim=1)
+    branch_logits = torch.stack([old_scores, new_scores], dim=1)
+    branch_targets = (labels >= int(old_out_dim)).long()
+    return F.cross_entropy(branch_logits, branch_targets)
+
+
 def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, memory_x, memory_y, old_out_dim, args, device):
     """Head warm-up followed by last-block backbone adaptation on raw IQ samples."""
     current_x = np.asarray(current_x, dtype=np.float32)
@@ -2090,6 +2113,17 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                     scale=float(args.radcil_metric_scale),
                     margin=float(args.radcil_metric_margin),
                 )
+                if bool(args.radcil_old_new_dual_branch):
+                    # 旧/新分支损失使用当前 batch 的伪标签和 replay 标签构造二分类
+                    # 目标：当前轮新伪类走 new branch，历史 replay 样本走 old branch。
+                    # 标签都来自严格训练侧数据，不读取 held-out eval，也不使用未知真值。
+                    branch_loss = _old_new_branch_loss(
+                        torch.cat([logits_c, logits_m], dim=0),
+                        torch.cat([yc, ym], dim=0),
+                        int(old_out_dim),
+                    )
+                else:
+                    branch_loss = logits_m.sum() * 0.0
                 if anchor_prototypes is not None and anchor_valid is not None:
                     anchor_mask = (ym < int(old_out_dim)) & anchor_valid[ym.clamp(max=int(old_out_dim) - 1)]
                     if torch.any(anchor_mask):
@@ -2109,6 +2143,7 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                     + float(args.radcil_prototype_anchor_weight) * prototype_anchor
                     + float(args.cil_supcon_weight) * con
                     + float(args.radcil_metric_weight) * metric_loss
+                    + float(args.radcil_old_new_branch_weight) * branch_loss
                 )
                 opt.zero_grad()
                 loss.backward()
@@ -3262,6 +3297,17 @@ def main():
         type=float,
         default=2.0,
         help="当前轮新伪类 CE 反频率权重上限，避免极小伪簇被过度放大。",
+    )
+    parser.add_argument(
+        "--radcil_old_new_dual_branch",
+        action="store_true",
+        help="启用训练期旧/新分支判别损失，把历史类和当前轮新伪类的组边界显式拉开；默认关闭。",
+    )
+    parser.add_argument(
+        "--radcil_old_new_branch_weight",
+        type=float,
+        default=0.0,
+        help="旧/新分支判别损失权重；0 保持历史 RADCIL 行为。",
     )
     parser.add_argument("--pseudo_weight_floor", type=float, default=0.20)
 

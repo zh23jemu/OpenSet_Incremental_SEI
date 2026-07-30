@@ -29,6 +29,8 @@
 | 前端瓶颈诊断 | 阶段 9 本地诊断已完成 | LoRa 伪标签噪声下界约 58%-67%，ADS-B R3 仍约 38%-40%；下一步转向 discovery 表征重训/域不变表征 |
 | Stage 10 特征适配 | 已实现本地候选 | `none/mn_smooth/proto_repulse` 仅使用 Day1 known train 与当前 discovery；本地验证通过，待真实 seed7 discovery-only |
 | Stage 10 seed7 结果 | 已完成，负消融 | Job `45066631` 中 LoRa/ADS-B 两个适配器均未稳定超过 `none`，不进入 CIL，不扩三种子 |
+| Stage 15 类均衡伪标签 | 已完成，负消融 | Job `45149433` 中 ADS-B seed7 R3 Overall/Old/New 为 `0.4995/0.4985/0.5070`，低于 cross_day + GPCC seed7 对照，New 明显下降 |
+| Stage 16 旧/新双分支 | 已实现待跑 | 默认关闭；训练期增加 old branch vs current-new branch 判别损失，先跑 ADS-B seed7 权重 `0.30/0.70` |
 | ManyTx/ManyRx | 阶段 5 补充验证已完成 | 已只读汇总既有 seed7 三轮结果；ManyTx R3 Overall `0.2700`、ManyRx R3 Overall `0.5700`，作为辅助稳定性证据       |
 | 项目记忆与交接       | 已维护            | `AGENTS.md`、`PROJECT_HANDOFF.md`、RecallLoom rolling summary 均已同步最新状态                |
 
@@ -437,7 +439,9 @@ Stage 13 Job `45090123` 已完成：ADS-B `cross_day + GPCC + RADCIL` 的 R3 Ove
 
 Stage 14 Job `45146197` 验证 `cross_day + target split + RADCIL` 组合，R3 Overall/Old/New 为 `0.4865/0.4990/0.3840`。该组合虽然 Old 保持尚可，但明显压低 New，低于 `cross_day + GPCC` seed7 和 target split 对照，因此归档为负消融，不扩三种子。
 
-Stage 15 已新增 ADS-B 类均衡伪标签训练候选：在当前轮新伪类上使用按簇反频率均衡采样，并可选温和 CE 反频率权重，目标是验证小新类被大簇和 replay 压制是否是 R3 低分因素。该候选默认关闭，先跑 seed7；只有 Overall 提升且 Old/New 不塌缩，才进入三种子确认。
+Stage 15 Job `45149433` 已完成 ADS-B 类均衡伪标签训练 seed7 验证。R3 Overall/Old/New 为 `0.4995/0.4985/0.5070`，相对 `cross_day + GPCC` seed7 对照约 `0.5057/0.4850/0.5583`，Overall 未提升且 New 明显下降。该结果说明简单按伪簇反频率采样会放大小簇噪声或压低新类判别，不扩 seed13/31，归档为负消融。
+
+Stage 16 已新增 ADS-B 旧/新双分支训练候选。该候选不改变 discovery 前端，仍使用 `cross_day + GPCC`；在 RADCIL 训练期额外把当前轮之前所有已注册类作为 old branch、当前轮新伪类作为 new branch，加入二分类分支判别损失，目的是直接约束旧新类决策边界。默认关闭，seed7 只跑权重 `0.30/0.70`；只有 R3 Overall 超过 `0.5057`，且 Old/New 不塌缩，才进入三种子确认。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 

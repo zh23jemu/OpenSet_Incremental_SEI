@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-30
-- 当前阶段：Stage 11 discovery-only seed7 已通过门槛；Stage 12 完整 CIL 入口已完成本地验证，下一步提交 ADS-B/LoRa seed7 完整增量
+- 当前阶段：Stage 15 类均衡伪标签训练已完成并归档为负消融；Stage 16 ADS-B 旧/新双分支训练入口已完成本地验证，下一步提交并跑 seed7 矩阵
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -173,6 +173,8 @@ Strict loader 审计：
 8. Stage 13 入口和报告器已完成本地 smoke，下一步提交 ADS-B 三种子 Slurm 作业。
 9. Stage 13 Job `45090123` 已完成：R3 Overall `0.4930±0.0091`、Old `0.4850±0.0095`、New `0.5583±0.0058`；没有明显塌缩，但未稳定超过 target split，当前不锁定为正式主方案。
 10. Stage 14 Job `45146197` 已完成：`cross_day + target split` seed7 R3 Overall/Old/New `0.4865/0.4990/0.3840`，New 被压低，归档为负消融。
+11. Stage 15 Job `45149433` 已完成：ADS-B 类均衡伪标签训练 seed7 R3 Overall/Old/New `0.4995/0.4985/0.5070`，未超过 `cross_day + GPCC` seed7 对照且 New 明显下降，归档为负消融。
+12. Stage 16 已新增旧/新双分支训练：`--radcil_old_new_dual_branch` 将当前轮之前所有已注册类聚合为 old branch、当前轮新伪类聚合为 new branch，训练期额外加入分支判别损失；本地语法和 CLI 校验通过，下一步跑 seed7 权重 `0.30/0.70`。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
