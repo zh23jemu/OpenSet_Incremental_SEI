@@ -36,6 +36,14 @@ def _to_float(row: dict[str, str], key: str) -> float:
         return float("nan")
 
 
+def _metric(row: dict[str, str], *keys: str) -> float:
+    """按候选字段名读取指标，兼容不同阶段 CSV 的列名微小差异。"""
+    for key in keys:
+        if key in row and str(row[key]).strip() != "":
+            return _to_float(row, key)
+    return float("nan")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="汇总 ADS-B 旧/新双分支 seed7 结果。")
     parser.add_argument("--root", required=True, help="Stage 16 结果根目录。")
@@ -51,11 +59,11 @@ def main() -> int:
     for path in candidates:
         row = _last_row(path)
         name = path.parent.name
-        overall = _to_float(row, "Overall Acc")
-        old = _to_float(row, "Old Acc")
-        new = _to_float(row, "New Acc")
-        forgetting = _to_float(row, "Forgetting")
-        macro_f1 = _to_float(row, "Macro F1")
+        overall = _metric(row, "Overall Acc")
+        old = _metric(row, "Old Acc")
+        new = _metric(row, "New Acc")
+        forgetting = _metric(row, "Forgetting", "Forgetting Rate")
+        macro_f1 = _metric(row, "Macro F1")
         rows.append(
             {
                 "name": name,

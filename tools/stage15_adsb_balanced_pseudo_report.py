@@ -15,6 +15,14 @@ def _last_row(path: Path) -> dict[str, str]:
     return rows[-1]
 
 
+def _metric(row: dict[str, str], *keys: str) -> str:
+    """兼容不同实验阶段的指标列名，优先返回第一个存在且非空的字段。"""
+    for key in keys:
+        if key in row and str(row[key]).strip() != "":
+            return row[key]
+    return "nan"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="汇总 ADS-B 类均衡伪标签训练 seed7 结果。")
     parser.add_argument("--save-dir", required=True)
@@ -30,9 +38,9 @@ def main() -> int:
         "| R3 Overall | R3 Old | R3 New | Forgetting | Macro F1 |",
         "|---:|---:|---:|---:|---:|",
         (
-            f"| {row.get('Overall Acc', 'nan')} | {row.get('Old Acc', 'nan')} | "
-            f"{row.get('New Acc', 'nan')} | {row.get('Forgetting', 'nan')} | "
-            f"{row.get('Macro F1', 'nan')} |"
+            f"| {_metric(row, 'Overall Acc')} | {_metric(row, 'Old Acc')} | "
+            f"{_metric(row, 'New Acc')} | {_metric(row, 'Forgetting', 'Forgetting Rate')} | "
+            f"{_metric(row, 'Macro F1')} |"
         ),
         "",
         "判定：目标是相对 Stage 12/13 的 cross_day + GPCC seed7 继续提升 Overall，且 Old 不明显下降。",
