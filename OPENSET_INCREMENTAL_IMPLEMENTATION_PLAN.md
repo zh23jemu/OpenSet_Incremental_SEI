@@ -395,6 +395,8 @@ Job `44780602` 在默认 target split 发现前端下重新打开同协议 CIL b
 
 Job `44781083` 在默认 target split 与 Long-RADCIL 配置下验证训练期旧类 Teacher 原型锚定，报告为 `results/stage4/STAGE4_ADSB_TARGET_SPLIT_ANCHOR_SEED7_REPORT_44781083.md`。Seed7 R3 baseline weight=0 为 Overall `0.4829`、Old `0.4884`、New `0.4380`、Forgetting `0.1047`；weight `0.10/0.25` 的 Overall 均为 `-0.0070`，Old 分别为 `-0.0079/-0.0083`，Forgetting 为 `+0.0008/+0.0000`。没有非零权重通过“Overall 不低于 baseline 0.002，且 Old 提升至少 0.010 或 Forgetting 降低至少 0.010，同时 New 下降不超过 0.020”的扩展门槛，因此该结构性候选归档为负消融，不扩 seed13/31。
 
+Stage 11 已新增训练期跨天表征适配 discovery-only 候选。Student 从原始 closed-set checkpoint 拷贝，Teacher 固定为原模型；每轮只使用 Day1 known train 标签和当前轮 discovery 无标签样本，联合优化已知类 CE、两种 IQ 增强视图一致性、Student/Teacher 特征保持和 CORAL 二阶统计对齐。入口、计划、报告器和 Slurm 短任务已完成本地语法与合成 smoke，真实 seed7 结果待 Slurm 验证；只有聚类 Hungarian/Purity 明显提升才进入 CIL。
+
 ## 8.2 当前风险与应对
 
 | 风险                             | 影响                                                               | 当前应对                                                   |
@@ -420,6 +422,7 @@ Job `44781083` 在默认 target split 与 Long-RADCIL 配置下验证训练期�
 3. LoRa 双视图一致性、簇可靠性加权、训练期跨天特征分布对齐和 Stage 8 代理度量均已归档为负消融；Stage 9 诊断显示 LoRa 伪标签噪声下界过高，下一步应先做 discovery 表征重训/域不变表征。
 4. 先跑 Stage 10 GPCC + `none/mn_smooth/proto_repulse` seed7 discovery-only 矩阵；LoRa 看三轮 mean Hungarian/Purity，ADS-B 看 R3，未过门槛不进入 CIL。
 5. Stage 10 已未过门槛；不扩 seed13/31，不进入 CIL，下一步转向训练期跨天表征重训或表征-发现联合学习。
+6. Stage 11 先在 ADS-B/LoRa seed7 跑 `none/cross_day` discovery-only；严格使用独立 worktree、主项目绝对数据/checkpoint 路径和项目 `.venv`，通过门槛后才考虑完整增量。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 
