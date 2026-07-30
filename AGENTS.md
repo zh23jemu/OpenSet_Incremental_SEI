@@ -126,6 +126,7 @@
 - 阶段 6 已完成 LoRa discovery 簇可靠性伪标签加权 Job `45048052`：开启/关闭结果完全一致，IQ_7 R3 Old 均为 `0.1357`，held-out R3 Overall/Old/New/Forgetting 均为 `0.1667/0.0917/0.4667/0.4857`，未通过双门槛，不扩 seed13/31，LoRa 后端小机制搜索正式停止。
 - 阶段 7 已完成训练期跨天 CORAL-style discovery/replay 特征分布对齐 Job `45049135`；开启/关闭 IQ_7 R3 Old 均为 `0.1357`，held-out R3 Overall 均为 `0.1667`，Old `0.0905` 低于基线 `0.0917`，Forgetting 均为 `0.4857`，未通过双门槛，不扩 seed13/31，LoRa 机制搜索正式停止。
 - 用户反馈 ADS-B 约 49%、LoRa 约 15%-17% 仍不可接受，项目重新打开 Stage 8 攻低分候选；已新增增量归一化代理度量训练入口，等待 seed7 Slurm 矩阵验证。
+- Stage 8 seed7 Job `45058068` 已完成且未过门槛；Stage 9 本地前端瓶颈诊断确认 LoRa 伪标签噪声下界约 58%-67%，ADS-B R3 仍约 38%-40%，下一步应转向 discovery 表征重训/域不变表征。
 
 ## Recent Changes
 
@@ -214,6 +215,7 @@
 - 2026-07-29：完成阶段 7 LoRa 训练期跨天特征分布对齐验证；Job `45049066` 因 worktree 缺少 `.venv` 以退出码 127 失败，修正 `PYTHON_BIN` 后 Job `45049135` 正常完成。对齐未改善 IQ_7 旧类保持或 held-out Overall，归档为负消融，不扩种子。
 - 2026-07-29：新增 `results/stage7/STAGE7_FINAL_RISK_CLOSURE_REPORT.md`，同步客户汇报页和客户问答，明确 LoRa 机制搜索停止、ADS-B/LoRa 低结果局限及 DOI-style 简化 baseline 口径。
 - 2026-07-30：新增 `utils/incremental_metric_learning.py`、Stage 8 seed7 计划/报告器和 Slurm 矩阵脚本，在 ADS-B 与 LoRa 增量训练中接入默认关闭的 cosine-proxy metric loss；本地 `py_compile`、合成 smoke、计划生成和 CLI 参数校验通过。
+- 2026-07-30：完成 Stage 8 seed7 Job `45058068` 并同步小型结果；非零代理度量权重均未通过 ADS-B/LoRa 预注册门槛。新增 `tools/stage9_frontend_bottleneck_diagnosis.py` 和 `results/stage9/STAGE9_FRONTEND_BOTTLENECK_DIAGNOSIS.md`，将下一步收敛到 discovery 表征重训。
 
 ## Next TODO
 
@@ -221,7 +223,7 @@
 - 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
 - 阶段 4 ADS-B ratio 0.03 和自适应密度结论保持不变；默认 target split 已作为 ADS-B 欠聚类收敛候选，保守门控、max-added 消融和训练期旧类原型锚定均未找到更优折中。固定 target split 后端对照显示剩余风险是 RADCIL 偏新类、DOI-style 遗忘更低的后端旧新类权衡；Stage 8 只验证训练期特征几何，不继续 target split 小参数或原型锚定权重搜索。
 - GPCC 已完成 LoRa/ADS-B seed7 验证：LoRa 不进入完整增量，ADS-B 完整增量未超过 target split。增量双视图一致性和 discovery 簇可靠性加权均未改善 LoRa；后续不继续围绕 HDBSCAN 替换、可靠性权重或一致性权重做小参数搜索，若继续攻 LoRa 必须转向训练期跨天表征/联合发现机制。
-- 阶段 7 训练期当前 discovery/replay 分布对齐未通过双门槛；旧后端小机制停止。Stage 8 作为新的训练期表征学习方案，先跑 seed7 小矩阵，未过门槛则不扩三种子。
+- 阶段 7 训练期当前 discovery/replay 分布对齐和 Stage 8 代理度量均未通过双门槛；旧后端小机制停止。下一步先做 discovery 表征重训/域不变表征的 discovery-only 验证，过门槛后再跑 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
 - 阶段 5 补充风险已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，当前继续以风险收敛和结果一致性为主。
 - 使用 `CUSTOMER_PROGRESS_REPORT.html` 进行阶段汇报；每次关键正式结果变化后，从实施计划同步更新该派生页面并复核图表数值。

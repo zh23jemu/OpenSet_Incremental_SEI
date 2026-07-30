@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-29
-- 当前阶段：用户要求继续提高 ADS-B/LoRa 低结果；阶段 8 已新增增量归一化代理度量训练候选，待 seed7 Slurm 验证
+- 当前阶段：Stage 8 代理度量 seed7 已完成且未过门槛；Stage 9 前端瓶颈诊断确认下一步应转向 discovery 表征重训
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -144,6 +144,8 @@ Strict loader 审计：
 - 已完成阶段 7 训练期跨天 CORAL-style discovery/replay 特征分布对齐：Job `45049135` 开启/关闭 IQ_7 R3 Old 均为 `0.1357`，held-out R3 Overall 均为 `0.1667`，开启后 Old `0.0905`、New `0.4714`、Forgetting `0.4857`，未通过双门槛，归档为负消融。Job `45049066` 仅为 worktree 环境失败，不计入算法结论。
 - 已生成最终风险收口报告 `results/stage7/STAGE7_FINAL_RISK_CLOSURE_REPORT.md`，汇总 ADS-B/LoRa 低结果原因、负消融边界、DOI-style 简化 baseline 和客户回答口径。
 - 用户反馈 ADS-B 约 49%、LoRa 约 15%-17% 仍不可接受，要求继续提高。已新增 Stage 8 归一化 cosine-proxy 代理度量损失：默认关闭，只在增量训练期使用高置信新类伪标签和 replay 旧类标签重塑类间角度；覆盖 ADS-B strict 与 LoRa 薄入口。新增 `slurm/stage8_metric_seed7.sbatch`、`tools/stage8_metric_plan.py`、`tools/stage8_metric_report.py` 和本地 smoke，待提交到 Slurm 运行 seed7 小矩阵。
+- Stage 8 seed7 Job `45058068` 已完成：ADS-B metric `0.10/0.25` 的 R3 Overall 相对 baseline 分别为 `-0.0031/-0.0048`；LoRa metric `0.10` 完全无变化、`0.25` Overall `-0.0019` 且 New `-0.0095`。无候选通过门槛，不扩三种子。
+- Stage 9 前端瓶颈诊断已生成 `results/stage9/STAGE9_FRONTEND_BOTTLENECK_DIAGNOSIS.md`：ADS-B target split R3 Hungarian 约 `0.6050`，GPCC R3 约 `0.6152`；LoRa MV-ACC/GPCC R1-R3 Hungarian 约 `0.33-0.49`，伪标签噪声下界过高。下一步应做 discovery 表征重训/域不变表征，先 discovery-only 过门槛再跑 CIL。
 - 已新增 `tools/stage5_manytx_manyrx_supplement_report.py`、`results/stage5/STAGE5_MANYTX_MANYRX_SUPPLEMENT_REPORT.md` 和 JSON 摘要，只读汇总既有 ManyTx/ManyRx seed7 三轮结果；ManyTx R3 Overall/New/Forgetting=`0.2700/0.5600/0.4267`，ManyRx R3 Overall/New/Forgetting=`0.5700/0.9500/0.5250`，阶段 5 补充稳定性验证已关闭。
 - 已生成只读服务器产物清单：553 个模型/回放二进制、约 5.21 GB、54 个超 50 MB 和 9 个非空错误日志。未删除任何文件，仅精确忽略新矩阵二进制并保留小型审计结果。
 - 已在 WiSig strict 入口实现可选 DOI-memory hybrid：使用伪标签 replay 记忆构建原型、跨轮对齐历史原型，并与网络 logits 做 late fusion；默认融合权重为 0，不改变历史 RADCIL 行为。该分支已完成 seed7 和三种子验证，正式结论为负消融。
@@ -158,8 +160,8 @@ Strict loader 审计：
 1. GPCC 阶段代码和 seed7 结果已通过 Git 同步；继续保持远端小文件走 Git、大型 checkpoint/replay 不入库。
 2. LoRa GPCC discovery-only 未过门槛，不进入完整增量；ADS-B GPCC 完整增量 seed7 未超过 target split，不扩 seed 13/31。
 3. 下一步整理客户口径：HDBSCAN 替换已做结构性验证，但最终低分不只来自簇数，ADS-B 仍以 target split 为当前最佳收敛候选，LoRa 作为跨体制局限报告。
-4. LoRa 阶段 7 未通过双门槛，旧的小机制停止；Stage 8 是新的训练期表征几何候选，不属于继续调 bias/BN/anchor/fusion。
-5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳发现前端；Stage 8 只改增量训练特征几何，不继续 target split/anchor 小参数搜索。
+4. LoRa 阶段 7/8 均未通过门槛，后端和局部训练损失继续加权无效；下一步只考虑 discovery 表征重训/域不变表征。
+5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
