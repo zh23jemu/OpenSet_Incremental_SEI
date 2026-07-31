@@ -1735,6 +1735,50 @@ def _make_pseudo_labeled_round(round_features, labels, enrolled_ids, next_label)
     return np.concatenate(xs, axis=0).astype(np.float32), np.concatenate(ys, axis=0).astype(np.int64), cluster_pseudo_pairs, next_label
 
 
+def _align_refined_clusters_to_pseudo(
+    reference_features,
+    reference_pseudo_y,
+    refined_features,
+    refined_cluster_y,
+):
+    """将 Student 二次发现的簇无监督对齐回第一次注册的伪类编号。
+
+    聚类标签本身没有固定语义。第一次 CIL 更新后，如果直接把 Student
+    新发现的簇编号拿去训练，编号变化会破坏已有分类头；这里仅使用当前轮
+    discovery/train 侧的类中心做余弦相似度 Hungarian 匹配，不读取 held-out
+    eval 或未知真实标签。
+    """
+
+    reference_features = np.asarray(reference_features, dtype=np.float32)
+    reference_pseudo_y = np.asarray(reference_pseudo_y, dtype=np.int64)
+    refined_features = np.asarray(refined_features, dtype=np.float32)
+    refined_cluster_y = np.asarray(refined_cluster_y, dtype=np.int64)
+    reference_ids = sorted(np.unique(reference_pseudo_y).tolist())
+    refined_ids = sorted(np.unique(refined_cluster_y).tolist())
+    if not reference_ids or not refined_ids:
+        return reference_pseudo_y.copy()
+
+    reference_centers = np.stack(
+        [reference_features[reference_pseudo_y == int(label)].mean(axis=0) for label in reference_ids]
+    )
+    refined_centers = np.stack(
+        [refined_features[refined_cluster_y == int(label)].mean(axis=0) for label in refined_ids]
+    )
+    similarity = cosine_similarity(reference_centers, refined_centers)
+    row_ind, col_ind = linear_sum_assignment(-similarity)
+    cluster_to_pseudo = {
+        int(refined_ids[col]): int(reference_ids[row])
+        for row, col in zip(row_ind.tolist(), col_ind.tolist())
+    }
+    fallback = iter(reference_ids)
+    for cluster_id in refined_ids:
+        cluster_to_pseudo.setdefault(int(cluster_id), int(next(fallback, reference_ids[0])))
+    return np.asarray(
+        [cluster_to_pseudo[int(cluster_id)] for cluster_id in refined_cluster_y],
+        dtype=np.int64,
+    )
+
+
 def _evaluate_raw_predictions(
     method,
     stage,
@@ -3371,6 +3415,11 @@ def main():
     parser.add_argument("--round_size", type=int, default=10)
     parser.add_argument("--num_rounds", type=int, default=3)
     parser.add_argument("--discovery_backend", choices=["mvacc", "gpcc"], default="mvacc", help="Discovery front-end for the main MV-ACC-CIL path; gpcc fixes K=round_size without HDBSCAN.")
+    parser.add_argument(
+        "--enable_joint_discovery_refinement",
+        action="store_true",
+        help="每轮先完成一次 CIL，再用 Student 表征重新发现并无标签对齐，最后进行第二次 CIL；默认关闭。",
+    )
     parser.add_argument("--discovery_feature_adapter", choices=["none", "mn_smooth", "proto_repulse"], default="none", help="Strict discovery feature adapter before MV-ACC/GPCC; uses only known train and current discovery features.")
     parser.add_argument("--cross_day_repr_adaptation", action="store_true", help="每轮 Teacher discovery 前做训练期跨天表征适配，只使用 Day1 known train 标签和当前 discovery 无标签样本。")
     parser.add_argument("--cross_day_repr_epochs", type=int, default=2)
@@ -3860,6 +3909,7 @@ def main():
             f"prototype_temperature={args.radcil_doi_prototype_temperature}"
         )
     clustering_rows, incremental_rows, retention_rows = [], [], []
+    joint_refinement_rows = []
     validation_retention_rows = []
     student = copy.deepcopy(model).to(device).eval()
     pseudo_to_true = {int(c): int(c) for c in range(args.initial_known_classes)}
@@ -4036,7 +4086,55 @@ def main():
         next_label += len(cluster_ids)
         student = _expand_closedset_classifier(teacher, next_label, device, imprinted_means)
         student = _train_end_to_end_cil(student, teacher, rd["X"], pseudo_y, current_w, memory_x, memory_y, old_out, args, device)
-        memory_x, memory_y = _update_iq_memory(memory_x, memory_y, rd["X"], pseudo_y, args.memory_per_class, args.seed + i)
+        if args.enable_joint_discovery_refinement:
+            # 第一轮 CIL 后，重新观察当前 Student 的类别结构。二次发现只读取
+            # 当前轮 discovery 样本，随后用无标签中心匹配回原伪类编号。
+            refined_z, _ = extract_deep_features(
+                student,
+                rd["X"],
+                rd["y"],
+                args.test_batch_size,
+                device,
+            )
+            refined_row, refined_info = run_discovery(
+                "MV-ACC",
+                f"R{i}_refined",
+                f"Day {i + 1}",
+                args.round_size,
+                rd["X"],
+                rd["y"],
+                refined_z,
+                args,
+            )
+            refined_row["Method"] = "Joint discovery refinement"
+            joint_refinement_rows.append(refined_row)
+            refined_pseudo_y = _align_refined_clusters_to_pseudo(
+                rd["Z"],
+                pseudo_y,
+                refined_z,
+                refined_info["labels"],
+            )
+            student = _train_end_to_end_cil(
+                student,
+                student,
+                rd["X"],
+                refined_pseudo_y,
+                current_w,
+                memory_x,
+                memory_y,
+                old_out,
+                args,
+                device,
+            )
+        memory_labels = refined_pseudo_y if args.enable_joint_discovery_refinement else pseudo_y
+        memory_x, memory_y = _update_iq_memory(
+            memory_x,
+            memory_y,
+            rd["X"],
+            memory_labels,
+            args.memory_per_class,
+            args.seed + i,
+        )
         if args.radcil_bn_recalibration:
             _recalibrate_batchnorm(
                 student, memory_x, args.test_batch_size, device,
@@ -4207,6 +4305,11 @@ def main():
             )
 
     clustering_df = save_csv(clustering_rows, os.path.join(args.save_dir, "clustering_results.csv"))
+    if args.enable_joint_discovery_refinement:
+        save_csv(
+            joint_refinement_rows,
+            os.path.join(args.save_dir, "joint_discovery_refinement_results.csv"),
+        )
     if args.discovery_only:
         print("[discovery_only] Saved strict discovery outputs; skipped CIL training and evaluation.")
         print(f"Saved: {os.path.join(args.save_dir, 'clustering_results.csv')}")

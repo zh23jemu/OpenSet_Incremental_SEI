@@ -36,6 +36,7 @@
 | Stage 19 初始表征教师蒸馏 | 已实现待跑 | 保留 Stage 18 初始 backbone 快照，对高置信新样本和 replay 做特征方向蒸馏，默认关闭；先跑 ADS-B seed7，过门槛才扩三种子 |
 | Stage 20 冻结 backbone CIL | 已实现待跑 | 关闭 CIL joint backbone 更新，只训练扩展分类头；若仍低于 seed7 强对照，则转联合 discovery-CIL 或收口局限 |
 | Stage 21 联合 discovery-CIL | 三种子已通过 | Job `45246678` 的 R3 Overall/Old/New 为 `0.5149±0.0107/0.5081±0.0084/0.5700±0.0737`，Forgetting `0.0722±0.0113`；固定为 ADS-B 当前候选 |
+| Stage 22 LoRa 联合 discovery-CIL | 已实现待跑 | 复用 GPCC + cross_day，在每轮 CIL 后重新发现并无标签对齐，再二次训练；先跑 seed7，未过门槛不扩三种子 |
 | ManyTx/ManyRx | 阶段 5 补充验证已完成 | 已只读汇总既有 seed7 三轮结果；ManyTx R3 Overall `0.2700`、ManyRx R3 Overall `0.5700`，作为辅助稳定性证据       |
 | 项目记忆与交接       | 部分已维护            | `AGENTS.md`、`PROJECT_HANDOFF.md` 已同步最新状态；RecallLoom rolling summary 当前因 receipt mismatch 暂停写入，未手工修改                |
 
@@ -461,6 +462,8 @@ Stage 19 Job `45220347` 已完成，R3 Overall/Old/New 为 `0.4986/0.4886/0.5800
 Stage 20 Job `45222651` 已完成，冻结 backbone 后 R3 Overall/Old/New 为 `0.4559/0.4436/0.5560`，明显低于 Stage 18/19。该结果排除了“只要冻结 backbone 就能保住聚类收益”的路径，当前应转向联合 discovery-CIL：在每轮 GPCC 伪标签生成后，用高置信伪类、旧类 replay 和初始表征约束共同更新表征与分类头，再重新评估下一轮 discovery；先做 seed7 discovery/CIL 短验证，未过门槛不扩三种子。
 
 Stage 21 已实现上述联合闭环。它不读取未知真实标签做簇对齐，而是用第一次注册伪类中心与 Student 二次发现簇中心的余弦相似度做 Hungarian 一对一映射，避免聚类编号变化破坏已有分类头。Job `45246678` 的三种子 R3 Overall/Old/New 为 `0.5149±0.0107/0.5081±0.0084/0.5700±0.0737`，Forgetting `0.0722±0.0113`，满足正式候选门槛。该结论只适用于 ADS-B，不能外推为 LoRa 已解决。
+
+Stage 22 将同一结构性闭环迁移到 LoRa strict：固定 `GPCC + cross_day_repr_adaptation + RADCIL`，每轮完成第一次 CIL 后，用 Student 特征重新执行 GPCC，再用无标签类中心 Hungarian 对齐回原伪类编号，最后二次训练。该设计针对 LoRa 的跨天表征漂移和伪类注册错位，不再重复 old-logit bias、BN、prototype anchor 或 late-fusion 小机制。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 

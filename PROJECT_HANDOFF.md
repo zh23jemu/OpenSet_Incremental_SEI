@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-31
-- 当前阶段：Stage 21 联合 discovery-CIL 三种子已通过，正在整理正式结果并决定跨数据集验证范围
+- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 22 LoRa 联合 discovery-CIL seed7 已实现，待 Slurm 验证
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -183,10 +183,12 @@ Strict loader 审计：
 18. Stage 19 Job `45220347` 已完成：R3 Overall/Old/New `0.4986/0.4886/0.5800`，相对 Stage 18 基本不变；下一步只验证冻结 backbone 的 CIL 结构。
 19. Stage 20 Job `45222651` 已完成：冻结 backbone 后 R3 Overall/Old/New `0.4559/0.4436/0.5560`，明显变差；说明后续必须联合适应表征与分类头，不再继续冻结或单纯初始教师蒸馏。
 20. Stage 21 已完成联合 discovery-CIL 三种子：Job `45225739` seed7 为 `0.5070/0.4983/0.5780`；Job `45246678` 三种子 R3 Overall/Old/New 均值为 `0.5149±0.0107/0.5081±0.0084/0.5700±0.0737`，三种子未出现明显旧新类塌缩。
+21. Stage 22 已新增 LoRa 联合 discovery-CIL seed7 入口，固定 GPCC + cross_day + RADCIL 参数；每轮执行第一次 CIL、Student 重新发现、无标签 Hungarian 对齐和第二次 CIL，下一步提交 Slurm。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
-7. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
+7. Stage 22 先跑 LoRa seed7；只有 Overall/Old/New 同时改善，才考虑扩展 LoRa 三种子，否则归档为跨体制负结果。
+8. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
 ## 8. 变更与 Git 状态
 
