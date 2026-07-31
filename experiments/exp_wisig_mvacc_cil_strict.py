@@ -2508,6 +2508,54 @@ def _predict_radcil_icarl_fallback(
     return pred.astype(np.int64)
 
 
+def _predict_radcil_old_prototype_route(
+    model,
+    eval_x,
+    prototype_bank,
+    batch_size,
+    device,
+    old_mass_threshold=0.55,
+    old_class_count=None,
+):
+    """旧类概率质量门控的原型路由预测。
+
+    Stage 28 显示 DOI-style 原型后端能明显救回 LoRa 旧类，但会把大量
+    新类吸回旧类；因此这里不做全局融合，也不在网络低置信时无条件回退。
+    只有当网络 softmax 在旧类列上的总概率已经足够高时，才认为该样本
+    是“疑似旧类”，并使用 replay 原型只修正旧类内部类别。这样路由信号
+    不需要 held-out 真值，也能尽量保留 RADCIL 对当前新类的判断。
+    """
+    threshold = float(old_mass_threshold)
+    if not 0.0 <= threshold <= 1.0:
+        raise ValueError("--radcil_old_prototype_route_candidates values must be within [0, 1].")
+    if prototype_bank is None:
+        return _predict_end_to_end(model, eval_x, batch_size, device)
+
+    eval_features, network_logits = _extract_end_to_end_outputs(model, eval_x, batch_size, device)
+    if len(network_logits) == 0:
+        return np.empty(0, dtype=np.int64)
+    old_class_count = network_logits.shape[1] if old_class_count is None else int(old_class_count)
+    if old_class_count <= 0 or old_class_count > network_logits.shape[1]:
+        raise ValueError("old_class_count is outside classifier output range.")
+
+    network_prob = F.softmax(torch.from_numpy(network_logits), dim=1).numpy()
+    pred = np.argmax(network_prob, axis=1).astype(np.int64)
+    old_mass = np.sum(network_prob[:, :old_class_count], axis=1)
+
+    prototypes, prototype_labels = prototype_bank
+    old_mask = np.asarray(prototype_labels, dtype=np.int64) < old_class_count
+    if not np.any(old_mask):
+        return pred
+    old_prototypes = np.asarray(prototypes, dtype=np.float32)[old_mask]
+    old_labels = np.asarray(prototype_labels, dtype=np.int64)[old_mask]
+    old_scores = l2norm(eval_features) @ l2norm(old_prototypes).T
+    old_pred = old_labels[np.argmax(old_scores, axis=1)]
+
+    route_mask = old_mass >= threshold
+    pred[route_mask] = old_pred[route_mask]
+    return pred.astype(np.int64)
+
+
 def _calibrate_grouped_doi_weight_on_validation(
     model, validation_x, validation_y, prototype_bank, batch_size, device,
     candidates, prototype_temperature, old_class_count,
@@ -2535,6 +2583,35 @@ def _calibrate_grouped_doi_weight_on_validation(
         })
     best = sorted(rows, key=lambda row: (-row["Validation Accuracy"], row["Fusion Weight"]))[0]
     return float(best["Fusion Weight"]), rows
+
+
+def _calibrate_old_prototype_route_on_validation(
+    model, validation_x, validation_y, prototype_bank, batch_size, device,
+    candidates, old_class_count,
+):
+    """仅用 Day1/IQ_7 旧类验证集选择旧类路由阈值。
+
+    验证集没有增量新类，不能用来估计新类误吸风险；因此并列时选择更高
+    阈值，使路由更保守。最终 held-out 新类只用于事后报告，不参与选参。
+    """
+    candidate_thresholds = sorted({float(value) for value in candidates})
+    if not candidate_thresholds:
+        raise ValueError("Old prototype route requires at least one threshold candidate.")
+    if any(value < 0.0 or value > 1.0 for value in candidate_thresholds):
+        raise ValueError("Old prototype route candidates must be within [0, 1].")
+
+    rows = []
+    for threshold in candidate_thresholds:
+        prediction = _predict_radcil_old_prototype_route(
+            model, validation_x, prototype_bank, batch_size, device,
+            old_mass_threshold=threshold, old_class_count=old_class_count,
+        )
+        rows.append({
+            "Old Mass Threshold": threshold,
+            "Validation Accuracy": float(np.mean(prediction == validation_y)),
+        })
+    best = sorted(rows, key=lambda row: (-row["Validation Accuracy"], -row["Old Mass Threshold"]))[0]
+    return float(best["Old Mass Threshold"]), rows
 
 
 def _calibrate_icarl_fallback_threshold_on_validation(
@@ -3663,6 +3740,8 @@ def main():
     parser.add_argument("--radcil_doi_prototype_temperature", type=float, default=0.10, help="Temperature applied to cosine prototype scores before late fusion.")
     parser.add_argument("--radcil_grouped_doi_fusion", action="store_true", help="Fuse DOI prototypes only into old-class columns; current-round new classes retain network-head scores.")
     parser.add_argument("--radcil_doi_fusion_candidates", type=str, default="0,0.25,0.5,0.75,1.0", help="Day1-validation candidates for grouped DOI old-class fusion.")
+    parser.add_argument("--radcil_old_prototype_route", action="store_true", help="Route high old-mass predictions through replay prototypes for old-class internal decisions.")
+    parser.add_argument("--radcil_old_prototype_route_candidates", type=str, default="0.45,0.55,0.65,0.75,0.85", help="Day1/IQ_7 validation candidates for conservative old-prototype routing.")
     parser.add_argument("--radcil_icarl_fallback", action="store_true", help="Enable confidence-gated iCaRL exemplar fallback during evaluation.")
     parser.add_argument("--radcil_icarl_fallback_threshold", type=float, default=0.60, help="Confidence threshold for exemplar fallback when validation-based calibration is not used.")
     parser.add_argument("--radcil_icarl_fallback_candidates", type=str, default="0.45,0.55,0.65,0.75,0.85", help="Day1-validation candidates for confidence-gated exemplar fallback.")
@@ -4063,24 +4142,30 @@ def main():
     # MV-ACC-CIL 使用冻结 Teacher 完成发现，再更新 Student。可选后端只改变
     # 评估时的预测后处理，不读取 held-out 真值，也不改变发现或训练流程。
     hybrid_doi_enabled = bool(args.radcil_grouped_doi_fusion) or float(args.radcil_doi_fusion_weight) > 0
+    old_prototype_route_enabled = bool(args.radcil_old_prototype_route)
+    prototype_memory_enabled = hybrid_doi_enabled or old_prototype_route_enabled
     icarl_fallback_enabled = bool(args.radcil_icarl_fallback)
     old_logit_bias_candidates = [
         float(value) for value in str(args.radcil_old_logit_bias_candidates).split(",")
         if value.strip()
     ]
     old_logit_bias_enabled = bool(old_logit_bias_candidates)
-    if sum([bool(hybrid_doi_enabled), bool(icarl_fallback_enabled), bool(old_logit_bias_enabled)]) > 1:
-        raise ValueError("DOI-memory fusion, iCaRL fallback and old-logit bias must be tested as separate ablations.")
+    if sum([bool(hybrid_doi_enabled), bool(old_prototype_route_enabled), bool(icarl_fallback_enabled), bool(old_logit_bias_enabled)]) > 1:
+        raise ValueError("DOI-memory fusion, old-prototype routing, iCaRL fallback and old-logit bias must be tested as separate ablations.")
     main_method_name = (
-        "MV-ACC-CIL + grouped DOI-memory"
-        if args.radcil_grouped_doi_fusion
+        "MV-ACC-CIL + old-prototype-route"
+        if old_prototype_route_enabled
         else (
-            "MV-ACC-CIL + iCaRL-fallback"
-            if icarl_fallback_enabled
+            "MV-ACC-CIL + grouped DOI-memory"
+            if args.radcil_grouped_doi_fusion
             else (
-                "MV-ACC-CIL + old-logit-bias"
-                if old_logit_bias_enabled
-                else ("MV-ACC-CIL + DOI-memory" if hybrid_doi_enabled else "MV-ACC-CIL")
+                "MV-ACC-CIL + iCaRL-fallback"
+                if icarl_fallback_enabled
+                else (
+                    "MV-ACC-CIL + old-logit-bias"
+                    if old_logit_bias_enabled
+                    else ("MV-ACC-CIL + DOI-memory" if hybrid_doi_enabled else "MV-ACC-CIL")
+                )
             )
         )
     )
@@ -4092,6 +4177,12 @@ def main():
             f"align_lambda={args.radcil_doi_align_lambda}, "
             f"prototype_temperature={args.radcil_doi_prototype_temperature}"
         )
+    if old_prototype_route_enabled:
+        print(
+            "[Old prototype route] "
+            f"candidates={args.radcil_old_prototype_route_candidates}, "
+            f"align_lambda={args.radcil_doi_align_lambda}"
+        )
     clustering_rows, incremental_rows, recording_level_rows, retention_rows = [], [], [], []
     joint_refinement_rows = []
     validation_retention_rows = []
@@ -4101,12 +4192,14 @@ def main():
     doi_prototype_bank = None
     icarl_prototype_bank = None
     doi_fusion_weight = float(args.radcil_doi_fusion_weight)
+    old_prototype_route_threshold = 1.0
     icarl_fallback_threshold = float(args.radcil_icarl_fallback_threshold)
     old_logit_bias = 0.0
     doi_calibration_rows = []
+    old_prototype_route_calibration_rows = []
     icarl_fallback_calibration_rows = []
     old_logit_bias_calibration_rows = []
-    if hybrid_doi_enabled:
+    if prototype_memory_enabled:
         doi_prototype_bank = _build_aligned_doi_prototype_bank(
             student,
             memory_x,
@@ -4128,16 +4221,50 @@ def main():
             )
             doi_calibration_rows.extend([{"Stage": "Initial", **row} for row in calibration])
             print(f"[Grouped DOI calibration] stage=Initial | Day1 validation only | weight={doi_fusion_weight}")
-        initial_pred = _predict_hybrid_radcil_doi(
-            student,
-            eval_data["eval_initial"]["X"],
-            doi_prototype_bank,
-            args.test_batch_size,
-            device,
-            doi_fusion_weight,
-            args.radcil_doi_prototype_temperature,
-            old_class_count=args.initial_known_classes if args.radcil_grouped_doi_fusion else None,
-        )
+            initial_pred = _predict_hybrid_radcil_doi(
+                student,
+                eval_data["eval_initial"]["X"],
+                doi_prototype_bank,
+                args.test_batch_size,
+                device,
+                doi_fusion_weight,
+                args.radcil_doi_prototype_temperature,
+                old_class_count=args.initial_known_classes,
+            )
+        elif old_prototype_route_enabled:
+            route_candidates = [
+                float(value) for value in args.radcil_old_prototype_route_candidates.split(",")
+                if value.strip()
+            ]
+            old_prototype_route_threshold, calibration = _calibrate_old_prototype_route_on_validation(
+                student, X_calibration, y_calibration, doi_prototype_bank,
+                args.test_batch_size, device, route_candidates, args.initial_known_classes,
+            )
+            old_prototype_route_calibration_rows.extend([{"Stage": "Initial", **row} for row in calibration])
+            print(
+                "[Old prototype route calibration] stage=Initial | Day1 validation only | "
+                f"threshold={old_prototype_route_threshold}"
+            )
+            initial_pred = _predict_radcil_old_prototype_route(
+                student,
+                eval_data["eval_initial"]["X"],
+                doi_prototype_bank,
+                args.test_batch_size,
+                device,
+                old_mass_threshold=old_prototype_route_threshold,
+                old_class_count=args.initial_known_classes,
+            )
+        else:
+            initial_pred = _predict_hybrid_radcil_doi(
+                student,
+                eval_data["eval_initial"]["X"],
+                doi_prototype_bank,
+                args.test_batch_size,
+                device,
+                doi_fusion_weight,
+                args.radcil_doi_prototype_temperature,
+                old_class_count=None,
+            )
     elif icarl_fallback_enabled:
         icarl_prototype_bank = _build_replay_prototype_bank(
             student, memory_x, memory_y, args.test_batch_size, device
@@ -4209,11 +4336,19 @@ def main():
             recording_level_rows.append(recording_initial_row)
     retention_rows.append({"Round": "Initial", "Fixed Day1 Old-Class Acc": float(initial_row["Overall Acc"])})
     if X_validation is not None:
-        initial_validation_pred = _predict_end_to_end(
-            student, X_validation, args.test_batch_size, device,
-            old_class_count=args.initial_known_classes if old_logit_bias_enabled else 0,
-            old_logit_bias=old_logit_bias if old_logit_bias_enabled else 0.0,
-        )
+        if old_prototype_route_enabled:
+            initial_validation_pred = _predict_radcil_old_prototype_route(
+                student, X_validation, doi_prototype_bank,
+                args.test_batch_size, device,
+                old_mass_threshold=old_prototype_route_threshold,
+                old_class_count=args.initial_known_classes,
+            )
+        else:
+            initial_validation_pred = _predict_end_to_end(
+                student, X_validation, args.test_batch_size, device,
+                old_class_count=args.initial_known_classes if old_logit_bias_enabled else 0,
+                old_logit_bias=old_logit_bias if old_logit_bias_enabled else 0.0,
+            )
         validation_retention_rows.append({
             "Round": "Initial",
             "IQ_7 Validation Old-Class Acc": float(np.mean(initial_validation_pred == y_validation)),
@@ -4392,7 +4527,7 @@ def main():
                 f"samples={len(memory_x)} | reset={args.radcil_bn_recalibration_reset}"
             )
         eval_key = f"eval_r{i}"
-        if hybrid_doi_enabled:
+        if prototype_memory_enabled:
             doi_prototype_bank = _build_aligned_doi_prototype_bank(
                 student,
                 memory_x,
@@ -4413,16 +4548,40 @@ def main():
                     f"[Grouped DOI calibration] stage=After R{i} | Day1 validation only | "
                     f"old_class_count={old_out} | weight={doi_fusion_weight}"
                 )
-            pred = _predict_hybrid_radcil_doi(
-                student,
-                eval_data[eval_key]["X"],
-                doi_prototype_bank,
-                args.test_batch_size,
-                device,
-                doi_fusion_weight,
-                args.radcil_doi_prototype_temperature,
-                old_class_count=old_out if args.radcil_grouped_doi_fusion else None,
-            )
+            if old_prototype_route_enabled:
+                route_candidates = [
+                    float(value) for value in args.radcil_old_prototype_route_candidates.split(",")
+                    if value.strip()
+                ]
+                old_prototype_route_threshold, calibration = _calibrate_old_prototype_route_on_validation(
+                    student, X_calibration, y_calibration, doi_prototype_bank,
+                    args.test_batch_size, device, route_candidates, old_out,
+                )
+                old_prototype_route_calibration_rows.extend([{"Stage": f"After R{i}", **row} for row in calibration])
+                print(
+                    f"[Old prototype route calibration] stage=After R{i} | Day1 validation only | "
+                    f"threshold={old_prototype_route_threshold}"
+                )
+                pred = _predict_radcil_old_prototype_route(
+                    student,
+                    eval_data[eval_key]["X"],
+                    doi_prototype_bank,
+                    args.test_batch_size,
+                    device,
+                    old_mass_threshold=old_prototype_route_threshold,
+                    old_class_count=old_out,
+                )
+            else:
+                pred = _predict_hybrid_radcil_doi(
+                    student,
+                    eval_data[eval_key]["X"],
+                    doi_prototype_bank,
+                    args.test_batch_size,
+                    device,
+                    doi_fusion_weight,
+                    args.radcil_doi_prototype_temperature,
+                    old_class_count=old_out if args.radcil_grouped_doi_fusion else None,
+                )
         elif icarl_fallback_enabled:
             icarl_prototype_bank = _build_replay_prototype_bank(
                 student, memory_x, memory_y, args.test_batch_size, device
@@ -4488,17 +4647,28 @@ def main():
             )
             if recording_row is not None:
                 recording_level_rows.append(recording_row)
-        if hybrid_doi_enabled:
-            fixed_pred = _predict_hybrid_radcil_doi(
-                student,
-                eval_data["eval_initial"]["X"],
-                doi_prototype_bank,
-                args.test_batch_size,
-                device,
-                doi_fusion_weight,
-                args.radcil_doi_prototype_temperature,
-                old_class_count=old_out if args.radcil_grouped_doi_fusion else None,
-            )
+        if prototype_memory_enabled:
+            if old_prototype_route_enabled:
+                fixed_pred = _predict_radcil_old_prototype_route(
+                    student,
+                    eval_data["eval_initial"]["X"],
+                    doi_prototype_bank,
+                    args.test_batch_size,
+                    device,
+                    old_mass_threshold=old_prototype_route_threshold,
+                    old_class_count=old_out,
+                )
+            else:
+                fixed_pred = _predict_hybrid_radcil_doi(
+                    student,
+                    eval_data["eval_initial"]["X"],
+                    doi_prototype_bank,
+                    args.test_batch_size,
+                    device,
+                    doi_fusion_weight,
+                    args.radcil_doi_prototype_temperature,
+                    old_class_count=old_out if args.radcil_grouped_doi_fusion else None,
+                )
         elif icarl_fallback_enabled:
             fixed_pred = _predict_radcil_icarl_fallback(
                 student,
@@ -4523,11 +4693,19 @@ def main():
         if X_validation is not None:
             # 该表专供 seed7 训练配置选择。只评估固定 IQ_7 初始旧类，不能
             # 表示增量新类质量；IQ_8-10 held-out 指标不得用于候选选择。
-            validation_pred = _predict_end_to_end(
-                student, X_validation, args.test_batch_size, device,
-                old_class_count=old_out if old_logit_bias_enabled else 0,
-                old_logit_bias=old_logit_bias if old_logit_bias_enabled else 0.0,
-            )
+            if old_prototype_route_enabled:
+                validation_pred = _predict_radcil_old_prototype_route(
+                    student, X_validation, doi_prototype_bank,
+                    args.test_batch_size, device,
+                    old_mass_threshold=old_prototype_route_threshold,
+                    old_class_count=old_out,
+                )
+            else:
+                validation_pred = _predict_end_to_end(
+                    student, X_validation, args.test_batch_size, device,
+                    old_class_count=old_out if old_logit_bias_enabled else 0,
+                    old_logit_bias=old_logit_bias if old_logit_bias_enabled else 0.0,
+                )
             validation_retention_rows.append({
                 "Round": f"R{i}",
                 "IQ_7 Validation Old-Class Acc": float(np.mean(validation_pred == y_validation)),
@@ -4552,12 +4730,14 @@ def main():
             ),
             "radcil_doi_align_lambda": float(args.radcil_doi_align_lambda),
             "radcil_doi_prototype_temperature": float(args.radcil_doi_prototype_temperature),
+            "radcil_old_prototype_route": bool(old_prototype_route_enabled),
+            "radcil_old_prototype_route_threshold": float(old_prototype_route_threshold),
             "radcil_icarl_fallback": bool(icarl_fallback_enabled),
             "radcil_icarl_fallback_threshold": float(icarl_fallback_threshold),
             "radcil_old_logit_bias": float(old_logit_bias),
         }, os.path.join(args.save_dir, f"mvacc_cil_after_r{i}.pth"))
         np.savez_compressed(os.path.join(args.save_dir, f"replay_memory_after_r{i}.npz"), X=memory_x, y=memory_y)
-        if hybrid_doi_enabled:
+        if prototype_memory_enabled:
             np.savez_compressed(
                 os.path.join(args.save_dir, f"hybrid_doi_prototype_bank_after_r{i}.npz"),
                 prototypes=doi_prototype_bank[0],
@@ -4594,6 +4774,11 @@ def main():
         )
     if doi_calibration_rows:
         save_csv(doi_calibration_rows, os.path.join(args.save_dir, "grouped_doi_iq7_calibration.csv"))
+    if old_prototype_route_calibration_rows:
+        save_csv(
+            old_prototype_route_calibration_rows,
+            os.path.join(args.save_dir, "old_prototype_route_iq7_calibration.csv"),
+        )
     if icarl_fallback_calibration_rows:
         save_csv(
             icarl_fallback_calibration_rows,
@@ -4693,11 +4878,15 @@ def main():
                 proposed_source_method=main_method_name,
                 proposed_display_name=main_method_name,
                 proposed_incremental_module=(
+                    "Network replay + old-prototype route"
+                    if old_prototype_route_enabled
+                    else (
                     "Network replay + confidence-gated exemplar fallback"
                     if icarl_fallback_enabled
                     else "Network replay + DOI-memory late fusion"
                     if hybrid_doi_enabled
                     else "Network replay + distillation"
+                    )
                 ),
             )
             save_csv(
