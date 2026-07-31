@@ -145,6 +145,7 @@
 - Stage 22 已完成 LoRa 联合 discovery-CIL 公平三种子验证：Job `45260776` 在 20 epochs closed-set backbone 口径下的 R3 Overall/Old/New/Forgetting 为 `0.1603±0.0047/0.0976±0.0019/0.4111±0.0214/0.3325±0.0367`；遗忘率明显优于基线 `0.4857`，但 Overall/New 低于基线 `0.1667/0.4667`，不采用为正式 LoRa 方案。
 - Stage 23 已完成 LoRa 长窗必要子集 seed7 验证：Job `45261784` 使用 decimation=1 的 1024 点 aligned 子集，R3 Overall/Old/New/Forgetting 为 `0.1676/0.1119/0.3905/-0.0238`；Old 和遗忘改善，但 New 明显下降，未通过门槛，不扩三种子。
 - Stage 24 已完成 LoRa recording-level GPCC 三种子验证：seed7 有局部正信号，但三种子 Job `45308393` R3 Overall/Old/New/Forgetting 为 `0.1483±0.0077/0.1004±0.0175/0.3397±0.0428/0.3397±0.0379`，Overall/New 低于基线，归档为结构性负消融。
+- Stage 27 seed7 已完成 LoRa-specific Chirp backbone 对比：Job `45350081` 在同一 strict split、GPCC、cross-day、LoRa SSL 和联合 discovery-CIL 后端下，将 R3 Overall/Old/New/Forgetting 从 ResNet1D 的 `0.1781/0.1071/0.4619/0.3548` 提升到 `0.2543/0.1929/0.5000/0.2690`，Recording-level Overall 为 `0.2800`；通过 seed7 结构门槛，已新增三种子确认入口，尚不能宣称 LoRa 已稳定解决。
 
 ## Recent Changes
 
@@ -264,6 +265,8 @@
 - 2026-07-31：Job `45246678` 完成 ADS-B 联合 discovery-CIL 三种子确认；R3 Overall `0.5149±0.0107`、Old `0.5081±0.0084`、New `0.5700±0.0737`、Forgetting `0.0722±0.0113`，已达到正式候选门槛。
 - 2026-07-31：新增 Stage 24 LoRa recording-level GPCC 适配器、smoke test、报告器和 Slurm seed7 入口；默认不改变历史 `mvacc/gpcc` 行为，只在显式 `--discovery_backend gpcc_recording` 时使用 recording 组级共识。
 - 2026-07-31：完成 Stage 24 seed7、no-refine 和三种子验证；Recording-GPCC 三种子未通过，结果已同步到 `results/stage24/STAGE24_LORA_RECORDING_GPCC_MULTISEED_REPORT_45308393.md`。
+- 2026-08-01：通过 GitHub 代理同步 Stage 27 seed7 小型结果，新增 `stage27-results-45350081` 结果分支并快进合并到本地；结果只包含指标、协议和日志文本，不包含模型权重或回放二进制。
+- 2026-08-01：新增 `slurm/stage27_lora_backbone_multiseed.sbatch` 和 `tools/stage27_lora_backbone_multiseed_report.py`，固定 LoRa Chirp backbone 与 Stage 27 seed7 结构，准备 seed7/13/31 正式确认；本地 `.venv` `py_compile` 和 `git diff --check` 已通过。
 
 ## Next TODO
 
@@ -274,6 +277,7 @@
 - 阶段 7 训练期当前 discovery/replay 分布对齐和 Stage 8 代理度量均未通过双门槛；旧后端小机制停止。下一步先做 discovery 表征重训/域不变表征的 discovery-only 验证，过门槛后再跑 CIL。
 - Stage 10 seed7 先跑 GPCC + `none/mn_smooth/proto_repulse` discovery-only 矩阵；LoRa 以三轮 mean Hungarian/Purity 为主门槛，ADS-B 重点看 R3，未过门槛不进入 CIL。
 - Stage 10 已未过门槛；Stage 24 recording 级共识也未过三种子门槛。LoRa 后续若继续攻，必须换更大结构，例如从训练目标和评估粒度上重新设计，而不是继续聚类器或后端小机制。
+- Stage 27 seed7 的 Chirp backbone 已出现明确结构收益，但三种子结果尚未生成；当前风险是 seed7 收益可能来自特定随机种子，或者某些 seed 的新类聚类/分类塌缩。未完成三种子前，不把 `0.2543` 作为正式稳定结果。
 - Stage 11 当前已完成本地可执行入口和协议边界验证；下一步提交并推送后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only，结果不过门槛就归档，不进入 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
 - 阶段 5 补充风险已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，当前继续以风险收敛和结果一致性为主。
@@ -347,6 +351,7 @@
 - `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 是新一轮方法实施、项目进度跟踪和客户汇报的唯一主入口；偏离算法、协议、标签边界、baseline、验收标准或客户可汇报结论前必须先更新计划并说明原因。
 - `CUSTOMER_PROGRESS_REPORT.html` 是可离线交付的客户派生摘要，允许为展示裁剪内部执行细节，但所有数值、结论和状态必须追溯到 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`，不得形成并行事实源。
 - LoRa 当前不继续 old-logit bias、原型锚定、late-fusion、BN 统计细调、双视图一致性或簇可靠性加权；这些都只作为低分根因证据和负消融保留，后续若继续应转向训练期跨天域适应和表征-发现联合训练。
+- Stage 27 选择 LoRa-specific Chirp backbone 作为新的结构性方向：多尺度卷积、dilation 残差块和 attention pooling 只替换 closed-set 初始表征，后续 strict split、GPCC、跨天适配、LoRa SSL、联合 discovery-CIL 和 held-out 评估边界保持不变。
 - `results/stage6/CUSTOMER_QA_RISK_RESPONSE.md` 是阶段 6 客户问答草稿，服务于沟通口径，不替代实施计划；其中 DOI-style、LoRa 数据和 ADS-B/LoRa 低结果结论必须与实施计划保持一致。
 - 原 MV-ACC、CF-LCG、HDBSCAN 和原型注册链路完整保留为 baseline，但不再约束新主方法结构；新主方法可重新设计深度表征、未知检测、类别发现、可靠伪标签和真实网络增量训练，经典特征仅用于旧方法对照与消融。
 - discovery 特征适配器只在显式参数开启时生效：先用 Day1 known train 与当前 discovery 拟合/变换 deep view，再生成 graph view；默认 `none` 必须保持旧 `clean_scale` 行为。

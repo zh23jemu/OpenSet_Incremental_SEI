@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-31
-- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 24 LoRa recording-level GPCC 三种子未通过，LoRa 低分仍未根本解决
+- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 27 LoRa Chirp backbone seed7 已通过结构门槛，正在做 seed7/13/31 稳定性确认
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -189,10 +189,13 @@ Strict loader 审计：
 24. Stage 22 公平三种子 Job `45260776` 已完成：R3 Overall/Old/New/Forgetting 为 `0.1603±0.0047/0.0976±0.0019/0.4111±0.0214/0.3325±0.0367`。该结构降低遗忘但 Overall/New 低于基线，不采用为正式 LoRa 方案。
 25. Stage 23 Job `45261784` 已完成 LoRa 1024 点 aligned 长窗 seed7：R3 Overall/Old/New/Forgetting 为 `0.1676/0.1119/0.3905/-0.0238`。Old 和遗忘改善，但 New 明显下降，不扩三种子。
 26. Stage 24 已完成 LoRa recording-level GPCC：seed7 Job `45307122` R3 `0.1800/0.1167/0.4333/0.3429` 有局部正信号；no-refine Job `45308095` 说明 New 可回升但 Overall/Old 会下降；三种子 Job `45308393` R3 Overall/Old/New/Forgetting 为 `0.1483±0.0077/0.1004±0.0175/0.3397±0.0428/0.3397±0.0379`，未过门槛，归档为结构性负消融。
+27. Stage 27 seed7 Job `45350081` 完成 LoRa-specific Chirp backbone 对比：ResNet1D 的 R3 Overall/Old/New/Forgetting 为 `0.1781/0.1071/0.4619/0.3548`，Chirp 为 `0.2543/0.1929/0.5000/0.2690`，Recording-level Overall 为 `0.2800`；已通过 seed7 结构门槛。
+28. Stage 27 结果已通过 GitHub 代理同步回本地，结果分支为 `stage27-results-45350081`；新增三种子入口 `slurm/stage27_lora_backbone_multiseed.sbatch` 和报告器 `tools/stage27_lora_backbone_multiseed_report.py`，尚未提交 Slurm。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
-7. Stage 22/23/24 LoRa 均未过采用门槛；客户口径应说明“单段噪声、长窗、recording 共识、跨天适配和联合 discovery-CIL 都试过，LoRa 低分仍未根本解决”。
+7. Stage 22/23/24 LoRa 均未过采用门槛；Stage 27 seed7 的 Chirp backbone 出现明显正信号，但客户口径仍只能说“正在做三种子稳定性验证”，不能把单 seed 结果包装成已根本解决。
+8. Stage 27 下一步提交三种子 Slurm。完成后按 seed 检查 R3 Overall/Old/New、Forgetting、recording-level 指标以及 closed-set IQ_7 和 discovery cluster quality；若三种子稳定，再锁定为正式 LoRa 候选，否则归档为 seed-specific 结构消融。
 8. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
 ## 8. 变更与 Git 状态
