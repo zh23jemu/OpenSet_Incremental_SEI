@@ -81,7 +81,7 @@ from utils.classic_feature_gating import select_classic_feature_view, save_selec
 from utils.discovery_feature_adaptation import adapt_discovery_features
 from utils.graph_prototype_discovery_adapter import run_gpcc
 from utils.recording_consensus_discovery_adapter import run_recording_gpcc
-from utils.cross_day_representation_adaptation import adapt_model_cross_day
+from utils.cross_day_representation_adaptation import adapt_model_cross_day, adapt_model_lora_ssl
 from utils.incremental_visualization import save_seen_class_visualizations, save_paper_method_visualizations
 from utils.incremental_metric_learning import cosine_proxy_metric_loss
 from models.vup_model import ClosedSetSEI
@@ -3548,6 +3548,14 @@ def main():
     parser.add_argument("--cross_day_repr_lr", type=float, default=1e-5)
     parser.add_argument("--cross_day_repr_consistency_weight", type=float, default=0.5)
     parser.add_argument("--cross_day_repr_coral_weight", type=float, default=0.05)
+    parser.add_argument("--lora_ssl_adaptation", action="store_true", help="每轮 LoRa discovery 前做无标签 instance contrastive 自监督适配；默认关闭。")
+    parser.add_argument("--lora_ssl_epochs", type=int, default=3)
+    parser.add_argument("--lora_ssl_batch_size", type=int, default=128)
+    parser.add_argument("--lora_ssl_lr", type=float, default=1e-5)
+    parser.add_argument("--lora_ssl_ce_weight", type=float, default=1.0)
+    parser.add_argument("--lora_ssl_instance_weight", type=float, default=0.5)
+    parser.add_argument("--lora_ssl_teacher_weight", type=float, default=0.2)
+    parser.add_argument("--lora_ssl_temperature", type=float, default=0.2)
     parser.add_argument("--discovery_adapter_smooth_k", type=int, default=12, help="kNN size for discovery-only local feature smoothing.")
     parser.add_argument("--discovery_adapter_smooth_weight", type=float, default=0.20, help="Blend weight for discovery-only local feature smoothing.")
     parser.add_argument("--discovery_adapter_repulsion_weight", type=float, default=0.15, help="Known-prototype repulsion weight for proto_repulse adapter.")
@@ -3928,6 +3936,7 @@ def main():
             "development_ratio": float(args.development_ratio),
             "validation_split_key": validation_split_key,
             "lora_recording_level_eval_enabled": bool(args.enable_lora_recording_eval),
+            "lora_ssl_adaptation_enabled": bool(args.lora_ssl_adaptation),
             "frozen_before_unknown_rounds": [
                 "checkpoint", "CF-LCG", "MV-ACC parameters",
                 "grouped DOI candidate set and Day1 validation-only selection rule",
@@ -4201,6 +4210,30 @@ def main():
             )
             teacher = adaptation_result.model
             rd["cross_day_adaptation_diagnostics"] = adaptation_result.diagnostics
+        if args.lora_ssl_adaptation:
+            if args.dataset_profile != "lora25":
+                raise ValueError("--lora_ssl_adaptation is only supported for the LoRa25 strict profile.")
+            # LoRa SSL 适配只使用 Day1 已知训练标签和当前轮 discovery 无标签
+            # 样本。它发生在聚类前端之前，不读取未知真值或 held-out eval。
+            ssl_result = adapt_model_lora_ssl(
+                teacher,
+                X_train,
+                y_train,
+                rd["X"],
+                device=device,
+                epochs=args.lora_ssl_epochs,
+                batch_size=args.lora_ssl_batch_size,
+                lr=args.lora_ssl_lr,
+                ce_weight=args.lora_ssl_ce_weight,
+                instance_weight=args.lora_ssl_instance_weight,
+                teacher_weight=args.lora_ssl_teacher_weight,
+                temperature=args.lora_ssl_temperature,
+                projection_hidden_dim=args.projection_hidden_dim,
+                projection_dim=args.projection_dim,
+                seed=args.seed + 100 + i,
+            )
+            teacher = ssl_result.model
+            rd["lora_ssl_adaptation_diagnostics"] = ssl_result.diagnostics
         # Teacher is frozen during discovery. This prevents moving representations from changing clusters.
         rd["Z"], _ = extract_deep_features(teacher, rd["X"], rd["y"], args.test_batch_size, device)
         row, info = run_discovery(
@@ -4215,6 +4248,10 @@ def main():
             recording_ids=rd.get("recording_id"),
         )
         row["Method"] = "MV-ACC-CIL discovery"
+        if rd.get("cross_day_adaptation_diagnostics"):
+            row.update(rd["cross_day_adaptation_diagnostics"])
+        if rd.get("lora_ssl_adaptation_diagnostics"):
+            row.update(rd["lora_ssl_adaptation_diagnostics"])
         clustering_rows.append(row)
         graph_fusion_round_infos.append(info)
         if args.discovery_only:

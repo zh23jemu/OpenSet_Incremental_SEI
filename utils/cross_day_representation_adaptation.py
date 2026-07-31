@@ -24,7 +24,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset
 
-from utils.improved_closedset_training import augment_iq_batch
+from utils.improved_closedset_training import SupConProjectionHead, augment_iq_batch
 
 
 @dataclass(frozen=True)
@@ -55,6 +55,40 @@ def _coral_loss(source: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
     source_cov = source.T @ source / float(max(source.shape[0] - 1, 1))
     target_cov = target.T @ target / float(max(target.shape[0] - 1, 1))
     return F.mse_loss(source_cov, target_cov)
+
+
+def _instance_contrastive_loss(
+    projected_one: torch.Tensor,
+    projected_two: torch.Tensor,
+    temperature: float,
+) -> torch.Tensor:
+    """计算 SimCLR/NT-Xent 风格的无标签 instance 对比损失。
+
+    同一个 IQ symbol 的两种增强视图互为正样本，batch 中其它样本作为负样本。
+    该损失不需要未知类真值，适合在当前 discovery 域上做轻量自监督适配。
+    """
+
+    if projected_one.shape[0] <= 1 or projected_two.shape[0] <= 1:
+        return projected_one.sum() * 0.0
+    if projected_one.shape != projected_two.shape:
+        raise ValueError(
+            "instance contrastive views must share shape: "
+            f"{tuple(projected_one.shape)} vs {tuple(projected_two.shape)}"
+        )
+
+    batch_size = int(projected_one.shape[0])
+    features = F.normalize(torch.cat([projected_one, projected_two], dim=0), dim=1)
+    logits = features @ features.T / float(max(temperature, 1e-6))
+    logits = logits - torch.max(logits, dim=1, keepdim=True)[0].detach()
+    self_mask = torch.eye(batch_size * 2, device=features.device, dtype=torch.bool)
+    logits = logits.masked_fill(self_mask, -1e9)
+    positive_index = torch.arange(batch_size * 2, device=features.device)
+    positive_index = torch.where(
+        positive_index < batch_size,
+        positive_index + batch_size,
+        positive_index - batch_size,
+    )
+    return F.cross_entropy(logits, positive_index)
 
 
 def adapt_model_cross_day(
@@ -169,5 +203,144 @@ def adapt_model_cross_day(
         "Cross-Day Final CE": float(stats["CE"][-1]),
         "Cross-Day Final Consistency": float(stats["Consistency"][-1]),
         "Cross-Day Final CORAL": float(stats["CORAL"][-1]),
+    }
+    return CrossDayAdaptationResult(student, diagnostics)
+
+
+def adapt_model_lora_ssl(
+    model: torch.nn.Module,
+    known_x: np.ndarray,
+    known_y: np.ndarray,
+    discovery_x: np.ndarray,
+    *,
+    device: str,
+    epochs: int = 3,
+    batch_size: int = 128,
+    lr: float = 1e-5,
+    ce_weight: float = 1.0,
+    instance_weight: float = 0.5,
+    teacher_weight: float = 0.2,
+    temperature: float = 0.2,
+    projection_hidden_dim: int = 128,
+    projection_dim: int = 64,
+    seed: int = 7,
+) -> CrossDayAdaptationResult:
+    """在 LoRa 当前 discovery 域上做无标签 instance-level 自监督适配。
+
+    设计边界：
+    1. 已知类 CE 只使用 Day1 IQ_1-6 训练标签，用来保住旧类身份判别能力；
+    2. 当前轮 discovery 只参与增强视图对比和 teacher 特征锚定，不读取未知真值；
+    3. held-out evaluation 完全不进入该过程，因此仍符合 strict 协议。
+    """
+
+    _set_seed(seed)
+    if len(known_x) == 0 or len(discovery_x) == 0:
+        raise ValueError("LoRa SSL adaptation requires non-empty known and discovery data.")
+
+    student = copy.deepcopy(model).to(device)
+    teacher = copy.deepcopy(model).to(device).eval()
+    for parameter in teacher.parameters():
+        parameter.requires_grad_(False)
+
+    projector = SupConProjectionHead(
+        input_dim=int(getattr(student, "feat_dim", projection_hidden_dim)),
+        hidden_dim=int(projection_hidden_dim),
+        output_dim=int(projection_dim),
+    ).to(device)
+    known_loader = DataLoader(
+        TensorDataset(
+            torch.as_tensor(known_x, dtype=torch.float32),
+            torch.as_tensor(known_y, dtype=torch.long),
+        ),
+        batch_size=max(2, int(batch_size)),
+        shuffle=True,
+        drop_last=False,
+        num_workers=0,
+    )
+    discovery_loader = DataLoader(
+        TensorDataset(torch.as_tensor(discovery_x, dtype=torch.float32)),
+        batch_size=max(2, int(batch_size)),
+        shuffle=True,
+        drop_last=True,
+        num_workers=0,
+    )
+    optimizer = torch.optim.AdamW(
+        list(student.parameters()) + list(projector.parameters()),
+        lr=float(lr),
+        weight_decay=1e-4,
+    )
+    stats = {"CE": [], "Instance": [], "Teacher": [], "Total": []}
+
+    student.train()
+    projector.train()
+    for _ in range(max(1, int(epochs))):
+        known_iter = cycle(known_loader)
+        epoch_values = {key: [] for key in stats}
+        for (xd,) in discovery_loader:
+            xk, yk = next(known_iter)
+            xk = xk.to(device)
+            yk = yk.to(device)
+            xd = xd.to(device)
+
+            known_feat, known_logits = student(augment_iq_batch(xk))
+            disc_view_one = augment_iq_batch(xd)
+            disc_view_two = augment_iq_batch(xd)
+            disc_feat_one, _ = student(disc_view_one)
+            disc_feat_two, _ = student(disc_view_two)
+            with torch.no_grad():
+                teacher_feat, _ = teacher(xd)
+
+            ce = F.cross_entropy(known_logits, yk)
+            instance = _instance_contrastive_loss(
+                projector(disc_feat_one),
+                projector(disc_feat_two),
+                temperature,
+            )
+            teacher_anchor = (
+                F.mse_loss(F.normalize(disc_feat_one, dim=1), F.normalize(teacher_feat, dim=1))
+                + F.mse_loss(F.normalize(disc_feat_two, dim=1), F.normalize(teacher_feat, dim=1))
+            ) * 0.5
+            total = (
+                float(ce_weight) * ce
+                + float(instance_weight) * instance
+                + float(teacher_weight) * teacher_anchor
+            )
+
+            optimizer.zero_grad()
+            total.backward()
+            torch.nn.utils.clip_grad_norm_(
+                list(student.parameters()) + list(projector.parameters()),
+                max_norm=5.0,
+            )
+            optimizer.step()
+
+            values = {
+                "CE": float(ce.detach().cpu()),
+                "Instance": float(instance.detach().cpu()),
+                "Teacher": float(teacher_anchor.detach().cpu()),
+                "Total": float(total.detach().cpu()),
+            }
+            for key, value in values.items():
+                epoch_values[key].append(value)
+
+        for key in stats:
+            stats[key].append(float(np.mean(epoch_values[key])) if epoch_values[key] else float("nan"))
+
+    student.eval()
+    diagnostics = {
+        "LoRa SSL Adapter": "instance_contrastive_teacher_anchor",
+        "LoRa SSL Epochs": int(max(1, int(epochs))),
+        "LoRa SSL Batch Size": int(batch_size),
+        "LoRa SSL LR": float(lr),
+        "LoRa SSL CE Weight": float(ce_weight),
+        "LoRa SSL Instance Weight": float(instance_weight),
+        "LoRa SSL Teacher Weight": float(teacher_weight),
+        "LoRa SSL Temperature": float(temperature),
+        "LoRa SSL Known Samples": int(len(known_x)),
+        "LoRa SSL Discovery Samples": int(len(discovery_x)),
+        "LoRa SSL Final Total": float(stats["Total"][-1]),
+        "LoRa SSL Final CE": float(stats["CE"][-1]),
+        "LoRa SSL Final Instance": float(stats["Instance"][-1]),
+        "LoRa SSL Final Teacher": float(stats["Teacher"][-1]),
     }
     return CrossDayAdaptationResult(student, diagnostics)
