@@ -85,6 +85,7 @@ from utils.cross_day_representation_adaptation import adapt_model_cross_day, ada
 from utils.incremental_visualization import save_seen_class_visualizations, save_paper_method_visualizations
 from utils.incremental_metric_learning import cosine_proxy_metric_loss
 from models.vup_model import ClosedSetSEI
+from models.lora_chirp_model import LoRaChirpClosedSet
 from datasets.lora25_strict_loader import load_lora25_diffdays_3round
 from utils.improved_closedset_training import (
     TRAINING_RECIPE_VERSION,
@@ -278,11 +279,15 @@ def supervised_contrastive_loss(features, labels, temperature=0.2):
     loss = -mean_log_prob_pos[valid].mean()
     return loss
 
-def train_closedset_model(train_set, num_classes, feat_dim, epochs, batch_size, lr, device, save_path, use_supcon=False, supcon_weight=0.1, supcon_temperature=0.2, checkpoint_metadata=None, seed=7, validation_fraction=1.0 / 7.0, use_rf_augmentation=True, projection_hidden_dim=128, projection_dim=64, validation_set=None):
+def train_closedset_model(train_set, num_classes, feat_dim, epochs, batch_size, lr, device, save_path, use_supcon=False, supcon_weight=0.1, supcon_temperature=0.2, checkpoint_metadata=None, seed=7, validation_fraction=1.0 / 7.0, use_rf_augmentation=True, projection_hidden_dim=128, projection_dim=64, validation_set=None, model_factory=None):
     ensure_dir(os.path.dirname(save_path))
+    # 默认保持历史通用 1D ResNet；LoRa Stage 27 可注入 chirp-friendly
+    # backbone。两类模型都返回 (feat, logits)，因此后续 RADCIL 扩头不需要
+    # 知道具体 backbone 类型。
+    model_factory = model_factory or (lambda: ClosedSetSEI(num_known_classes=num_classes, feat_dim=feat_dim))
     train_closedset_with_validation(
         train_set=train_set,
-        model_factory=lambda: ClosedSetSEI(num_known_classes=num_classes, feat_dim=feat_dim),
+        model_factory=model_factory,
         num_classes=num_classes, feat_dim=feat_dim, epochs=epochs, batch_size=batch_size,
         lr=lr, device=device, save_path=save_path, seed=seed, use_supcon=use_supcon,
         supcon_weight=supcon_weight, supcon_temperature=supcon_temperature,
@@ -290,11 +295,14 @@ def train_closedset_model(train_set, num_classes, feat_dim, epochs, batch_size, 
         use_rf_augmentation=use_rf_augmentation, projection_hidden_dim=projection_hidden_dim,
         projection_dim=projection_dim, validation_set=validation_set,
     )
-    return load_closedset_model(save_path, num_classes, feat_dim, device, expected_metadata=checkpoint_metadata)
+    return load_closedset_model(save_path, num_classes, feat_dim, device, expected_metadata=checkpoint_metadata, model_factory=model_factory)
 
 
-def load_closedset_model(checkpoint_path, num_classes, feat_dim, device, expected_metadata=None):
-    model = ClosedSetSEI(num_known_classes=num_classes, feat_dim=feat_dim).to(device)
+def load_closedset_model(checkpoint_path, num_classes, feat_dim, device, expected_metadata=None, model_factory=None):
+    if model_factory is None:
+        model = ClosedSetSEI(num_known_classes=num_classes, feat_dim=feat_dim).to(device)
+    else:
+        model = model_factory().to(device)
     ckpt = torch.load(checkpoint_path, map_location=device)
     if expected_metadata is not None:
         stored = ckpt.get("metadata") if isinstance(ckpt, dict) else None
@@ -303,11 +311,16 @@ def load_closedset_model(checkpoint_path, num_classes, feat_dim, device, expecte
                 "Checkpoint has no protocol metadata. Re-run with --train_closedset "
                 "to create an Rx2/Day1/SupCon-specific checkpoint."
             )
-        mismatches = {
-            key: {"expected": value, "stored": stored.get(key)}
-            for key, value in expected_metadata.items()
-            if stored.get(key) != value
-        }
+        mismatches = {}
+        for key, value in expected_metadata.items():
+            stored_value = stored.get(key)
+            # 历史通用 ResNet checkpoint 创建时没有 backbone 字段，但其结构
+            # 与当前默认 resnet1d 完全一致，允许继续读取；LoRa chirp 或其它
+            # 新结构若缺字段仍然必须重新训练，避免静默错载模型。
+            if key == "closedset_backbone" and stored_value is None and value == "resnet1d":
+                continue
+            if stored_value != value:
+                mismatches[key] = {"expected": value, "stored": stored_value}
         if mismatches:
             raise RuntimeError(
                 f"Checkpoint protocol mismatch: {mismatches}. "
@@ -3515,6 +3528,12 @@ def main():
     parser.add_argument("--test_batch_size", type=int, default=256)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--feat_dim", type=int, default=128)
+    parser.add_argument(
+        "--closedset_backbone",
+        choices=["resnet1d", "lora_chirp"],
+        default="resnet1d",
+        help="Initial closed-set backbone. lora_chirp is a LoRa-specific multi-scale dilation backbone.",
+    )
     parser.add_argument("--use_supcon", action="store_true", help="Use CE + supervised contrastive loss when training the initial closed-set backbone.")
     parser.add_argument("--supcon_weight", type=float, default=0.1, help="Weight lambda for supervised contrastive loss. Recommended: 0.05 or 0.1.")
     parser.add_argument("--supcon_temperature", type=float, default=0.2, help="Temperature for supervised contrastive loss. Recommended: 0.2.")
@@ -3728,10 +3747,17 @@ def main():
             "This RX2-only script requires --selected_rx_list 2 "
             "(Python index 2 is the third receiver)."
         )
+    if args.closedset_backbone == "lora_chirp" and args.dataset_profile != "lora25":
+        raise ValueError("--closedset_backbone lora_chirp is only valid for the LoRa25 strict profile.")
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if args.checkpoint is None:
-        args.checkpoint = os.path.join(args.save_dir, "closedset_rx2_day1_10known.pth")
+        checkpoint_name = (
+            f"closedset_lora25_{args.closedset_backbone}_10known.pth"
+            if args.dataset_profile == "lora25"
+            else "closedset_rx2_day1_10known.pth"
+        )
+        args.checkpoint = os.path.join(args.save_dir, checkpoint_name)
 
     dataset_title = "LoRa25 Different Days Indoor" if args.dataset_profile == "lora25" else "WiSig Cross-Day"
     print(f"\n========== {dataset_title} 10-Known 3-Round Incremental Experiment ==========")
@@ -3845,6 +3871,18 @@ def main():
 
     train_set = to_dataset(X_train, y_train)
     validation_set = to_dataset(X_validation, y_validation) if X_validation is not None else None
+    # 主流程只通过这个工厂创建 Day1 closed-set backbone。默认 resnet1d
+    # 完全保持历史行为；lora_chirp 显式用于 Stage 27 LoRa 结构候选。
+    if args.closedset_backbone == "lora_chirp":
+        closedset_model_factory = lambda: LoRaChirpClosedSet(
+            num_known_classes=args.initial_known_classes,
+            feat_dim=args.feat_dim,
+        )
+    else:
+        closedset_model_factory = lambda: ClosedSetSEI(
+            num_known_classes=args.initial_known_classes,
+            feat_dim=args.feat_dim,
+        )
     split_protocol_name = (
         "lora25_transmission_disjoint_60_10_30_v1"
         if args.dataset_profile == "lora25"
@@ -3858,6 +3896,7 @@ def main():
         "development_ratio": float(args.development_ratio),
         "dataset_profile": args.dataset_profile,
         "sample_split_protocol": split_protocol_name,
+        "closedset_backbone": args.closedset_backbone,
         "seed": int(args.seed),
         "use_supcon": bool(args.use_supcon),
         "supcon_weight": float(args.supcon_weight),
@@ -3888,6 +3927,7 @@ def main():
             projection_hidden_dim=args.projection_hidden_dim,
             projection_dim=args.projection_dim,
             validation_set=validation_set,
+            model_factory=closedset_model_factory,
         )
     else:
         model = load_closedset_model(
@@ -3896,6 +3936,7 @@ def main():
             args.feat_dim,
             device,
             expected_metadata=checkpoint_metadata,
+            model_factory=closedset_model_factory,
         )
 
     print("\n[Extract] Deep embeddings")
