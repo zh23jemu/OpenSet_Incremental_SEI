@@ -87,8 +87,8 @@ def _unique_ints(values: Iterable[int]) -> list[int]:
 
 def _validate_stage(stage: str, x: np.ndarray, y: np.ndarray, transmissions: np.ndarray) -> None:
     """验证单个 split 的形状、标签和 transmission 范围是否符合 strict 协议。"""
-    if x.ndim != 3 or x.shape[1] != 2 or x.shape[2] != 256:
-        raise ValueError(f"{stage} X must have shape [N, 2, 256], got {x.shape}")
+    if x.ndim != 3 or x.shape[1] != 2 or x.shape[2] <= 0:
+        raise ValueError(f"{stage} X must have shape [N, 2, L], got {x.shape}")
     if x.dtype != np.float32:
         raise ValueError(f"{stage} X must be float32, got {x.dtype}")
     if y.shape != (x.shape[0],):
@@ -216,7 +216,7 @@ def load_lora25_diffdays_3round(
             "initial_known_classes": int(initial_known_classes),
             "round_size": int(round_size),
             "num_rounds": int(num_rounds),
-            "sample_length": 256,
+            "sample_length": int(result["day1_known_train"]["X"].shape[2]),
             "physical_device_order": [int(v) for v in physical_device_order.tolist()],
             "device_names": [str(v) for v in device_names.tolist()],
             "day_names": [str(v) for v in day_names.tolist()],

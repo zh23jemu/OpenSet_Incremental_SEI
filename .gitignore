@@ -53,3 +53,7 @@ Desktop.ini
 
 # Slurm 小型结果同步时的本地中转目录；正式报告、CSV 和 JSON 会整理到对应 results 子目录
 /results/stage*/osei_*_results_*/
+
+# Stage 23 报告器本地 smoke 产物；真实 Slurm 报告和 summary 仍然保留入库
+/results/stage23/*SMOKE*
+/results/stage23/stage23_report_smoke.json

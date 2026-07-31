@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-31
-- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 22 LoRa 公平三种子未过 Overall 门槛，LoRa 继续作为跨体制局限
+- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 22 LoRa 公平三种子未过 Overall 门槛；Stage 23 LoRa 长窗子集 seed7 入口已实现待跑
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -187,10 +187,11 @@ Strict loader 审计：
 22. Stage 22 Job `45259034` 已完成，LoRa R3 Overall/Old/New/Forgetting 为 `0.1743/0.1036/0.4571/0.3643`，相对基线 `0.1667/0.0917/0.4667/0.4857` 有结构性改善；已提交三种子确认。
 23. Stage 22 首次三种子 Job `45259147` 在 seed13 因复用 seed7 checkpoint 触发 strict seed mismatch 失败；已修正三种子入口为各自重训 closed-set checkpoint，失败不计入算法结论。
 24. Stage 22 公平三种子 Job `45260776` 已完成：R3 Overall/Old/New/Forgetting 为 `0.1603±0.0047/0.0976±0.0019/0.4111±0.0214/0.3325±0.0367`。该结构降低遗忘但 Overall/New 低于基线，不采用为正式 LoRa 方案。
+25. Stage 23 已新增 LoRa 1024 点 aligned 长窗子集 seed7 入口：先重建 decimation=1 必要子集，再用同一 GPCC + cross_day + joint discovery-CIL 结构验证是否改善 Overall/Old/New。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
-7. Stage 22 LoRa 三种子未过采用门槛；后续客户口径按“遗忘有改善，但低分未根本解决，LoRa 作为跨体制局限”整理。
+7. Stage 22 LoRa 三种子未过采用门槛；下一步只跑 Stage 23 长窗 seed7。若仍不过门槛，客户口径按“遗忘有改善，但低分未根本解决，LoRa 作为跨体制局限”整理。
 8. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
 ## 8. 变更与 Git 状态
