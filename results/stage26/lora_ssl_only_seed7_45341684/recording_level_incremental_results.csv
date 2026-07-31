@@ -1,0 +1,5 @@
+﻿Method,Stage,Eval Day,Eval Split,Seen Classes,True New Classes,Discovered Clusters,Enrolled Clusters,Eval Samples,Overall Acc,Old Acc,New Acc,Initial Known Acc,Forgetting Rate,Macro F1,Eval Granularity,Source Eval Samples,Recording Groups
+MV-ACC-CIL,Initial,Day 1,day1_eval_initial_recording_majority,10,-,-,-,30,0.7,0.7,,0.7,0.0,0.6549999999999999,recording_majority_vote,420,30
+MV-ACC-CIL,After R1,Day 2,eval_r1_recording_majority_15_seen,15,5,5,5,45,0.15555555555555556,0.13333333333333333,0.2,0.13333333333333333,0.5666666666666667,0.09333333333333332,recording_majority_vote,630,45
+MV-ACC-CIL,After R2,Day 3,eval_r2_recording_majority_20_seen,20,5,5,5,60,0.2833333333333333,0.26666666666666666,0.3333333333333333,0.4,0.29999999999999993,0.21828947368421053,recording_majority_vote,840,60
+MV-ACC-CIL,After R3,Day 4,eval_r3_recording_majority_25_seen,25,5,5,5,75,0.21333333333333335,0.15,0.4666666666666667,0.2,0.49999999999999994,0.11355105946684894,recording_majority_vote,1050,75

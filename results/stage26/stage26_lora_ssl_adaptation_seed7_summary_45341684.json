@@ -1,0 +1,54 @@
+{
+  "job_id": "45341684",
+  "baseline": {
+    "overall": 0.1752,
+    "old": 0.1036,
+    "new": 0.4619
+  },
+  "records": [
+    {
+      "label": "ssl_only",
+      "save_dir": "results/stage26/lora_ssl_only_seed7_45341684",
+      "symbol_overall": 0.19714285714285715,
+      "symbol_old": 0.13452380952380952,
+      "symbol_new": 0.44761904761904764,
+      "symbol_forgetting": 0.34523809523809523,
+      "symbol_macro_f1": 0.12021934670389729,
+      "recording_overall": 0.21333333333333335,
+      "recording_old": 0.15,
+      "recording_new": 0.4666666666666667,
+      "recording_forgetting": 0.49999999999999994,
+      "recording_groups": 75
+    },
+    {
+      "label": "ssl_plus_cross_day",
+      "save_dir": "results/stage26/lora_ssl_plus_cross_day_seed7_45341684",
+      "symbol_overall": 0.20857142857142857,
+      "symbol_old": 0.14523809523809525,
+      "symbol_new": 0.46190476190476193,
+      "symbol_forgetting": 0.3404761904761905,
+      "symbol_macro_f1": 0.13295829503624135,
+      "recording_overall": 0.21333333333333335,
+      "recording_old": 0.15,
+      "recording_new": 0.4666666666666667,
+      "recording_forgetting": 0.49999999999999994,
+      "recording_groups": 75
+    }
+  ],
+  "best": {
+    "label": "ssl_plus_cross_day",
+    "save_dir": "results/stage26/lora_ssl_plus_cross_day_seed7_45341684",
+    "symbol_overall": 0.20857142857142857,
+    "symbol_old": 0.14523809523809525,
+    "symbol_new": 0.46190476190476193,
+    "symbol_forgetting": 0.3404761904761905,
+    "symbol_macro_f1": 0.13295829503624135,
+    "recording_overall": 0.21333333333333335,
+    "recording_old": 0.15,
+    "recording_new": 0.4666666666666667,
+    "recording_forgetting": 0.49999999999999994,
+    "recording_groups": 75
+  },
+  "passed": true,
+  "verdict": "通过 seed7 结构门槛，可扩 seed13/31。"
+}
