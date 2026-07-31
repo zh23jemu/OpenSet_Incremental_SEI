@@ -1840,6 +1840,91 @@ def _evaluate_raw_predictions(
     }
 
 
+def _majority_int(values):
+    """对一个 recording 内的样本预测做稳定多数投票。
+
+    LoRa 的 held-out eval 由同一 transmission/recording 下多个 symbol 片段组成。
+    这里不读取任何评估真值做选择，只把同一可观测 recording_id 的逐 symbol
+    预测聚合成一个预测；若票数并列，选择数值较小的类别，保证同 seed 可复现。
+    """
+    values = np.asarray(values, dtype=np.int64)
+    if len(values) == 0:
+        raise ValueError("majority vote requires at least one value.")
+    unique, counts = np.unique(values, return_counts=True)
+    return int(unique[np.argmax(counts)])
+
+
+def _evaluate_recording_level_predictions(
+    method,
+    stage,
+    eval_day,
+    seen_classes,
+    eval_X_name,
+    y_eval,
+    pred_raw,
+    pseudo_to_true,
+    recording_id,
+    true_new,
+    discovered,
+    enrolled,
+    initial_known=10,
+    round_size=10,
+    initial_reference_acc=None,
+):
+    """按 LoRa recording_id 汇总 held-out eval 预测并计算诊断指标。
+
+    这是评估粒度诊断，不改变训练、发现、伪标签注册或模型选择。分组键来自
+    LoRa 数据切分中可观测的 recording_id；真实标签只在聚合完成后用于离线
+    统计指标，因此仍然遵守 held-out evaluation 不参与训练/调参的边界。
+    """
+    if recording_id is None:
+        return None
+
+    y_eval = np.asarray(y_eval, dtype=np.int64)
+    pred_raw = np.asarray(pred_raw, dtype=np.int64)
+    groups = np.asarray(recording_id)
+    if groups.shape != y_eval.shape or pred_raw.shape != y_eval.shape:
+        raise ValueError(
+            "recording-level eval shape mismatch: "
+            f"recording_id={groups.shape}, y={y_eval.shape}, pred={pred_raw.shape}"
+        )
+
+    seen_mask = y_eval < int(seen_classes)
+    if not np.any(seen_mask):
+        return None
+
+    y_seen = y_eval[seen_mask]
+    pred_seen = np.asarray([pseudo_to_true.get(int(p), int(p)) for p in pred_raw[seen_mask]], dtype=np.int64)
+    group_seen = groups[seen_mask]
+
+    group_true, group_pred = [], []
+    for gid in sorted(np.unique(group_seen).tolist()):
+        idx = group_seen == gid
+        group_true.append(_majority_int(y_seen[idx]))
+        group_pred.append(_majority_int(pred_seen[idx]))
+
+    row = _evaluate_raw_predictions(
+        method,
+        stage,
+        eval_day,
+        seen_classes,
+        eval_X_name,
+        np.asarray(group_true, dtype=np.int64),
+        np.asarray(group_pred, dtype=np.int64),
+        {},
+        true_new,
+        discovered,
+        enrolled,
+        initial_known,
+        round_size,
+        initial_reference_acc,
+    )
+    row["Eval Granularity"] = "recording_majority_vote"
+    row["Source Eval Samples"] = int(len(y_seen))
+    row["Recording Groups"] = int(len(group_true))
+    return row
+
+
 # ============================================================
 # End-to-end pseudo-label class-incremental learning (MV-ACC-CIL)
 # ============================================================
@@ -3467,6 +3552,7 @@ def main():
     parser.add_argument("--discovery_adapter_smooth_weight", type=float, default=0.20, help="Blend weight for discovery-only local feature smoothing.")
     parser.add_argument("--discovery_adapter_repulsion_weight", type=float, default=0.15, help="Known-prototype repulsion weight for proto_repulse adapter.")
     parser.add_argument("--discovery_only", action="store_true", help="只运行严格发现前端并保存聚类表；用于先验证聚类质量，不进入增量训练后端。")
+    parser.add_argument("--enable_lora_recording_eval", action="store_true", help="LoRa held-out eval 额外输出 recording_id 多数投票诊断，不改变训练或正式 symbol-level 指标。")
     parser.add_argument("--development_ratio", type=float, default=0.70, help="Per-day development ratio: Day1 becomes 60%% backbone training + 10%% validation; remaining 30%% is held-out evaluation.")
     parser.add_argument(
         "--selected_rx_list",
@@ -3733,6 +3819,9 @@ def main():
             "y": splits[split_key]["y"],
             "day": splits[split_key].get("day", ""),
             "split_key": split_key,
+            # LoRa strict loader 带有 recording_id。其它数据集没有该元数据时
+            # 保持 None，recording-level 诊断会自动跳过。
+            "recording_id": splits[split_key].get("recording_id"),
         }
 
     development_label = "IQ_1-6 train" if args.dataset_profile == "lora25" else "70%"
@@ -3838,6 +3927,7 @@ def main():
             "day1_heldout_evaluation_samples": int(len(eval_data["eval_initial"]["y"])),
             "development_ratio": float(args.development_ratio),
             "validation_split_key": validation_split_key,
+            "lora_recording_level_eval_enabled": bool(args.enable_lora_recording_eval),
             "frozen_before_unknown_rounds": [
                 "checkpoint", "CF-LCG", "MV-ACC parameters",
                 "grouped DOI candidate set and Day1 validation-only selection rule",
@@ -3948,7 +4038,7 @@ def main():
             f"align_lambda={args.radcil_doi_align_lambda}, "
             f"prototype_temperature={args.radcil_doi_prototype_temperature}"
         )
-    clustering_rows, incremental_rows, retention_rows = [], [], []
+    clustering_rows, incremental_rows, recording_level_rows, retention_rows = [], [], [], []
     joint_refinement_rows = []
     validation_retention_rows = []
     student = copy.deepcopy(model).to(device).eval()
@@ -4043,6 +4133,26 @@ def main():
         "-", "-", "-", args.initial_known_classes, args.round_size, None,
     )
     incremental_rows.append(initial_row)
+    if args.enable_lora_recording_eval:
+        recording_initial_row = _evaluate_recording_level_predictions(
+            main_method_name,
+            "Initial",
+            eval_data["eval_initial"]["day"],
+            args.initial_known_classes,
+            "day1_eval_initial_recording_majority",
+            eval_y_dict["eval_initial"],
+            initial_pred,
+            pseudo_to_true,
+            eval_data["eval_initial"].get("recording_id"),
+            "-",
+            "-",
+            "-",
+            args.initial_known_classes,
+            args.round_size,
+            None,
+        )
+        if recording_initial_row is not None:
+            recording_level_rows.append(recording_initial_row)
     retention_rows.append({"Round": "Initial", "Fixed Day1 Old-Class Acc": float(initial_row["Overall Acc"])})
     if X_validation is not None:
         initial_validation_pred = _predict_end_to_end(
@@ -4055,6 +4165,9 @@ def main():
             "IQ_7 Validation Old-Class Acc": float(np.mean(initial_validation_pred == y_validation)),
         })
     initial_reference_acc = float(initial_row["Initial Known Acc"])
+    recording_initial_reference_acc = (
+        float(recording_level_rows[-1]["Initial Known Acc"]) if recording_level_rows else None
+    )
     next_label = int(args.initial_known_classes)
 
     for i, rd in enumerate(round_data, start=1):
@@ -4273,6 +4386,26 @@ def main():
             pseudo_to_true, args.round_size, info["discovered_clusters"], len(cluster_ids),
             args.initial_known_classes, args.round_size, initial_reference_acc,
         ))
+        if args.enable_lora_recording_eval:
+            recording_row = _evaluate_recording_level_predictions(
+                main_method_name,
+                f"After R{i}",
+                eval_data[eval_key]["day"],
+                args.initial_known_classes + i * args.round_size,
+                f"{eval_key}_recording_majority_{args.initial_known_classes + i * args.round_size}_seen",
+                eval_y_dict[eval_key],
+                pred,
+                pseudo_to_true,
+                eval_data[eval_key].get("recording_id"),
+                args.round_size,
+                info["discovered_clusters"],
+                len(cluster_ids),
+                args.initial_known_classes,
+                args.round_size,
+                recording_initial_reference_acc,
+            )
+            if recording_row is not None:
+                recording_level_rows.append(recording_row)
         if hybrid_doi_enabled:
             fixed_pred = _predict_hybrid_radcil_doi(
                 student,
@@ -4366,6 +4499,11 @@ def main():
         print(f"Saved: {os.path.join(args.save_dir, 'clustering_results.csv')}")
         return
     incremental_df = save_csv(incremental_rows, os.path.join(args.save_dir, "incremental_results.csv"))
+    if recording_level_rows:
+        save_csv(
+            recording_level_rows,
+            os.path.join(args.save_dir, "recording_level_incremental_results.csv"),
+        )
     save_csv(retention_rows, os.path.join(args.save_dir, "fixed_day1_retention.csv"))
     if validation_retention_rows:
         save_csv(
