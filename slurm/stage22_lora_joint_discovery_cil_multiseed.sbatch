@@ -1,6 +1,7 @@
 #!/bin/bash
 # Stage 22：LoRa 联合 discovery-CIL 三种子确认。
 # 参数固定为 seed7 已通过的结构，只验证稳定性，不进行边跑边调参。
+# 注意：closed-set backbone 训练轮数保持 20 epochs，和 Stage 5 LoRa 表征筛选口径一致。
 
 #SBATCH --job-name=osei-s22-lora-ms
 #SBATCH --partition=gpuHz
@@ -40,7 +41,7 @@ for seed in "${SEED_ARRAY[@]}"; do
         --save_dir "${SAVE_DIR}" \
         --checkpoint "${CHECKPOINT}" \
         --train_closedset \
-        --epochs 12 \
+        --epochs 20 \
         --seed "${seed}" --initial_known_classes 10 --round_size 5 --num_rounds 3 \
         --use_supcon --supcon_weight 0.1 \
         --disable_cil_baselines --disable_visualization \
