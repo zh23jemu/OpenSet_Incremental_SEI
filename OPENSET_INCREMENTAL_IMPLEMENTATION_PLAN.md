@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 实施计划与项目进度总表
 
-- 状态：ADS-B Stage 21 联合 discovery-CIL 三种子已通过；LoRa Stage 22 公平三种子未过 Overall 门槛，继续作为跨体制局限处理
+- 状态：ADS-B Stage 21 联合 discovery-CIL 三种子已通过；LoRa Stage 24 已新增 recording-level GPCC 候选，准备 seed7 短验证
 - 版本：1.1
 - 创建日期：2026-07-26
 - 最近更新：2026-07-31
@@ -38,6 +38,7 @@
 | Stage 21 联合 discovery-CIL | 三种子已通过 | Job `45246678` 的 R3 Overall/Old/New 为 `0.5149±0.0107/0.5081±0.0084/0.5700±0.0737`，Forgetting `0.0722±0.0113`；固定为 ADS-B 当前候选 |
 | Stage 22 LoRa 联合 discovery-CIL | 三种子未通过 | 公平三种子 Job `45260776` 的 R3 Overall/Old/New/Forgetting 为 `0.1603±0.0047/0.0976±0.0019/0.4111±0.0214/0.3325±0.0367`；遗忘率改善但 Overall/New 低于基线，不采用为正式 LoRa 方案 |
 | Stage 23 LoRa 长窗子集 | seed7 已完成，未通过 | Job `45261784` 的 R3 Overall/Old/New/Forgetting 为 `0.1676/0.1119/0.3905/-0.0238`；Old 和遗忘改善，但 New 下降 `-0.0762`，不扩三种子 |
+| Stage 24 LoRa recording-level GPCC | 已实现待跑 | 新增 `gpcc_recording`，先按可观测 `recording_id` 聚合同一次 transmission 的 symbol 特征，再固定 5 簇并回填伪标签；本地 smoke、语法和 CLI 校验通过，下一步跑 seed7 |
 | ManyTx/ManyRx | 阶段 5 补充验证已完成 | 已只读汇总既有 seed7 三轮结果；ManyTx R3 Overall `0.2700`、ManyRx R3 Overall `0.5700`，作为辅助稳定性证据       |
 | 项目记忆与交接       | 部分已维护            | `AGENTS.md`、`PROJECT_HANDOFF.md` 已同步最新状态；RecallLoom rolling summary 当前因 receipt mismatch 暂停写入，未手工修改                |
 
@@ -469,13 +470,15 @@ Stage 22 将同一结构性闭环迁移到 LoRa strict：固定 `GPCC + cross_da
 Job `45259034` 的 seed7 结果为 R3 Overall/Old/New/Forgetting `0.1743/0.1036/0.4571/0.3643`，相对 LoRa 基线 `0.1667/0.0917/0.4667/0.4857` 取得结构性改善。随后公平三种子 Job `45260776` 将 closed-set backbone 训练统一到 20 epochs，R3 Overall/Old/New/Forgetting 为 `0.1603±0.0047/0.0976±0.0019/0.4111±0.0214/0.3325±0.0367`。该结构能明显降低遗忘，但 Overall 和 New 未超过基线，因此不采用为正式 LoRa 方案，LoRa 低分继续作为跨体制局限报告。
 
 Stage 23 转向 LoRa 输入表征长度而不是继续后端小机制。当前紧凑子集每个 aligned symbol 经过 decimation=4 后只有 256 点，可能丢失对设备指纹有用的完整 chirp 形状。长窗验证在同一 Different Days Indoor 必要范围内重建 decimation=1 的 1024 点 aligned 子集，strict 类别、transmission 划分和 held-out evaluation 边界保持不变。Job `45261784` 的 R3 Overall/Old/New/Forgetting 为 `0.1676/0.1119/0.3905/-0.0238`，相对 256 基线 `0.1667/0.0917/0.4667/0.4857` 仅微升 Overall、明显提升 Old 和遗忘，但 New 下降 `-0.0762`。因此长窗只作为根因证据保留，不扩 seed13/31。
+
+Stage 24 不继续调 old-logit、BN、prototype、late-fusion、权重阈值或长窗参数，转向 LoRa 数据结构本身：同一个 `recording_id` 来自同一次物理 transmission 的多个 aligned symbol，属于可观测元数据，不是未知设备标签。新增 `gpcc_recording` 先把同一 recording 的 deep/RF/graph 特征平均成组级原型，在组级运行 GPCC 固定 5 簇，再把组标签和置信度回填给每个 symbol。该设计试图降低单段 symbol 噪声对新类伪标签的影响，严格不读取 held-out eval 或未知真值。本地 `py_compile`、合成 5 类 smoke 和 CLI 参数检查已通过；下一步只跑 LoRa seed7 完整链路，若 R3 Overall/Old/New 不能同时守住门槛，则归档负消融。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 
 中期优先级：
 
 1. 停止 WiSig DOI-memory 和 iCaRL fallback 小机制搜索；保留三种子负消融证据，后续若继续后端研究必须先提出结构不同且可预注册的新机制。
-2. 将 LoRa 多轮严格负消融保留为跨体制局限，不继续原型锚定、late-fusion、old-logit bias 或 BN 统计细调；后续若继续攻 LoRa，应转向训练期跨天域适应机制。
+2. 将 LoRa 多轮严格负消融保留为跨体制局限，不继续原型锚定、late-fusion、old-logit bias、BN 统计细调或长窗参数；Stage 24 只验证 recording 级共识是否能救 New，失败则归档。
 3. ManyRx 当前仅保留既有结果汇总；如需重新运行，再恢复受维护入口，不把 runner 缺失误判为主实验风险。
 4. 为严格协议和核心报告器补充轻量级自动化测试。
 5. 对 ADS-B/LoRa 低结果只做诚实解释和局限分析；LoRa old-logit bias 证明旧类偏置可解释部分问题，但不能解决整体跨体制低分。

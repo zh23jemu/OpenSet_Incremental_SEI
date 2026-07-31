@@ -144,6 +144,7 @@
 - Stage 21 已完成联合 discovery-CIL 三种子验证：Job `45225739` 的 seed7 R3 Overall/Old/New 为 `0.5070/0.4983/0.5780`；Job `45246678` 三种子均值为 Overall/Old/New `0.5149±0.0107/0.5081±0.0084/0.5700±0.0737`，三种子均值超过强对照且未出现 Old/New 塌缩。
 - Stage 22 已完成 LoRa 联合 discovery-CIL 公平三种子验证：Job `45260776` 在 20 epochs closed-set backbone 口径下的 R3 Overall/Old/New/Forgetting 为 `0.1603±0.0047/0.0976±0.0019/0.4111±0.0214/0.3325±0.0367`；遗忘率明显优于基线 `0.4857`，但 Overall/New 低于基线 `0.1667/0.4667`，不采用为正式 LoRa 方案。
 - Stage 23 已完成 LoRa 长窗必要子集 seed7 验证：Job `45261784` 使用 decimation=1 的 1024 点 aligned 子集，R3 Overall/Old/New/Forgetting 为 `0.1676/0.1119/0.3905/-0.0238`；Old 和遗忘改善，但 New 明显下降，未通过门槛，不扩三种子。
+- Stage 24 已新增 LoRa recording-level GPCC 候选：`gpcc_recording` 只使用 LoRa 当前 discovery split 的可观测 `recording_id` 做组级特征聚合，固定 K=5 后回填样本伪标签；本地 `py_compile`、合成 smoke 和 CLI 检查均通过，待 seed7 Slurm 验证。
 
 ## Recent Changes
 
@@ -261,6 +262,7 @@
 - 2026-07-31：Stage 21 Job `45225739` 正常完成，R3 Overall `0.5070`、Old `0.4983`、New `0.5780`，确认可以进入 ADS-B seed7/13/31 三种子稳定性验证。
 - 2026-07-31：新增 `tools/stage21_adsb_joint_discovery_multiseed_report.py` 和 `slurm/stage21_adsb_joint_discovery_cil_multiseed.sbatch`，固定 Stage 21 参数，只验证三种子，不继续相邻小参数搜索。
 - 2026-07-31：Job `45246678` 完成 ADS-B 联合 discovery-CIL 三种子确认；R3 Overall `0.5149±0.0107`、Old `0.5081±0.0084`、New `0.5700±0.0737`、Forgetting `0.0722±0.0113`，已达到正式候选门槛。
+- 2026-07-31：新增 Stage 24 LoRa recording-level GPCC 适配器、smoke test、报告器和 Slurm seed7 入口；默认不改变历史 `mvacc/gpcc` 行为，只在显式 `--discovery_backend gpcc_recording` 时使用 recording 组级共识。
 
 ## Next TODO
 
@@ -270,7 +272,7 @@
 - GPCC 已完成 LoRa/ADS-B seed7 验证：LoRa 不进入完整增量，ADS-B 完整增量未超过 target split。增量双视图一致性和 discovery 簇可靠性加权均未改善 LoRa；后续不继续围绕 HDBSCAN 替换、可靠性权重或一致性权重做小参数搜索，若继续攻 LoRa 必须转向训练期跨天表征/联合发现机制。
 - 阶段 7 训练期当前 discovery/replay 分布对齐和 Stage 8 代理度量均未通过双门槛；旧后端小机制停止。下一步先做 discovery 表征重训/域不变表征的 discovery-only 验证，过门槛后再跑 CIL。
 - Stage 10 seed7 先跑 GPCC + `none/mn_smooth/proto_repulse` discovery-only 矩阵；LoRa 以三轮 mean Hungarian/Purity 为主门槛，ADS-B 重点看 R3，未过门槛不进入 CIL。
-- Stage 10 已未过门槛；下一步不再扩展 seed13/31，也不进入 CIL，转向训练期跨天表征重训或表征-发现联合学习。
+- Stage 10 已未过门槛；下一步不再扩展 seed13/31，也不进入 CIL，转向训练期跨天表征重训、表征-发现联合学习或 LoRa recording 级共识。
 - Stage 11 当前已完成本地可执行入口和协议边界验证；下一步提交并推送后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only，结果不过门槛就归档，不进入 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
 - 阶段 5 补充风险已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，当前继续以风险收敛和结果一致性为主。

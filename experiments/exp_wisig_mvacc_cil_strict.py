@@ -80,6 +80,7 @@ from features.rf_features import extract_rf_features_batch
 from utils.classic_feature_gating import select_classic_feature_view, save_selection, local_cross_view_consistency
 from utils.discovery_feature_adaptation import adapt_discovery_features
 from utils.graph_prototype_discovery_adapter import run_gpcc
+from utils.recording_consensus_discovery_adapter import run_recording_gpcc
 from utils.cross_day_representation_adaptation import adapt_model_cross_day
 from utils.incremental_visualization import save_seen_class_visualizations, save_paper_method_visualizations
 from utils.incremental_metric_learning import cosine_proxy_metric_loss
@@ -3113,7 +3114,19 @@ def get_split(splits, name, fallback=None):
     raise KeyError(f"Missing split: {name}")
 
 
-def run_discovery(method, round_name, day_name, true_new_classes, X_round, y_round, Z_round, args, full_method=False, iarc_method=False):
+def run_discovery(
+    method,
+    round_name,
+    day_name,
+    true_new_classes,
+    X_round,
+    y_round,
+    Z_round,
+    args,
+    full_method=False,
+    iarc_method=False,
+    recording_ids=None,
+):
     cflcg_mode = cflcg_mode_for_method(method)
     feats = build_round_features(X_round, Z_round, args, cflcg_mode=cflcg_mode)
 
@@ -3130,9 +3143,27 @@ def run_discovery(method, round_name, day_name, true_new_classes, X_round, y_rou
         proto_feat_type = "hybrid"
 
     mv_acc_method = base_method in {"No CF-LCG (MV-ACC)", "Global CF-LCG (MV-ACC)", "MV-ACC"}
-    gpcc_method = mv_acc_method and str(getattr(args, "discovery_backend", "mvacc")).lower() == "gpcc"
+    discovery_backend = str(getattr(args, "discovery_backend", "mvacc")).lower()
+    gpcc_method = mv_acc_method and discovery_backend in {"gpcc", "gpcc_recording"}
     if gpcc_method:
-        gpcc = run_gpcc(feats, target_clusters=int(true_new_classes), seed=int(args.seed))
+        if discovery_backend == "gpcc_recording":
+            # LoRa 的同一次物理 transmission 可观测地包含多个 aligned
+            # symbol。先按 recording_id 聚合再聚类，最后回填样本标签，避免
+            # 单段噪声直接决定新类伪标签；WiSig/ADS-B 没有该元数据时直接报错。
+            if recording_ids is None:
+                raise ValueError(
+                    "gpcc_recording requires observable recording_ids for the current discovery split."
+                )
+            gpcc = run_recording_gpcc(
+                feats,
+                recording_ids=np.asarray(recording_ids),
+                target_clusters=int(true_new_classes),
+                seed=int(args.seed),
+            )
+            backend_name = "Recording-GPCC"
+        else:
+            gpcc = run_gpcc(feats, target_clusters=int(true_new_classes), seed=int(args.seed))
+            backend_name = "GPCC"
         labels_for_metrics = gpcc.labels.astype(np.int64)
         probs = gpcc.confidence.astype(np.float32)
         raw_metrics = clustering_metrics(y_round, labels_for_metrics)
@@ -3157,7 +3188,7 @@ def run_discovery(method, round_name, day_name, true_new_classes, X_round, y_rou
             "Assignment Coverage": 1.0,
             "Noise Points": 0,
             **final_metrics,
-            "Discovery Backend": "GPCC",
+            "Discovery Backend": backend_name,
             **feats.get("feature_adapter_diagnostics", {}),
             **gpcc.diagnostics,
         }
@@ -3414,7 +3445,12 @@ def main():
     parser.add_argument("--initial_known_classes", type=int, default=10)
     parser.add_argument("--round_size", type=int, default=10)
     parser.add_argument("--num_rounds", type=int, default=3)
-    parser.add_argument("--discovery_backend", choices=["mvacc", "gpcc"], default="mvacc", help="Discovery front-end for the main MV-ACC-CIL path; gpcc fixes K=round_size without HDBSCAN.")
+    parser.add_argument(
+        "--discovery_backend",
+        choices=["mvacc", "gpcc", "gpcc_recording"],
+        default="mvacc",
+        help="Discovery front-end: gpcc fixes K=round_size; gpcc_recording first aggregates observable recording groups and is only valid for LoRa.",
+    )
     parser.add_argument(
         "--enable_joint_discovery_refinement",
         action="store_true",
@@ -3679,6 +3715,9 @@ def main():
             "X": splits[rk]["X"],
             "y": splits[rk]["y"],
             "day": splits[rk].get("day", ""),
+            # LoRa loader 提供 recording_id；其它数据集没有该元数据时保持
+            # None，只有 gpcc_recording 会显式要求它存在。
+            "recording_id": splits[rk].get("recording_id"),
         })
 
     eval_keys = {
@@ -3838,6 +3877,7 @@ def main():
                 rd["y"],
                 rd["Z"],
                 args,
+                recording_ids=rd.get("recording_id"),
             )
             row["Method"] = "MV-ACC-CIL discovery"
             discovery_rows.append(row)
@@ -4050,7 +4090,17 @@ def main():
             rd["cross_day_adaptation_diagnostics"] = adaptation_result.diagnostics
         # Teacher is frozen during discovery. This prevents moving representations from changing clusters.
         rd["Z"], _ = extract_deep_features(teacher, rd["X"], rd["y"], args.test_batch_size, device)
-        row, info = run_discovery("MV-ACC", f"R{i}", f"Day {i + 1}", args.round_size, rd["X"], rd["y"], rd["Z"], args)
+        row, info = run_discovery(
+            "MV-ACC",
+            f"R{i}",
+            f"Day {i + 1}",
+            args.round_size,
+            rd["X"],
+            rd["y"],
+            rd["Z"],
+            args,
+            recording_ids=rd.get("recording_id"),
+        )
         row["Method"] = "MV-ACC-CIL discovery"
         clustering_rows.append(row)
         graph_fusion_round_infos.append(info)
@@ -4105,6 +4155,7 @@ def main():
                 rd["y"],
                 refined_z,
                 args,
+                recording_ids=rd.get("recording_id"),
             )
             refined_row["Method"] = "Joint discovery refinement"
             joint_refinement_rows.append(refined_row)

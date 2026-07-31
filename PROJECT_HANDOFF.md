@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-31
-- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 22/23 LoRa 均未过采用门槛，LoRa 继续作为跨体制局限
+- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 24 LoRa recording-level GPCC 已实现，待 seed7 Slurm 验证
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -188,10 +188,11 @@ Strict loader 审计：
 23. Stage 22 首次三种子 Job `45259147` 在 seed13 因复用 seed7 checkpoint 触发 strict seed mismatch 失败；已修正三种子入口为各自重训 closed-set checkpoint，失败不计入算法结论。
 24. Stage 22 公平三种子 Job `45260776` 已完成：R3 Overall/Old/New/Forgetting 为 `0.1603±0.0047/0.0976±0.0019/0.4111±0.0214/0.3325±0.0367`。该结构降低遗忘但 Overall/New 低于基线，不采用为正式 LoRa 方案。
 25. Stage 23 Job `45261784` 已完成 LoRa 1024 点 aligned 长窗 seed7：R3 Overall/Old/New/Forgetting 为 `0.1676/0.1119/0.3905/-0.0238`。Old 和遗忘改善，但 New 明显下降，不扩三种子。
+26. Stage 24 已新增 LoRa recording-level GPCC：共享 strict 入口新增 `--discovery_backend gpcc_recording`，只在 LoRa 当前 discovery split 使用可观测 `recording_id` 做组级特征聚合，再固定 K=5 聚类并回填样本伪标签；本地 `py_compile`、合成 smoke 和 CLI 参数检查已通过，下一步提交 seed7 Slurm。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
-7. Stage 22/23 LoRa 均未过采用门槛；客户口径按“遗忘有改善，但低分未根本解决，LoRa 作为跨体制局限”整理。
+7. Stage 22/23 LoRa 均未过采用门槛；Stage 24 继续攻 New 低的问题，验证 recording 级共识能否减少单段 symbol 噪声。
 8. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
 ## 8. 变更与 Git 状态
