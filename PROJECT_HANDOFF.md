@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-31
-- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 27 LoRa Chirp backbone seed7 已通过结构门槛，正在做 seed7/13/31 稳定性确认
+- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 27 LoRa Chirp backbone 三种子已通过结构门槛，当前 LoRa 仍需继续提升绝对准确率
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -191,11 +191,12 @@ Strict loader 审计：
 26. Stage 24 已完成 LoRa recording-level GPCC：seed7 Job `45307122` R3 `0.1800/0.1167/0.4333/0.3429` 有局部正信号；no-refine Job `45308095` 说明 New 可回升但 Overall/Old 会下降；三种子 Job `45308393` R3 Overall/Old/New/Forgetting 为 `0.1483±0.0077/0.1004±0.0175/0.3397±0.0428/0.3397±0.0379`，未过门槛，归档为结构性负消融。
 27. Stage 27 seed7 Job `45350081` 完成 LoRa-specific Chirp backbone 对比：ResNet1D 的 R3 Overall/Old/New/Forgetting 为 `0.1781/0.1071/0.4619/0.3548`，Chirp 为 `0.2543/0.1929/0.5000/0.2690`，Recording-level Overall 为 `0.2800`；已通过 seed7 结构门槛。
 28. Stage 27 结果已通过 GitHub 代理同步回本地，结果分支为 `stage27-results-45350081`；新增三种子入口 `slurm/stage27_lora_backbone_multiseed.sbatch` 和报告器 `tools/stage27_lora_backbone_multiseed_report.py`，尚未提交 Slurm。
+29. Stage 27 三种子 Job `45350982` 已干净完成：R3 Overall/Old/New/Forgetting 为 `0.2540±0.0101/0.1952±0.0124/0.4889±0.0045/0.2794±0.0235`，Recording-level Overall/New 为 `0.2933±0.0393/0.6444±0.0314`；结果已通过 GitHub 结果分支 `stage27-results-45350982` 同步回本地。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
 7. Stage 22/23/24 LoRa 均未过采用门槛；Stage 27 seed7 的 Chirp backbone 出现明显正信号，但客户口径仍只能说“正在做三种子稳定性验证”，不能把单 seed 结果包装成已根本解决。
-8. Stage 27 下一步提交三种子 Slurm。完成后按 seed 检查 R3 Overall/Old/New、Forgetting、recording-level 指标以及 closed-set IQ_7 和 discovery cluster quality；若三种子稳定，再锁定为正式 LoRa 候选，否则归档为 seed-specific 结构消融。
+8. Stage 27 三种子已稳定通过，Chirp backbone 锁定为当前 LoRa 正式候选。下一步不回到旧的 bias/BN/prototype 小调参，而是围绕发现纯度、跨天特征和新旧类联合训练继续做结构诊断；目标是把约 `25.4%` 的 Overall 继续提升，同时保持 Old/New 不塌缩。
 8. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
 ## 8. 变更与 Git 状态

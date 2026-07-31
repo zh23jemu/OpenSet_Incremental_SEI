@@ -146,6 +146,7 @@
 - Stage 23 已完成 LoRa 长窗必要子集 seed7 验证：Job `45261784` 使用 decimation=1 的 1024 点 aligned 子集，R3 Overall/Old/New/Forgetting 为 `0.1676/0.1119/0.3905/-0.0238`；Old 和遗忘改善，但 New 明显下降，未通过门槛，不扩三种子。
 - Stage 24 已完成 LoRa recording-level GPCC 三种子验证：seed7 有局部正信号，但三种子 Job `45308393` R3 Overall/Old/New/Forgetting 为 `0.1483±0.0077/0.1004±0.0175/0.3397±0.0428/0.3397±0.0379`，Overall/New 低于基线，归档为结构性负消融。
 - Stage 27 seed7 已完成 LoRa-specific Chirp backbone 对比：Job `45350081` 在同一 strict split、GPCC、cross-day、LoRa SSL 和联合 discovery-CIL 后端下，将 R3 Overall/Old/New/Forgetting 从 ResNet1D 的 `0.1781/0.1071/0.4619/0.3548` 提升到 `0.2543/0.1929/0.5000/0.2690`，Recording-level Overall 为 `0.2800`；通过 seed7 结构门槛，已新增三种子确认入口，尚不能宣称 LoRa 已稳定解决。
+- Stage 27 三种子 Job `45350982` 已干净完成：Chirp R3 Overall/Old/New/Forgetting 为 `0.2540±0.0101/0.1952±0.0124/0.4889±0.0045/0.2794±0.0235`，Recording-level Overall/New 为 `0.2933±0.0393/0.6444±0.0314`；seed7/13/31 均在约 `0.24-0.26`，通过三种子结构门槛，正式锁定为当前 LoRa 候选，但仍低于理想的高准确率目标。
 
 ## Recent Changes
 
@@ -267,6 +268,7 @@
 - 2026-07-31：完成 Stage 24 seed7、no-refine 和三种子验证；Recording-GPCC 三种子未通过，结果已同步到 `results/stage24/STAGE24_LORA_RECORDING_GPCC_MULTISEED_REPORT_45308393.md`。
 - 2026-08-01：通过 GitHub 代理同步 Stage 27 seed7 小型结果，新增 `stage27-results-45350081` 结果分支并快进合并到本地；结果只包含指标、协议和日志文本，不包含模型权重或回放二进制。
 - 2026-08-01：新增 `slurm/stage27_lora_backbone_multiseed.sbatch` 和 `tools/stage27_lora_backbone_multiseed_report.py`，固定 LoRa Chirp backbone 与 Stage 27 seed7 结构，准备 seed7/13/31 正式确认；本地 `.venv` `py_compile` 和 `git diff --check` 已通过。
+- 2026-08-01：完成 Stage 27 三种子 Slurm Job `45350982`，并通过 GitHub 结果分支 `stage27-results-45350982` 同步报告、指标 CSV、协议 JSON 和日志；不提交模型权重或回放二进制。
 
 ## Next TODO
 
@@ -278,6 +280,7 @@
 - Stage 10 seed7 先跑 GPCC + `none/mn_smooth/proto_repulse` discovery-only 矩阵；LoRa 以三轮 mean Hungarian/Purity 为主门槛，ADS-B 重点看 R3，未过门槛不进入 CIL。
 - Stage 10 已未过门槛；Stage 24 recording 级共识也未过三种子门槛。LoRa 后续若继续攻，必须换更大结构，例如从训练目标和评估粒度上重新设计，而不是继续聚类器或后端小机制。
 - Stage 27 seed7 的 Chirp backbone 已出现明确结构收益，但三种子结果尚未生成；当前风险是 seed7 收益可能来自特定随机种子，或者某些 seed 的新类聚类/分类塌缩。未完成三种子前，不把 `0.2543` 作为正式稳定结果。
+- Stage 27 三种子已经稳定通过，当前 LoRa 主要风险从“表征是否有效”收敛为“绝对准确率仍不够高”：Chirp 将 R3 Overall 提升到约 `25.4%`，但仍需继续分析发现纯度、跨天特征和后端旧新类冲突，不能把该结果描述成最终解决。
 - Stage 11 当前已完成本地可执行入口和协议边界验证；下一步提交并推送后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only，结果不过门槛就归档，不进入 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
 - 阶段 5 补充风险已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，当前继续以风险收敛和结果一致性为主。
