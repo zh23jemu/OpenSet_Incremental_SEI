@@ -305,11 +305,12 @@
 - Stage 19 已证明初始表征教师蒸馏不是充分解；Stage 20 只做一次冻结 backbone 结构验证，若仍低于 `0.5057`，ADS-B 后端继续小改的收益预期很低，应转联合 discovery-CIL 训练或进入诚实局限收口。
 - Stage 20 已证明冻结 backbone 不是解法；当前剩余主风险是高质量 GPCC 伪标签如何在增量阶段联合塑造表征和分类头，下一步应设计一次联合 discovery-CIL self-training/episodic 训练验证，仍只先跑 seed7。
 - Stage 21 三种子均值已超过 `0.5057`，但仍需观察不同协议/数据集上的迁移性；当前可以把 ADS-B 联合 discovery-CIL 锁定为候选，不应声称 LoRa 低分已解决。
-- Stage 22 已新增 LoRa 联合 discovery-CIL seed7 入口：复用 GPCC + cross_day 表征适配，在第一次 CIL 后重新发现并无标签 Hungarian 对齐，再二次训练；本地 `py_compile` 已通过，待 Slurm 验证。
+- Stage 22 seed7 已完成：Job `45259034` 的 R3 Overall/Old/New/Forgetting 为 `0.1743/0.1036/0.4571/0.3643`，相对 LoRa 基线 `0.1667/0.0917/0.4667/0.4857` 提升 Overall、Old 和 Forgetting，New 基本保持；已新增三种子确认入口。
 - Stage 11 首次提交 Job `45068164` 暴露旧 worktree 默认路径问题，已修复；重提后仍需先确认作业启动，再判断聚类收益。
 - Stage 11 Job `45068213` 暴露 ADS-B loader 参数名兼容问题，已修复；下一次重提需确认 LoRa 与 ADS-B 两个 profile 都能正常进入 discovery。
 - Stage 21 ADS-B 三种子已通过；下一步应固定该结构，更新客户报告并补做必要的跨数据集验证，不再继续 ADS-B 相邻权重搜索。
 - Stage 22 LoRa seed7 尚未产生真实结果；若 Overall/Old/New 仍不改善，LoRa 低分应继续作为跨体制局限，不再做小权重搜索。
+- Stage 22 seed7 已通过结构候选门槛，但三种子稳定性尚未确认；若三种子不稳定，不能把 LoRa 结果包装成已解决。
 - 增量双视图一致性已完成 LoRa seed7 负消融：基线权重 `0` 的 R3 Overall/Old/New/Forgetting 为 `0.1667/0.0917/0.4667/0.4857`，权重 `0.05/0.10` 均降低 Overall 和 IQ_7 Old；不作为跨天域适应解决方案。
 - Slurm `.venv` 当前安装的是 2026-07-26 可用的较新依赖组合，尚未通过旧版端到端实验验证；如出现兼容问题，应基于成功环境生成锁文件后做最小范围降级。
 - ADS-B 已在 Slurm 解压并通过 strict loader 审计；ManyTx/ManyRx 完整 ZIP 结构有效但未解压，后续仅在补充实验需要时按需展开，不作为阶段 1 阻塞风险。
