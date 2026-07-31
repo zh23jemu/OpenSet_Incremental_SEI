@@ -1985,8 +1985,26 @@ def _select_pseudo_registration_mask(pseudo_y, confidence, top_fraction, min_per
     return keep
 
 
-def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, memory_x, memory_y, old_out_dim, args, device):
-    """Head warm-up followed by last-block backbone adaptation on raw IQ samples."""
+def _train_end_to_end_cil(
+    student,
+    teacher,
+    current_x,
+    current_y,
+    current_w,
+    memory_x,
+    memory_y,
+    old_out_dim,
+    args,
+    device,
+    initial_feature_teacher=None,
+):
+    """Head warm-up followed by last-block backbone adaptation on raw IQ samples.
+
+    ``teacher`` 只保存上一轮分类器和旧类 logits，适合做传统 KD，但它会随着
+    增量轮次逐步漂移。``initial_feature_teacher`` 是 Stage 18 重训得到的初始
+    高质量 backbone 快照，只在显式打开权重时约束高置信新样本和 replay 样本的
+    特征方向，避免新类表征在后续 R2/R3 被旧新类竞争再次拉坏。
+    """
     current_x = np.asarray(current_x, dtype=np.float32)
     current_y = np.asarray(current_y, dtype=np.int64)
     current_w = np.asarray(current_w, dtype=np.float32)
@@ -2038,6 +2056,12 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
     teacher = copy.deepcopy(teacher).to(device).eval()
     for p in teacher.parameters():
         p.requires_grad_(False)
+    if initial_feature_teacher is not None and float(args.radcil_initial_feature_distill_weight) > 0:
+        initial_feature_teacher = copy.deepcopy(initial_feature_teacher).to(device).eval()
+        for p in initial_feature_teacher.parameters():
+            p.requires_grad_(False)
+    else:
+        initial_feature_teacher = None
 
     # 训练期旧类原型锚定：在每一轮增量训练开始前，用冻结 Teacher 在 replay
     # 记忆上计算旧类类中心。训练 Student 时只对 replay 旧类样本施加类级余弦
@@ -2146,6 +2170,24 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                     scale=float(args.radcil_metric_scale),
                     margin=float(args.radcil_metric_margin),
                 )
+                if initial_feature_teacher is not None:
+                    # 初始表征蒸馏只作用于高置信新样本和 replay，不把低置信
+                    # 伪标签直接写成长期特征目标；目标是保持 Stage 18 backbone
+                    # 在 discovery 阶段已经形成的跨轮次角度结构。
+                    distill_x = torch.cat([xc[high], xm], dim=0)
+                    with torch.no_grad():
+                        initial_target_features, _ = initial_feature_teacher(distill_x)
+                    student_distill_features = torch.cat([feat[:len(xc)][high], feat[len(xc):]], dim=0)
+                    initial_feature_distill = (
+                        1.0
+                        - F.cosine_similarity(
+                            F.normalize(student_distill_features, dim=1),
+                            F.normalize(initial_target_features, dim=1),
+                            dim=1,
+                        )
+                    ).mean()
+                else:
+                    initial_feature_distill = logits_m.sum() * 0.0
                 if bool(args.radcil_old_new_dual_branch):
                     # 旧/新分支损失使用当前 batch 的伪标签和 replay 标签构造二分类
                     # 目标：当前轮新伪类走 new branch，历史 replay 样本走 old branch。
@@ -2177,6 +2219,7 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                     + float(args.cil_supcon_weight) * con
                     + float(args.radcil_metric_weight) * metric_loss
                     + float(args.radcil_old_new_branch_weight) * branch_loss
+                    + float(args.radcil_initial_feature_distill_weight) * initial_feature_distill
                 )
                 opt.zero_grad()
                 loss.backward()
@@ -3343,6 +3386,12 @@ def main():
         help="旧/新分支判别损失权重；0 保持历史 RADCIL 行为。",
     )
     parser.add_argument(
+        "--radcil_initial_feature_distill_weight",
+        type=float,
+        default=0.0,
+        help="初始 backbone 特征蒸馏权重；0 保持历史行为，只在 Stage 18 结构验证中显式打开。",
+    )
+    parser.add_argument(
         "--radcil_pseudo_register_top_fraction",
         type=float,
         default=1.0,
@@ -3861,7 +3910,19 @@ def main():
         current_w_train = current_w[register_mask]
         next_label += len(cluster_ids)
         student = _expand_closedset_classifier(teacher, next_label, device, imprinted_means)
-        student = _train_end_to_end_cil(student, teacher, current_x_train, pseudo_y_train, current_w_train, memory_x, memory_y, old_out, args, device)
+        student = _train_end_to_end_cil(
+            student,
+            teacher,
+            current_x_train,
+            pseudo_y_train,
+            current_w_train,
+            memory_x,
+            memory_y,
+            old_out,
+            args,
+            device,
+            initial_feature_teacher=model,
+        )
         memory_x, memory_y = _update_iq_memory(memory_x, memory_y, current_x_train, pseudo_y_train, args.memory_per_class, args.seed + i)
         eval_key = f"eval_r{i}"
         pred = _predict_end_to_end(student, eval_data[eval_key]["X"], args.test_batch_size, device)

@@ -32,7 +32,8 @@
 | Stage 15 类均衡伪标签 | 已完成，负消融 | Job `45149433` 中 ADS-B seed7 R3 Overall/Old/New 为 `0.4995/0.4985/0.5070`，低于 cross_day + GPCC seed7 对照，New 明显下降 |
 | Stage 16 旧/新双分支 | 已完成，负消融 | Job `45151632` 最佳 `branch_w0p30` R3 Overall/Old/New 为 `0.5008/0.4977/0.5260`，Overall 未超过 seed7 对照且 New 下降 |
 | Stage 17 高置信伪标签注册 | 已完成，负消融 | Job `45153814` 最佳 `top0p60` R3 Overall/Old/New 为 `0.5063/0.5077/0.4950`，Overall 仅微升但 New 明显塌缩，不扩三种子 |
-| Stage 18 discovery backbone 重训 | 已实现待跑 | 只用 Day1 已知类训练/验证重训 ADS-B seed7 backbone，先跑 GPCC discovery-only；候选为高 SupCon + RF augmentation / no augmentation |
+| Stage 18 discovery backbone 重训 | discovery 通过、CIL 未通过 | `supcon_w0p30_rfaug` 三轮固定 10 簇，R3 Hungarian/Purity `0.6540/0.7757`；完整 CIL R3 Overall/Old/New `0.4981/0.4885/0.5770`，未超过 seed7 强对照 |
+| Stage 19 初始表征教师蒸馏 | 已实现待跑 | 保留 Stage 18 初始 backbone 快照，对高置信新样本和 replay 做特征方向蒸馏，默认关闭；先跑 ADS-B seed7，过门槛才扩三种子 |
 | ManyTx/ManyRx | 阶段 5 补充验证已完成 | 已只读汇总既有 seed7 三轮结果；ManyTx R3 Overall `0.2700`、ManyRx R3 Overall `0.5700`，作为辅助稳定性证据       |
 | 项目记忆与交接       | 部分已维护            | `AGENTS.md`、`PROJECT_HANDOFF.md` 已同步最新状态；RecallLoom rolling summary 当前因 receipt mismatch 暂停写入，未手工修改                |
 
@@ -448,6 +449,10 @@ Stage 16 Job `45151632` 已完成 ADS-B 旧/新双分支训练 seed7 验证。�
 Stage 17 Job `45153814` 已完成 ADS-B 高置信伪标签注册 seed7 验证。`top0p60` 的 R3 Overall/Old/New/Forgetting 为 `0.5063/0.5077/0.4950/0.0926`，相对 seed7 对照 Overall 仅 `+0.0006`，New `-0.0633`；`top0p80` 为 `0.5049/0.5056/0.4990/0.0971`。该结果说明过滤低置信样本能改善 Old 和遗忘，但会明显牺牲当前轮新类覆盖，不能作为正式方案，不扩三种子。
 
 Stage 18 已新增 ADS-B discovery backbone 重训 discovery-only 验证。该阶段不跑 RADCIL，也不读取 held-out eval；每个候选只用 Day1 已知类 60/10 train/validation 重训 closed-set backbone，然后用 GPCC 固定 K=10 评估 R1-R3 discovery 聚类。候选为 `supcon_w0p30_rfaug` 与 `supcon_w0p30_noaug`。采用严格门槛：最佳候选 R3 Hungarian 至少超过 static GPCC `0.6270` 约 `0.015`，且 R3 Purity 不低于 `0.7337-0.010`，才进入 seed7 完整 CIL。
+
+Stage 18 已完成真实验证：`supcon_w0p30_rfaug` 的 R3 Hungarian/Purity 为 `0.6540/0.7757`，三轮均为 10 簇，满足 discovery 门槛；但完整 CIL Job `45204864` 的 R3 Overall/Old/New 为 `0.4981/0.4885/0.5770`，没有超过当前 seed7 强对照约 `0.5057/0.4850/0.5583`。当前问题不再只是聚类欠聚类，而是增量训练阶段会重新破坏已得到的高质量特征和新旧类边界。
+
+Stage 19 的结构候选是初始表征教师蒸馏：在每轮 RADCIL 中保留 Stage 18 closed-set backbone 快照，对高置信当前轮新样本和 replay 样本约束特征方向，避免只依赖逐轮漂移的上一轮 Teacher。该机制默认关闭，先只跑 seed7；若 Overall、Old、New 同时不塌缩且超过 `0.5057`，再进入三种子确认。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 
