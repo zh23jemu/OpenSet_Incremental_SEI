@@ -1,0 +1,68 @@
+{
+  "job_id": "45352527",
+  "save_dir": "results/stage28/lora_chirp_backend_seed7_45352527",
+  "methods": {
+    "MV-ACC-CIL": {
+      "source": "incremental_results.csv",
+      "overall": 0.2638095238095238,
+      "old": 0.20595238095238094,
+      "new": 0.49523809523809526,
+      "forgetting": 0.2690476190476191,
+      "macro_f1": 0.21251281181330234
+    },
+    "Ft-CNN": {
+      "source": "shared_discovery_baseline_results.csv",
+      "overall": 0.20666666666666667,
+      "old": 0.15,
+      "new": 0.43333333333333335,
+      "forgetting": 0.16190476190476188,
+      "macro_f1": 0.1346430299094632
+    },
+    "LwF": {
+      "source": "shared_discovery_baseline_results.csv",
+      "overall": 0.1895238095238095,
+      "old": 0.15833333333333333,
+      "new": 0.3142857142857143,
+      "forgetting": 0.1476190476190476,
+      "macro_f1": 0.1294737002241785
+    },
+    "iCaRL": {
+      "source": "shared_discovery_baseline_results.csv",
+      "overall": 0.3,
+      "old": 0.3333333333333333,
+      "new": 0.16666666666666666,
+      "forgetting": 0.1261904761904762,
+      "macro_f1": 0.28504467339479755
+    },
+    "EEIL": {
+      "source": "shared_discovery_baseline_results.csv",
+      "overall": 0.2342857142857143,
+      "old": 0.2119047619047619,
+      "new": 0.3238095238095238,
+      "forgetting": 0.12857142857142856,
+      "macro_f1": 0.1758903528211208
+    },
+    "TPCIL-style": {
+      "source": "shared_discovery_baseline_results.csv",
+      "overall": 0.2761904761904762,
+      "old": 0.30238095238095236,
+      "new": 0.17142857142857143,
+      "forgetting": 0.15000000000000008,
+      "macro_f1": 0.25892469621676084
+    },
+    "DOI-style": {
+      "source": "shared_discovery_baseline_results.csv",
+      "overall": 0.29428571428571426,
+      "old": 0.3130952380952381,
+      "new": 0.21904761904761905,
+      "forgetting": 0.13571428571428568,
+      "macro_f1": 0.2838936390410479
+    }
+  },
+  "doi_minus_radcil": {
+    "overall": 0.030476190476190435,
+    "old": 0.10714285714285715,
+    "new": -0.2761904761904762,
+    "forgetting": -0.13333333333333341
+  }
+}
