@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-31
-- 当前阶段：Stage 18 discovery-only 已通过，Stage 18/19 完整 CIL 均未超过 seed7 强对照；当前推进 Stage 20 冻结 backbone CIL seed7 验证
+- 当前阶段：Stage 18 discovery-only 已通过，Stage 18/19/20 完整 CIL 均未超过 seed7 强对照；下一步转联合 discovery-CIL 训练验证
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -181,6 +181,7 @@ Strict loader 审计：
 16. Stage 18 已完成 discovery backbone 重训与完整 CIL：`supcon_w0p30_rfaug` 的 R3 discovery Hungarian/Purity 为 `0.6540/0.7757`，但完整 CIL R3 Overall/Old/New 为 `0.4981/0.4885/0.5770`，聚类收益在增量训练中被部分吃掉。
 17. Stage 19 已新增 `--radcil_initial_feature_distill_weight` 和 `slurm/stage19_adsb_initial_feature_teacher_seed7.sbatch`；只对高置信新样本和 replay 约束初始 backbone 特征方向，默认关闭，当前待提交并运行 seed7。
 18. Stage 19 Job `45220347` 已完成：R3 Overall/Old/New `0.4986/0.4886/0.5800`，相对 Stage 18 基本不变；下一步只验证冻结 backbone 的 CIL 结构。
+19. Stage 20 Job `45222651` 已完成：冻结 backbone 后 R3 Overall/Old/New `0.4559/0.4436/0.5560`，明显变差；说明后续必须联合适应表征与分类头，不再继续冻结或单纯初始教师蒸馏。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。

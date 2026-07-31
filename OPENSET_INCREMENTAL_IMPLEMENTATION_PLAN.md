@@ -456,6 +456,8 @@ Stage 18 已完成真实验证：`supcon_w0p30_rfaug` 的 R3 Hungarian/Purity �
 Stage 19 的结构候选是初始表征教师蒸馏：在每轮 RADCIL 中保留 Stage 18 closed-set backbone 快照，对高置信当前轮新样本和 replay 样本约束特征方向，避免只依赖逐轮漂移的上一轮 Teacher。该机制默认关闭，先只跑 seed7；若 Overall、Old、New 同时不塌缩且超过 `0.5057`，再进入三种子确认。
 
 Stage 19 Job `45220347` 已完成，R3 Overall/Old/New 为 `0.4986/0.4886/0.5800`。相对 Stage 18 的 Overall 仅提升 `+0.0005`，不能说明初始表征漂移是主因。Stage 20 继续做一次结构隔离：冻结 Stage 18 高质量 backbone，只训练增量扩展头；若结果仍不超过 `0.5057`，不再继续 ADS-B 后端小机制搜索。
+
+Stage 20 Job `45222651` 已完成，冻结 backbone 后 R3 Overall/Old/New 为 `0.4559/0.4436/0.5560`，明显低于 Stage 18/19。该结果排除了“只要冻结 backbone 就能保住聚类收益”的路径，当前应转向联合 discovery-CIL：在每轮 GPCC 伪标签生成后，用高置信伪类、旧类 replay 和初始表征约束共同更新表征与分类头，再重新评估下一轮 discovery；先做 seed7 discovery/CIL 短验证，未过门槛不扩三种子。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 
