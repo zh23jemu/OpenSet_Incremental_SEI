@@ -1,0 +1,25 @@
+{
+  "job_id": "45261784",
+  "save_dir": "results/stage23/lora_long1024_joint_seed7_45261784",
+  "sample_length": 1024,
+  "baseline": {
+    "overall": 0.1667,
+    "old": 0.0917,
+    "new": 0.4667,
+    "forgetting": 0.4857
+  },
+  "r3": {
+    "overall": 0.1676190476190476,
+    "old": 0.1119047619047619,
+    "new": 0.3904761904761905,
+    "forgetting": -0.0238095238095238,
+    "macro_f1": 0.1147797280120552
+  },
+  "delta": {
+    "overall": 0.0009190476190476249,
+    "old": 0.020204761904761892,
+    "new": -0.07622380952380953,
+    "forgetting": -0.5095095238095239
+  },
+  "passed_seed7_gate": false
+}
