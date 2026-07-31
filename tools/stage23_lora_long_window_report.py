@@ -37,7 +37,7 @@ def _read_r3_metrics(save_dir: Path) -> dict[str, float]:
         "overall": float(row.get("Overall Acc", row.get("Overall", 0.0))),
         "old": float(row.get("Old Acc", row.get("Old", 0.0))),
         "new": float(row.get("New Acc", row.get("New", 0.0))),
-        "forgetting": float(row.get("Forgetting", 0.0)),
+        "forgetting": float(row.get("Forgetting Rate", row.get("Forgetting", 0.0))),
         "macro_f1": float(row.get("Macro F1", row.get("Macro F1 Score", 0.0))),
     }
 
