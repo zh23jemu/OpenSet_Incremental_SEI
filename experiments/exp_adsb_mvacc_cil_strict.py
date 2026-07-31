@@ -1804,6 +1804,57 @@ def _make_pseudo_labeled_round(round_features, labels, enrolled_ids, next_label)
     return np.concatenate(xs, axis=0).astype(np.float32), np.concatenate(ys, axis=0).astype(np.int64), cluster_pseudo_pairs, next_label
 
 
+def _align_refined_clusters_to_pseudo(
+    reference_features,
+    reference_pseudo_y,
+    refined_features,
+    refined_cluster_y,
+):
+    """把 Student 重新发现的簇无监督地对齐回原伪类编号。
+
+    聚类编号本身没有语义。联合 discovery-CIL 第二次发现后，不能使用真实标签
+    做映射，因此用第一次注册时的伪类中心和 Student 新簇中心做余弦相似度，
+    再用 Hungarian 一对一匹配。这样只利用训练侧特征和伪类编号，不会把
+    held-out eval 或未知真实标签泄漏进分类头。
+    """
+
+    reference_features = np.asarray(reference_features, dtype=np.float32)
+    reference_pseudo_y = np.asarray(reference_pseudo_y, dtype=np.int64)
+    refined_features = np.asarray(refined_features, dtype=np.float32)
+    refined_cluster_y = np.asarray(refined_cluster_y, dtype=np.int64)
+    reference_ids = sorted(np.unique(reference_pseudo_y).tolist())
+    refined_ids = sorted(np.unique(refined_cluster_y).tolist())
+    if not reference_ids or not refined_ids:
+        return reference_pseudo_y.copy()
+
+    reference_centers = np.stack(
+        [
+            reference_features[reference_pseudo_y == int(label)].mean(axis=0)
+            for label in reference_ids
+        ]
+    )
+    refined_centers = np.stack(
+        [
+            refined_features[refined_cluster_y == int(label)].mean(axis=0)
+            for label in refined_ids
+        ]
+    )
+    similarity = cosine_similarity(reference_centers, refined_centers)
+    row_ind, col_ind = linear_sum_assignment(-similarity)
+    cluster_to_pseudo = {}
+    for row, col in zip(row_ind.tolist(), col_ind.tolist()):
+        cluster_to_pseudo[int(refined_ids[col])] = int(reference_ids[row])
+    # 理论上 GPCC 会固定 K；若某次重发现异常少簇，未匹配簇保持原编号，
+    # 让调用方仍然得到连续且合法的增量类别标签。
+    fallback = iter(reference_ids)
+    for cluster_id in refined_ids:
+        cluster_to_pseudo.setdefault(int(cluster_id), int(next(fallback, reference_ids[0])))
+    return np.asarray(
+        [cluster_to_pseudo[int(cluster_id)] for cluster_id in refined_cluster_y],
+        dtype=np.int64,
+    )
+
+
 def _evaluate_raw_predictions(
     method,
     stage,
@@ -3392,6 +3443,11 @@ def main():
         help="初始 backbone 特征蒸馏权重；0 保持历史行为，只在 Stage 18 结构验证中显式打开。",
     )
     parser.add_argument(
+        "--enable_joint_discovery_refinement",
+        action="store_true",
+        help="每轮先完成一次 CIL，再用 Student 表征重新执行 GPCC 并二次训练；默认关闭。",
+    )
+    parser.add_argument(
         "--radcil_pseudo_register_top_fraction",
         type=float,
         default=1.0,
@@ -3830,6 +3886,7 @@ def main():
     # MV-ACC-CIL: discovery uses a frozen Teacher; only then is the Student updated.
     print("\n[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning")
     clustering_rows, incremental_rows, retention_rows = [], [], []
+    joint_refinement_rows = []
     adaptive_density_rows = []
     student = copy.deepcopy(model).to(device).eval()
     pseudo_to_true = {int(c): int(c) for c in range(args.initial_known_classes)}
@@ -3923,6 +3980,49 @@ def main():
             device,
             initial_feature_teacher=model,
         )
+        if args.enable_joint_discovery_refinement:
+            # 第一次 CIL 更新后重新抽取当前轮 Student 特征，再用同一 GPCC 结构
+            # 做第二次发现。新簇通过无标签原型 Hungarian 对齐回原伪类编号，
+            # 因此不会因为聚类编号变化而破坏已有分类头。
+            refined_z, _ = extract_deep_features(
+                student,
+                rd["X"],
+                rd["y"],
+                args.test_batch_size,
+                device,
+            )
+            refined_row, refined_info = run_discovery(
+                "MV-ACC",
+                f"R{i}_refined",
+                f"Day {i + 1}",
+                args.round_size,
+                rd["X"],
+                rd["y"],
+                refined_z,
+                args,
+            )
+            refined_row["Method"] = "Joint discovery refinement"
+            joint_refinement_rows.append(refined_row)
+            refined_pseudo_y = _align_refined_clusters_to_pseudo(
+                rd["Z"],
+                pseudo_y,
+                refined_z,
+                refined_info["labels"],
+            )
+            refined_y_train = refined_pseudo_y[register_mask]
+            student = _train_end_to_end_cil(
+                student,
+                student,
+                current_x_train,
+                refined_y_train,
+                current_w_train,
+                memory_x,
+                memory_y,
+                old_out,
+                args,
+                device,
+                initial_feature_teacher=model,
+            )
         memory_x, memory_y = _update_iq_memory(memory_x, memory_y, current_x_train, pseudo_y_train, args.memory_per_class, args.seed + i)
         eval_key = f"eval_r{i}"
         pred = _predict_end_to_end(student, eval_data[eval_key]["X"], args.test_batch_size, device)
@@ -3948,6 +4048,11 @@ def main():
         np.savez_compressed(os.path.join(args.save_dir, f"replay_memory_after_r{i}.npz"), X=memory_x, y=memory_y)
 
     clustering_df = save_csv(clustering_rows, os.path.join(args.save_dir, "clustering_results.csv"))
+    if args.enable_joint_discovery_refinement:
+        save_csv(
+            joint_refinement_rows,
+            os.path.join(args.save_dir, "joint_discovery_refinement_results.csv"),
+        )
     if args.discovery_only:
         if not args.disable_cil_baselines:
             save_csv(
