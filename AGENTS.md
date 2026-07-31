@@ -311,6 +311,7 @@
 - Stage 21 ADS-B 三种子已通过；下一步应固定该结构，更新客户报告并补做必要的跨数据集验证，不再继续 ADS-B 相邻权重搜索。
 - Stage 22 LoRa seed7 尚未产生真实结果；若 Overall/Old/New 仍不改善，LoRa 低分应继续作为跨体制局限，不再做小权重搜索。
 - Stage 22 seed7 已通过结构候选门槛，但三种子稳定性尚未确认；若三种子不稳定，不能把 LoRa 结果包装成已解决。
+- Stage 22 首次三种子 Job `45259147` 因 seed13 复用 seed7 checkpoint 的 strict 协议不匹配而失败，退出码 1；已修正为每个 seed 独立重训并保存 closed-set checkpoint，不计入算法结论。
 - 增量双视图一致性已完成 LoRa seed7 负消融：基线权重 `0` 的 R3 Overall/Old/New/Forgetting 为 `0.1667/0.0917/0.4667/0.4857`，权重 `0.05/0.10` 均降低 Overall 和 IQ_7 Old；不作为跨天域适应解决方案。
 - Slurm `.venv` 当前安装的是 2026-07-26 可用的较新依赖组合，尚未通过旧版端到端实验验证；如出现兼容问题，应基于成功环境生成锁文件后做最小范围降级。
 - ADS-B 已在 Slurm 解压并通过 strict loader 审计；ManyTx/ManyRx 完整 ZIP 结构有效但未解压，后续仅在补充实验需要时按需展开，不作为阶段 1 阻塞风险。

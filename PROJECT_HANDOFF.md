@@ -185,6 +185,7 @@ Strict loader 审计：
 20. Stage 21 已完成联合 discovery-CIL 三种子：Job `45225739` seed7 为 `0.5070/0.4983/0.5780`；Job `45246678` 三种子 R3 Overall/Old/New 均值为 `0.5149±0.0107/0.5081±0.0084/0.5700±0.0737`，三种子未出现明显旧新类塌缩。
 21. Stage 22 已新增 LoRa 联合 discovery-CIL seed7 入口，固定 GPCC + cross_day + RADCIL 参数；每轮执行第一次 CIL、Student 重新发现、无标签 Hungarian 对齐和第二次 CIL，下一步提交 Slurm。
 22. Stage 22 Job `45259034` 已完成，LoRa R3 Overall/Old/New/Forgetting 为 `0.1743/0.1036/0.4571/0.3643`，相对基线 `0.1667/0.0917/0.4667/0.4857` 有结构性改善；已提交三种子确认。
+23. Stage 22 首次三种子 Job `45259147` 在 seed13 因复用 seed7 checkpoint 触发 strict seed mismatch 失败；已修正三种子入口为各自重训 closed-set checkpoint，失败不计入算法结论。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。

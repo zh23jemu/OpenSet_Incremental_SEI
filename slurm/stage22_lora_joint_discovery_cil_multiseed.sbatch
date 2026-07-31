@@ -23,7 +23,6 @@ cd "${PROJECT_ROOT}"
 PYTHON_BIN="${PYTHON_BIN:-/mnt/users/xj62kv/OpenSet_Incremental_SEI/.venv/bin/python}"
 JOB_ID="${SLURM_JOB_ID:-manual}"
 LORA_NPZ="${LORA25_NPZ:-${DATA_ROOT}/datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz}"
-LORA_CHECKPOINT="${LORA_CHECKPOINT:-${DATA_ROOT}/results/stage5/lora_representation_screen_seed7_44573249/supcon_rf_aug.pth}"
 SEEDS="${STAGE22_LORA_SEEDS:-7,13,31}"
 
 mkdir -p results/stage22
@@ -32,13 +31,16 @@ IFS=',' read -r -a SEED_ARRAY <<< "${SEEDS}"
 for seed in "${SEED_ARRAY[@]}"; do
     seed="$(echo "${seed}" | tr -d '[:space:]')"
     SAVE_DIR="results/stage22/lora_joint_discovery_cil_seed${seed}_${JOB_ID}"
+    CHECKPOINT="${SAVE_DIR}/closedset_lora25_seed${seed}.pth"
     mkdir -p "${SAVE_DIR}"
     echo "运行 Stage 22 LoRa 联合 discovery-CIL：seed=${seed}"
     "${PYTHON_BIN}" experiments/exp_lora25_mvacc_cil_strict.py \
         --dataset_profile lora25 \
         --dataset_path "${LORA_NPZ}" \
         --save_dir "${SAVE_DIR}" \
-        --checkpoint "${LORA_CHECKPOINT}" \
+        --checkpoint "${CHECKPOINT}" \
+        --train_closedset \
+        --epochs 12 \
         --seed "${seed}" --initial_known_classes 10 --round_size 5 --num_rounds 3 \
         --use_supcon --supcon_weight 0.1 \
         --disable_cil_baselines --disable_visualization \
