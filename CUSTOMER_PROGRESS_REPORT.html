@@ -270,7 +270,7 @@
     <h1>OpenSet Incremental SEI 项目进度汇报</h1>
     <p class="subtitle">项目已完成 WiSig 与 ADS-B 主实验阶段，并打通 LoRa 跨信号体制的完整三轮验证链路。当前工作重点是结果交付、风险解释和机制边界收口。</p>
     <div class="meta">
-      <span>报告日期：2026-07-29</span>
+      <span>报告日期：2026-07-31</span>
       <span>结果口径：严格训练 / 验证 / 最终评估隔离</span>
       <span>正式主结果：WiSig、ADS-B 三随机种子</span>
     </div>
@@ -282,14 +282,14 @@
       <div class="kpi"><span>主实验阶段</span><strong>2 / 2</strong><span>WiSig 与 ADS-B 正式三种子实验均已完成</span></div>
       <div class="kpi"><span>WiSig R3 Overall</span><strong>0.6088</strong><span>标准差 0.0415；New Acc 0.7804</span></div>
       <div class="kpi"><span>ADS-B R3 Overall</span><strong>0.5149</strong><span>联合 discovery-CIL 三种子均值；已超过 0.5057 强对照</span></div>
-      <div class="kpi"><span>LoRa 验证状态</span><strong>3 seeds</strong><span>遗忘改善，但 Overall / New 未过基线</span></div>
+      <div class="kpi"><span>LoRa 验证状态</span><strong>负消融</strong><span>Stage 24 三种子未过，低分仍未根本解决</span></div>
     </div>
     <div class="callout"><strong>当前结论：</strong>数据、协议、训练环境、发现前端和增量学习链路均已形成可复现闭环。WiSig 仍是最稳定的正向主线；ADS-B 的联合 discovery-CIL 三种子均值已超过强对照，当前锁定为 ADS-B 候选方案；LoRa 证明跨体制链路可执行，但当前仍更适合作为局限分析和补充验证。</div>
   </section>
 
   <section>
     <h2>二、阶段完成情况</h2>
-    <p class="section-lead">下图按项目交付链路展示当前状态。阶段 0–7 已完成，LoRa 已完成跨天表征候选验证，ManyTx/ManyRx 完成补充稳定性汇总，当前进入客户材料、论文结果与最终复现入口整理。</p>
+    <p class="section-lead">下图按项目交付链路展示当前状态。阶段 0–7 已完成，LoRa 已完成跨天表征、长窗和 recording 级共识候选验证，ManyTx/ManyRx 完成补充稳定性汇总，当前进入客户材料、论文结果与最终复现入口整理。</p>
     <figure>
       <svg viewBox="0 0 1040 230" role="img" aria-label="项目阶段完成情况图">
         <rect x="0" y="0" width="1040" height="230" fill="#f8faf9"/>
@@ -304,7 +304,7 @@
           <g><circle cx="960" cy="105" r="27" fill="#3f7d4b"/><text x="960" y="111" fill="#fff" font-size="18">7</text><text x="960" y="158" fill="#17212b" font-size="14">风险收口</text><text x="960" y="181" fill="#3f7d4b" font-size="12">完成</text></g>
         </g>
       </svg>
-      <figcaption>图 1：项目阶段状态。LoRa 已完成公平三种子验证，但未达到采用门槛，仍按跨体制局限表述。</figcaption>
+      <figcaption>图 1：项目阶段状态。LoRa 已完成公平三种子、长窗和 recording 级共识验证，但均未达到采用门槛，仍按跨体制局限表述。</figcaption>
     </figure>
   </section>
 
@@ -321,6 +321,7 @@
           <tr><td>ADS-B：联合 discovery-CIL</td><td>3 seeds</td><td class="num good">0.5149±0.0107</td><td class="num">0.5081</td><td class="num good">0.5700</td><td class="num">0.0722</td><td>三种子超过 0.5057 强对照，锁定为 ADS-B 当前候选</td></tr>
           <tr><td>ADS-B：target split DOI-style</td><td>3 seeds</td><td class="num">0.4722±0.0295</td><td class="num">0.4895</td><td class="num">0.3277</td><td class="num good">0.0629</td><td>遗忘更低，但整体和新类识别较弱</td></tr>
           <tr><td>LoRa：联合 discovery-CIL</td><td>3 seeds</td><td class="num warn">0.1603±0.0047</td><td class="num">0.0976</td><td class="num">0.4111</td><td class="num">0.3325</td><td>遗忘明显降低，但 Overall / New 低于基线，不采用为正式方案</td></tr>
+          <tr><td>LoRa：Recording-GPCC</td><td>3 seeds</td><td class="num risk">0.1483±0.0077</td><td class="num">0.1004</td><td class="num risk">0.3397</td><td class="num">0.3397</td><td>seed7 有局部正信号，但三种子 Overall / New 下降，归档为结构性负消融</td></tr>
         </tbody>
       </table>
     </div>
@@ -417,7 +418,7 @@
         <ul>
           <li><strong>WiSig 后端上限：</strong>共享发现条件下 DOI-style 高于当前网络后端。</li>
           <li><strong>ADS-B 低结果与遗忘：</strong>target split 已缓解 R3 欠聚类，但 R3 Overall 仍接近 50%，Forgetting 仍高于 DOI-style。</li>
-          <li><strong>LoRa 跨天漂移：</strong>完整链路可执行，联合 discovery-CIL 三种子 R3 Overall 为 0.1603±0.0047；1024 点长窗 seed7 只把 Overall 微升到 0.1676，并明显压低 New，当前更适合作为局限分析。</li>
+          <li><strong>LoRa 跨天漂移：</strong>完整链路可执行，但联合 discovery-CIL、1024 点长窗和 recording 级 GPCC 都未过采用门槛；Recording-GPCC 三种子 R3 Overall 仅 0.1483±0.0077，当前更适合作为跨体制局限分析。</li>
           <li><strong>补充实验复现：</strong>ManyTx/ManyRx 已完成补充稳定性汇总；ManyRx 历史 runner 仍需在复现说明中标明归档位置。</li>
         </ul>
       </div>
@@ -426,8 +427,8 @@
         <ol>
           <li>完成最终交付：统一正式结果表、客户汇报材料、论文图和复现说明。</li>
           <li>单独保留 DOI-style、LoRa 数据下载和 ADS-B/LoRa 低结果的客户问答口径。</li>
-          <li>将 LoRa 多轮严格负消融整理为跨体制局限，不继续局部后端或简单分布对齐调参。</li>
-          <li>若继续算法研究，选择不同于原型锚定 / late-fusion 的机制，并先执行 seed 7 无泄漏门控。</li>
+          <li>将 LoRa 多轮严格负消融整理为跨体制局限，不继续局部后端、简单分布对齐、长窗或 recording 共识调参。</li>
+          <li>若继续算法研究，需要重新设计 LoRa 训练目标或评估粒度，并先执行 seed 7 无泄漏门控。</li>
           <li>在复现说明中标明 ManyRx 历史 runner 归档位置，补齐轻量级协议测试和根目录用户说明。</li>
         </ol>
       </div>
