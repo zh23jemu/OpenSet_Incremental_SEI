@@ -1,0 +1,36 @@
+{
+  "job_id": "45350081",
+  "records": [
+    {
+      "variant": "resnet1d",
+      "save_dir": "results/stage27/lora_resnet1d_seed7_45350081",
+      "overall": 0.17809523809523808,
+      "old": 0.10714285714285714,
+      "new": 0.46190476190476193,
+      "forgetting": 0.3547619047619048,
+      "macro_f1": 0.11036803384810699,
+      "recording_overall": 0.18666666666666668,
+      "recording_new": 0.6
+    },
+    {
+      "variant": "chirp",
+      "save_dir": "results/stage27/lora_chirp_seed7_45350081",
+      "overall": 0.2542857142857143,
+      "old": 0.19285714285714287,
+      "new": 0.5,
+      "forgetting": 0.2690476190476191,
+      "macro_f1": 0.19618197930508308,
+      "recording_overall": 0.28,
+      "recording_new": 0.6666666666666666
+    }
+  ],
+  "delta_chirp_minus_resnet1d": {
+    "overall": 0.0761904761904762,
+    "old": 0.08571428571428573,
+    "new": 0.03809523809523807,
+    "forgetting": -0.08571428571428569,
+    "macro_f1": 0.08581394545697608
+  },
+  "passed": true,
+  "verdict": "通过 seed7 结构门槛，可进入三种子确认。"
+}
