@@ -3293,6 +3293,10 @@ def run_discovery(
         info = {
             "labels": labels_for_metrics,
             "accepted_ids": enrolled_ids,
+            # 共享 CIL baseline 统一读取 enrolled_ids；GPCC 也要提供同一
+            # discovery info 契约，避免主方法能跑而 DOI-style/iCaRL 对照
+            # 在伪标签准备阶段因字段名不一致失败。
+            "enrolled_ids": enrolled_ids,
             "reliability": reliability_map,
             "merge_rows": [],
             "features": feats,
