@@ -138,6 +138,8 @@
 - Stage 18 已新增 ADS-B discovery backbone 重训 discovery-only 候选：只用 Day1 已知类训练/验证重训 seed7 closed-set backbone，再用 GPCC 评估 R1-R3 聚类质量；先跑 `supcon_w0p30_rfaug` 与 `supcon_w0p30_noaug` 两个短候选，过 discovery 门槛才进入 CIL。
 - Stage 18 Job `45202975` 已完成：`supcon_w0p30_rfaug` 三轮固定 10 簇，R3 Hungarian/Purity 为 `0.6540/0.7757`，通过 discovery 门槛；完整 CIL Job `45204864` 的 R3 Overall/Old/New 为 `0.4981/0.4885/0.5770`，聚类收益没有完全传到增量后端。
 - Stage 19 已新增默认关闭的初始表征教师蒸馏：对高置信新样本和 replay 约束 Stage 18 初始 backbone 的特征方向；入口为 `slurm/stage19_adsb_initial_feature_teacher_seed7.sbatch`，待 seed7 验证。
+- Stage 19 Job `45220347` 已完成：R3 Overall/Old/New 为 `0.4986/0.4886/0.5800`，相对 Stage 18 只回升 `+0.0005`，仍未超过 `0.5057`，说明单纯限制表征漂移不是主因。
+- Stage 20 已新增冻结 backbone 的 seed7 CIL 入口 `slurm/stage20_adsb_frozen_backbone_cil_seed7.sbatch`，关闭 joint backbone 更新，只训练扩展分类头，待验证 CIL 阶段的 joint 更新是否是主要损失来源。
 
 ## Recent Changes
 
@@ -249,6 +251,7 @@
 - 2026-07-31：新增 Stage 18 ADS-B discovery backbone 重训入口 `slurm/stage18_adsb_backbone_discovery_seed7.sbatch` 与报告器 `tools/stage18_adsb_backbone_discovery_report.py`；本地 `py_compile`、CLI 参数检查和 diff check 已通过，下一步提交 Slurm seed7 discovery-only。
 - 2026-07-31：Stage 18 Job `45202975` 通过 discovery 门槛，随后 Job `45204864` 完整 CIL R3 Overall `0.4981` 未超过当前 seed7 强对照。
 - 2026-07-31：新增 `--radcil_initial_feature_distill_weight` 和 Stage 19 Slurm 入口，用于验证初始高质量 backbone 是否能阻止 R2/R3 表征漂移。
+- 2026-07-31：Stage 19 Job `45220347` 完成但未过门槛；新增 Stage 20 冻结 backbone CIL 验证入口。
 
 ## Next TODO
 
@@ -292,6 +295,7 @@
 - Stage 17 已未过门槛；ADS-B seed7 的后端/注册结构已多次表现为“Old 变好、New 下降”。下一步若继续攻低分，应转向更激进的联合表征发现或重新训练 discovery backbone，而不是继续加权/过滤当前伪标签。
 - Stage 18 discovery-only 已通过，但完整 CIL R3 Overall `0.4981` 仍低于当前 seed7 强对照 `0.5057`；当前根因进一步收敛为“聚类正确，但增量训练阶段重新破坏表征/新旧类边界”。
 - Stage 19 初始表征教师蒸馏尚未跑真实 Slurm；只有 seed7 同时改善 Overall 且不牺牲 New，才考虑扩三种子，否则归档并停止 ADS-B 小机制搜索。
+- Stage 19 已证明初始表征教师蒸馏不是充分解；Stage 20 只做一次冻结 backbone 结构验证，若仍低于 `0.5057`，ADS-B 后端继续小改的收益预期很低，应转联合 discovery-CIL 训练或进入诚实局限收口。
 - Stage 11 首次提交 Job `45068164` 暴露旧 worktree 默认路径问题，已修复；重提后仍需先确认作业启动，再判断聚类收益。
 - Stage 11 Job `45068213` 暴露 ADS-B loader 参数名兼容问题，已修复；下一次重提需确认 LoRa 与 ADS-B 两个 profile 都能正常进入 discovery。
 - 增量双视图一致性已完成 LoRa seed7 负消融：基线权重 `0` 的 R3 Overall/Old/New/Forgetting 为 `0.1667/0.0917/0.4667/0.4857`，权重 `0.05/0.10` 均降低 Overall 和 IQ_7 Old；不作为跨天域适应解决方案。
