@@ -1,9 +1,9 @@
 # OpenSet Incremental SEI 实施计划与项目进度总表
 
-- 状态：阶段 8 已重新打开“攻低分”结构性候选；新增增量归一化代理度量训练入口，准备 ADS-B/LoRa seed7 矩阵验证
+- 状态：ADS-B Stage 21 联合 discovery-CIL 三种子已通过；LoRa Stage 22 公平三种子未过 Overall 门槛，继续作为跨体制局限处理
 - 版本：1.1
 - 创建日期：2026-07-26
-- 最近更新：2026-07-29
+- 最近更新：2026-07-31
 - 预计周期：3–4 周；前 5–7 天完成方案筛选和可运行初版
 - 用途：本文件同时作为项目执行计划、进度总表和客户汇报主入口；原独立进度报告已删除，后续只维护本文件，避免两份正文分叉。
 
@@ -36,7 +36,7 @@
 | Stage 19 初始表征教师蒸馏 | 已实现待跑 | 保留 Stage 18 初始 backbone 快照，对高置信新样本和 replay 做特征方向蒸馏，默认关闭；先跑 ADS-B seed7，过门槛才扩三种子 |
 | Stage 20 冻结 backbone CIL | 已实现待跑 | 关闭 CIL joint backbone 更新，只训练扩展分类头；若仍低于 seed7 强对照，则转联合 discovery-CIL 或收口局限 |
 | Stage 21 联合 discovery-CIL | 三种子已通过 | Job `45246678` 的 R3 Overall/Old/New 为 `0.5149±0.0107/0.5081±0.0084/0.5700±0.0737`，Forgetting `0.0722±0.0113`；固定为 ADS-B 当前候选 |
-| Stage 22 LoRa 联合 discovery-CIL | seed7 已通过，待三种子 | Job `45259034` 的 R3 Overall/Old/New/Forgetting 为 `0.1743/0.1036/0.4571/0.3643`，相对基线同步改善 Overall/Old/Forgetting；已提交三种子确认 |
+| Stage 22 LoRa 联合 discovery-CIL | 三种子未通过 | 公平三种子 Job `45260776` 的 R3 Overall/Old/New/Forgetting 为 `0.1603±0.0047/0.0976±0.0019/0.4111±0.0214/0.3325±0.0367`；遗忘率改善但 Overall/New 低于基线，不采用为正式 LoRa 方案 |
 | ManyTx/ManyRx | 阶段 5 补充验证已完成 | 已只读汇总既有 seed7 三轮结果；ManyTx R3 Overall `0.2700`、ManyRx R3 Overall `0.5700`，作为辅助稳定性证据       |
 | 项目记忆与交接       | 部分已维护            | `AGENTS.md`、`PROJECT_HANDOFF.md` 已同步最新状态；RecallLoom rolling summary 当前因 receipt mismatch 暂停写入，未手工修改                |
 
@@ -465,7 +465,7 @@ Stage 21 已实现上述联合闭环。它不读取未知真实标签做簇对�
 
 Stage 22 将同一结构性闭环迁移到 LoRa strict：固定 `GPCC + cross_day_repr_adaptation + RADCIL`，每轮完成第一次 CIL 后，用 Student 特征重新执行 GPCC，再用无标签类中心 Hungarian 对齐回原伪类编号，最后二次训练。该设计针对 LoRa 的跨天表征漂移和伪类注册错位，不再重复 old-logit bias、BN、prototype anchor 或 late-fusion 小机制。
 
-Job `45259034` 的 seed7 结果为 R3 Overall/Old/New/Forgetting `0.1743/0.1036/0.4571/0.3643`，相对 LoRa 基线 `0.1667/0.0917/0.4667/0.4857` 取得结构性改善。该结果只说明联合闭环值得做三种子确认，尚不能代表 LoRa 低分已根本解决。
+Job `45259034` 的 seed7 结果为 R3 Overall/Old/New/Forgetting `0.1743/0.1036/0.4571/0.3643`，相对 LoRa 基线 `0.1667/0.0917/0.4667/0.4857` 取得结构性改善。随后公平三种子 Job `45260776` 将 closed-set backbone 训练统一到 20 epochs，R3 Overall/Old/New/Forgetting 为 `0.1603±0.0047/0.0976±0.0019/0.4111±0.0214/0.3325±0.0367`。该结构能明显降低遗忘，但 Overall 和 New 未超过基线，因此不采用为正式 LoRa 方案，LoRa 低分继续作为跨体制局限报告。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 

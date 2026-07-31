@@ -142,6 +142,7 @@
 - Stage 20 已新增冻结 backbone 的 seed7 CIL 入口 `slurm/stage20_adsb_frozen_backbone_cil_seed7.sbatch`，关闭 joint backbone 更新，只训练扩展分类头，待验证 CIL 阶段的 joint 更新是否是主要损失来源。
 - Stage 20 Job `45222651` 已完成：冻结 backbone 后 R3 Overall/Old/New 为 `0.4559/0.4436/0.5560`，明显低于 Stage 18/19；说明问题不是简单的 joint 更新漂移，而是需要联合适应表征与新类分类头。
 - Stage 21 已完成联合 discovery-CIL 三种子验证：Job `45225739` 的 seed7 R3 Overall/Old/New 为 `0.5070/0.4983/0.5780`；Job `45246678` 三种子均值为 Overall/Old/New `0.5149±0.0107/0.5081±0.0084/0.5700±0.0737`，三种子均值超过强对照且未出现 Old/New 塌缩。
+- Stage 22 已完成 LoRa 联合 discovery-CIL 公平三种子验证：Job `45260776` 在 20 epochs closed-set backbone 口径下的 R3 Overall/Old/New/Forgetting 为 `0.1603±0.0047/0.0976±0.0019/0.4111±0.0214/0.3325±0.0367`；遗忘率明显优于基线 `0.4857`，但 Overall/New 低于基线 `0.1667/0.4667`，不采用为正式 LoRa 方案。
 
 ## Recent Changes
 
@@ -309,8 +310,7 @@
 - Stage 11 首次提交 Job `45068164` 暴露旧 worktree 默认路径问题，已修复；重提后仍需先确认作业启动，再判断聚类收益。
 - Stage 11 Job `45068213` 暴露 ADS-B loader 参数名兼容问题，已修复；下一次重提需确认 LoRa 与 ADS-B 两个 profile 都能正常进入 discovery。
 - Stage 21 ADS-B 三种子已通过；下一步应固定该结构，更新客户报告并补做必要的跨数据集验证，不再继续 ADS-B 相邻权重搜索。
-- Stage 22 LoRa seed7 尚未产生真实结果；若 Overall/Old/New 仍不改善，LoRa 低分应继续作为跨体制局限，不再做小权重搜索。
-- Stage 22 seed7 已通过结构候选门槛，但三种子稳定性尚未确认；若三种子不稳定，不能把 LoRa 结果包装成已解决。
+- Stage 22 公平三种子 Job `45260776` 已完成：联合 discovery-CIL 降低 LoRa 遗忘，但 R3 Overall/New 未超过基线，不能把 LoRa 低分包装成已解决；后续若继续攻 LoRa，需要更换更大的跨天域泛化/自监督表征路线，而不是继续叠 old-logit、BN、prototype、late-fusion 或小权重。
 - Stage 22 首次三种子 Job `45259147` 因 seed13 复用 seed7 checkpoint 的 strict 协议不匹配而失败，退出码 1；已修正为每个 seed 独立重训并保存 closed-set checkpoint，不计入算法结论。
 - 增量双视图一致性已完成 LoRa seed7 负消融：基线权重 `0` 的 R3 Overall/Old/New/Forgetting 为 `0.1667/0.0917/0.4667/0.4857`，权重 `0.05/0.10` 均降低 Overall 和 IQ_7 Old；不作为跨天域适应解决方案。
 - Slurm `.venv` 当前安装的是 2026-07-26 可用的较新依赖组合，尚未通过旧版端到端实验验证；如出现兼容问题，应基于成功环境生成锁文件后做最小范围降级。
