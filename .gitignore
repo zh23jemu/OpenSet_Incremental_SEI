@@ -57,3 +57,8 @@ Desktop.ini
 # Stage 23 报告器本地 smoke 产物；真实 Slurm 报告和 summary 仍然保留入库
 /results/stage23/*SMOKE*
 /results/stage23/stage23_report_smoke.json
+
+# Stage 23 长窗 LoRa 的重建数据和训练状态保留在 Slurm；manifest、CSV、JSON、Markdown 继续入库
+/results/stage23/*.npz
+/results/stage23/lora_long1024_joint_seed7_*/*.pth
+/results/stage23/lora_long1024_joint_seed7_*/*.npz

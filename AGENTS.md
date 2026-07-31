@@ -143,7 +143,7 @@
 - Stage 20 Job `45222651` 已完成：冻结 backbone 后 R3 Overall/Old/New 为 `0.4559/0.4436/0.5560`，明显低于 Stage 18/19；说明问题不是简单的 joint 更新漂移，而是需要联合适应表征与新类分类头。
 - Stage 21 已完成联合 discovery-CIL 三种子验证：Job `45225739` 的 seed7 R3 Overall/Old/New 为 `0.5070/0.4983/0.5780`；Job `45246678` 三种子均值为 Overall/Old/New `0.5149±0.0107/0.5081±0.0084/0.5700±0.0737`，三种子均值超过强对照且未出现 Old/New 塌缩。
 - Stage 22 已完成 LoRa 联合 discovery-CIL 公平三种子验证：Job `45260776` 在 20 epochs closed-set backbone 口径下的 R3 Overall/Old/New/Forgetting 为 `0.1603±0.0047/0.0976±0.0019/0.4111±0.0214/0.3325±0.0367`；遗忘率明显优于基线 `0.4857`，但 Overall/New 低于基线 `0.1667/0.4667`，不采用为正式 LoRa 方案。
-- Stage 23 已新增 LoRa 长窗必要子集 seed7 验证入口：`datasets/lora25_strict_loader.py` 支持 `[N,2,L]` 动态长度，`slurm/stage23_lora_long_window_seed7.sbatch` 会重建 decimation=1 的 1024 点 aligned 子集并运行同一 GPCC + cross_day + joint discovery-CIL 结构；当前待 Slurm seed7 验证。
+- Stage 23 已完成 LoRa 长窗必要子集 seed7 验证：Job `45261784` 使用 decimation=1 的 1024 点 aligned 子集，R3 Overall/Old/New/Forgetting 为 `0.1676/0.1119/0.3905/-0.0238`；Old 和遗忘改善，但 New 明显下降，未通过门槛，不扩三种子。
 
 ## Recent Changes
 
@@ -312,7 +312,7 @@
 - Stage 11 Job `45068213` 暴露 ADS-B loader 参数名兼容问题，已修复；下一次重提需确认 LoRa 与 ADS-B 两个 profile 都能正常进入 discovery。
 - Stage 21 ADS-B 三种子已通过；下一步应固定该结构，更新客户报告并补做必要的跨数据集验证，不再继续 ADS-B 相邻权重搜索。
 - Stage 22 公平三种子 Job `45260776` 已完成：联合 discovery-CIL 降低 LoRa 遗忘，但 R3 Overall/New 未超过基线，不能把 LoRa 低分包装成已解决；后续若继续攻 LoRa，需要更换更大的跨天域泛化/自监督表征路线，而不是继续叠 old-logit、BN、prototype、late-fusion 或小权重。
-- Stage 23 下一步只验证 LoRa 1024 点 aligned 长窗是否改善输入表征；若 seed7 仍未同时改善 Overall/Old 且不压塌 New，不扩三种子。
+- Stage 23 长窗验证未过采用门槛；LoRa 继续作为跨体制局限，后续若继续研究应转向更强自监督/域泛化表征或更多 LoRa 数据范围，而不是继续改当前 RADCIL 小机制。
 - Stage 22 首次三种子 Job `45259147` 因 seed13 复用 seed7 checkpoint 的 strict 协议不匹配而失败，退出码 1；已修正为每个 seed 独立重训并保存 closed-set checkpoint，不计入算法结论。
 - 增量双视图一致性已完成 LoRa seed7 负消融：基线权重 `0` 的 R3 Overall/Old/New/Forgetting 为 `0.1667/0.0917/0.4667/0.4857`，权重 `0.05/0.10` 均降低 Overall 和 IQ_7 Old；不作为跨天域适应解决方案。
 - Slurm `.venv` 当前安装的是 2026-07-26 可用的较新依赖组合，尚未通过旧版端到端实验验证；如出现兼容问题，应基于成功环境生成锁文件后做最小范围降级。
