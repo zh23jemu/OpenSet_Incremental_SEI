@@ -45,6 +45,15 @@ def _last_round(rows: list[dict[str, str]]) -> dict[str, str]:
     return rows[-1]
 
 
+def _last_incremental_round(rows: list[dict[str, str]]) -> dict[str, str]:
+    """读取增量结果中的 After R3 行，补齐 Old Acc 和 Macro F1。"""
+
+    for row in rows:
+        if str(row.get("Stage", "")).strip().upper() == "AFTER R3":
+            return row
+    return rows[-1]
+
+
 def _mean_std(values: list[float]) -> tuple[float, float]:
     """计算总体均值和标准差，保持与项目其它多种子报告一致。"""
 
@@ -77,14 +86,15 @@ def main() -> int:
     for seed in seeds:
         save_dir = root / f"adsb_joint_discovery_cil_seed{seed}_{args.job_id}"
         row = _last_round(_read_rows(save_dir / "per_round_summary_results.csv"))
+        incremental_row = _last_incremental_round(_read_rows(save_dir / "incremental_results.csv"))
         rows.append(
             {
                 "seed": seed,
                 "overall": _number(row, "Overall Acc", "Overall"),
-                "old": _number(row, "Old Acc", "Old"),
-                "new": _number(row, "New Acc", "New"),
-                "forgetting": _number(row, "Forgetting Rate", "Forgetting"),
-                "macro_f1": _number(row, "Macro F1"),
+                "old": _number(incremental_row, "Old Acc", "Old"),
+                "new": _number(incremental_row, "New Acc", "New"),
+                "forgetting": _number(incremental_row, "Forgetting Rate", "Forgetting"),
+                "macro_f1": _number(incremental_row, "Macro F1"),
                 "cluster_count": _number(row, "Cluster Count", "Final Cluster Count"),
                 "hungarian": _number(row, "Hungarian Acc", "Hungarian"),
             }
