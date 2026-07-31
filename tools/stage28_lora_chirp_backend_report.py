@@ -21,14 +21,15 @@ def _rows(path: Path) -> list[dict[str, str]]:
     return result
 
 
-def _r3(path: Path) -> dict[str, str]:
-    """取 R3 结果行。"""
+def _r3_rows(path: Path) -> list[dict[str, str]]:
+    """取文件中所有方法的 R3 结果行。"""
 
     result = _rows(path)
-    for row in result:
-        if str(row.get("Stage", "")).strip().lower() == "after r3":
-            return row
-    return result[-1]
+    selected = [
+        row for row in result
+        if str(row.get("Stage", "")).strip().lower() == "after r3"
+    ]
+    return selected or [result[-1]]
 
 
 def _value(row: dict[str, str], key: str) -> float:
@@ -60,7 +61,7 @@ def main() -> int:
         path = save_dir / filename
         if not path.exists():
             continue
-        for row in [_r3(path)]:
+        for row in _r3_rows(path):
             methods[str(row.get("Method", filename))] = {
                 "source": filename,
                 "overall": _value(row, "Overall Acc"),
