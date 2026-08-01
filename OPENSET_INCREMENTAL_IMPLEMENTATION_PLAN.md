@@ -476,6 +476,8 @@ Stage 24 不继续调 old-logit、BN、prototype、late-fusion、权重阈值或
 Stage 33 针对 Stage 24 “整段 recording 平均可能压掉 symbol 细节”的风险，新增 `gpcc_recording_consensus`：先在 symbol 级运行 GPCC，再按可观测 `recording_id` 检查组内多数簇比例，仅对达到阈值的 recording 做统一标签，低一致组保留原始 symbol 标签。Job `45359726` 的 0.65/0.75/0.85 三个变体均满足固定 5 簇、无 noise 和相对普通 GPCC 的 discovery 门槛；0.65 mean ARI/Hungarian=`0.4118/0.5959`，相对普通 GPCC 分别提升 `+0.0881/+0.0571`。因此锁定 0.65 进入 Stage 34 完整 seed7 CIL，不继续搜索阈值。
 
 Stage 34 已完成完整 seed7 CIL。虽然 recording-consensus=0.65 保持三轮 5 簇且 discovery 指标提升，但 R3 Overall/Old/New/Forgetting=`0.2476/0.1857/0.4952/0.2690`，相对 Stage 27 Chirp seed7 的 `0.2543/0.1929/0.5000` 全部下降。结论是 recording 元数据能修正局部伪标签结构，却没有解决伪标签注册进入增量分类头后的吸收问题；不扩三种子，也不继续 recording 阈值搜索。下一阶段改为伪标签注册、置信度筛选和新旧类联合训练的单一结构目标。
+
+Stage 35 将高置信样本只用于新类 feature imprint 和 replay 注册，同时保留全量 discovery 样本参与当前轮带权训练。Job `45362637` 的最佳 `top0p80` R3 Overall/Old/New/Forgetting=`0.2495/0.1929/0.4762/0.2786`，相对 Stage 34 Overall `+0.0019`、Old `+0.0072`，但 New `-0.0190`。该结果说明静态注册 mask 能缓解旧类偏移，却没有解决新类伪标签吸收；不扩三种子、不继续搜索注册比例。下一阶段改为 Student 预测一致性和 cluster prototype 联合更新的双目标伪标签 self-training。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 
