@@ -26,6 +26,11 @@ module load slurm
 
 PROJECT_ROOT="${PROJECT_ROOT:-/mnt/users/xj62kv/OpenSet_Incremental_SEI}"
 PYTHON_BIN="${PROJECT_ROOT}/.venv/bin/python"
+# 独立 Git worktree 通常只包含代码，不重复复制虚拟环境；优先复用主项目
+# 已通过 CUDA 自检的环境，但所有 Python 模块仍从当前 worktree 加载。
+if [[ ! -x "${PYTHON_BIN}" ]]; then
+    PYTHON_BIN="/mnt/users/xj62kv/OpenSet_Incremental_SEI/.venv/bin/python"
+fi
 JOB_ID="${SLURM_JOB_ID}"
 mkdir -p "${PROJECT_ROOT}/results/stage31"
 cd "${PROJECT_ROOT}"
