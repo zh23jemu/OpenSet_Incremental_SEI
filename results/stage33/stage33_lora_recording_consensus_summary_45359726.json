@@ -1,0 +1,71 @@
+{
+  "schema_version": "stage33_lora_recording_consensus_summary_v1",
+  "job_id": "45359726",
+  "summary": {
+    "gpcc": {
+      "rounds": 3,
+      "target_count_ok": true,
+      "zero_noise": true,
+      "mean_ari": 0.32366411462635203,
+      "mean_hungarian": 0.5387755102040815,
+      "mean_purity": 0.5503401360544218,
+      "mean_coverage": 1.0,
+      "total_cluster_error": 0.0
+    },
+    "consensus_t0p65": {
+      "rounds": 3,
+      "target_count_ok": true,
+      "zero_noise": true,
+      "mean_ari": 0.4117820058357257,
+      "mean_hungarian": 0.5959183673469388,
+      "mean_purity": 0.608843537414966,
+      "mean_coverage": 1.0,
+      "total_cluster_error": 0.0
+    },
+    "consensus_t0p75": {
+      "rounds": 3,
+      "target_count_ok": true,
+      "zero_noise": true,
+      "mean_ari": 0.3824532378172054,
+      "mean_hungarian": 0.5714285714285714,
+      "mean_purity": 0.5843537414965986,
+      "mean_coverage": 1.0,
+      "total_cluster_error": 0.0
+    },
+    "consensus_t0p85": {
+      "rounds": 3,
+      "target_count_ok": true,
+      "zero_noise": true,
+      "mean_ari": 0.34989446483098247,
+      "mean_hungarian": 0.5523809523809523,
+      "mean_purity": 0.5659863945578231,
+      "mean_coverage": 1.0,
+      "total_cluster_error": 0.0
+    }
+  },
+  "gate": {
+    "baseline": "gpcc",
+    "candidates": {
+      "consensus_t0p65": {
+        "ari_delta_vs_gpcc": 0.08811789120937369,
+        "hungarian_delta_vs_gpcc": 0.05714285714285727,
+        "passed": true
+      },
+      "consensus_t0p75": {
+        "ari_delta_vs_gpcc": 0.05878912319085339,
+        "hungarian_delta_vs_gpcc": 0.032653061224489854,
+        "passed": true
+      },
+      "consensus_t0p85": {
+        "ari_delta_vs_gpcc": 0.026230350204630437,
+        "hungarian_delta_vs_gpcc": 0.013605442176870763,
+        "passed": true
+      }
+    }
+  },
+  "passed_variants": [
+    "consensus_t0p65",
+    "consensus_t0p75",
+    "consensus_t0p85"
+  ]
+}
