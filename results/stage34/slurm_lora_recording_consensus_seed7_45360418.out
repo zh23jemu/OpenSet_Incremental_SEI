@@ -1,0 +1,125 @@
+
+========== LoRa25 Different Days Indoor 10-Known 3-Round Incremental Experiment ==========
+Dataset: /mnt/users/xj62kv/OpenSet_Incremental_SEI/datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz
+Save dir: results/stage34/lora_recording_consensus_cil_seed7_45360418
+Device: cuda
+Protocol: 10 known + 5 unknown R1 + 5 unknown R2 + 5 unknown R3
+LoRa split: IQ_1-6 train | IQ_7 validation | IQ_8-10 held-out evaluation
+Old-class prototype bonus beta: 0.0
+Incremental dual-view consistency weight: 0.0
+Cross-day feature domain alignment weight: 0.0
+Pseudo-label cluster reliability weighting: False (floor=0.2)
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train IQ_1-6 train: (840, 2, 256), classes=10, labels=0-9
+Initial eval 30%:     (420, 2, 256), classes=10, labels=0-9, day=Day 1
+Unknown R1 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=10-14, day=Day 2
+After R1 IQ_8-10 eval: (630, 2, 256), classes=15, labels=0-14, day=Day 2
+Unknown R2 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=15-19, day=Day 3
+After R2 IQ_8-10 eval: (840, 2, 256), classes=20, labels=0-19, day=Day 3
+Unknown R3 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=20-24, day=Day 4
+After R3 IQ_8-10 eval: (1050, 2, 256), classes=25, labels=0-24, day=Day 4
+[Load] checkpoint=/mnt/users/xj62kv/OpenSet_Incremental_SEI_stage33/results/stage33/lora_chirp_closedset_seed7_45359726.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.347 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Representative Class-Incremental Baselines: Shared Graph-fusion pseudo-labels ==========
+
+========== Representative Class-Incremental Baselines: End-to-end with neutral Deep-HDBSCAN discovery ==========
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Assignment Coverage  Noise Points  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc        Discovery Backend Discovery Feature Adapter                          GPCC Backend  GPCC Target Clusters GPCC Selected Candidate                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  GPCC Candidate Scores  GPCC Silhouette  GPCC Prototype Margin Mean  GPCC Silhouette Confidence Mean  GPCC Confidence Mean  GPCC Confidence Min  GPCC Cluster Stability  GPCC Cluster Size CV  GPCC Uses HDBSCAN                    Recording-Consensus Backend  Recording-Consensus Groups  Recording-Consensus Threshold  Recording-Consensus Accepted Groups  Recording-Consensus Changed Samples  Recording-Consensus Mean Consistency  Recording-Consensus Min Consistency       Cross-Day Adapter  Cross-Day Epochs  Cross-Day Batch Size  Cross-Day LR  Cross-Day Consistency Weight  Cross-Day CORAL Weight  Cross-Day Known Samples  Cross-Day Discovery Samples  Cross-Day Final Total  Cross-Day Final CE  Cross-Day Final Consistency  Cross-Day Final CORAL                    LoRa SSL Adapter  LoRa SSL Epochs  LoRa SSL Batch Size  LoRa SSL LR  LoRa SSL CE Weight  LoRa SSL Instance Weight  LoRa SSL Teacher Weight  LoRa SSL Temperature  LoRa SSL Known Samples  LoRa SSL Discovery Samples  LoRa SSL Final Total  LoRa SSL Final CE  LoRa SSL Final Instance  LoRa SSL Final Teacher
+MV-ACC-CIL discovery    R1         Day 2                 5      490                      5                    5                    0                    1.0                  1.0             0         5    0.0 0.424959 0.366339 0.536735       0.536735 Recording-Consensus-GPCC                      none graph_prototype_controlled_clustering                     5            kmeans_joint {'kmeans_joint': {'score': 0.5320825794287829, 'silhouette': 0.20525306463241577, 'balance': 0.8459669694047711, 'stability': 1.0, 'cluster_size_cv': 0.18207924915036305}, 'kmeans_graph': {'score': 0.30439468065207387, 'silhouette': 0.1349923312664032, 'balance': 0.6902955767642658, 'stability': 0.3683591324107956, 'cluster_size_cv': 0.4486547989883723}, 'agglomerative_joint': {'score': 0.41471512390278165, 'silhouette': 0.19709256291389465, 'balance': 0.7341637424436033, 'stability': 0.6379258632456757, 'cluster_size_cv': 0.36209396104414354}}         0.205253                    0.293312                         0.602627              0.408540             0.064189                     1.0              0.182079              False symbol_gpcc_with_selective_recording_consensus                          35                           0.65                                   13                                   36                              0.653061                             0.357143 train_consistency_coral                 2                   128       0.00001                           0.5                    0.05                      840                          490               0.810313            0.803754                     0.002966               0.101509 instance_contrastive_teacher_anchor                3                  128      0.00001                 1.0                       0.5                      0.2                   0.2                     840                         490              2.937950           0.762728                 4.349381                0.002656
+MV-ACC-CIL discovery    R2         Day 3                 5      490                      5                    5                    0                    1.0                  1.0             0         5    0.0 0.337637 0.285196 0.540816       0.530612 Recording-Consensus-GPCC                      none graph_prototype_controlled_clustering                     5            kmeans_joint   {'kmeans_joint': {'score': 0.5133219068032919, 'silhouette': 0.17045161128044128, 'balance': 0.8478676029952458, 'stability': 1.0, 'cluster_size_cv': 0.1794294256170645}, 'kmeans_graph': {'score': 0.28683001153369625, 'silhouette': 0.1062828078866005, 'balance': 0.6447054258901643, 'stability': 0.39773352807213247, 'cluster_size_cv': 0.551095988713403}, 'agglomerative_joint': {'score': 0.39561387183728863, 'silhouette': 0.15168070793151855, 'balance': 0.7717164149601464, 'stability': 0.6313847979316966, 'cluster_size_cv': 0.2958127890173785}}         0.170452                    0.269830                         0.585226              0.384383             0.026855                     1.0              0.179429              False symbol_gpcc_with_selective_recording_consensus                          35                           0.65                                   14                                   38                              0.626531                             0.285714 train_consistency_coral                 2                   128       0.00001                           0.5                    0.05                      840                          490               1.177280            1.172258                     0.002260               0.077846 instance_contrastive_teacher_anchor                3                  128      0.00001                 1.0                       0.5                      0.2                   0.2                     840                         490              3.227824           1.164593                 4.125457                0.002516
+MV-ACC-CIL discovery    R3         Day 4                 5      490                      5                    5                    0                    1.0                  1.0             0         5    0.0 0.644606 0.596347 0.708163       0.706122 Recording-Consensus-GPCC                      none graph_prototype_controlled_clustering                     5            kmeans_joint  {'kmeans_joint': {'score': 0.5373971109990044, 'silhouette': 0.23694799840450287, 'balance': 0.7853785593826392, 'stability': 1.0, 'cluster_size_cv': 0.2732713263602049}, 'kmeans_graph': {'score': 0.33171148865390615, 'silhouette': 0.1570315659046173, 'balance': 0.6982733084241366, 'stability': 0.42275786288615713, 'cluster_size_cv': 0.4321040027389853}, 'agglomerative_joint': {'score': 0.4874235723258808, 'silhouette': 0.22723063826560974, 'balance': 0.7528354775440287, 'stability': 0.8475185030839587, 'cluster_size_cv': 0.32831147020633894}}         0.236948                    0.341581                         0.618474              0.450875             0.065512                     1.0              0.273271              False symbol_gpcc_with_selective_recording_consensus                          35                           0.65                                   24                                   59                              0.742857                             0.428571 train_consistency_coral                 2                   128       0.00001                           0.5                    0.05                      840                          490               1.549977            1.547535                     0.001053               0.038309 instance_contrastive_teacher_anchor                3                  128      0.00001                 1.0                       0.5                      0.2                   0.2                     840                         490              3.569188           1.586921                 3.963993                0.001353
+Saved: results/stage34/lora_recording_consensus_cil_seed7_45360418/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.588095 0.588095      NaN           0.588095         0.000000  0.564296
+MV-ACC-CIL After R1    Day 2   eval_r1_30pct_15_seen            15                5                   5                 5           630     0.384127 0.419048 0.314286           0.419048         0.169048  0.341461
+MV-ACC-CIL After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.302381 0.301587 0.304762           0.400000         0.188095  0.250715
+MV-ACC-CIL After R3    Day 4   eval_r3_30pct_25_seen            25                5                   5                 5          1050     0.247619 0.185714 0.495238           0.319048         0.269048  0.189208
+Saved: results/stage34/lora_recording_consensus_cil_seed7_45360418/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1              5                                 5                    0         1.000000 0.536735 0.424959 0.366339       0.536735     0.384127 0.314286         0.169048
+MV-ACC-CIL    R2              5                                 5                    0         1.000000 0.540816 0.337637 0.285196       0.530612     0.302381 0.304762         0.188095
+MV-ACC-CIL    R3              5                                 5                    0         1.000000 0.708163 0.644606 0.596347       0.706122     0.247619 0.495238         0.269048
+Saved: results/stage34/lora_recording_consensus_cil_seed7_45360418/per_round_summary_results.csv
+
+========== Table 4: Shared-Discovery Baseline Details ==========
+     Method    Stage Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+     Ft-CNN  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.457143 0.457143      NaN           0.457143         0.000000  0.394380
+        LwF  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.457143 0.457143      NaN           0.457143         0.000000  0.394380
+       EEIL  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.457143 0.457143      NaN           0.457143         0.000000  0.394380
+      iCaRL  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.564286 0.564286      NaN           0.564286         0.000000  0.551374
+TPCIL-style  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.573810 0.573810      NaN           0.573810         0.000000  0.562453
+  DOI-style  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.564286 0.564286      NaN           0.564286         0.000000  0.551374
+     Ft-CNN After R1    Day 2   eval_r1_30pct_15_seen            15                5                   5                 5           630     0.347619 0.402381 0.238095           0.402381         0.054762  0.262103
+        LwF After R1    Day 2   eval_r1_30pct_15_seen            15                5                   5                 5           630     0.353968 0.514286 0.033333           0.514286        -0.057143  0.263178
+      iCaRL After R1    Day 2   eval_r1_30pct_15_seen            15                5                   5                 5           630     0.420635 0.500000 0.261905           0.500000         0.064286  0.419115
+       EEIL After R1    Day 2   eval_r1_30pct_15_seen            15                5                   5                 5           630     0.284127 0.319048 0.214286           0.319048         0.138095  0.234178
+TPCIL-style After R1    Day 2   eval_r1_30pct_15_seen            15                5                   5                 5           630     0.439683 0.550000 0.219048           0.550000         0.023810  0.434307
+  DOI-style After R1    Day 2   eval_r1_30pct_15_seen            15                5                   5                 5           630     0.395238 0.485714 0.214286           0.485714         0.078571  0.392800
+     Ft-CNN After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.252381 0.269841 0.200000           0.397619         0.059524  0.207390
+        LwF After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.275000 0.285714 0.242857           0.428571         0.028571  0.224148
+      iCaRL After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.371429 0.403175 0.276190           0.521429         0.042857  0.357457
+       EEIL After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.285714 0.276190 0.314286           0.409524         0.047619  0.236597
+TPCIL-style After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.383333 0.419048 0.276190           0.547619         0.026190  0.365552
+  DOI-style After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.351190 0.409524 0.176190           0.509524         0.054762  0.339954
+     Ft-CNN After R3    Day 4   eval_r3_30pct_25_seen            25                5                   5                 5          1050     0.190476 0.167857 0.280952           0.328571         0.128571  0.131967
+        LwF After R3    Day 4   eval_r3_30pct_25_seen            25                5                   5                 5          1050     0.206667 0.160714 0.390476           0.319048         0.138095  0.130227
+      iCaRL After R3    Day 4   eval_r3_30pct_25_seen            25                5                   5                 5          1050     0.300952 0.329762 0.185714           0.447619         0.116667  0.284467
+       EEIL After R3    Day 4   eval_r3_30pct_25_seen            25                5                   5                 5          1050     0.237143 0.223810 0.290476           0.409524         0.047619  0.184754
+TPCIL-style After R3    Day 4   eval_r3_30pct_25_seen            25                5                   5                 5          1050     0.284762 0.303571 0.209524           0.430952         0.142857  0.268206
+  DOI-style After R3    Day 4   eval_r3_30pct_25_seen            25                5                   5                 5          1050     0.298095 0.326190 0.185714           0.447619         0.116667  0.285740
+Saved: results/stage34/lora_recording_consensus_cil_seed7_45360418/shared_discovery_baseline_results.csv
+
+========== Table 5: Shared-Discovery Controlled Comparison ==========
+     Method   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Ft-CNN 0.347619       0.054762 0.252381       0.059524 0.190476       0.128571 0.263492        0.080952
+        LwF 0.353968      -0.057143 0.275000       0.028571 0.206667       0.138095 0.278545        0.036508
+      iCaRL 0.420635       0.064286 0.371429       0.042857 0.300952       0.116667 0.364339        0.074603
+       EEIL 0.284127       0.138095 0.285714       0.047619 0.237143       0.047619 0.268995        0.077778
+TPCIL-style 0.439683       0.023810 0.383333       0.026190 0.284762       0.142857 0.369259        0.064286
+  DOI-style 0.395238       0.078571 0.351190       0.054762 0.298095       0.116667 0.348175        0.083333
+ MV-ACC-CIL 0.384127       0.169048 0.302381       0.188095 0.247619       0.269048 0.311376        0.208730
+Saved: results/stage34/lora_recording_consensus_cil_seed7_45360418/shared_discovery_comparison_results.csv
+
+========== Table 6: End-to-End Open-Set Incremental Comparison ==========
+                    Method   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Deep-HDBSCAN + Ft-CNN 0.319048       0.100000 0.230952       0.111905 0.185714       0.114286 0.245238        0.108730
+        Deep-HDBSCAN + LwF 0.317460       0.100000 0.235714       0.100000 0.173333       0.166667 0.242169        0.122222
+      Deep-HDBSCAN + iCaRL 0.379365       0.042857 0.328571       0.021429 0.261905       0.102381 0.323280        0.055556
+       Deep-HDBSCAN + EEIL 0.304762       0.121429 0.229762       0.111905 0.200000       0.080952 0.244841        0.104762
+Deep-HDBSCAN + TPCIL-style 0.373016       0.028571 0.330952      -0.004762 0.254286       0.097619 0.319418        0.040476
+  Deep-HDBSCAN + DOI-style 0.379365       0.042857 0.329762       0.021429 0.256190       0.114286 0.321772        0.059524
+                MV-ACC-CIL 0.384127       0.169048 0.302381       0.188095 0.247619       0.269048 0.311376        0.208730
+Saved: results/stage34/lora_recording_consensus_cil_seed7_45360418/end_to_end_comparison_results.csv
+
+========== Table 7: Full End-to-End System Comparison (Main Table) ==========
+                    Method                                  Discovery Module                            Incremental Module   R1 Acc  R1 Forgetting   R2 Acc  R2 Forgetting   R3 Acc  R3 Forgetting  Avg Acc  Avg Forgetting
+     Deep-HDBSCAN + Ft-CNN                          Deep embedding + HDBSCAN                                   Fine-tuning 0.319048       0.100000 0.230952       0.111905 0.185714       0.114286 0.245238        0.108730
+        Deep-HDBSCAN + LwF                          Deep embedding + HDBSCAN                        Knowledge distillation 0.317460       0.100000 0.235714       0.100000 0.173333       0.166667 0.242169        0.122222
+      Deep-HDBSCAN + iCaRL                          Deep embedding + HDBSCAN        Exemplar replay + prototype classifier 0.379365       0.042857 0.328571       0.021429 0.261905       0.102381 0.323280        0.055556
+       Deep-HDBSCAN + EEIL                          Deep embedding + HDBSCAN                         Replay + distillation 0.304762       0.121429 0.229762       0.111905 0.200000       0.080952 0.244841        0.104762
+Deep-HDBSCAN + TPCIL-style                          Deep embedding + HDBSCAN            Topology-aware prototype smoothing 0.373016       0.028571 0.330952      -0.004762 0.254286       0.097619 0.319418        0.040476
+  Deep-HDBSCAN + DOI-style                          Deep embedding + HDBSCAN DOI-inspired prototype preservation/alignment 0.379365       0.042857 0.329762       0.021429 0.256190       0.114286 0.321772        0.059524
+                MV-ACC-CIL SupCon deep/RF graphs + adaptive fusion + HDBSCAN                 Network replay + distillation 0.384127       0.169048 0.302381       0.188095 0.247619       0.269048 0.311376        0.208730
+Saved: results/stage34/lora_recording_consensus_cil_seed7_45360418/end_to_end_system_comparison.csv
+Visualizations saved under: results/stage34/lora_recording_consensus_cil_seed7_45360418/visualizations
+Core comparison panels saved under: results/stage34/lora_recording_consensus_cil_seed7_45360418/visualizations/core_comparison
+Stage 34 报告：results/stage34/STAGE34_LORA_RECORDING_CONSENSUS_CIL_SEED7_REPORT_45360418.md
+Stage 34 LoRa recording-consensus seed7 完整 CIL 完成。

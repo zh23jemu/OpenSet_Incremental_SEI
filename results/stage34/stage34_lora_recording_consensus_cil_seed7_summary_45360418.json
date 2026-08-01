@@ -1,0 +1,53 @@
+{
+  "job_id": "45360418",
+  "save_dir": "results/stage34/lora_recording_consensus_cil_seed7_45360418",
+  "backend": "gpcc_recording_consensus",
+  "consensus_threshold": 0.65,
+  "r3": {
+    "overall": 0.2476190476190476,
+    "old": 0.1857142857142857,
+    "new": 0.4952380952380952,
+    "forgetting": 0.2690476190476191,
+    "macro_f1": 0.1892084885943394
+  },
+  "clustering": [
+    {
+      "round": "R1",
+      "clusters": 5,
+      "target": 5,
+      "ari": 0.3663393612594357,
+      "hungarian": 0.536734693877551,
+      "purity": 0.536734693877551,
+      "noise": 0
+    },
+    {
+      "round": "R2",
+      "clusters": 5,
+      "target": 5,
+      "ari": 0.2851959424004718,
+      "hungarian": 0.5306122448979592,
+      "purity": 0.5408163265306123,
+      "noise": 0
+    },
+    {
+      "round": "R3",
+      "clusters": 5,
+      "target": 5,
+      "ari": 0.5963474170569625,
+      "hungarian": 0.7061224489795919,
+      "purity": 0.7081632653061225,
+      "noise": 0
+    }
+  ],
+  "cluster_gate": true,
+  "baseline_seed7": {
+    "overall": 0.2543,
+    "old": 0.1929,
+    "new": 0.5
+  },
+  "delta_vs_stage27_seed7": {
+    "overall": -0.006680952380952426,
+    "old": -0.007185714285714295,
+    "new": -0.0047619047619048005
+  }
+}
