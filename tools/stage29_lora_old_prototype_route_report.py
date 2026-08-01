@@ -50,6 +50,7 @@ def main() -> int:
     parser.add_argument("--job-id", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--summary-json", required=True)
+    parser.add_argument("--stage-label", default="Stage 29 LoRa 旧类原型路由 seed7")
     args = parser.parse_args()
 
     save_dir = Path(args.root) / f"lora_old_prototype_route_seed7_{args.job_id}"
@@ -93,7 +94,7 @@ def main() -> int:
     verdict = "通过 seed7 门槛，可扩三种子。" if passed else "未通过 seed7 门槛，先归档诊断结果。"
 
     lines = [
-        "# Stage 29 LoRa 旧类原型路由 seed7 报告",
+        f"# {args.stage_label} 报告",
         "",
         f"- Slurm Job：`{args.job_id}`",
         "- 方法：Chirp + GPCC + cross-day + LoRa SSL + joint discovery-CIL，评估时对高旧类概率样本使用旧类 replay prototype 路由。",
