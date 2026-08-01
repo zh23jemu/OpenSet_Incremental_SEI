@@ -149,7 +149,7 @@
 - Stage 27 三种子 Job `45350982` 已干净完成：Chirp R3 Overall/Old/New/Forgetting 为 `0.2540±0.0101/0.1952±0.0124/0.4889±0.0045/0.2794±0.0235`，Recording-level Overall/New 为 `0.2933±0.0393/0.6444±0.0314`；seed7/13/31 均在约 `0.24-0.26`，通过三种子结构门槛，正式锁定为当前 LoRa 候选，但仍低于理想的高准确率目标。
 - Stage 30 Job `45353889` 已完成 LoRa Chirp 下保守旧类原型路由；R3 Overall/Old/New/Forgetting=`0.2562/0.1988/0.4857/0.2667`，相对 RADCIL Overall `-0.0019`、Old 不变、New `-0.0095`，按门槛归档为负消融，不扩三种子。报告为 `results/stage30/STAGE30_LORA_OLD_PROTOTYPE_ROUTE_CONSERVATIVE_SEED7_REPORT_45353889.md`。
 - Stage 31 公平 seed7 Job `45356380` 已完成，严格对齐 Stage 27 的 Chirp/GPCC/cross-day/LoRa SSL/joint refinement/replay 配置。类均衡 head 重校准结果为：0轮 `0.2505/0.1893/0.4952`，1轮 `0.2867/0.3345/0.0952`，3轮 `0.2943/0.3667/0.0048`（Overall/Old/New）；旧类提升伴随新类塌缩，归档为负消融。有效报告为 `results/stage31/STAGE31_LORA_BALANCED_HEAD_SEED7_REPORT_45356380.md`。
-- Stage 32 已新增新类 logits 保持蒸馏：在类均衡 head 重校准时冻结 backbone，并对当前轮新伪类保持重校准前 logits 分布；入口为 `slurm/stage32_lora_balanced_head_new_distill_seed7.sbatch`，报告器为 `tools/stage32_lora_balanced_head_new_distill_report.py`。Job `45357535` 当前排队，尚无实验结论。
+- Stage 32 Job `45357535` 已完成新类 logits 保持蒸馏验证：基线 R3 Overall/Old/New=`0.2590/0.2036/0.4810`；`e1_d0p5` 为 `0.2724/0.3250/0.0619`，`e1_d1p0` 为 `0.2895/0.3321/0.1190`。虽然 Overall/Old 提升，但 New 仍明显塌缩，未通过门槛，分类头校准方向正式停止。
 
 ## Recent Changes
 
@@ -319,6 +319,7 @@
 - Stage 19 初始表征教师蒸馏尚未跑真实 Slurm；只有 seed7 同时改善 Overall 且不牺牲 New，才考虑扩三种子，否则归档并停止 ADS-B 小机制搜索。
 - Stage 19 已证明初始表征教师蒸馏不是充分解；Stage 20 只做一次冻结 backbone 结构验证，若仍低于 `0.5057`，ADS-B 后端继续小改的收益预期很低，应转联合 discovery-CIL 训练或进入诚实局限收口。
 - Stage 20 已证明冻结 backbone 不是解法；当前剩余主风险是高质量 GPCC 伪标签如何在增量阶段联合塑造表征和分类头，下一步应设计一次联合 discovery-CIL self-training/episodic 训练验证，仍只先跑 seed7。
+- Stage 30/31/32 已证明 LoRa 后端路由、单纯类均衡 head、以及带新类 logits 保持的 head 校准都会出现 Old/New 互相挤压；下一步若继续攻 LoRa，应转向 discovery 表征/伪标签结构本身，例如按 recording/transmission 级做伪标签一致性训练，而不是继续调 head 后处理。
 - Stage 21 三种子均值已超过 `0.5057`，但仍需观察不同协议/数据集上的迁移性；当前可以把 ADS-B 联合 discovery-CIL 锁定为候选，不应声称 LoRa 低分已解决。
 - Stage 22 seed7 已完成：Job `45259034` 的 R3 Overall/Old/New/Forgetting 为 `0.1743/0.1036/0.4571/0.3643`，相对 LoRa 基线 `0.1667/0.0917/0.4667/0.4857` 提升 Overall、Old 和 Forgetting，New 基本保持；已新增三种子确认入口。
 - Stage 11 首次提交 Job `45068164` 暴露旧 worktree 默认路径问题，已修复；重提后仍需先确认作业启动，再判断聚类收益。

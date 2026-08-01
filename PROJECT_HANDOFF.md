@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-31
-- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 27 LoRa Chirp backbone 三种子已通过结构门槛，Stage 30/31 后端候选已归档为负消融，Stage 32 新类保持蒸馏正在排队验证
+- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 27 LoRa Chirp backbone 三种子已通过结构门槛，Stage 30/31/32 后端候选均已归档为负消融，LoRa 下一步应回到 discovery/伪标签结构
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -194,7 +194,7 @@ Strict loader 审计：
 29. Stage 27 三种子 Job `45350982` 已干净完成：R3 Overall/Old/New/Forgetting 为 `0.2540±0.0101/0.1952±0.0124/0.4889±0.0045/0.2794±0.0235`，Recording-level Overall/New 为 `0.2933±0.0393/0.6444±0.0314`；结果已通过 GitHub 结果分支 `stage27-results-45350982` 同步回本地。
 30. Stage 30 Job `45353889` 已完成保守旧类原型路由；R3 Overall/Old/New/Forgetting=`0.2562/0.1988/0.4857/0.2667`，未超过 Chirp RADCIL，对应结果已归档。
 31. Stage 31 公平 Job `45356380` 已完成类均衡分类头重校准；0/1/3 轮 R3 Overall/Old/New 分别为 `0.2505/0.1893/0.4952`、`0.2867/0.3345/0.0952`、`0.2943/0.3667/0.0048`，旧类提升伴随新类塌缩，归档为负消融。
-32. Stage 32 已新增当前轮新伪类 logits 保持蒸馏，Job `45357535` 正在排队；未有结果前不得扩三种子。
+32. Stage 32 Job `45357535` 已完成当前轮新伪类 logits 保持蒸馏验证；基线 R3 Overall/Old/New=`0.2590/0.2036/0.4810`，`e1_d0p5`=`0.2724/0.3250/0.0619`，`e1_d1p0`=`0.2895/0.3321/0.1190`。Overall/Old 提升但 New 明显塌缩，未通过门槛，不扩三种子。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
