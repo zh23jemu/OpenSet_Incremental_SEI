@@ -1,0 +1,39 @@
+{
+  "schema_version": "stage37_lora_recording_ssl_plan_v1",
+  "seed": 7,
+  "mode": "full_cil",
+  "fixed": {
+    "closedset_backbone": "lora_chirp",
+    "discovery_backend": "gpcc_recording_consensus",
+    "recording_consensus_threshold": 0.65,
+    "cross_day_repr_adaptation": true,
+    "lora_ssl_adaptation": true,
+    "registration_top_fraction": 0.8,
+    "strict_split": "10 known + 5x3 new classes; IQ_8-10 held-out"
+  },
+  "variants": [
+    {
+      "name": "baseline",
+      "recording_ssl": false,
+      "recording_weight": 0.0,
+      "instance_weight": 0.0
+    },
+    {
+      "name": "recording_ssl_rec0p50",
+      "recording_ssl": true,
+      "recording_weight": 0.5,
+      "instance_weight": 0.0
+    },
+    {
+      "name": "recording_ssl_mix0p50",
+      "recording_ssl": true,
+      "recording_weight": 0.5,
+      "instance_weight": 0.2
+    }
+  ],
+  "gate": {
+    "overall": "must exceed Stage36 baseline 0.2552",
+    "new": "should not fall below Stage36 baseline New 0.4810",
+    "old": "should not materially fall below Stage36 baseline Old 0.1988"
+  }
+}

@@ -344,3 +344,200 @@ def adapt_model_lora_ssl(
         "LoRa SSL Final Teacher": float(stats["Teacher"][-1]),
     }
     return CrossDayAdaptationResult(student, diagnostics)
+
+
+def _recording_contrastive_loss(
+    projected_features: torch.Tensor,
+    recording_ids: torch.Tensor,
+    temperature: float,
+) -> torch.Tensor:
+    """按 LoRa recording_id 计算 supervised contrastive 风格损失。
+
+    ``recording_id`` 是数据加载阶段可观测的 transmission/recording 元数据，
+    不是未知设备真值。相同 recording 内的多个 symbol 互为正样本，用来鼓励
+    物理同源片段在表征空间内靠近；不同 recording 作为 batch 内负样本，用来
+    防止全部 discovery 样本被压到同一个簇。
+    """
+
+    if projected_features.ndim != 2:
+        raise ValueError("projected_features must be a 2D tensor")
+    if recording_ids.ndim != 1 or recording_ids.shape[0] != projected_features.shape[0]:
+        raise ValueError("recording_ids must be a vector aligned with projected_features")
+
+    features = F.normalize(projected_features, dim=1)
+    logits = features @ features.T / float(max(temperature, 1e-6))
+    logits = logits - torch.max(logits, dim=1, keepdim=True)[0].detach()
+    self_mask = torch.eye(features.shape[0], device=features.device, dtype=torch.bool)
+    positive_mask = recording_ids.unsqueeze(0) == recording_ids.unsqueeze(1)
+    positive_mask = positive_mask & ~self_mask
+    if not torch.any(positive_mask):
+        return projected_features.sum() * 0.0
+
+    logits = logits.masked_fill(self_mask, -1e9)
+    log_prob = logits - torch.logsumexp(logits, dim=1, keepdim=True)
+    positive_count = positive_mask.sum(dim=1)
+    valid = positive_count > 0
+    if not torch.any(valid):
+        return projected_features.sum() * 0.0
+    mean_log_prob = (positive_mask * log_prob).sum(dim=1) / positive_count.clamp_min(1)
+    return -mean_log_prob[valid].mean()
+
+
+def adapt_model_lora_recording_ssl(
+    model: torch.nn.Module,
+    known_x: np.ndarray,
+    known_y: np.ndarray,
+    discovery_x: np.ndarray,
+    recording_ids: np.ndarray,
+    *,
+    device: str,
+    epochs: int = 3,
+    batch_size: int = 128,
+    lr: float = 1e-5,
+    ce_weight: float = 1.0,
+    recording_weight: float = 0.5,
+    instance_weight: float = 0.2,
+    teacher_weight: float = 0.2,
+    temperature: float = 0.2,
+    projection_hidden_dim: int = 128,
+    projection_dim: int = 64,
+    seed: int = 7,
+) -> CrossDayAdaptationResult:
+    """LoRa recording-level 自监督适配。
+
+    该适配器比 instance-level SSL 更强：它把同一 recording 的多个 symbol
+    当作正样本组，同时继续用 Day1 已知类 CE 保住旧类边界，并用 teacher
+    特征锚定限制漂移。整个过程只接收当前 discovery 的 IQ 与可观测
+    ``recording_id``，不读取未知类别标签，也不访问 held-out evaluation。
+    """
+
+    _set_seed(seed)
+    recording_ids = np.asarray(recording_ids)
+    if len(known_x) == 0 or len(discovery_x) == 0:
+        raise ValueError("LoRa recording SSL requires non-empty known and discovery data.")
+    if recording_ids.shape != (len(discovery_x),):
+        raise ValueError(
+            "recording_ids must align with discovery_x: "
+            f"{recording_ids.shape} vs ({len(discovery_x)},)"
+        )
+
+    student = copy.deepcopy(model).to(device)
+    teacher = copy.deepcopy(model).to(device).eval()
+    for parameter in teacher.parameters():
+        parameter.requires_grad_(False)
+
+    projector = SupConProjectionHead(
+        input_dim=int(getattr(student, "feat_dim", projection_hidden_dim)),
+        hidden_dim=int(projection_hidden_dim),
+        output_dim=int(projection_dim),
+    ).to(device)
+    known_loader = DataLoader(
+        TensorDataset(
+            torch.as_tensor(known_x, dtype=torch.float32),
+            torch.as_tensor(known_y, dtype=torch.long),
+        ),
+        batch_size=max(2, int(batch_size)),
+        shuffle=True,
+        drop_last=False,
+        num_workers=0,
+    )
+    discovery_loader = DataLoader(
+        TensorDataset(
+            torch.as_tensor(discovery_x, dtype=torch.float32),
+            torch.as_tensor(recording_ids.astype(np.int64, copy=False), dtype=torch.long),
+        ),
+        batch_size=max(2, int(batch_size)),
+        shuffle=True,
+        drop_last=True,
+        num_workers=0,
+    )
+    optimizer = torch.optim.AdamW(
+        list(student.parameters()) + list(projector.parameters()),
+        lr=float(lr),
+        weight_decay=1e-4,
+    )
+    stats = {"CE": [], "Recording": [], "Instance": [], "Teacher": [], "Total": []}
+
+    student.train()
+    projector.train()
+    for _ in range(max(1, int(epochs))):
+        known_iter = cycle(known_loader)
+        epoch_values = {key: [] for key in stats}
+        for xd, gid in discovery_loader:
+            xk, yk = next(known_iter)
+            xk = xk.to(device)
+            yk = yk.to(device)
+            xd = xd.to(device)
+            gid = gid.to(device)
+
+            known_feat, known_logits = student(augment_iq_batch(xk))
+            disc_view_one = augment_iq_batch(xd)
+            disc_view_two = augment_iq_batch(xd)
+            disc_feat_one, _ = student(disc_view_one)
+            disc_feat_two, _ = student(disc_view_two)
+            with torch.no_grad():
+                teacher_feat, _ = teacher(xd)
+
+            ce = F.cross_entropy(known_logits, yk)
+            projected_one = projector(disc_feat_one)
+            projected_two = projector(disc_feat_two)
+            doubled_gid = torch.cat([gid, gid], dim=0)
+            recording = _recording_contrastive_loss(
+                torch.cat([projected_one, projected_two], dim=0),
+                doubled_gid,
+                temperature,
+            )
+            instance = _instance_contrastive_loss(projected_one, projected_two, temperature)
+            teacher_anchor = (
+                F.mse_loss(F.normalize(disc_feat_one, dim=1), F.normalize(teacher_feat, dim=1))
+                + F.mse_loss(F.normalize(disc_feat_two, dim=1), F.normalize(teacher_feat, dim=1))
+            ) * 0.5
+            total = (
+                float(ce_weight) * ce
+                + float(recording_weight) * recording
+                + float(instance_weight) * instance
+                + float(teacher_weight) * teacher_anchor
+            )
+
+            optimizer.zero_grad()
+            total.backward()
+            torch.nn.utils.clip_grad_norm_(
+                list(student.parameters()) + list(projector.parameters()),
+                max_norm=5.0,
+            )
+            optimizer.step()
+
+            values = {
+                "CE": float(ce.detach().cpu()),
+                "Recording": float(recording.detach().cpu()),
+                "Instance": float(instance.detach().cpu()),
+                "Teacher": float(teacher_anchor.detach().cpu()),
+                "Total": float(total.detach().cpu()),
+            }
+            for key, value in values.items():
+                epoch_values[key].append(value)
+
+        for key in stats:
+            stats[key].append(float(np.mean(epoch_values[key])) if epoch_values[key] else float("nan"))
+
+    student.eval()
+    diagnostics = {
+        "LoRa Recording SSL Adapter": "recording_contrastive_teacher_anchor",
+        "LoRa Recording SSL Epochs": int(max(1, int(epochs))),
+        "LoRa Recording SSL Batch Size": int(batch_size),
+        "LoRa Recording SSL LR": float(lr),
+        "LoRa Recording SSL CE Weight": float(ce_weight),
+        "LoRa Recording SSL Recording Weight": float(recording_weight),
+        "LoRa Recording SSL Instance Weight": float(instance_weight),
+        "LoRa Recording SSL Teacher Weight": float(teacher_weight),
+        "LoRa Recording SSL Temperature": float(temperature),
+        "LoRa Recording SSL Known Samples": int(len(known_x)),
+        "LoRa Recording SSL Discovery Samples": int(len(discovery_x)),
+        "LoRa Recording SSL Unique Recordings": int(np.unique(recording_ids).size),
+        "LoRa Recording SSL Final Total": float(stats["Total"][-1]),
+        "LoRa Recording SSL Final CE": float(stats["CE"][-1]),
+        "LoRa Recording SSL Final Recording": float(stats["Recording"][-1]),
+        "LoRa Recording SSL Final Instance": float(stats["Instance"][-1]),
+        "LoRa Recording SSL Final Teacher": float(stats["Teacher"][-1]),
+    }
+    return CrossDayAdaptationResult(student, diagnostics)
