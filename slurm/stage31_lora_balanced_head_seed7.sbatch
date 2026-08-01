@@ -41,15 +41,14 @@ for recalibration_epochs in 0 1 3; do
     "${PYTHON_BIN}" experiments/exp_wisig_mvacc_cil_strict.py \
         --dataset_profile lora25 \
         --dataset_path datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz \
-        --dataset_seed 7 \
+        --seed 7 \
         --closedset_backbone lora_chirp \
         --discovery_backend gpcc \
-        --cross_day_adaptation \
-        --enable_lora_ssl \
+        --cross_day_repr_adaptation \
+        --lora_ssl_adaptation \
         --enable_joint_discovery_refinement \
         --radcil_balanced_head_recalibration_epochs "${recalibration_epochs}" \
-        --save_dir "${SAVE_DIR}" \
-        --device cuda
+        --save_dir "${SAVE_DIR}"
 done
 
 "${PYTHON_BIN}" tools/stage31_lora_balanced_head_report.py \
