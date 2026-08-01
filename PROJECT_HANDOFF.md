@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-31
-- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 27 LoRa Chirp backbone 三种子已通过结构门槛，Stage 30/31/32/34/35 后端候选均已归档为负消融；Stage 36 已完成双目标伪标签自训练实现，等待 seed7 Slurm
+- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 27 LoRa Chirp backbone 三种子已通过结构门槛，Stage 30/31/32/34/35/36 后端候选均已归档为负消融；LoRa 下一步转向物理域表征预训练或 recording-level 口径审查
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -199,7 +199,7 @@ Strict loader 审计：
 34. Stage 33 Job `45359726` 已完成：0.65/0.75/0.85 都满足固定 5 簇、无 noise 和相对普通 GPCC 的 discovery 门槛；0.65 mean ARI/Hungarian=`0.4118/0.5959`，相对 GPCC 提升 `+0.0881/+0.0571`。Stage 34 已锁定 0.65 跑完整 seed7 CIL。
 35. Stage 34 Job `45360418` 已完成：完整 CIL R3 Overall/Old/New/Forgetting=`0.2476/0.1857/0.4952/0.2690`，相对 Stage 27 Chirp seed7 的 `0.2543/0.1929/0.5000` 全部下降；recording-consensus 归档为“聚类正、端到端负”消融，不扩三种子。
 36. Stage 35 Job `45362637` 已完成：`top0p60`=`0.2486/0.1917/0.4762/0.2810`，`top0p80`=`0.2495/0.1929/0.4762/0.2786`；旧类略升但新类下降，归档为弱正/新类负消融，不扩三种子。
-37. Stage 36 已新增 `radcil_new_prototype_weight` 和 `radcil_pseudo_aug_consistency_weight`，固定 Stage 35 的 LoRa 配置比较 baseline、0.10/0.10、0.20/0.20 三变体；本地编译、计划生成和 CLI 校验通过，尚未提交 Slurm。
+37. Stage 36 Job `45434639` 已完成：baseline=`0.2552/0.1988/0.4810/0.2786`，`proto0p10_cons0p10`=`0.2181/0.1595/0.4524/0.3214`，`proto0p20_cons0p20`=`0.2257/0.1667/0.4619/0.3000`（R3 Overall/Old/New/Forgetting）。新增 prototype/一致性目标均低于 baseline，归档为负消融，不扩三种子。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
@@ -208,7 +208,7 @@ Strict loader 审计：
 9. Stage 33/34 已完成：recording-consensus 能改善聚类但不能改善端到端 CIL，已归档为负消融。
 10. Stage 34 已完成且未通过端到端门槛；停止 recording 阈值搜索，下一步改做伪标签注册、置信度和增量训练联合优化。
 11. Stage 35 已完成且未通过平衡门槛；下一步不再调注册比例，改做 Student 预测一致性 + cluster prototype 联合更新的双目标 self-training。
-12. Stage 36 已完成本地实现；提交推送后运行 seed7 三变体，若未同时改善 Overall 和 New，则停止 LoRa 相邻权重搜索。
+12. Stage 36 已完成且未通过；下一步停止 LoRa 相邻权重搜索，改做更大结构：LoRa-specific 物理域自监督预训练，或把 evaluation 口径切到更符合实际 transmission 的 recording-level。
 8. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
 ## 8. 变更与 Git 状态

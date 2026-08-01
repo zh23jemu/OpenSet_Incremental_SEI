@@ -479,7 +479,7 @@ Stage 34 已完成完整 seed7 CIL。虽然 recording-consensus=0.65 保持三�
 
 Stage 35 将高置信样本只用于新类 feature imprint 和 replay 注册，同时保留全量 discovery 样本参与当前轮带权训练。Job `45362637` 的最佳 `top0p80` R3 Overall/Old/New/Forgetting=`0.2495/0.1929/0.4762/0.2786`，相对 Stage 34 Overall `+0.0019`、Old `+0.0072`，但 New `-0.0190`。该结果说明静态注册 mask 能缓解旧类偏移，却没有解决新类伪标签吸收；不扩三种子、不继续搜索注册比例。下一阶段改为 Student 预测一致性和 cluster prototype 联合更新的双目标伪标签 self-training。
 
-Stage 36 已完成双目标伪标签自训练实现：在固定 LoRa Chirp、`gpcc_recording_consensus`、recording consensus `0.65`、cross-day、LoRa SSL、joint discovery-CIL 和 registration top0.80 配置下，加入当前轮伪类 prototype 归属损失，以及高置信伪标签样本增强前后 logits 一致性损失。计划比较 baseline、`0.10/0.10` 和 `0.20/0.20` 三变体；本地编译、CLI 和计划生成均通过，真实 Slurm 结果尚待验证。验收门槛为 Overall 超过 Stage 35 top0.80 的 `0.2495`、New 至少回到 `0.4952`、Old 不明显低于 `0.1929`。
+Stage 36 已完成双目标伪标签自训练验证。Job `45434639` 固定 LoRa Chirp、`gpcc_recording_consensus`、recording consensus `0.65`、cross-day、LoRa SSL、joint discovery-CIL 和 registration top0.80；baseline R3 Overall/Old/New/Forgetting=`0.2552/0.1988/0.4810/0.2786`，`proto0p10_cons0p10`=`0.2181/0.1595/0.4524/0.3214`，`proto0p20_cons0p20`=`0.2257/0.1667/0.4619/0.3000`。新增当前轮伪类 prototype 归属损失和高置信伪标签增强一致性损失均未通过门槛，说明静态伪标签自训练目标继续放大旧新类权衡；不扩三种子，不继续相邻权重搜索。LoRa 下一步若继续攻低分，应转向 LoRa-specific 物理域表征预训练，或重新审查 recording/transmission-level 评估口径。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 
