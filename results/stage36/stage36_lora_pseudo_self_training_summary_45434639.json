@@ -1,0 +1,34 @@
+{
+  "schema_version": "stage36_lora_pseudo_self_training_summary_v1",
+  "job_id": "45434639",
+  "baseline": {
+    "overall": 0.2495,
+    "old": 0.1929,
+    "new": 0.4762,
+    "forgetting": 0.2786
+  },
+  "records": {
+    "baseline": {
+      "overall": 0.2552380952380952,
+      "old": 0.1988095238095238,
+      "new": 0.4809523809523809,
+      "forgetting": 0.2785714285714286,
+      "macro_f1": 0.2015093714842839
+    },
+    "proto0p10_cons0p10": {
+      "overall": 0.2180952380952381,
+      "old": 0.1595238095238095,
+      "new": 0.4523809523809524,
+      "forgetting": 0.3214285714285714,
+      "macro_f1": 0.1664114935980921
+    },
+    "proto0p20_cons0p20": {
+      "overall": 0.2257142857142857,
+      "old": 0.1666666666666666,
+      "new": 0.4619047619047619,
+      "forgetting": 0.3,
+      "macro_f1": 0.1715728617816426
+    }
+  },
+  "passed_variants": []
+}
