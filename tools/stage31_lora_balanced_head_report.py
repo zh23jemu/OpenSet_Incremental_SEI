@@ -90,12 +90,13 @@ def main() -> None:
         "|---:|---:|---:|---:|---:|---:|---:|:---:|",
     ]
     for record in records:
+        display_record = dict(record)
+        display_record.setdefault("recording_overall", float("nan"))
+        display_record.setdefault("recording_new", float("nan"))
         lines.append(
             "| {epochs} | {overall:.4f} | {old:.4f} | {new:.4f} | {forgetting:.4f} | "
             "{recording_overall:.4f} | {recording_new:.4f} | {passed} |".format(
-                recording_overall=record.get("recording_overall", float("nan")),
-                recording_new=record.get("recording_new", float("nan")),
-                **record,
+                **display_record,
             )
         )
     lines.extend([

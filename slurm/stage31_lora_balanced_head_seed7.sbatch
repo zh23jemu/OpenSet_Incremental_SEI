@@ -47,6 +47,8 @@ for recalibration_epochs in 0 1 3; do
         --num_rounds 3 \
         --train_closedset --epochs 20 \
         --closedset_backbone lora_chirp \
+        --use_supcon --supcon_weight 0.1 \
+        --disable_cil_baselines --disable_visualization \
         --discovery_backend gpcc \
         --cross_day_repr_adaptation \
         --cross_day_repr_epochs 2 \
@@ -66,6 +68,8 @@ for recalibration_epochs in 0 1 3; do
         --enable_lora_recording_eval \
         --cil_head_warmup_epochs 2 \
         --cil_joint_epochs 8 \
+        --cil_replay_weight 3.0 \
+        --radcil_old_new_batch_ratio 2.0 \
         --radcil_balanced_head_recalibration_epochs "${recalibration_epochs}" \
         --save_dir "${SAVE_DIR}"
 done
