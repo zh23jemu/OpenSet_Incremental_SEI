@@ -1,0 +1,5 @@
+﻿Method,Stage,Eval Day,Eval Split,Seen Classes,True New Classes,Discovered Clusters,Enrolled Clusters,Eval Samples,Overall Acc,Old Acc,New Acc,Initial Known Acc,Forgetting Rate,Macro F1,Eval Granularity,Source Eval Samples,Recording Groups
+MV-ACC-CIL + old-prototype-route,Initial,Day 1,day1_eval_initial_recording_majority,10,-,-,-,30,0.6333333333333333,0.6333333333333333,,0.6333333333333333,0.0,0.5866666666666667,recording_majority_vote,420,30
+MV-ACC-CIL + old-prototype-route,After R1,Day 2,eval_r1_recording_majority_15_seen,15,5,5,5,45,0.4666666666666667,0.5,0.4,0.5,0.1333333333333333,0.37992266992266993,recording_majority_vote,630,45
+MV-ACC-CIL + old-prototype-route,After R2,Day 3,eval_r2_recording_majority_20_seen,20,5,5,5,60,0.38333333333333336,0.37777777777777777,0.4,0.4666666666666667,0.16666666666666663,0.2758333333333333,recording_majority_vote,840,60
+MV-ACC-CIL + old-prototype-route,After R3,Day 4,eval_r3_recording_majority_25_seen,25,5,5,5,75,0.26666666666666666,0.18333333333333332,0.6,0.36666666666666664,0.26666666666666666,0.15518614718614718,recording_majority_vote,1050,75
