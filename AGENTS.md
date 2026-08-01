@@ -147,6 +147,9 @@
 - Stage 24 已完成 LoRa recording-level GPCC 三种子验证：seed7 有局部正信号，但三种子 Job `45308393` R3 Overall/Old/New/Forgetting 为 `0.1483±0.0077/0.1004±0.0175/0.3397±0.0428/0.3397±0.0379`，Overall/New 低于基线，归档为结构性负消融。
 - Stage 27 seed7 已完成 LoRa-specific Chirp backbone 对比：Job `45350081` 在同一 strict split、GPCC、cross-day、LoRa SSL 和联合 discovery-CIL 后端下，将 R3 Overall/Old/New/Forgetting 从 ResNet1D 的 `0.1781/0.1071/0.4619/0.3548` 提升到 `0.2543/0.1929/0.5000/0.2690`，Recording-level Overall 为 `0.2800`；通过 seed7 结构门槛，已新增三种子确认入口，尚不能宣称 LoRa 已稳定解决。
 - Stage 27 三种子 Job `45350982` 已干净完成：Chirp R3 Overall/Old/New/Forgetting 为 `0.2540±0.0101/0.1952±0.0124/0.4889±0.0045/0.2794±0.0235`，Recording-level Overall/New 为 `0.2933±0.0393/0.6444±0.0314`；seed7/13/31 均在约 `0.24-0.26`，通过三种子结构门槛，正式锁定为当前 LoRa 候选，但仍低于理想的高准确率目标。
+- Stage 30 Job `45353889` 已完成 LoRa Chirp 下保守旧类原型路由；R3 Overall/Old/New/Forgetting=`0.2562/0.1988/0.4857/0.2667`，相对 RADCIL Overall `-0.0019`、Old 不变、New `-0.0095`，按门槛归档为负消融，不扩三种子。报告为 `results/stage30/STAGE30_LORA_OLD_PROTOTYPE_ROUTE_CONSERVATIVE_SEED7_REPORT_45353889.md`。
+- Stage 31 公平 seed7 Job `45356380` 已完成，严格对齐 Stage 27 的 Chirp/GPCC/cross-day/LoRa SSL/joint refinement/replay 配置。类均衡 head 重校准结果为：0轮 `0.2505/0.1893/0.4952`，1轮 `0.2867/0.3345/0.0952`，3轮 `0.2943/0.3667/0.0048`（Overall/Old/New）；旧类提升伴随新类塌缩，归档为负消融。有效报告为 `results/stage31/STAGE31_LORA_BALANCED_HEAD_SEED7_REPORT_45356380.md`。
+- Stage 32 已新增新类 logits 保持蒸馏：在类均衡 head 重校准时冻结 backbone，并对当前轮新伪类保持重校准前 logits 分布；入口为 `slurm/stage32_lora_balanced_head_new_distill_seed7.sbatch`，报告器为 `tools/stage32_lora_balanced_head_new_distill_report.py`。Job `45357535` 当前排队，尚无实验结论。
 
 ## Recent Changes
 

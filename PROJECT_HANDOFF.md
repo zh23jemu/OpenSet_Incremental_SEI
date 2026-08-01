@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-31
-- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 27 LoRa Chirp backbone 三种子已通过结构门槛，当前 LoRa 仍需继续提升绝对准确率
+- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 27 LoRa Chirp backbone 三种子已通过结构门槛，Stage 30/31 后端候选已归档为负消融，Stage 32 新类保持蒸馏正在排队验证
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -192,6 +192,9 @@ Strict loader 审计：
 27. Stage 27 seed7 Job `45350081` 完成 LoRa-specific Chirp backbone 对比：ResNet1D 的 R3 Overall/Old/New/Forgetting 为 `0.1781/0.1071/0.4619/0.3548`，Chirp 为 `0.2543/0.1929/0.5000/0.2690`，Recording-level Overall 为 `0.2800`；已通过 seed7 结构门槛。
 28. Stage 27 结果已通过 GitHub 代理同步回本地，结果分支为 `stage27-results-45350081`；新增三种子入口 `slurm/stage27_lora_backbone_multiseed.sbatch` 和报告器 `tools/stage27_lora_backbone_multiseed_report.py`，尚未提交 Slurm。
 29. Stage 27 三种子 Job `45350982` 已干净完成：R3 Overall/Old/New/Forgetting 为 `0.2540±0.0101/0.1952±0.0124/0.4889±0.0045/0.2794±0.0235`，Recording-level Overall/New 为 `0.2933±0.0393/0.6444±0.0314`；结果已通过 GitHub 结果分支 `stage27-results-45350982` 同步回本地。
+30. Stage 30 Job `45353889` 已完成保守旧类原型路由；R3 Overall/Old/New/Forgetting=`0.2562/0.1988/0.4857/0.2667`，未超过 Chirp RADCIL，对应结果已归档。
+31. Stage 31 公平 Job `45356380` 已完成类均衡分类头重校准；0/1/3 轮 R3 Overall/Old/New 分别为 `0.2505/0.1893/0.4952`、`0.2867/0.3345/0.0952`、`0.2943/0.3667/0.0048`，旧类提升伴随新类塌缩，归档为负消融。
+32. Stage 32 已新增当前轮新伪类 logits 保持蒸馏，Job `45357535` 正在排队；未有结果前不得扩三种子。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
