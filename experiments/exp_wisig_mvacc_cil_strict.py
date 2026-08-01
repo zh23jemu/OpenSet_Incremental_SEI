@@ -2128,6 +2128,62 @@ def _select_pseudo_registration_mask(pseudo_y, confidence, top_fraction, min_per
     return keep
 
 
+def _build_current_pseudo_prototypes(student, current_x, current_y, device):
+    """用当前轮开始时的 Student 特征建立固定伪类原型。
+
+    原型只由当前 discovery 样本和伪标签构成，不读取未知真实标签；训练中
+    用它约束 Student 的新类角度归属，避免分类头只靠交叉熵记住局部伪标签。
+    """
+    current_x = np.asarray(current_x, dtype=np.float32)
+    current_y = np.asarray(current_y, dtype=np.int64)
+    if current_x.size == 0:
+        return None, None
+    loader = DataLoader(
+        TensorDataset(torch.as_tensor(current_x, dtype=torch.float32)),
+        batch_size=256,
+        shuffle=False,
+        num_workers=0,
+    )
+    features = []
+    student.eval()
+    with torch.no_grad():
+        for (batch_x,) in loader:
+            feat, _ = student(batch_x.to(device))
+            features.append(feat)
+    all_features = torch.cat(features, dim=0)
+    prototype_count = int(student.classifier.out_features)
+    prototypes = torch.zeros(
+        (prototype_count, all_features.shape[1]),
+        dtype=all_features.dtype,
+        device=device,
+    )
+    valid = torch.zeros(prototype_count, dtype=torch.bool, device=device)
+    labels_device = torch.as_tensor(current_y, dtype=torch.long, device=device)
+    for class_id in sorted(np.unique(current_y).tolist()):
+        if 0 <= int(class_id) < prototype_count:
+            mask = labels_device == int(class_id)
+            if torch.any(mask):
+                prototypes[int(class_id)] = F.normalize(
+                    all_features[mask].mean(dim=0), dim=0
+                )
+                valid[int(class_id)] = True
+    return prototypes, valid
+
+
+def _prototype_assignment_loss(features, labels, prototypes, valid, temperature=0.2):
+    """计算当前轮样本到固定伪类原型的角度分类损失。"""
+    if prototypes is None or valid is None or not torch.any(valid):
+        return features.sum() * 0.0
+    normalized = F.normalize(features, dim=1)
+    logits = normalized @ F.normalize(prototypes, dim=1).T
+    logits = logits / max(float(temperature), 1e-4)
+    logits = logits.masked_fill(~valid.unsqueeze(0), -1e4)
+    usable = valid[labels.clamp(min=0, max=valid.numel() - 1)]
+    if not torch.any(usable):
+        return logits.sum() * 0.0
+    return F.cross_entropy(logits[usable], labels[usable])
+
+
 def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, memory_x, memory_y, old_out_dim, args, device):
     """Head warm-up followed by last-block backbone adaptation on raw IQ samples.
 
@@ -2160,6 +2216,18 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
     teacher = copy.deepcopy(teacher).to(device).eval()
     for p in teacher.parameters():
         p.requires_grad_(False)
+    current_prototypes = None
+    current_prototype_valid = None
+    if (
+        float(args.radcil_new_prototype_weight) > 0
+        or float(args.radcil_pseudo_aug_consistency_weight) > 0
+    ):
+        current_prototypes, current_prototype_valid = _build_current_pseudo_prototypes(
+            student,
+            current_x,
+            current_y,
+            device,
+        )
 
     # 类中心锚定使用本轮训练开始前的 Teacher 和旧类 replay 构建固定原型。
     # 与逐样本特征蒸馏不同，它只约束旧类的类级中心，不要求 Student 复制每个
@@ -2309,6 +2377,29 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                     )
                 else:
                     domain_alignment = logits_m.sum() * 0.0
+                prototype_assignment = _prototype_assignment_loss(
+                    feat[:len(xc)],
+                    yc,
+                    current_prototypes,
+                    current_prototype_valid,
+                    temperature=float(args.cil_temperature),
+                )
+                if float(args.radcil_pseudo_aug_consistency_weight) > 0:
+                    confident = wc >= float(args.cil_supcon_threshold)
+                    if torch.any(confident):
+                        _, augmented_logits = student(augment_iq_batch(xc[confident]))
+                        pseudo_aug_consistency = (
+                            F.kl_div(
+                                F.log_softmax(logits_c[confident] / float(args.cil_temperature), dim=1),
+                                F.softmax(augmented_logits / float(args.cil_temperature), dim=1),
+                                reduction="batchmean",
+                            )
+                            * (float(args.cil_temperature) ** 2)
+                        )
+                    else:
+                        pseudo_aug_consistency = logits_c.sum() * 0.0
+                else:
+                    pseudo_aug_consistency = logits_c.sum() * 0.0
                 high = wc >= float(args.cil_supcon_threshold)
                 feat_con = torch.cat([feat[:len(xc)][high], feat[len(xc):]], dim=0)
                 y_con = torch.cat([yc[high], ym], dim=0)
@@ -2331,6 +2422,8 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                     + float(args.radcil_prototype_anchor_weight) * prototype_anchor
                     + float(args.radcil_aug_consistency_weight) * view_consistency
                     + float(args.radcil_domain_alignment_weight) * domain_alignment
+                    + float(args.radcil_new_prototype_weight) * prototype_assignment
+                    + float(args.radcil_pseudo_aug_consistency_weight) * pseudo_aug_consistency
                     + float(args.cil_supcon_weight) * con
                     + float(args.radcil_metric_weight) * metric_loss
                 )
@@ -3955,6 +4048,18 @@ def main():
         type=int,
         default=1,
         help="每个伪类至少保留多少样本用于 imprint/replay 注册。",
+    )
+    parser.add_argument(
+        "--radcil_new_prototype_weight",
+        type=float,
+        default=0.0,
+        help="当前轮伪类原型归属损失权重；0保持历史训练路径。",
+    )
+    parser.add_argument(
+        "--radcil_pseudo_aug_consistency_weight",
+        type=float,
+        default=0.0,
+        help="当前轮高置信伪标签样本的增强前后logits一致性权重；0保持历史训练路径。",
     )
 
 

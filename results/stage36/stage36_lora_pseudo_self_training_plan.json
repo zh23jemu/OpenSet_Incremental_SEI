@@ -1,0 +1,37 @@
+{
+  "schema_version": "stage36_lora_pseudo_self_training_plan_v1",
+  "seed": 7,
+  "mode": "full_cil",
+  "fixed": {
+    "discovery_backend": "gpcc_recording_consensus",
+    "recording_consensus_threshold": 0.65,
+    "closedset_backbone": "lora_chirp",
+    "cross_day_repr_adaptation": true,
+    "lora_ssl_adaptation": true,
+    "registration_top_fraction": 0.8,
+    "strict_split": "10 known + 5x3 new classes; IQ_8-10 held-out"
+  },
+  "variants": [
+    {
+      "name": "baseline",
+      "new_prototype_weight": 0.0,
+      "pseudo_aug_consistency_weight": 0.0
+    },
+    {
+      "name": "proto0p10_cons0p10",
+      "new_prototype_weight": 0.1,
+      "pseudo_aug_consistency_weight": 0.1
+    },
+    {
+      "name": "proto0p20_cons0p20",
+      "new_prototype_weight": 0.2,
+      "pseudo_aug_consistency_weight": 0.2
+    }
+  ],
+  "hypothesis": "固定当前轮伪类 prototype 可稳定伪标签归属，增强一致性可减少 LoRa 跨天扰动下的新类决策抖动；目标是提高 New 和 Overall，同时不让 Old 明显低于 Stage35 top0.80。",
+  "gate": {
+    "overall": "must exceed Stage35 top0.80 Overall 0.2495",
+    "new": "must recover to at least Stage34 New 0.4952",
+    "old": "must not decrease materially versus Stage35 top0.80 Old 0.1929"
+  }
+}
