@@ -45,11 +45,27 @@ for recalibration_epochs in 0 1 3; do
         --initial_known_classes 10 \
         --round_size 5 \
         --num_rounds 3 \
+        --train_closedset --epochs 20 \
         --closedset_backbone lora_chirp \
         --discovery_backend gpcc \
         --cross_day_repr_adaptation \
+        --cross_day_repr_epochs 2 \
+        --cross_day_repr_batch_size 128 \
+        --cross_day_repr_lr 1e-5 \
+        --cross_day_repr_consistency_weight 0.5 \
+        --cross_day_repr_coral_weight 0.05 \
         --lora_ssl_adaptation \
+        --lora_ssl_epochs 3 \
+        --lora_ssl_batch_size 128 \
+        --lora_ssl_lr 1e-5 \
+        --lora_ssl_ce_weight 1.0 \
+        --lora_ssl_instance_weight 0.5 \
+        --lora_ssl_teacher_weight 0.2 \
+        --lora_ssl_temperature 0.2 \
         --enable_joint_discovery_refinement \
+        --enable_lora_recording_eval \
+        --cil_head_warmup_epochs 2 \
+        --cil_joint_epochs 8 \
         --radcil_balanced_head_recalibration_epochs "${recalibration_epochs}" \
         --save_dir "${SAVE_DIR}"
 done
