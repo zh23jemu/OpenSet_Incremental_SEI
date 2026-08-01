@@ -42,6 +42,9 @@ for recalibration_epochs in 0 1 3; do
         --dataset_profile lora25 \
         --dataset_path datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz \
         --seed 7 \
+        --initial_known_classes 10 \
+        --round_size 5 \
+        --num_rounds 3 \
         --closedset_backbone lora_chirp \
         --discovery_backend gpcc \
         --cross_day_repr_adaptation \
