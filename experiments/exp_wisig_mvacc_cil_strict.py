@@ -2320,6 +2320,8 @@ def _recalibrate_balanced_classifier_head(
     epochs,
     batch_size,
     device,
+    old_out_dim=0,
+    new_distill_weight=0.0,
 ):
     """冻结 backbone，使用等类采样重新校准增量分类头。
 
@@ -2336,6 +2338,8 @@ def _recalibrate_balanced_classifier_head(
         epochs: 重校准轮数；0 表示完全关闭。
         batch_size: 分类头优化 batch size。
         device: 训练设备。
+        old_out_dim: 当前轮训练前已有的旧类输出维度，用来区分当前轮新伪类。
+        new_distill_weight: 对当前轮新伪类样本保留重校准前 logits 分布的权重。
     """
     epochs = int(epochs)
     if epochs <= 0 or len(current_x) == 0 or len(memory_x) == 0:
@@ -2394,6 +2398,14 @@ def _recalibrate_balanced_classifier_head(
     features = torch.cat(feature_batches, dim=0).to(device)
     labels = torch.as_tensor(all_y[selected], dtype=torch.long, device=device)
     weights = torch.as_tensor(all_w[selected], dtype=torch.float32, device=device)
+    selected_current = selected >= len(memory_y)
+    selected_new = selected_current & (all_y[selected] >= int(old_out_dim))
+    selected_new = torch.as_tensor(selected_new.astype(np.bool_), device=device)
+    with torch.no_grad():
+        # 重校准前的分类头作为“新类保持”教师。该教师来自同一轮训练结束后的
+        # Student，不引入额外模型，也不读取 eval 标签；只在当前轮新伪类样本上
+        # 约束 logits 分布，避免类均衡 CE 把新类整体吸回旧类。
+        teacher_logits = student.classifier(features).detach()
 
     # 只打开 classifier 参数；backbone 梯度关闭，保证该实验只检验分类头先验校准。
     for parameter in student.parameters():
@@ -2402,14 +2414,22 @@ def _recalibrate_balanced_classifier_head(
     student.classifier.bias.requires_grad_(True)
     optimizer = torch.optim.AdamW(student.classifier.parameters(), lr=1e-3, weight_decay=1e-4)
     loader = DataLoader(
-        TensorDataset(features, labels, weights),
+        TensorDataset(features, labels, weights, teacher_logits, selected_new),
         batch_size=max(1, int(batch_size)), shuffle=True, num_workers=0,
     )
     student.train()
     for _ in range(epochs):
-        for xb, yb, wb in loader:
+        for xb, yb, wb, tb, nb in loader:
             logits = student.classifier(xb)
             loss = (F.cross_entropy(logits, yb, reduction="none") * wb).sum() / (wb.sum() + 1e-8)
+            if float(new_distill_weight) > 0 and torch.any(nb):
+                temperature = 2.0
+                distill = F.kl_div(
+                    F.log_softmax(logits[nb] / temperature, dim=1),
+                    F.softmax(tb[nb] / temperature, dim=1),
+                    reduction="batchmean",
+                ) * (temperature * temperature)
+                loss = loss + float(new_distill_weight) * distill
             optimizer.zero_grad()
             loss.backward()
             torch.nn.utils.clip_grad_norm_(student.classifier.parameters(), max_norm=5.0)
@@ -3821,6 +3841,12 @@ def main():
         default=0,
         help="冻结backbone后按类均衡重校准RADCIL分类头的轮数；0保持历史行为。",
     )
+    parser.add_argument(
+        "--radcil_balanced_head_new_distill_weight",
+        type=float,
+        default=0.0,
+        help="类均衡分类头重校准时对当前轮新类logits保持教师约束的权重；0保持Stage31行为。",
+    )
     parser.add_argument("--radcil_masked_kd", action="store_true", help="Apply KD only on replay samples whose labels are inside the teacher output range.")
     parser.add_argument("--radcil_kd_schedule", choices=["constant", "cosine", "linear_decay"], default="constant", help="Schedule for the end-to-end CIL KD weight inside each training stage.")
     parser.add_argument("--radcil_feature_distill_weight", type=float, default=0.0, help="Replay-feature distillation weight for constraining old-class backbone drift.")
@@ -4591,6 +4617,8 @@ def main():
                 args.radcil_balanced_head_recalibration_epochs,
                 args.incremental_batch_size,
                 device,
+                old_out_dim=old_out,
+                new_distill_weight=args.radcil_balanced_head_new_distill_weight,
             )
         if args.enable_joint_discovery_refinement:
             # 第一轮 CIL 后，重新观察当前 Student 的类别结构。二次发现只读取
@@ -4644,6 +4672,8 @@ def main():
                     args.radcil_balanced_head_recalibration_epochs,
                     args.incremental_batch_size,
                     device,
+                    old_out_dim=old_out,
+                    new_distill_weight=args.radcil_balanced_head_new_distill_weight,
                 )
         memory_labels = refined_pseudo_y if args.enable_joint_discovery_refinement else pseudo_y
         memory_x, memory_y = _update_iq_memory(
