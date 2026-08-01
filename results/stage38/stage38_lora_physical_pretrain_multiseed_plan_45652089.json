@@ -1,0 +1,27 @@
+{
+  "schema_version": "stage38_lora_physical_pretrain_plan_v1",
+  "seed": 7,
+  "candidate": "physical_descriptor_pretrain",
+  "fixed_protocol": "Day1 IQ_1-6 train, IQ_7 checkpoint selection, IQ_8-10 held-out eval only",
+  "physical_targets": [
+    "phase_step_mean",
+    "phase_step_std",
+    "amplitude_mean",
+    "amplitude_std",
+    "spectrum_centroid",
+    "spectrum_bandwidth"
+  ],
+  "cil_fixed": {
+    "closedset_backbone": "lora_chirp",
+    "discovery_backend": "gpcc_recording_consensus",
+    "recording_consensus_threshold": 0.65,
+    "cross_day_repr_adaptation": true,
+    "lora_ssl_adaptation": true,
+    "registration_top_fraction": 0.8
+  },
+  "gate": {
+    "overall": "must exceed Stage37 baseline 0.2552",
+    "new": "should not drop below 0.4810",
+    "old": "should not materially drop below 0.1988"
+  }
+}

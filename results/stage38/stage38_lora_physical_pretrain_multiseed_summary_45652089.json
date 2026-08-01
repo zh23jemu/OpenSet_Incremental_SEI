@@ -1,0 +1,87 @@
+{
+  "schema_version": "stage38_lora_physical_pretrain_multiseed_summary_v1",
+  "job_id": "45652089",
+  "seeds": [
+    7,
+    13,
+    31
+  ],
+  "records": [
+    {
+      "seed": 7,
+      "checkpoint_epoch": 20,
+      "checkpoint_val_acc": 0.6,
+      "overall": 0.28095238095238095,
+      "old": 0.21904761904761905,
+      "new": 0.5285714285714286,
+      "forgetting": 0.2523809523809524,
+      "macro_f1": 0.2257177762428062,
+      "recording_overall": 0.29333333333333333,
+      "recording_new": 0.6
+    },
+    {
+      "seed": 13,
+      "checkpoint_epoch": 19,
+      "checkpoint_val_acc": 0.6,
+      "overall": 0.2219047619047619,
+      "old": 0.15,
+      "new": 0.5095238095238095,
+      "forgetting": 0.2571428571428571,
+      "macro_f1": 0.16414578592247758,
+      "recording_overall": 0.24,
+      "recording_new": 0.6666666666666666
+    },
+    {
+      "seed": 31,
+      "checkpoint_epoch": 16,
+      "checkpoint_val_acc": 0.5357142857142857,
+      "overall": 0.24952380952380954,
+      "old": 0.20357142857142857,
+      "new": 0.43333333333333335,
+      "forgetting": 0.21428571428571436,
+      "macro_f1": 0.20204051265532358,
+      "recording_overall": 0.24,
+      "recording_new": 0.5333333333333333
+    }
+  ],
+  "mean_std": {
+    "overall": {
+      "mean": 0.2507936507936508,
+      "std": 0.02412280665588936
+    },
+    "old": {
+      "mean": 0.19087301587301586,
+      "std": 0.029584125110501274
+    },
+    "new": {
+      "mean": 0.49047619047619045,
+      "std": 0.04114755998989117
+    },
+    "forgetting": {
+      "mean": 0.2412698412698413,
+      "std": 0.019179438053324675
+    },
+    "macro_f1": {
+      "mean": 0.1973013582735358,
+      "std": 0.025359050799697715
+    },
+    "recording_overall": {
+      "mean": 0.2577777777777778,
+      "std": 0.025141574442188362
+    },
+    "recording_new": {
+      "mean": 0.6,
+      "std": 0.05443310539518172
+    }
+  },
+  "baseline": {
+    "overall": 0.254,
+    "old": 0.1952,
+    "new": 0.4889,
+    "forgetting": 0.2794,
+    "recording_overall": 0.2933,
+    "recording_new": 0.6444
+  },
+  "passed": false,
+  "verdict": "未通过三种子门槛，仅保留为 seed7 正信号或负消融。"
+}
