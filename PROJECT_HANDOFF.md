@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-31
-- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 27 LoRa Chirp backbone 三种子已通过结构门槛，Stage 30/31/32 后端候选均已归档为负消融；当前执行 Stage 33 LoRa recording-consensus discovery-only，下一步仍回到 discovery/伪标签结构
+- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 27 LoRa Chirp backbone 三种子已通过结构门槛，Stage 30/31/32 后端候选均已归档为负消融；Stage 33 discovery-only 已通过，当前执行 Stage 34 LoRa recording-consensus=0.65 完整 seed7 CIL
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -196,12 +196,14 @@ Strict loader 审计：
 31. Stage 31 公平 Job `45356380` 已完成类均衡分类头重校准；0/1/3 轮 R3 Overall/Old/New 分别为 `0.2505/0.1893/0.4952`、`0.2867/0.3345/0.0952`、`0.2943/0.3667/0.0048`，旧类提升伴随新类塌缩，归档为负消融。
 32. Stage 32 Job `45357535` 已完成当前轮新伪类 logits 保持蒸馏验证；基线 R3 Overall/Old/New=`0.2590/0.2036/0.4810`，`e1_d0p5`=`0.2724/0.3250/0.0619`，`e1_d1p0`=`0.2895/0.3321/0.1190`。Overall/Old 提升但 New 明显塌缩，未通过门槛，不扩三种子。
 33. Stage 33 已新增 `gpcc_recording_consensus`：先做 symbol 级 GPCC，再仅对组内多数比例达到阈值的 recording 做统一标签；已完成本地语法、CLI 和合成 smoke，待提交 seed7 discovery-only 矩阵比较普通 GPCC 与阈值 0.65/0.75/0.85。
+34. Stage 33 Job `45359726` 已完成：0.65/0.75/0.85 都满足固定 5 簇、无 noise 和相对普通 GPCC 的 discovery 门槛；0.65 mean ARI/Hungarian=`0.4118/0.5959`，相对 GPCC 提升 `+0.0881/+0.0571`。Stage 34 已锁定 0.65 跑完整 seed7 CIL。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
 7. Stage 22/23/24 LoRa 均未过采用门槛；Stage 27 seed7 的 Chirp backbone 出现明显正信号，但客户口径仍只能说“正在做三种子稳定性验证”，不能把单 seed 结果包装成已根本解决。
 8. Stage 27 三种子已稳定通过，Chirp backbone 锁定为当前 LoRa 正式候选。下一步不回到旧的 bias/BN/prototype 小调参，而是围绕发现纯度、跨天特征和新旧类联合训练继续做结构诊断；目标是把约 `25.4%` 的 Overall 继续提升，同时保持 Old/New 不塌缩。
 9. Stage 33 只验证聚类，不直接跑 CIL；若没有相对普通 GPCC 的稳定提升，就归档为负消融，转向联合 discovery-CIL self-training。
+10. Stage 34 只跑阈值 0.65 的完整 seed7 CIL；若聚类提升没有传递到 Overall/Old/New，则停止 recording 阈值搜索。
 8. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
 ## 8. 变更与 Git 状态
