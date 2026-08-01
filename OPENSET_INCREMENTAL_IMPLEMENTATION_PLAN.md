@@ -474,6 +474,8 @@ Stage 23 转向 LoRa 输入表征长度而不是继续后端小机制。当前�
 Stage 24 不继续调 old-logit、BN、prototype、late-fusion、权重阈值或长窗参数，转向 LoRa 数据结构本身：同一个 `recording_id` 来自同一次物理 transmission 的多个 aligned symbol，属于可观测元数据，不是未知设备标签。新增 `gpcc_recording` 先把同一 recording 的 deep/RF/graph 特征平均成组级原型，在组级运行 GPCC 固定 5 簇，再把组标签和置信度回填给每个 symbol。seed7 Job `45307122` 的 R3 Overall/Old/New/Forgetting 为 `0.1800/0.1167/0.4333/0.3429`，说明 recording 聚合确实能改善 Old 和遗忘；但 no-refine Job `45308095` 只救回 New、Overall/Old 下降，三种子 Job `45308393` 的 R3 Overall 均值降至 `0.1483`、New 均值降至 `0.3397`。因此该结构不能作为 LoRa 正式方案，保留为根因证据：LoRa 的低分不是单纯单段 symbol 噪声或聚类簇数问题，而是跨天表征、伪标签吸收和旧新类边界共同失稳。
 
 Stage 33 针对 Stage 24 “整段 recording 平均可能压掉 symbol 细节”的风险，新增 `gpcc_recording_consensus`：先在 symbol 级运行 GPCC，再按可观测 `recording_id` 检查组内多数簇比例，仅对达到阈值的 recording 做统一标签，低一致组保留原始 symbol 标签。Job `45359726` 的 0.65/0.75/0.85 三个变体均满足固定 5 簇、无 noise 和相对普通 GPCC 的 discovery 门槛；0.65 mean ARI/Hungarian=`0.4118/0.5959`，相对普通 GPCC 分别提升 `+0.0881/+0.0571`。因此锁定 0.65 进入 Stage 34 完整 seed7 CIL，不继续搜索阈值。
+
+Stage 34 已完成完整 seed7 CIL。虽然 recording-consensus=0.65 保持三轮 5 簇且 discovery 指标提升，但 R3 Overall/Old/New/Forgetting=`0.2476/0.1857/0.4952/0.2690`，相对 Stage 27 Chirp seed7 的 `0.2543/0.1929/0.5000` 全部下降。结论是 recording 元数据能修正局部伪标签结构，却没有解决伪标签注册进入增量分类头后的吸收问题；不扩三种子，也不继续 recording 阈值搜索。下一阶段改为伪标签注册、置信度筛选和新旧类联合训练的单一结构目标。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 
