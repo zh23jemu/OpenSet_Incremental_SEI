@@ -1,0 +1,49 @@
+{
+  "job_id": "45356380",
+  "records": [
+    {
+      "epochs": 0,
+      "overall": 0.2504761904761904,
+      "old": 0.1892857142857142,
+      "new": 0.4952380952380952,
+      "forgetting": 0.2761904761904762,
+      "recording_overall": 0.3066666666666666,
+      "recording_new": 0.7333333333333333,
+      "delta_overall": 0.0,
+      "delta_old": 0.0,
+      "delta_new": 0.0,
+      "delta_forgetting": 0.0,
+      "passed": false
+    },
+    {
+      "epochs": 1,
+      "overall": 0.2866666666666667,
+      "old": 0.3345238095238095,
+      "new": 0.0952380952380952,
+      "forgetting": 0.1476190476190476,
+      "recording_overall": 0.3466666666666667,
+      "recording_new": 0.0,
+      "delta_overall": 0.03619047619047627,
+      "delta_old": 0.1452380952380953,
+      "delta_new": -0.4,
+      "delta_forgetting": -0.12857142857142861,
+      "passed": false
+    },
+    {
+      "epochs": 3,
+      "overall": 0.2942857142857142,
+      "old": 0.3666666666666666,
+      "new": 0.0047619047619047,
+      "forgetting": 0.1452380952380952,
+      "recording_overall": 0.36,
+      "recording_new": 0.0,
+      "delta_overall": 0.0438095238095238,
+      "delta_old": 0.1773809523809524,
+      "delta_new": -0.4904761904761905,
+      "delta_forgetting": -0.13095238095238101,
+      "passed": false
+    }
+  ],
+  "best_epochs": 3,
+  "passed": false
+}
