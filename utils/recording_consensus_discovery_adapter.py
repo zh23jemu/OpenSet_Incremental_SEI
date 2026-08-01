@@ -23,11 +23,76 @@ from utils.graph_prototype_discovery_adapter import GPCCResult, run_gpcc
 
 @dataclass(frozen=True)
 class RecordingGPCCResult:
-    """Recording 级 GPCC 的样本级输出。"""
+    """Recording 级 GPCC 的样本级输出。
+
+    ``labels`` 和 ``confidence`` 始终与 symbol 样本一一对应，保证下游
+    RADCIL、回放记忆和现有 CSV 报告不需要理解 recording 级中间结构。
+    """
 
     labels: np.ndarray
     confidence: np.ndarray
     diagnostics: dict[str, Any]
+
+
+def run_recording_consensus_gpcc(
+    feats: dict[str, np.ndarray],
+    recording_ids: np.ndarray,
+    target_clusters: int,
+    seed: int = 7,
+    consensus_threshold: float = 0.75,
+) -> RecordingGPCCResult:
+    """先做 symbol 级 GPCC，再对高一致 recording 做软 must-link 修正。
+
+    与 ``run_recording_gpcc`` 的整段 recording 平均不同，这里保留每个 symbol
+    的原始多视图特征，避免一个 transmission 内的幅度/相位变化被平均掉。只有
+    当一个 recording 内至少达到 ``consensus_threshold`` 的样本已经属于同一簇
+    时，才把该组样本统一到多数簇；低一致 recording 不强行合并，避免把跨设备
+    或跨 symbol 的混合结构错误压成单一伪类。该过程只使用可观测 recording_id
+    和当前 discovery 的无标签聚类结果，不读取 held-out 真值。
+    """
+    recording_ids = np.asarray(recording_ids)
+    sample_count = int(np.asarray(feats["deep"]).shape[0])
+    if recording_ids.shape != (sample_count,):
+        raise ValueError(
+            f"recording_ids must have shape ({sample_count},), got {recording_ids.shape}"
+        )
+    threshold = float(consensus_threshold)
+    if not 0.5 <= threshold <= 1.0:
+        raise ValueError("consensus_threshold must be within [0.5, 1.0].")
+
+    base: GPCCResult = run_gpcc(feats, target_clusters=int(target_clusters), seed=int(seed))
+    labels = np.asarray(base.labels, dtype=np.int64).copy()
+    confidence = np.asarray(base.confidence, dtype=np.float32).copy()
+    unique_recordings, inverse = np.unique(recording_ids, return_inverse=True)
+    changed = np.zeros(sample_count, dtype=bool)
+    accepted_groups = 0
+    group_consistency = []
+    for group_id in range(len(unique_recordings)):
+        idx = np.where(inverse == group_id)[0]
+        if len(idx) == 0:
+            continue
+        values, counts = np.unique(labels[idx], return_counts=True)
+        majority_index = int(np.argmax(counts))
+        majority_label = int(values[majority_index])
+        consistency = float(counts[majority_index] / len(idx))
+        group_consistency.append(consistency)
+        if consistency >= threshold and len(values) > 1:
+            changed[idx] = labels[idx] != majority_label
+            labels[idx] = majority_label
+            confidence[idx] = np.maximum(confidence[idx], consistency).astype(np.float32)
+            accepted_groups += 1
+
+    diagnostics = dict(base.diagnostics)
+    diagnostics.update({
+        "Recording-Consensus Backend": "symbol_gpcc_with_selective_recording_consensus",
+        "Recording-Consensus Groups": int(len(unique_recordings)),
+        "Recording-Consensus Threshold": threshold,
+        "Recording-Consensus Accepted Groups": int(accepted_groups),
+        "Recording-Consensus Changed Samples": int(np.sum(changed)),
+        "Recording-Consensus Mean Consistency": float(np.mean(group_consistency)) if group_consistency else 0.0,
+        "Recording-Consensus Min Consistency": float(np.min(group_consistency)) if group_consistency else 0.0,
+    })
+    return RecordingGPCCResult(labels=labels, confidence=confidence, diagnostics=diagnostics)
 
 
 def _aggregate_view_by_recording(view: np.ndarray, inverse: np.ndarray, group_count: int) -> np.ndarray:

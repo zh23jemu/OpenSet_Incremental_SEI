@@ -1,0 +1,40 @@
+{
+  "schema_version": "stage33_lora_recording_consensus_plan_v1",
+  "dataset": "lora25_diffdays_indoor",
+  "seed": 7,
+  "mode": "discovery_only",
+  "fixed_conditions": {
+    "closedset_backbone": "lora_chirp",
+    "discovery_backend_base": "gpcc",
+    "cross_day_repr_adaptation": true,
+    "lora_ssl_adaptation": true,
+    "strict_split": "10 known + 5 new classes x 3 rounds; IQ_8-10 held-out"
+  },
+  "variants": [
+    {
+      "name": "gpcc",
+      "discovery_backend": "gpcc",
+      "recording_consensus_threshold": null
+    },
+    {
+      "name": "consensus_t0p65",
+      "discovery_backend": "gpcc_recording_consensus",
+      "recording_consensus_threshold": 0.65
+    },
+    {
+      "name": "consensus_t0p75",
+      "discovery_backend": "gpcc_recording_consensus",
+      "recording_consensus_threshold": 0.75
+    },
+    {
+      "name": "consensus_t0p85",
+      "discovery_backend": "gpcc_recording_consensus",
+      "recording_consensus_threshold": 0.85
+    }
+  ],
+  "gate": {
+    "fixed_target_cluster_count": true,
+    "zero_noise": true,
+    "relative_to_gpcc": "ARI or Hungarian must improve by > 0.01; the other may not fall by more than 0.01."
+  }
+}

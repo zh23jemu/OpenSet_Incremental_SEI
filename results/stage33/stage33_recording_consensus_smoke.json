@@ -1,0 +1,55 @@
+{
+  "schema_version": "stage24_recording_gpcc_smoke_v1",
+  "classes": 5,
+  "samples": 105,
+  "recordings": 15,
+  "fixed_cluster_count": 5,
+  "no_noise": true,
+  "recording_consistent": true,
+  "deterministic": true,
+  "diagnostics": {
+    "Recording-GPCC Backend": "recording_level_gpcc",
+    "Recording-GPCC Groups": 15,
+    "Recording-GPCC Target Clusters": 5,
+    "Recording-GPCC Mean Group Size": 7.0,
+    "Recording-GPCC Min Group Size": 7,
+    "Recording-GPCC Max Group Size": 7,
+    "Recording-GPCC Confidence Mean": 0.5840376019477844,
+    "Recording-GPCC Compactness Mean": 0.3746143877506256,
+    "Group GPCC Backend": "graph_prototype_controlled_clustering",
+    "Group GPCC Target Clusters": 5,
+    "Group GPCC Selected Candidate": "kmeans_joint",
+    "Group GPCC Candidate Scores": {
+      "kmeans_joint": {
+        "score": 0.9191005229949951,
+        "silhouette": 0.852910041809082,
+        "balance": 1.0,
+        "stability": 1.0,
+        "cluster_size_cv": 0.0
+      },
+      "kmeans_graph": {
+        "score": 0.9191005229949951,
+        "silhouette": 0.852910041809082,
+        "balance": 1.0,
+        "stability": 1.0,
+        "cluster_size_cv": 0.0
+      },
+      "agglomerative_joint": {
+        "score": 0.9191005229949951,
+        "silhouette": 0.852910041809082,
+        "balance": 1.0,
+        "stability": 1.0,
+        "cluster_size_cv": 0.0
+      }
+    },
+    "Group GPCC Silhouette": 0.852910041809082,
+    "Group GPCC Prototype Margin Mean": 0.9148479700088501,
+    "Group GPCC Silhouette Confidence Mean": 0.9264549016952515,
+    "Group GPCC Confidence Mean": 0.9206292033195496,
+    "Group GPCC Confidence Min": 0.8999114632606506,
+    "Group GPCC Cluster Stability": 1.0,
+    "Group GPCC Cluster Size CV": 0.0,
+    "Group GPCC Uses HDBSCAN": false
+  },
+  "ok": true
+}

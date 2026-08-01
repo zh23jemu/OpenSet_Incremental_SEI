@@ -80,7 +80,7 @@ from features.rf_features import extract_rf_features_batch
 from utils.classic_feature_gating import select_classic_feature_view, save_selection, local_cross_view_consistency
 from utils.discovery_feature_adaptation import adapt_discovery_features
 from utils.graph_prototype_discovery_adapter import run_gpcc
-from utils.recording_consensus_discovery_adapter import run_recording_gpcc
+from utils.recording_consensus_discovery_adapter import run_recording_consensus_gpcc, run_recording_gpcc
 from utils.cross_day_representation_adaptation import adapt_model_cross_day, adapt_model_lora_ssl
 from utils.incremental_visualization import save_seen_class_visualizations, save_paper_method_visualizations
 from utils.incremental_metric_learning import cosine_proxy_metric_loss
@@ -3447,23 +3447,39 @@ def run_discovery(
 
     mv_acc_method = base_method in {"No CF-LCG (MV-ACC)", "Global CF-LCG (MV-ACC)", "MV-ACC"}
     discovery_backend = str(getattr(args, "discovery_backend", "mvacc")).lower()
-    gpcc_method = mv_acc_method and discovery_backend in {"gpcc", "gpcc_recording"}
+    gpcc_method = mv_acc_method and discovery_backend in {
+        "gpcc",
+        "gpcc_recording",
+        "gpcc_recording_consensus",
+    }
     if gpcc_method:
-        if discovery_backend == "gpcc_recording":
+        if discovery_backend in {"gpcc_recording", "gpcc_recording_consensus"}:
             # LoRa 的同一次物理 transmission 可观测地包含多个 aligned
-            # symbol。先按 recording_id 聚合再聚类，最后回填样本标签，避免
-            # 单段噪声直接决定新类伪标签；WiSig/ADS-B 没有该元数据时直接报错。
+            # symbol。gpcc_recording 是 Stage 24 的组级平均版本；
+            # gpcc_recording_consensus 则先保留 symbol 级 GPCC，再只对组内
+            # 高一致 recording 做多数共识修正，避免过度平均压掉 LoRa 细节。
+            # WiSig/ADS-B 没有该元数据时直接报错。
             if recording_ids is None:
                 raise ValueError(
-                    "gpcc_recording requires observable recording_ids for the current discovery split."
+                    f"{discovery_backend} requires observable recording_ids for the current discovery split."
                 )
-            gpcc = run_recording_gpcc(
-                feats,
-                recording_ids=np.asarray(recording_ids),
-                target_clusters=int(true_new_classes),
-                seed=int(args.seed),
-            )
-            backend_name = "Recording-GPCC"
+            if discovery_backend == "gpcc_recording_consensus":
+                gpcc = run_recording_consensus_gpcc(
+                    feats,
+                    recording_ids=np.asarray(recording_ids),
+                    target_clusters=int(true_new_classes),
+                    seed=int(args.seed),
+                    consensus_threshold=float(args.recording_consensus_threshold),
+                )
+                backend_name = "Recording-Consensus-GPCC"
+            else:
+                gpcc = run_recording_gpcc(
+                    feats,
+                    recording_ids=np.asarray(recording_ids),
+                    target_clusters=int(true_new_classes),
+                    seed=int(args.seed),
+                )
+                backend_name = "Recording-GPCC"
         else:
             gpcc = run_gpcc(feats, target_clusters=int(true_new_classes), seed=int(args.seed))
             backend_name = "GPCC"
@@ -3760,9 +3776,15 @@ def main():
     parser.add_argument("--num_rounds", type=int, default=3)
     parser.add_argument(
         "--discovery_backend",
-        choices=["mvacc", "gpcc", "gpcc_recording"],
+        choices=["mvacc", "gpcc", "gpcc_recording", "gpcc_recording_consensus"],
         default="mvacc",
-        help="Discovery front-end: gpcc fixes K=round_size; gpcc_recording first aggregates observable recording groups and is only valid for LoRa.",
+        help="Discovery front-end: gpcc fixes K=round_size; gpcc_recording aggregates LoRa recording groups; gpcc_recording_consensus applies selective recording consensus after symbol-level GPCC.",
+    )
+    parser.add_argument(
+        "--recording_consensus_threshold",
+        type=float,
+        default=0.75,
+        help="gpcc_recording_consensus 中 recording 内多数簇占比达到该阈值才统一伪标签；只使用 recording_id 和无标签聚类结果。",
     )
     parser.add_argument(
         "--enable_joint_discovery_refinement",

@@ -150,6 +150,7 @@
 - Stage 30 Job `45353889` 已完成 LoRa Chirp 下保守旧类原型路由；R3 Overall/Old/New/Forgetting=`0.2562/0.1988/0.4857/0.2667`，相对 RADCIL Overall `-0.0019`、Old 不变、New `-0.0095`，按门槛归档为负消融，不扩三种子。报告为 `results/stage30/STAGE30_LORA_OLD_PROTOTYPE_ROUTE_CONSERVATIVE_SEED7_REPORT_45353889.md`。
 - Stage 31 公平 seed7 Job `45356380` 已完成，严格对齐 Stage 27 的 Chirp/GPCC/cross-day/LoRa SSL/joint refinement/replay 配置。类均衡 head 重校准结果为：0轮 `0.2505/0.1893/0.4952`，1轮 `0.2867/0.3345/0.0952`，3轮 `0.2943/0.3667/0.0048`（Overall/Old/New）；旧类提升伴随新类塌缩，归档为负消融。有效报告为 `results/stage31/STAGE31_LORA_BALANCED_HEAD_SEED7_REPORT_45356380.md`。
 - Stage 32 Job `45357535` 已完成新类 logits 保持蒸馏验证：基线 R3 Overall/Old/New=`0.2590/0.2036/0.4810`；`e1_d0p5` 为 `0.2724/0.3250/0.0619`，`e1_d1p0` 为 `0.2895/0.3321/0.1190`。虽然 Overall/Old 提升，但 New 仍明显塌缩，未通过门槛，分类头校准方向正式停止。
+- Stage 33 已新增 LoRa `gpcc_recording_consensus` 前端、seed7 discovery-only 计划/报告器和 Slurm 矩阵入口；比较普通 GPCC 与一致性阈值 0.65/0.75/0.85，当前尚未提交真实作业。
 
 ## Recent Changes
 
@@ -272,6 +273,7 @@
 - 2026-08-01：通过 GitHub 代理同步 Stage 27 seed7 小型结果，新增 `stage27-results-45350081` 结果分支并快进合并到本地；结果只包含指标、协议和日志文本，不包含模型权重或回放二进制。
 - 2026-08-01：新增 `slurm/stage27_lora_backbone_multiseed.sbatch` 和 `tools/stage27_lora_backbone_multiseed_report.py`，固定 LoRa Chirp backbone 与 Stage 27 seed7 结构，准备 seed7/13/31 正式确认；本地 `.venv` `py_compile` 和 `git diff --check` 已通过。
 - 2026-08-01：完成 Stage 27 三种子 Slurm Job `45350982`，并通过 GitHub 结果分支 `stage27-results-45350982` 同步报告、指标 CSV、协议 JSON 和日志；不提交模型权重或回放二进制。
+- 2026-08-01：新增 `run_recording_consensus_gpcc`，保留 symbol 级 GPCC，仅对高一致 LoRa recording 做选择性多数共识；新增 Stage 33 计划、报告器和 Slurm 入口，本地 `py_compile`、CLI 参数检查和合成 smoke 均通过。
 
 ## Next TODO
 
@@ -284,6 +286,7 @@
 - Stage 10 已未过门槛；Stage 24 recording 级共识也未过三种子门槛。LoRa 后续若继续攻，必须换更大结构，例如从训练目标和评估粒度上重新设计，而不是继续聚类器或后端小机制。
 - Stage 27 seed7 的 Chirp backbone 已出现明确结构收益，但三种子结果尚未生成；当前风险是 seed7 收益可能来自特定随机种子，或者某些 seed 的新类聚类/分类塌缩。未完成三种子前，不把 `0.2543` 作为正式稳定结果。
 - Stage 27 三种子已经稳定通过，当前 LoRa 主要风险从“表征是否有效”收敛为“绝对准确率仍不够高”：Chirp 将 R3 Overall 提升到约 `25.4%`，但仍需继续分析发现纯度、跨天特征和后端旧新类冲突，不能把该结果描述成最终解决。
+- Stage 33 真实 Slurm 结果尚未生成；只有 recording-consensus 相对普通 GPCC 的 ARI/Hungarian 至少一项明显提升且另一项不明显下降，才进入完整 seed7 CIL，否则归档并转向联合 discovery-CIL self-training。
 - Stage 11 当前已完成本地可执行入口和协议边界验证；下一步提交并推送后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only，结果不过门槛就归档，不进入 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
 - 阶段 5 补充风险已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，当前继续以风险收敛和结果一致性为主。
@@ -314,6 +317,7 @@
 - Stage 13 尚未运行；确认重点是 ADS-B 三种子 R3 Overall 是否稳定超过同 seed target split baseline，同时 Old/New 不出现新的塌缩。
 - Stage 13 已运行完成；ADS-B cross_day 的三种子均值仅约 `0.4930`，与现有 target split 主线基本持平，当前仍不能声称已根本解决 ADS-B 低分。
 - Stage 14 证明直接叠加 `cross_day` 和 target split 会损害新类识别；后续若继续攻 ADS-B，应改类均衡伪标签注册/训练或更大联合表征发现结构，而不是继续排列组合已有前端。
+- Stage 33 仍未验证选择性 recording 共识是否能改善 LoRa discovery；真实结果回来前不能把它描述成已解决 LoRa 低分。
 - Stage 17 已未过门槛；ADS-B seed7 的后端/注册结构已多次表现为“Old 变好、New 下降”。下一步若继续攻低分，应转向更激进的联合表征发现或重新训练 discovery backbone，而不是继续加权/过滤当前伪标签。
 - Stage 18 discovery-only 已通过，但完整 CIL R3 Overall `0.4981` 仍低于当前 seed7 强对照 `0.5057`；当前根因进一步收敛为“聚类正确，但增量训练阶段重新破坏表征/新旧类边界”。
 - Stage 19 初始表征教师蒸馏尚未跑真实 Slurm；只有 seed7 同时改善 Overall 且不牺牲 New，才考虑扩三种子，否则归档并停止 ADS-B 小机制搜索。
@@ -368,6 +372,7 @@
 - iCaRL fallback 采用离散低置信回退：网络分类头仍是默认预测，只有最大 softmax 置信度低于 Day1 validation 校准阈值时才回退到 replay exemplar 原型分类器；阈值选择不使用 held-out evaluation 真值。三种子验证已证明该机制不能作为主后端，仅保留为负消融。
 - LoRa 分组双头将“当前轮新类”定义为分类器扩展前后新增的输出列，而不是按样本真值路由；目标簇数来自预先声明的 10+5×3 协议。两个机制均为显式开关，保持 WiSig/ADS-B 历史默认行为不变。
 - LoRa 分组双头的 seed7 结果作为负消融保留：目标簇数约束可独立消除过聚类，但不把该后端锁定为主方法，也不据此扩展更多随机种子。
+- LoRa recording 共识默认只在显式 `gpcc_recording_consensus` 下启用，阈值通过 seed7 discovery-only 预注册矩阵验证；普通 `mvacc/gpcc/gpcc_recording` 历史行为保持不变。
 - 训练期原型锚定使用 Teacher replay 类中心而非逐样本特征复制，目的是以更弱约束稳定旧类，同时为跨天域适应保留空间；默认权重 0，保持历史实验行为。
 - 服务器产物采用“只读清单 + 精确忽略 + 小型结果入库”策略：不删除既有 5.21 GB 二进制，任何清理仅在用户明确授权后另行执行。
 - ADS-B 正式主入口固定使用 `ADSBLongClosedSet` 与 `ratio_2p0_replay_3p0`；默认 target split 作为欠聚类收敛候选，后端遗忘风险单独作为旧/新类权衡报告，避免同时改动表征、发现和后端导致归因不清。
