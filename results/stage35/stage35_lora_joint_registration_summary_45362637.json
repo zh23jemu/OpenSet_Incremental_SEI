@@ -1,0 +1,38 @@
+{
+  "schema_version": "stage35_lora_joint_registration_summary_v1",
+  "job_id": "45362637",
+  "baseline": {
+    "overall": 0.2476,
+    "old": 0.1857,
+    "new": 0.4952,
+    "forgetting": 0.269
+  },
+  "records": {
+    "registration_all": {
+      "overall": 0.2476190476190476,
+      "old": 0.1857142857142857,
+      "new": 0.4952380952380952,
+      "forgetting": 0.2785714285714286,
+      "macro_f1": 0.1902183595194778
+    },
+    "registration_top0p60": {
+      "overall": 0.2485714285714285,
+      "old": 0.1916666666666666,
+      "new": 0.4761904761904761,
+      "forgetting": 0.2809523809523809,
+      "macro_f1": 0.1929116026173334
+    },
+    "registration_top0p80": {
+      "overall": 0.2495238095238095,
+      "old": 0.1928571428571428,
+      "new": 0.4761904761904761,
+      "forgetting": 0.2785714285714286,
+      "macro_f1": 0.1939177439636476
+    }
+  },
+  "passed_variants": [
+    "registration_all",
+    "registration_top0p60",
+    "registration_top0p80"
+  ]
+}
