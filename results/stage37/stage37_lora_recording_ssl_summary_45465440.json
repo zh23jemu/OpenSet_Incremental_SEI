@@ -1,0 +1,36 @@
+{
+  "schema_version": "stage37_lora_recording_ssl_summary_v1",
+  "job_id": "45465440",
+  "baseline": {
+    "overall": 0.2552,
+    "old": 0.1988,
+    "new": 0.481,
+    "forgetting": 0.2786
+  },
+  "records": {
+    "baseline": {
+      "overall": 0.2552380952380952,
+      "old": 0.1988095238095238,
+      "new": 0.4809523809523809,
+      "forgetting": 0.2785714285714286,
+      "macro_f1": 0.2015093714842839
+    },
+    "recording_ssl_rec0p50": {
+      "overall": 0.2428571428571428,
+      "old": 0.1869047619047619,
+      "new": 0.4666666666666667,
+      "forgetting": 0.2952380952380952,
+      "macro_f1": 0.1895614348083886
+    },
+    "recording_ssl_mix0p50": {
+      "overall": 0.2457142857142857,
+      "old": 0.1904761904761904,
+      "new": 0.4666666666666667,
+      "forgetting": 0.2833333333333333,
+      "macro_f1": 0.1935469048767213
+    }
+  },
+  "passed_variants": [
+    "baseline"
+  ]
+}
