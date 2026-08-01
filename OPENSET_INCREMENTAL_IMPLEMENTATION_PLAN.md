@@ -481,7 +481,7 @@ Stage 35 将高置信样本只用于新类 feature imprint 和 replay 注册，�
 
 Stage 36 已完成双目标伪标签自训练验证。Job `45434639` 固定 LoRa Chirp、`gpcc_recording_consensus`、recording consensus `0.65`、cross-day、LoRa SSL、joint discovery-CIL 和 registration top0.80；baseline R3 Overall/Old/New/Forgetting=`0.2552/0.1988/0.4810/0.2786`，`proto0p10_cons0p10`=`0.2181/0.1595/0.4524/0.3214`，`proto0p20_cons0p20`=`0.2257/0.1667/0.4619/0.3000`。新增当前轮伪类 prototype 归属损失和高置信伪标签增强一致性损失均未通过门槛，说明静态伪标签自训练目标继续放大旧新类权衡；不扩三种子，不继续相邻权重搜索。LoRa 下一步若继续攻低分，应转向 LoRa-specific 物理域表征预训练，或重新审查 recording/transmission-level 评估口径。
 
-Stage 37 已实现 recording-level SSL 候选。该候选在每轮 discovery 前使用可观测 `recording_id` 构造 must-link 对比目标，让同一次 transmission 的多个 symbol 表征靠近，同时用 Day1 known CE 和 teacher 特征锚定保住旧类边界；未知设备真值和 held-out IQ_8-10 eval 不进入训练。seed7 计划比较 baseline、recording-only、recording+instance 三变体，门槛为 R3 Overall 超过 Stage 36 baseline `0.2552`，且 Old/New 不明显下降。
+Stage 37 已完成 recording-level SSL 验证。Job `45465440` 在每轮 discovery 前使用可观测 `recording_id` 构造 must-link 对比目标，未知设备真值和 held-out IQ_8-10 eval 不进入训练；结果为 baseline R3 Overall/Old/New/Forgetting=`0.2552/0.1988/0.4810/0.2786`，`recording_ssl_rec0p50`=`0.2429/0.1869/0.4667/0.2952`，`recording_ssl_mix0p50`=`0.2457/0.1905/0.4667/0.2833`。两个 recording-level SSL 变体均低于 baseline，说明同源 recording must-link 约束没有转化为设备级 held-out 泛化；归档为负消融，不扩三种子。LoRa 训练期适配小矩阵停止，后续只考虑更长周期的 LoRa-specific 物理域预训练，或将客户/论文口径转为 recording/transmission-level 诊断与局限分析。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 

@@ -45,6 +45,9 @@ def main() -> int:
 
     passed = []
     for variant, row in records.items():
+        # baseline 只用于重跑对照，不能被计入“通过变体”。
+        if variant == "baseline":
+            continue
         if (
             row["overall"] > BASELINE["overall"]
             and row["new"] >= BASELINE["new"] - 0.01
