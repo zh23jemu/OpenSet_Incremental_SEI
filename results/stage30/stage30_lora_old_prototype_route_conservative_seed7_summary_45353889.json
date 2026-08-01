@@ -1,0 +1,117 @@
+{
+  "job_id": "45353889",
+  "save_dir": "results/stage30/lora_old_prototype_route_seed7_45353889",
+  "result": {
+    "overall": 0.2561904761904762,
+    "old": 0.1988095238095238,
+    "new": 0.4857142857142857,
+    "forgetting": 0.2666666666666667,
+    "macro_f1": 0.20127150901312404,
+    "recording_overall": 0.26666666666666666,
+    "recording_new": 0.6
+  },
+  "references": {
+    "stage27_chirp_radcil_seed7": {
+      "overall": 0.2581,
+      "old": 0.1988,
+      "new": 0.4952,
+      "forgetting": 0.269
+    },
+    "stage28_chirp_doi_style_seed7": {
+      "overall": 0.2943,
+      "old": 0.3131,
+      "new": 0.219,
+      "forgetting": 0.1357
+    }
+  },
+  "delta_vs_stage27_radcil": {
+    "overall": -0.0019095238095238054,
+    "old": 9.523809523792615e-06,
+    "new": -0.009485714285714264,
+    "forgetting": -0.0023333333333332984
+  },
+  "passed": false,
+  "verdict": "未通过 seed7 门槛，先归档诊断结果。",
+  "calibration_rows": [
+    {
+      "Stage": "Initial",
+      "Old Mass Threshold": "0.9",
+      "Validation Accuracy": "0.5857142857142857"
+    },
+    {
+      "Stage": "Initial",
+      "Old Mass Threshold": "0.95",
+      "Validation Accuracy": "0.5857142857142857"
+    },
+    {
+      "Stage": "Initial",
+      "Old Mass Threshold": "0.98",
+      "Validation Accuracy": "0.5857142857142857"
+    },
+    {
+      "Stage": "Initial",
+      "Old Mass Threshold": "0.99",
+      "Validation Accuracy": "0.5857142857142857"
+    },
+    {
+      "Stage": "After R1",
+      "Old Mass Threshold": "0.9",
+      "Validation Accuracy": "0.35"
+    },
+    {
+      "Stage": "After R1",
+      "Old Mass Threshold": "0.95",
+      "Validation Accuracy": "0.36428571428571427"
+    },
+    {
+      "Stage": "After R1",
+      "Old Mass Threshold": "0.98",
+      "Validation Accuracy": "0.42142857142857143"
+    },
+    {
+      "Stage": "After R1",
+      "Old Mass Threshold": "0.99",
+      "Validation Accuracy": "0.45"
+    },
+    {
+      "Stage": "After R2",
+      "Old Mass Threshold": "0.9",
+      "Validation Accuracy": "0.2785714285714286"
+    },
+    {
+      "Stage": "After R2",
+      "Old Mass Threshold": "0.95",
+      "Validation Accuracy": "0.2857142857142857"
+    },
+    {
+      "Stage": "After R2",
+      "Old Mass Threshold": "0.98",
+      "Validation Accuracy": "0.30714285714285716"
+    },
+    {
+      "Stage": "After R2",
+      "Old Mass Threshold": "0.99",
+      "Validation Accuracy": "0.32857142857142857"
+    },
+    {
+      "Stage": "After R3",
+      "Old Mass Threshold": "0.9",
+      "Validation Accuracy": "0.29285714285714287"
+    },
+    {
+      "Stage": "After R3",
+      "Old Mass Threshold": "0.95",
+      "Validation Accuracy": "0.3"
+    },
+    {
+      "Stage": "After R3",
+      "Old Mass Threshold": "0.98",
+      "Validation Accuracy": "0.30714285714285716"
+    },
+    {
+      "Stage": "After R3",
+      "Old Mass Threshold": "0.99",
+      "Validation Accuracy": "0.32142857142857145"
+    }
+  ]
+}
