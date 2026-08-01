@@ -62,3 +62,8 @@ Desktop.ini
 /results/stage23/*.npz
 /results/stage23/lora_long1024_joint_seed7_*/*.pth
 /results/stage23/lora_long1024_joint_seed7_*/*.npz
+
+# Stage 38 物理域预训练会生成 checkpoint 和回放记忆；报告、CSV 和 JSON 继续保留入库
+/results/stage38/*.pth
+/results/stage38/lora_physical_pretrain_seed7_*/*.pth
+/results/stage38/lora_physical_pretrain_seed7_*/*.npz

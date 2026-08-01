@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-31
-- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 27 LoRa Chirp backbone 三种子已通过结构门槛，Stage 30/31/32/34/35/36 后端候选均已归档为负消融；LoRa 下一步转向物理域表征预训练或 recording-level 口径审查
+- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 27 LoRa Chirp backbone 三种子已通过结构门槛，Stage 30/31/32/34/35/36/37 后端候选均已归档为负消融；Stage 38 已新增 LoRa 物理域表征预训练入口，等待 seed7 Slurm 验证
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -201,6 +201,7 @@ Strict loader 审计：
 36. Stage 35 Job `45362637` 已完成：`top0p60`=`0.2486/0.1917/0.4762/0.2810`，`top0p80`=`0.2495/0.1929/0.4762/0.2786`；旧类略升但新类下降，归档为弱正/新类负消融，不扩三种子。
 37. Stage 36 Job `45434639` 已完成：baseline=`0.2552/0.1988/0.4810/0.2786`，`proto0p10_cons0p10`=`0.2181/0.1595/0.4524/0.3214`，`proto0p20_cons0p20`=`0.2257/0.1667/0.4619/0.3000`（R3 Overall/Old/New/Forgetting）。新增 prototype/一致性目标均低于 baseline，归档为负消融，不扩三种子。
 38. Stage 37 Job `45465440` 已完成：baseline=`0.2552/0.1988/0.4810/0.2786`，`recording_ssl_rec0p50`=`0.2429/0.1869/0.4667/0.2952`，`recording_ssl_mix0p50`=`0.2457/0.1905/0.4667/0.2833`（R3 Overall/Old/New/Forgetting）。Recording-level SSL 两个变体均低于 baseline，归档为负消融，不扩三种子。
+39. Stage 38 已新增 LoRa 物理域自监督预训练：只替换初始 Chirp checkpoint，训练只用 Day1 IQ_1-6 和 IQ_7，后续固定 Stage 37 baseline 配置；本地编译和计划生成通过，下一步提交 seed7 Slurm。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
@@ -210,7 +211,8 @@ Strict loader 审计：
 10. Stage 34 已完成且未通过端到端门槛；停止 recording 阈值搜索，下一步改做伪标签注册、置信度和增量训练联合优化。
 11. Stage 35 已完成且未通过平衡门槛；下一步不再调注册比例，改做 Student 预测一致性 + cluster prototype 联合更新的双目标 self-training。
 12. Stage 36 已完成且未通过；下一步停止 LoRa 相邻权重搜索，改做更大结构：LoRa-specific 物理域自监督预训练，或把 evaluation 口径切到更符合实际 transmission 的 recording-level。
-13. Stage 37 已完成且未通过；LoRa 训练期适配小矩阵停止。下一步只能换更大结构，例如 LoRa-specific 物理域预训练，或转为 recording/transmission-level 诊断与局限汇报。
+13. Stage 37 已完成且未通过；LoRa 训练期适配小矩阵停止。
+14. Stage 38 已进入执行：先跑 LoRa-specific 物理域预训练 seed7。如果未超过 Stage 37 baseline `0.2552/0.1988/0.4810`，LoRa 低分转入局限收口，不再追加同类 loss/阈值小矩阵。
 8. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
 ## 8. 变更与 Git 状态
