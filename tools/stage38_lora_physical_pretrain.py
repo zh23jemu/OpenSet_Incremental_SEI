@@ -148,6 +148,15 @@ def _checkpoint_metadata(args: argparse.Namespace) -> dict[str, object]:
         "physical_pretrain": {
             "schema_version": "stage38_lora_physical_pretrain_v1",
             "physical_weight": float(args.physical_weight),
+            "include_discovery_unlabeled": bool(args.include_discovery_unlabeled),
+            "unlabeled_physical_weight": float(args.unlabeled_physical_weight),
+            "unlabeled_discovery_keys": [
+                "day2_unknown_round1",
+                "day3_unknown_round2",
+                "day4_unknown_round3",
+            ]
+            if bool(args.include_discovery_unlabeled)
+            else [],
             "descriptor_names": [
                 "phase_step_mean",
                 "phase_step_std",
@@ -158,6 +167,19 @@ def _checkpoint_metadata(args: argparse.Namespace) -> dict[str, object]:
             ],
         },
     }
+
+
+def _allowed_discovery_unlabeled(splits: dict[str, object]) -> np.ndarray:
+    """拼接协议允许的 Day2-4 discovery/enrollment 未标注样本。
+
+    这些样本来自 IQ_1-7 discovery/development 边界，只用于样本自身的物理
+    描述符回归；函数故意不返回 y，也不读取任何 `*_eval_after_r*` held-out
+    evaluation split，避免把评估集混入预训练。
+    """
+
+    discovery_keys = ("day2_unknown_round1", "day3_unknown_round2", "day4_unknown_round3")
+    arrays = [np.asarray(splits[key]["X"], dtype=np.float32) for key in discovery_keys]
+    return np.concatenate(arrays, axis=0)
 
 
 def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
@@ -172,6 +194,7 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
     train_y = np.asarray(splits["day1_backbone_train"]["y"], dtype=np.int64)
     val_x = np.asarray(splits["day1_known_validation"]["X"], dtype=np.float32)
     val_y = np.asarray(splits["day1_known_validation"]["y"], dtype=np.int64)
+    discovery_unlabeled_x = _allowed_discovery_unlabeled(splits) if args.include_discovery_unlabeled else None
 
     model = LoRaChirpClosedSet(num_known_classes=10, feat_dim=args.feat_dim).to(device)
     projector = SupConProjectionHead(
@@ -185,7 +208,12 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
         nn.Linear(args.feat_dim, 6),
     ).to(device)
 
-    descriptor_mean, descriptor_std = _descriptor_stats(train_x, args.batch_size, device)
+    descriptor_source_x = (
+        train_x
+        if discovery_unlabeled_x is None
+        else np.concatenate([train_x, discovery_unlabeled_x], axis=0)
+    )
+    descriptor_mean, descriptor_std = _descriptor_stats(descriptor_source_x, args.batch_size, device)
     train_loader = DataLoader(
         TensorDataset(torch.as_tensor(train_x), torch.as_tensor(train_y, dtype=torch.long)),
         batch_size=args.batch_size,
@@ -201,6 +229,16 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
         drop_last=False,
         num_workers=0,
     )
+    unlabeled_loader = None
+    if discovery_unlabeled_x is not None:
+        unlabeled_loader = DataLoader(
+            TensorDataset(torch.as_tensor(discovery_unlabeled_x)),
+            batch_size=args.batch_size,
+            shuffle=True,
+            drop_last=True,
+            num_workers=0,
+            generator=torch.Generator().manual_seed(int(args.seed) + 1009),
+        )
     optimizer = torch.optim.AdamW(
         list(model.parameters()) + list(projector.parameters()) + list(physical_head.parameters()),
         lr=args.lr,
@@ -217,6 +255,7 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
         projector.train()
         physical_head.train()
         epoch_rows = []
+        unlabeled_iter = iter(unlabeled_loader) if unlabeled_loader is not None else None
         for xb, yb in train_loader:
             xb = xb.to(device)
             yb = yb.to(device)
@@ -237,6 +276,19 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
             )
             physical = F.mse_loss(descriptor_pred, descriptor_target)
             total = ce + float(args.supcon_weight) * supcon + float(args.physical_weight) * physical
+            unlabeled_physical = torch.zeros((), device=device)
+            if unlabeled_iter is not None:
+                try:
+                    (unlabeled_xb,) = next(unlabeled_iter)
+                except StopIteration:
+                    unlabeled_iter = iter(unlabeled_loader)
+                    (unlabeled_xb,) = next(unlabeled_iter)
+                unlabeled_xb = unlabeled_xb.to(device)
+                unlabeled_feat, _ = model(unlabeled_xb)
+                unlabeled_target = (_physical_descriptors(unlabeled_xb) - descriptor_mean) / descriptor_std
+                unlabeled_pred = physical_head(unlabeled_feat)
+                unlabeled_physical = F.mse_loss(unlabeled_pred, unlabeled_target)
+                total = total + float(args.unlabeled_physical_weight) * unlabeled_physical
 
             optimizer.zero_grad()
             total.backward()
@@ -250,6 +302,7 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
                     "ce": float(ce.detach().cpu()),
                     "supcon": float(supcon.detach().cpu()),
                     "physical": float(physical.detach().cpu()),
+                    "unlabeled_physical": float(unlabeled_physical.detach().cpu()),
                     "total": float(total.detach().cpu()),
                 }
             )
@@ -262,13 +315,15 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
             "train_ce": float(np.mean([item["ce"] for item in epoch_rows])),
             "train_supcon": float(np.mean([item["supcon"] for item in epoch_rows])),
             "train_physical": float(np.mean([item["physical"] for item in epoch_rows])),
+            "train_unlabeled_physical": float(np.mean([item["unlabeled_physical"] for item in epoch_rows])),
             "train_total": float(np.mean([item["total"] for item in epoch_rows])),
         }
         history.append(row)
         print(
             f"Epoch {epoch:03d}/{args.epochs:03d} | "
             f"val_acc={validation_accuracy:.4f} | val_loss={validation_loss:.4f} | "
-            f"physical={row['train_physical']:.4f}"
+            f"physical={row['train_physical']:.4f} | "
+            f"unlabeled_physical={row['train_unlabeled_physical']:.4f}"
         )
         improved = validation_accuracy > best["validation_accuracy"] + 1e-12
         tied_lower_loss = (
@@ -303,6 +358,8 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
     summary = {
         "schema_version": "stage38_lora_physical_pretrain_summary_v1",
         "checkpoint": str(output_path),
+        "include_discovery_unlabeled": bool(args.include_discovery_unlabeled),
+        "unlabeled_discovery_samples": int(0 if discovery_unlabeled_x is None else len(discovery_unlabeled_x)),
         "best": best,
         "history": history,
     }
@@ -326,6 +383,12 @@ def main() -> int:
     parser.add_argument("--supcon-weight", type=float, default=0.1)
     parser.add_argument("--supcon-temperature", type=float, default=0.2)
     parser.add_argument("--physical-weight", type=float, default=0.10)
+    parser.add_argument(
+        "--include-discovery-unlabeled",
+        action="store_true",
+        help="仅将 Day2-4 discovery/enrollment 样本用于无标签物理描述符回归；不读取 held-out eval。",
+    )
+    parser.add_argument("--unlabeled-physical-weight", type=float, default=0.05)
     parser.add_argument("--projection-hidden-dim", type=int, default=128)
     parser.add_argument("--projection-dim", type=int, default=64)
     parser.add_argument("--device", default="auto")

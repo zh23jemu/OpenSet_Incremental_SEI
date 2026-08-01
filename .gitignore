@@ -67,3 +67,8 @@ Desktop.ini
 /results/stage38/*.pth
 /results/stage38/lora_physical_pretrain_seed*_*/*.pth
 /results/stage38/lora_physical_pretrain_seed*_*/*.npz
+
+# Stage 39 discovery 未标注物理预训练同样只同步小型报告和表格
+/results/stage39/*.pth
+/results/stage39/lora_discovery_physical_seed*_*/*.pth
+/results/stage39/lora_discovery_physical_seed*_*/*.npz
