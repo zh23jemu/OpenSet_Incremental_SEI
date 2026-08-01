@@ -2310,6 +2310,114 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
     return student
 
 
+def _recalibrate_balanced_classifier_head(
+    student,
+    current_x,
+    current_y,
+    current_w,
+    memory_x,
+    memory_y,
+    epochs,
+    batch_size,
+    device,
+):
+    """冻结 backbone，使用等类采样重新校准增量分类头。
+
+    LoRa Chirp 实验暴露出一个具体问题：RADCIL 的 backbone 已经能提供较好的
+    跨天特征，但当前轮伪标签样本和旧类 replay 样本经过不同采样路径进入分类头，
+    容易形成偏向新类或偏向旧类的决策边界。这里不重新聚类，也不使用 held-out
+    标签，而是把当前轮和 replay 合并后按类别等量抽样，在冻结特征上短暂训练
+    classifier。这样验证的是“类别先验失衡”是否为主因，而不是继续搜索预测阈值。
+
+    参数：
+        student: 已完成当前轮 RADCIL 的模型，返回时仍处于 eval 模式。
+        current_x/current_y/current_w: 当前轮 discovery 原始 IQ、伪标签及置信度权重。
+        memory_x/memory_y: 当前轮开始前的旧类 replay memory。
+        epochs: 重校准轮数；0 表示完全关闭。
+        batch_size: 分类头优化 batch size。
+        device: 训练设备。
+    """
+    epochs = int(epochs)
+    if epochs <= 0 or len(current_x) == 0 or len(memory_x) == 0:
+        student.eval()
+        return student
+
+    current_x = np.asarray(current_x, dtype=np.float32)
+    current_y = np.asarray(current_y, dtype=np.int64)
+    current_w = np.asarray(current_w, dtype=np.float32)
+    memory_x = np.asarray(memory_x, dtype=np.float32)
+    memory_y = np.asarray(memory_y, dtype=np.int64)
+    if len(current_x) != len(current_y) or len(current_x) != len(current_w):
+        raise ValueError("Balanced head recalibration current arrays have inconsistent lengths.")
+    if len(memory_x) != len(memory_y):
+        raise ValueError("Balanced head recalibration memory arrays have inconsistent lengths.")
+
+    # 每个类别取相同数量，避免 replay 类别数量或当前伪类样本量直接改变 head
+    # 的先验。抽样只依赖训练期标签和固定随机种子，不接触任何评估标签。
+    rng = np.random.default_rng(17)
+    class_to_indices = {}
+    all_x = np.concatenate([memory_x, current_x], axis=0)
+    all_y = np.concatenate([memory_y, current_y], axis=0)
+    all_w = np.concatenate([
+        np.ones(len(memory_y), dtype=np.float32),
+        np.maximum(current_w, 0.05).astype(np.float32),
+    ])
+    candidate_indices = {
+        int(class_id): np.where(all_y == int(class_id))[0]
+        for class_id in sorted(np.unique(all_y).tolist())
+    }
+    candidate_indices = {
+        class_id: indices for class_id, indices in candidate_indices.items() if len(indices) > 0
+    }
+    if not candidate_indices:
+        student.eval()
+        return student
+    take_per_class = min(32, min(len(indices) for indices in candidate_indices.values()))
+    for class_id, class_indices in candidate_indices.items():
+        chosen = rng.choice(class_indices, size=take_per_class, replace=False)
+        class_to_indices[int(class_id)] = chosen
+    selected = np.concatenate(list(class_to_indices.values())).astype(np.int64)
+    if len(selected) == 0:
+        student.eval()
+        return student
+
+    student.eval()
+    feature_batches = []
+    with torch.no_grad():
+        loader = DataLoader(
+            TensorDataset(torch.as_tensor(all_x[selected], dtype=torch.float32)),
+            batch_size=max(1, int(batch_size)), shuffle=False, num_workers=0,
+        )
+        for (xb,) in loader:
+            features, _ = student(xb.to(device))
+            feature_batches.append(features.detach().cpu())
+    features = torch.cat(feature_batches, dim=0).to(device)
+    labels = torch.as_tensor(all_y[selected], dtype=torch.long, device=device)
+    weights = torch.as_tensor(all_w[selected], dtype=torch.float32, device=device)
+
+    # 只打开 classifier 参数；backbone 梯度关闭，保证该实验只检验分类头先验校准。
+    for parameter in student.parameters():
+        parameter.requires_grad_(False)
+    student.classifier.weight.requires_grad_(True)
+    student.classifier.bias.requires_grad_(True)
+    optimizer = torch.optim.AdamW(student.classifier.parameters(), lr=1e-3, weight_decay=1e-4)
+    loader = DataLoader(
+        TensorDataset(features, labels, weights),
+        batch_size=max(1, int(batch_size)), shuffle=True, num_workers=0,
+    )
+    student.train()
+    for _ in range(epochs):
+        for xb, yb, wb in loader:
+            logits = student.classifier(xb)
+            loss = (F.cross_entropy(logits, yb, reduction="none") * wb).sum() / (wb.sum() + 1e-8)
+            optimizer.zero_grad()
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(student.classifier.parameters(), max_norm=5.0)
+            optimizer.step()
+    student.eval()
+    return student
+
+
 @torch.no_grad()
 def _extract_end_to_end_outputs(model, X, batch_size, device):
     """批量提取网络特征和分类 logits，供纯网络与混合后端共同复用。"""
@@ -3707,6 +3815,12 @@ def main():
         help="True-class cosine margin for the metric loss; must be in [0, 1).",
     )
     parser.add_argument("--radcil_old_new_batch_ratio", type=float, default=0.0, help="RADCIL replay old:new batch ratio; 0 keeps the legacy equal batch-size behavior.")
+    parser.add_argument(
+        "--radcil_balanced_head_recalibration_epochs",
+        type=int,
+        default=0,
+        help="冻结backbone后按类均衡重校准RADCIL分类头的轮数；0保持历史行为。",
+    )
     parser.add_argument("--radcil_masked_kd", action="store_true", help="Apply KD only on replay samples whose labels are inside the teacher output range.")
     parser.add_argument("--radcil_kd_schedule", choices=["constant", "cosine", "linear_decay"], default="constant", help="Schedule for the end-to-end CIL KD weight inside each training stage.")
     parser.add_argument("--radcil_feature_distill_weight", type=float, default=0.0, help="Replay-feature distillation weight for constraining old-class backbone drift.")
@@ -4466,6 +4580,18 @@ def main():
         next_label += len(cluster_ids)
         student = _expand_closedset_classifier(teacher, next_label, device, imprinted_means)
         student = _train_end_to_end_cil(student, teacher, rd["X"], pseudo_y, current_w, memory_x, memory_y, old_out, args, device)
+        if int(args.radcil_balanced_head_recalibration_epochs) > 0:
+            student = _recalibrate_balanced_classifier_head(
+                student,
+                rd["X"],
+                pseudo_y,
+                current_w,
+                memory_x,
+                memory_y,
+                args.radcil_balanced_head_recalibration_epochs,
+                args.incremental_batch_size,
+                device,
+            )
         if args.enable_joint_discovery_refinement:
             # 第一轮 CIL 后，重新观察当前 Student 的类别结构。二次发现只读取
             # 当前轮 discovery 样本，随后用无标签中心匹配回原伪类编号。
@@ -4507,6 +4633,18 @@ def main():
                 args,
                 device,
             )
+            if int(args.radcil_balanced_head_recalibration_epochs) > 0:
+                student = _recalibrate_balanced_classifier_head(
+                    student,
+                    rd["X"],
+                    refined_pseudo_y,
+                    current_w,
+                    memory_x,
+                    memory_y,
+                    args.radcil_balanced_head_recalibration_epochs,
+                    args.incremental_batch_size,
+                    device,
+                )
         memory_labels = refined_pseudo_y if args.enable_joint_discovery_refinement else pseudo_y
         memory_x, memory_y = _update_iq_memory(
             memory_x,
