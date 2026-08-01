@@ -16,6 +16,7 @@ import argparse
 import json
 import os
 import random
+import sys
 from dataclasses import asdict
 from pathlib import Path
 
@@ -24,6 +25,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset
+
+# 该脚本通常以 `python tools/xxx.py` 的形式从项目根目录运行。此时 Python
+# 默认只把 `tools/` 放进 sys.path，远端 Slurm 会找不到 datasets/models/utils。
+# 显式加入项目根目录，保证本地、worktree 和 Slurm 环境的导入行为一致。
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from datasets.lora25_strict_loader import load_lora25_diffdays_3round
 from models.lora_chirp_model import LoRaChirpClosedSet
