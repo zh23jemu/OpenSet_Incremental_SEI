@@ -2096,6 +2096,38 @@ def _compute_pseudo_sample_weights(
     return np.maximum(floor, weights * cluster_reliability).astype(np.float32)
 
 
+def _select_pseudo_registration_mask(pseudo_y, confidence, top_fraction, min_per_class):
+    """选择只用于新类注册和 replay 的高置信样本。
+
+    当前轮完整训练仍保留全部 discovery 样本，避免高置信筛选把新类训练
+    数据量压得过小。这个 mask 只控制两处容易被错误伪标签污染的位置：
+    新分类头的 feature imprint 和下一轮 replay memory。选择过程只依赖
+    无标签聚类置信度及伪类内部排序，不读取未知真实标签。
+    """
+    pseudo_y = np.asarray(pseudo_y, dtype=np.int64)
+    confidence = np.asarray(confidence, dtype=np.float32)
+    if pseudo_y.size == 0:
+        return np.zeros(0, dtype=bool)
+    if float(top_fraction) >= 0.999:
+        return np.ones(pseudo_y.size, dtype=bool)
+    if confidence.shape != pseudo_y.shape:
+        confidence = np.ones(pseudo_y.size, dtype=np.float32)
+    keep = np.zeros(pseudo_y.size, dtype=bool)
+    fraction = float(np.clip(top_fraction, 0.01, 1.0))
+    minimum = max(1, int(min_per_class))
+    for class_id in sorted(np.unique(pseudo_y).tolist()):
+        indices = np.where(pseudo_y == int(class_id))[0]
+        if indices.size == 0:
+            continue
+        take = min(
+            indices.size,
+            max(minimum, int(np.ceil(indices.size * fraction))),
+        )
+        order = np.argsort(-confidence[indices], kind="mergesort")
+        keep[indices[order[:take]]] = True
+    return keep
+
+
 def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, memory_x, memory_y, old_out_dim, args, device):
     """Head warm-up followed by last-block backbone adaptation on raw IQ samples.
 
@@ -3912,6 +3944,18 @@ def main():
     parser.add_argument("--radcil_bn_recalibration_passes", type=int, default=1, help="Number of no-grad passes used for BatchNorm statistic recalibration.")
     parser.add_argument("--radcil_bn_recalibration_reset", action="store_true", help="Reset BatchNorm running stats before recalibration; default keeps source-domain stats as a prior.")
     parser.add_argument("--pseudo_weight_floor", type=float, default=0.20)
+    parser.add_argument(
+        "--radcil_registration_top_fraction",
+        type=float,
+        default=1.0,
+        help="只用于新类 imprint 和 replay 注册的每类高置信样本比例；当前轮完整训练仍使用全部 discovery 样本。",
+    )
+    parser.add_argument(
+        "--radcil_registration_min_per_class",
+        type=int,
+        default=1,
+        help="每个伪类至少保留多少样本用于 imprint/replay 注册。",
+    )
 
 
     parser.add_argument("--min_cluster_size", type=int, default=10)
@@ -4624,9 +4668,30 @@ def main():
         )
         current_w[raw_noise] = float(args.pseudo_weight_floor)
         old_out = int(student.classifier.out_features)
-        imprinted_means = np.stack([rd["Z"][pseudo_y == int(next_label + j)].mean(axis=0) for j in range(len(cluster_ids))]).astype(np.float32)
+        registration_mask = _select_pseudo_registration_mask(
+            pseudo_y,
+            current_w,
+            top_fraction=float(args.radcil_registration_top_fraction),
+            min_per_class=int(args.radcil_registration_min_per_class),
+        )
+        if not np.all(registration_mask):
+            print(
+                f"[joint registration] R{i}: kept={int(np.sum(registration_mask))}/{len(registration_mask)} "
+                f"top_fraction={float(args.radcil_registration_top_fraction):.2f}; "
+                "all discovery samples remain in current-round training"
+            )
+        imprinted_means = np.stack(
+            [
+                rd["Z"][
+                    (pseudo_y == int(next_label + j)) & registration_mask
+                ].mean(axis=0)
+                for j in range(len(cluster_ids))
+            ]
+        ).astype(np.float32)
         next_label += len(cluster_ids)
         student = _expand_closedset_classifier(teacher, next_label, device, imprinted_means)
+        # 注册和训练故意分离：低置信样本仍参与加权 CE/SupCon，避免新类样本量
+        # 因为注册筛选而塌缩；只有 replay memory 使用高置信注册子集。
         student = _train_end_to_end_cil(student, teacher, rd["X"], pseudo_y, current_w, memory_x, memory_y, old_out, args, device)
         if int(args.radcil_balanced_head_recalibration_epochs) > 0:
             student = _recalibrate_balanced_classifier_head(
@@ -4698,11 +4763,13 @@ def main():
                     new_distill_weight=args.radcil_balanced_head_new_distill_weight,
                 )
         memory_labels = refined_pseudo_y if args.enable_joint_discovery_refinement else pseudo_y
+        memory_source_x = rd["X"][registration_mask]
+        memory_source_y = memory_labels[registration_mask]
         memory_x, memory_y = _update_iq_memory(
             memory_x,
             memory_y,
-            rd["X"],
-            memory_labels,
+            memory_source_x,
+            memory_source_y,
             args.memory_per_class,
             args.seed + i,
         )
