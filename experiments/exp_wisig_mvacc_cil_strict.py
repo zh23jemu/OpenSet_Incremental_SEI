@@ -89,7 +89,7 @@ from utils.cross_day_representation_adaptation import (
 from utils.incremental_visualization import save_seen_class_visualizations, save_paper_method_visualizations
 from utils.incremental_metric_learning import cosine_proxy_metric_loss
 from models.vup_model import ClosedSetSEI
-from models.lora_chirp_model import LoRaChirpClosedSet
+from models.lora_chirp_model import LoRaChirpClosedSet, LoRaHybridClosedSet
 from datasets.lora25_strict_loader import load_lora25_diffdays_3round
 from utils.improved_closedset_training import (
     TRAINING_RECIPE_VERSION,
@@ -3884,9 +3884,9 @@ def main():
     parser.add_argument("--feat_dim", type=int, default=128)
     parser.add_argument(
         "--closedset_backbone",
-        choices=["resnet1d", "lora_chirp"],
+        choices=["resnet1d", "lora_chirp", "lora_hybrid"],
         default="resnet1d",
-        help="Initial closed-set backbone. lora_chirp is a LoRa-specific multi-scale dilation backbone.",
+        help="Initial closed-set backbone. lora_hybrid fuses raw IQ and magnitude/phase geometry views.",
     )
     parser.add_argument("--use_supcon", action="store_true", help="Use CE + supervised contrastive loss when training the initial closed-set backbone.")
     parser.add_argument("--supcon_weight", type=float, default=0.1, help="Weight lambda for supervised contrastive loss. Recommended: 0.05 or 0.1.")
@@ -4154,8 +4154,8 @@ def main():
             "This RX2-only script requires --selected_rx_list 2 "
             "(Python index 2 is the third receiver)."
         )
-    if args.closedset_backbone == "lora_chirp" and args.dataset_profile != "lora25":
-        raise ValueError("--closedset_backbone lora_chirp is only valid for the LoRa25 strict profile.")
+    if args.closedset_backbone in {"lora_chirp", "lora_hybrid"} and args.dataset_profile != "lora25":
+        raise ValueError("--closedset_backbone lora_chirp/lora_hybrid is only valid for the LoRa25 strict profile.")
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if args.checkpoint is None:
@@ -4279,9 +4279,14 @@ def main():
     train_set = to_dataset(X_train, y_train)
     validation_set = to_dataset(X_validation, y_validation) if X_validation is not None else None
     # 主流程只通过这个工厂创建 Day1 closed-set backbone。默认 resnet1d
-    # 完全保持历史行为；lora_chirp 显式用于 Stage 27 LoRa 结构候选。
+    # 完全保持历史行为；lora_chirp 和 lora_hybrid 只在 LoRa profile 中显式启用。
     if args.closedset_backbone == "lora_chirp":
         closedset_model_factory = lambda: LoRaChirpClosedSet(
+            num_known_classes=args.initial_known_classes,
+            feat_dim=args.feat_dim,
+        )
+    elif args.closedset_backbone == "lora_hybrid":
+        closedset_model_factory = lambda: LoRaHybridClosedSet(
             num_known_classes=args.initial_known_classes,
             feat_dim=args.feat_dim,
         )
