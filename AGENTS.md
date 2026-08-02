@@ -157,6 +157,7 @@
 - Stage 37 Job `45465440` 已完成 LoRa recording-level SSL seed7：baseline R3 Overall/Old/New/Forgetting 为 `0.2552/0.1988/0.4810/0.2786`，`recording_ssl_rec0p50` 为 `0.2429/0.1869/0.4667/0.2952`，`recording_ssl_mix0p50` 为 `0.2457/0.1905/0.4667/0.2833`。两个 recording-level SSL 变体均低于 baseline，归档为负消融，不扩三种子。
 - Stage 38 LoRa-specific 物理域自监督预训练 seed7 Job `45651503` 曾通过门槛：R3 Overall/Old/New/Forgetting 从 Stage 37 baseline `0.2552/0.1988/0.4810/0.2786` 提升到 `0.2705/0.2131/0.5000/0.2429`。但三种子 Job `45652089` 未通过正式门槛，R3 Overall/Old/New/Forgetting 为 `0.2508±0.0241/0.1909±0.0296/0.4905±0.0411/0.2413±0.0192`，低于当前 Stage 27 Chirp 候选的 Overall/Old，归档为 seed7 正信号但非正式方案。
 - Stage 39 discovery 未标注物理预训练 seed7 Job `45652803` 已完成：在 Stage 38 基础上额外使用 Day2-4 IQ_1-7 discovery/enrollment 样本做无标签物理描述符回归，但 R3 Overall/Old/New/Forgetting 为 `0.2305/0.1821/0.4238/0.3381`，显著低于 Stage 38 seed7 `0.2705/0.2131/0.5000/0.2429`，归档为负消融，不扩三种子。
+- Stage 40 已新增 LoRa 域对抗表征预训练候选：Day1 已知训练样本与 Day2-4 discovery 样本只通过 Day 域标签训练域头，利用梯度反转约束 backbone 学习跨天不变特征；不使用未知设备类别标签，不读取 held-out eval，待 seed7 Slurm 验证。
 
 ## Recent Changes
 
@@ -287,6 +288,7 @@
 - 2026-08-01：完成 Stage 37 Job `45465440` 并通过 GitHub 结果分支同步小型结果；修正报告器不再把 baseline 计入通过变体，确认 recording-level SSL 未改善 LoRa 低分。
 - 2026-08-01：完成 Stage 38 LoRa 物理域自监督预训练 seed7 与三种子验证；seed7 有正信号，但三种子 Job `45652089` 未超过当前 Stage 27 Chirp 正式候选，归档为不采用。
 - 2026-08-01：完成 Stage 39 discovery 未标注物理预训练 seed7 Job `45652803` 并同步小型结果；该候选降低 Overall/Old/New，确认当前紧凑子集上直接吸收跨天 discovery 未标注分布会污染初始化。
+- 2026-08-02：新增 Stage 40 域对抗表征预训练开关、seed7 Slurm 入口和报告器；本地 py_compile 通过，等待远端短任务验证。
 
 ## Next TODO
 
@@ -303,7 +305,7 @@
 - Stage 34 已证明聚类收益未传递到 CIL；LoRa 下一步必须把伪标签置信度、类注册和新旧类训练放进同一联合目标，不能继续只改 discovery 前端。
 - Stage 35 已证明仅拆分 registration/training 仍不足；下一步需要让伪标签在训练中被 Student 预测一致性和 cluster prototype 一起更新，而不是只做静态 mask。
 - Stage 36 已完成真实 seed7 验证且未通过；LoRa 下一步不再调 prototype/consistency 相邻权重，转向更大的 LoRa-specific 物理域表征预训练、或重新审查 recording/transmission-level 评估口径。
-- Stage 39 已完成且未通过。下一步停止当前紧凑子集上的 LoRa 物理/未标注预训练小步尝试；若继续攻 LoRa，只剩更大数据、更长周期自监督预训练或报告层面局限收口。
+- Stage 40 下一步提交并跟踪域对抗表征预训练 seed7。若仍未超过 Stage 38 seed7，则停止当前紧凑子集上的 LoRa 表征小步尝试。
 - Stage 11 当前已完成本地可执行入口和协议边界验证；下一步提交并推送后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only，结果不过门槛就归档，不进入 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
 - 阶段 5 补充风险已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，当前继续以风险收敛和结果一致性为主。
@@ -340,6 +342,7 @@
 - Stage 37 表明 recording-level must-link 适配会降低 held-out IQ_8-10 symbol-level 指标；当前 LoRa 低分不能再靠 discovery 前短适配、小 loss、注册比例或 recording 约束解决。
 - Stage 38 说明物理域目标能局部改善 seed7，但三种子 Overall/Old 不稳定；LoRa 低分仍未根本解决，不能包装成已攻下。
 - Stage 39 说明直接把跨天 discovery 未标注样本加入初始化物理目标会放大域偏移；LoRa 低分仍未根本解决。
+- Stage 40 尚未生成真实 Slurm 结果；域对抗目标可能压掉设备指纹，需要同时看 Overall、Old、New，不能只看域分类 loss。
 - Stage 17 已未过门槛；ADS-B seed7 的后端/注册结构已多次表现为“Old 变好、New 下降”。下一步若继续攻低分，应转向更激进的联合表征发现或重新训练 discovery backbone，而不是继续加权/过滤当前伪标签。
 - Stage 18 discovery-only 已通过，但完整 CIL R3 Overall `0.4981` 仍低于当前 seed7 强对照 `0.5057`；当前根因进一步收敛为“聚类正确，但增量训练阶段重新破坏表征/新旧类边界”。
 - Stage 19 初始表征教师蒸馏尚未跑真实 Slurm；只有 seed7 同时改善 Overall 且不牺牲 New，才考虑扩三种子，否则归档并停止 ADS-B 小机制搜索。

@@ -486,6 +486,8 @@ Stage 37 已完成 recording-level SSL 验证。Job `45465440` 在每轮 discove
 Stage 38 已完成 LoRa-specific 物理域表征预训练验证。该候选只替换初始 LoRa Chirp checkpoint，不改变 strict split、GPCC recording-consensus、cross-day、LoRa SSL、top0.80 注册或 RADCIL 后端；checkpoint 训练只使用 Day1 IQ_1-6 训练样本与 IQ_7 验证样本，不读取 Day1 IQ_8-10 或后续天 held-out eval。训练目标为 CE + SupCon + 物理描述符回归，描述符包含相位步进均值/方差、幅度均值/方差、频谱质心和频谱带宽。seed7 Job `45651503` 将 R3 Overall/Old/New/Forgetting 从 Stage 37 baseline `0.2552/0.1988/0.4810/0.2786` 提升到 `0.2705/0.2131/0.5000/0.2429`，说明物理域目标有局部正信号；但三种子 Job `45652089` 的 R3 Overall/Old/New/Forgetting 为 `0.2508±0.0241/0.1909±0.0296/0.4905±0.0411/0.2413±0.0192`，Overall/Old 低于当前 Stage 27 Chirp 候选 `0.2540/0.1952/0.4889/0.2794`。该方向归档为 seed7 正信号但三种子未通过，不采用为正式 LoRa 方案，不继续物理描述符权重小矩阵。
 
 Stage 39 已完成 discovery 未标注物理预训练验证。该候选仍只替换初始 LoRa Chirp checkpoint，但额外把协议允许的 Day2-4 IQ_1-7 discovery/enrollment 样本用于无标签物理描述符回归；不使用未知设备标签，不读取 Day1 IQ_8-10 或 Day2-4 IQ_8-10 held-out evaluation。seed7 Job `45652803` 的 R3 Overall/Old/New/Forgetting 为 `0.2305/0.1821/0.4238/0.3381`，显著低于 Stage 38 seed7 `0.2705/0.2131/0.5000/0.2429`，说明直接吸收跨天 discovery 未标注分布会污染初始表征。该方向归档为负消融，不扩三种子；当前紧凑子集上的 LoRa 物理/未标注预训练小步尝试停止。
+
+Stage 40 转向域对抗表征学习。Day1 已知训练样本和 Day2-4 IQ_1-7 discovery 样本带有可观测 Day 域标识，但不带未知设备类别标签；新增域分类头和梯度反转，使域头区分 Day0/Day2/Day3/Day4，而 backbone 反向抑制天数特征。该候选不读取任何 IQ_8-10 held-out evaluation，且默认关闭，不改变 Stage 38/39 历史行为；本地编译通过，待 seed7 Slurm 验证。门槛为 R3 Overall 超过 Stage 38 seed7 `0.2705`，Old 不低于 `0.2031`，New 不低于 `0.4800`。
 3. WiSig 后端上限风险已进一步收敛：共享发现 DOI-style/iCaRL/TPCIL-style 仍是后端上限参考，但 DOI-memory late fusion 与 iCaRL fallback 都未通过三种子，不能写成主后端贡献。
 4. LoRa seed7 正式链路、表征筛选、冻结消融、后端矩阵、原型锚定、分组双头、old-logit bias 和 BN 重校准均已完成；old-logit bias 说明旧类打分偏置确实存在，BN 重校准说明跨天统计漂移也存在，但二者三种子都不能作为正式解决方案。
 

@@ -72,3 +72,8 @@ Desktop.ini
 /results/stage39/*.pth
 /results/stage39/lora_discovery_physical_seed*_*/*.pth
 /results/stage39/lora_discovery_physical_seed*_*/*.npz
+
+# Stage 40 域对抗预训练只保留报告、表格和日志
+/results/stage40/*.pth
+/results/stage40/lora_domain_adversarial_seed*_*/*.pth
+/results/stage40/lora_domain_adversarial_seed*_*/*.npz

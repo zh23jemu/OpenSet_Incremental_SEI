@@ -150,6 +150,9 @@ def _checkpoint_metadata(args: argparse.Namespace) -> dict[str, object]:
             "physical_weight": float(args.physical_weight),
             "include_discovery_unlabeled": bool(args.include_discovery_unlabeled),
             "unlabeled_physical_weight": float(args.unlabeled_physical_weight),
+            "domain_adversarial": bool(args.domain_adversarial),
+            "domain_adversarial_weight": float(args.domain_adversarial_weight),
+            "domain_adversarial_lambda": float(args.domain_adversarial_lambda),
             "unlabeled_discovery_keys": [
                 "day2_unknown_round1",
                 "day3_unknown_round2",
@@ -182,6 +185,38 @@ def _allowed_discovery_unlabeled(splits: dict[str, object]) -> np.ndarray:
     return np.concatenate(arrays, axis=0)
 
 
+def _allowed_discovery_with_day_domain(splits: dict[str, object]) -> tuple[np.ndarray, np.ndarray]:
+    """返回跨天 discovery 样本及其 Day 域标签，不返回设备类别标签。"""
+
+    discovery_keys = ("day2_unknown_round1", "day3_unknown_round2", "day4_unknown_round3")
+    arrays = []
+    domain_labels = []
+    for domain_id, key in enumerate(discovery_keys, start=1):
+        x_data = np.asarray(splits[key]["X"], dtype=np.float32)
+        arrays.append(x_data)
+        domain_labels.append(np.full(len(x_data), domain_id, dtype=np.int64))
+    return np.concatenate(arrays, axis=0), np.concatenate(domain_labels, axis=0)
+
+
+class _GradientReverse(torch.autograd.Function):
+    """域头正常分类，backbone 接收反向域梯度的梯度反转算子。"""
+
+    @staticmethod
+    def forward(ctx, features: torch.Tensor, coefficient: float) -> torch.Tensor:
+        ctx.coefficient = float(coefficient)
+        return features.view_as(features)
+
+    @staticmethod
+    def backward(ctx, gradient: torch.Tensor) -> tuple[torch.Tensor, None]:
+        return -ctx.coefficient * gradient, None
+
+
+def _gradient_reverse(features: torch.Tensor, coefficient: float) -> torch.Tensor:
+    """调用梯度反转算子。"""
+
+    return _GradientReverse.apply(features, float(coefficient))
+
+
 def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
     """训练并保存物理域自监督 checkpoint。"""
 
@@ -207,6 +242,7 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
         nn.SiLU(),
         nn.Linear(args.feat_dim, 6),
     ).to(device)
+    domain_head = nn.Linear(args.feat_dim, 4).to(device) if args.domain_adversarial else None
 
     descriptor_source_x = (
         train_x
@@ -239,8 +275,22 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
             num_workers=0,
             generator=torch.Generator().manual_seed(int(args.seed) + 1009),
         )
+    domain_loader = None
+    if args.domain_adversarial:
+        domain_x, domain_y = _allowed_discovery_with_day_domain(splits)
+        domain_loader = DataLoader(
+            TensorDataset(torch.as_tensor(domain_x), torch.as_tensor(domain_y, dtype=torch.long)),
+            batch_size=args.batch_size,
+            shuffle=True,
+            drop_last=True,
+            num_workers=0,
+            generator=torch.Generator().manual_seed(int(args.seed) + 2017),
+        )
     optimizer = torch.optim.AdamW(
-        list(model.parameters()) + list(projector.parameters()) + list(physical_head.parameters()),
+        list(model.parameters())
+        + list(projector.parameters())
+        + list(physical_head.parameters())
+        + ([] if domain_head is None else list(domain_head.parameters())),
         lr=args.lr,
         weight_decay=1e-4,
     )
@@ -254,8 +304,11 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
         model.train()
         projector.train()
         physical_head.train()
+        if domain_head is not None:
+            domain_head.train()
         epoch_rows = []
         unlabeled_iter = iter(unlabeled_loader) if unlabeled_loader is not None else None
+        domain_iter = iter(domain_loader) if domain_loader is not None else None
         for xb, yb in train_loader:
             xb = xb.to(device)
             yb = yb.to(device)
@@ -277,6 +330,7 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
             physical = F.mse_loss(descriptor_pred, descriptor_target)
             total = ce + float(args.supcon_weight) * supcon + float(args.physical_weight) * physical
             unlabeled_physical = torch.zeros((), device=device)
+            domain_loss = torch.zeros((), device=device)
             if unlabeled_iter is not None:
                 try:
                     (unlabeled_xb,) = next(unlabeled_iter)
@@ -289,6 +343,23 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
                 unlabeled_pred = physical_head(unlabeled_feat)
                 unlabeled_physical = F.mse_loss(unlabeled_pred, unlabeled_target)
                 total = total + float(args.unlabeled_physical_weight) * unlabeled_physical
+            if domain_iter is not None:
+                try:
+                    domain_xb, domain_yb = next(domain_iter)
+                except StopIteration:
+                    domain_iter = iter(domain_loader)
+                    domain_xb, domain_yb = next(domain_iter)
+                domain_xb = domain_xb.to(device)
+                domain_yb = domain_yb.to(device)
+                domain_feat, _ = model(domain_xb)
+                day0_labels = torch.zeros(len(raw_feat), dtype=torch.long, device=device)
+                domain_features = torch.cat([raw_feat, domain_feat], dim=0)
+                domain_labels = torch.cat([day0_labels, domain_yb], dim=0)
+                domain_logits = domain_head(
+                    _gradient_reverse(domain_features, args.domain_adversarial_lambda)
+                )
+                domain_loss = F.cross_entropy(domain_logits, domain_labels)
+                total = total + float(args.domain_adversarial_weight) * domain_loss
 
             optimizer.zero_grad()
             total.backward()
@@ -303,6 +374,7 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
                     "supcon": float(supcon.detach().cpu()),
                     "physical": float(physical.detach().cpu()),
                     "unlabeled_physical": float(unlabeled_physical.detach().cpu()),
+                    "domain": float(domain_loss.detach().cpu()),
                     "total": float(total.detach().cpu()),
                 }
             )
@@ -316,6 +388,7 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
             "train_supcon": float(np.mean([item["supcon"] for item in epoch_rows])),
             "train_physical": float(np.mean([item["physical"] for item in epoch_rows])),
             "train_unlabeled_physical": float(np.mean([item["unlabeled_physical"] for item in epoch_rows])),
+            "train_domain": float(np.mean([item["domain"] for item in epoch_rows])),
             "train_total": float(np.mean([item["total"] for item in epoch_rows])),
         }
         history.append(row)
@@ -323,7 +396,8 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
             f"Epoch {epoch:03d}/{args.epochs:03d} | "
             f"val_acc={validation_accuracy:.4f} | val_loss={validation_loss:.4f} | "
             f"physical={row['train_physical']:.4f} | "
-            f"unlabeled_physical={row['train_unlabeled_physical']:.4f}"
+            f"unlabeled_physical={row['train_unlabeled_physical']:.4f} | "
+            f"domain={row['train_domain']:.4f}"
         )
         improved = validation_accuracy > best["validation_accuracy"] + 1e-12
         tied_lower_loss = (
@@ -389,6 +463,9 @@ def main() -> int:
         help="仅将 Day2-4 discovery/enrollment 样本用于无标签物理描述符回归；不读取 held-out eval。",
     )
     parser.add_argument("--unlabeled-physical-weight", type=float, default=0.05)
+    parser.add_argument("--domain-adversarial", action="store_true")
+    parser.add_argument("--domain-adversarial-weight", type=float, default=0.10)
+    parser.add_argument("--domain-adversarial-lambda", type=float, default=1.0)
     parser.add_argument("--projection-hidden-dim", type=int, default=128)
     parser.add_argument("--projection-dim", type=int, default=64)
     parser.add_argument("--device", default="auto")
