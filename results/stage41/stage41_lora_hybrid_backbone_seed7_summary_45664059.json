@@ -1,0 +1,29 @@
+{
+  "job_id": "45664059",
+  "baseline": {
+    "variant": "chirp",
+    "overall": 0.2580952380952381,
+    "old": 0.1988095238095238,
+    "new": 0.49523809523809526,
+    "forgetting": 0.27380952380952384,
+    "recording_overall": 0.30666666666666664,
+    "recording_new": 0.6666666666666666
+  },
+  "hybrid": {
+    "variant": "hybrid",
+    "overall": 0.24857142857142858,
+    "old": 0.20357142857142857,
+    "new": 0.42857142857142855,
+    "forgetting": 0.2285714285714286,
+    "recording_overall": 0.3333333333333333,
+    "recording_new": 0.6
+  },
+  "delta_hybrid_minus_chirp": {
+    "overall": -0.009523809523809518,
+    "old": 0.004761904761904773,
+    "new": -0.06666666666666671,
+    "forgetting": -0.045238095238095244
+  },
+  "passed": false,
+  "verdict": "未通过 seed7 结构门槛，归档该候选。"
+}
