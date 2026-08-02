@@ -158,7 +158,7 @@
 - Stage 38 LoRa-specific 物理域自监督预训练 seed7 Job `45651503` 曾通过门槛：R3 Overall/Old/New/Forgetting 从 Stage 37 baseline `0.2552/0.1988/0.4810/0.2786` 提升到 `0.2705/0.2131/0.5000/0.2429`。但三种子 Job `45652089` 未通过正式门槛，R3 Overall/Old/New/Forgetting 为 `0.2508±0.0241/0.1909±0.0296/0.4905±0.0411/0.2413±0.0192`，低于当前 Stage 27 Chirp 候选的 Overall/Old，归档为 seed7 正信号但非正式方案。
 - Stage 39 discovery 未标注物理预训练 seed7 Job `45652803` 已完成：在 Stage 38 基础上额外使用 Day2-4 IQ_1-7 discovery/enrollment 样本做无标签物理描述符回归，但 R3 Overall/Old/New/Forgetting 为 `0.2305/0.1821/0.4238/0.3381`，显著低于 Stage 38 seed7 `0.2705/0.2131/0.5000/0.2429`，归档为负消融，不扩三种子。
 - Stage 40 LoRa 域对抗表征预训练 seed7 Job `45654279` 已完成：R3 Overall/Old/New/Forgetting 为 `0.2114/0.1405/0.4952/0.2190`，Overall/Old 明显低于 Stage 38，说明直接做强域不变约束会一起压掉设备判别信息，归档为负消融，不扩三种子。
-- Stage 41 已新增 LoRa 门控双分支 backbone 候选：保留原始 Chirp 分支，同时从 IQ 计算幅度/相邻相位变化建立几何分支，再做样本级门控融合；strict split、GPCC、cross-day、LoRa SSL、联合 discovery-CIL 和 held-out 边界全部复用，尚未提交 seed7 Slurm。
+- Stage 41 已新增 LoRa 门控双分支 backbone 候选：保留原始 Chirp 分支，同时从 IQ 计算幅度/相邻相位变化建立几何分支，再做样本级门控融合；首次 Slurm Job `45662826` 因 hybrid backbone 未暴露 RADCIL 期望的 `layer3/fc` 解冻属性而在 50 秒内失败，属于代码兼容问题，不是算法结果。
 
 ## Recent Changes
 
@@ -290,7 +290,7 @@
 - 2026-08-01：完成 Stage 38 LoRa 物理域自监督预训练 seed7 与三种子验证；seed7 有正信号，但三种子 Job `45652089` 未超过当前 Stage 27 Chirp 正式候选，归档为不采用。
 - 2026-08-01：完成 Stage 39 discovery 未标注物理预训练 seed7 Job `45652803` 并同步小型结果；该候选降低 Overall/Old/New，确认当前紧凑子集上直接吸收跨天 discovery 未标注分布会污染初始化。
 - 2026-08-02：完成 Stage 40 域对抗表征预训练 seed7 Job `45654279` 并同步结果；域对抗降低 Overall/Old，当前 LoRa 表征预训练线停止。
-- 2026-08-02：新增 Stage 41 LoRa hybrid backbone 代码、seed7 Slurm 入口和报告器；本地 `py_compile`、前向 smoke 与 `git diff --check` 已通过，待推送后提交短任务。
+- 2026-08-02：新增 Stage 41 LoRa hybrid backbone 代码、seed7 Slurm 入口和报告器；首次 Job `45662826` 暴露 RADCIL 解冻范围兼容问题，已补 `trainable_scope_parameters` 映射，待重新验证。
 
 ## Next TODO
 

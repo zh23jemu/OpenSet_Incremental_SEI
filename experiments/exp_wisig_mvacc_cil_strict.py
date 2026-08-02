@@ -2267,6 +2267,8 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
     def trainable_backbone_parameters():
         """按 RADCIL 消融参数选择需要解冻的骨干末端范围。"""
         scope = str(args.radcil_unfreeze_scope).lower()
+        if hasattr(student.backbone, "trainable_scope_parameters"):
+            return list(student.backbone.trainable_scope_parameters(scope))
         if scope == "none":
             return []
         if scope == "fc":

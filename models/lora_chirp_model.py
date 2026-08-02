@@ -170,6 +170,41 @@ class LoRaHybridBackbone(nn.Module):
         fused = torch.cat((waveform_feat * gate, geometry_feat * (1.0 - gate)), dim=1)
         return self.fuse(fused)
 
+    def trainable_scope_parameters(self, scope: str):
+        """返回 RADCIL joint 阶段可解冻的尾部参数。
+
+        共享 RADCIL 代码最初假设 backbone 一定有 ``layer2/layer3/fc``。
+        Hybrid backbone 是双分支结构，没有同名层；这里显式把通用解冻范围
+        映射到对应的 LoRa 结构模块，避免训练入口依赖具体属性名。
+        """
+        scope = str(scope).lower()
+        if scope == "none":
+            return []
+        if scope == "fc":
+            return list(self.waveform.fc.parameters()) + list(self.geometry.fc.parameters()) + list(self.gate.parameters()) + list(self.fuse.parameters())
+        if scope == "layer3":
+            return list(self.waveform.layer3.parameters()) + list(self.geometry.block.parameters())
+        if scope == "tail":
+            return (
+                list(self.waveform.layer3.parameters())
+                + list(self.geometry.block.parameters())
+                + list(self.waveform.fc.parameters())
+                + list(self.geometry.fc.parameters())
+                + list(self.gate.parameters())
+                + list(self.fuse.parameters())
+            )
+        if scope == "layer2_tail":
+            return (
+                list(self.waveform.layer2.parameters())
+                + list(self.waveform.layer3.parameters())
+                + list(self.geometry.block.parameters())
+                + list(self.waveform.fc.parameters())
+                + list(self.geometry.fc.parameters())
+                + list(self.gate.parameters())
+                + list(self.fuse.parameters())
+            )
+        raise ValueError(f"Unsupported hybrid backbone unfreeze scope: {scope}")
+
 
 class LoRaHybridClosedSet(nn.Module):
     """LoRa 多视图门控 backbone 的闭集分类器。"""
