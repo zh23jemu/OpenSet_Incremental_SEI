@@ -206,7 +206,7 @@ Strict loader 审计：
 41. Stage 40 已新增：用 Day 域对抗而不是物理回归处理跨天 discovery，保持 strict split 和 held-out 边界不变；下一步跑 seed7。
 42. Stage 40 Job `45654279` 已完成：R3 Overall/Old/New/Forgetting=`0.2114/0.1405/0.4952/0.2190`，Overall/Old 低于 Stage 38，域对抗压掉设备判别信息，归档为负消融。
 43. Stage 41 Job `45664059` 已完成 LoRa 门控双分支 backbone seed7 验证：Chirp 对照 R3 Overall/Old/New/Forgetting=`0.2581/0.1988/0.4952/0.2738`，hybrid=`0.2486/0.2036/0.4286/0.2286`；Overall 和 New 下降，归档为负消融，不扩三种子。结果已通过 `stage41-results-45664059` 分支同步。
-44. Stage 42 已新增 LoRa 全局 discovery 实例对比预训练：Day1 IQ_1-6 与 Day2-4 IQ_1-7 discovery 仅用于无标签双视图 InfoNCE，之后用 Day1 标签微调 Chirp；当前完成本地验证，尚未提交真实 seed7 作业。
+44. Stage 42 已新增 LoRa 全局 discovery 实例对比预训练：Day1 IQ_1-6 与 Day2-4 IQ_1-7 discovery 仅用于无标签双视图 InfoNCE，之后用 Day1 标签微调 Chirp。首次 Job `45719018` 因独立 worktree 下未把项目根目录加入 `sys.path` 而找不到 `datasets` 包，属于入口路径失败，非算法结果。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。

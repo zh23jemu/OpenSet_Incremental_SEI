@@ -12,6 +12,7 @@ import argparse
 import json
 import os
 import random
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -19,6 +20,10 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from datasets.lora25_strict_loader import load_lora25_diffdays_3round
 from models.lora_chirp_model import LoRaChirpClosedSet

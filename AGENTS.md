@@ -159,7 +159,7 @@
 - Stage 39 discovery 未标注物理预训练 seed7 Job `45652803` 已完成：在 Stage 38 基础上额外使用 Day2-4 IQ_1-7 discovery/enrollment 样本做无标签物理描述符回归，但 R3 Overall/Old/New/Forgetting 为 `0.2305/0.1821/0.4238/0.3381`，显著低于 Stage 38 seed7 `0.2705/0.2131/0.5000/0.2429`，归档为负消融，不扩三种子。
 - Stage 40 LoRa 域对抗表征预训练 seed7 Job `45654279` 已完成：R3 Overall/Old/New/Forgetting 为 `0.2114/0.1405/0.4952/0.2190`，Overall/Old 明显低于 Stage 38，说明直接做强域不变约束会一起压掉设备判别信息，归档为负消融，不扩三种子。
 - Stage 41 已完成 LoRa 门控双分支 backbone seed7 验证。修复解冻范围兼容后 Job `45664059` 正常完成：Chirp 对照 R3 Overall/Old/New/Forgetting=`0.2581/0.1988/0.4952/0.2738`，hybrid=`0.2486/0.2036/0.4286/0.2286`；Overall `-0.0095`、New `-0.0667`，按门槛归档为负消融，不扩三种子。
-- Stage 42 已新增 LoRa 全局 discovery 实例对比预训练候选：Day1 IQ_1-6 与 Day2-4 IQ_1-7 discovery 先做无标签双视图 InfoNCE，再用 Day1 标签 CE+SupCon 微调；不读取 IQ_8-10 held-out eval，尚未提交 seed7 作业。
+- Stage 42 已新增 LoRa 全局 discovery 实例对比预训练候选：Day1 IQ_1-6 与 Day2-4 IQ_1-7 discovery 先做无标签双视图 InfoNCE，再用 Day1 标签 CE+SupCon 微调；不读取 IQ_8-10 held-out eval。首次 Slurm Job `45719018` 因脚本未设置项目根目录 `sys.path` 找不到本地 `datasets` 包，在 4 秒内失败，属于入口路径问题。
 
 ## Recent Changes
 
@@ -292,7 +292,7 @@
 - 2026-08-01：完成 Stage 39 discovery 未标注物理预训练 seed7 Job `45652803` 并同步小型结果；该候选降低 Overall/Old/New，确认当前紧凑子集上直接吸收跨天 discovery 未标注分布会污染初始化。
 - 2026-08-02：完成 Stage 40 域对抗表征预训练 seed7 Job `45654279` 并同步结果；域对抗降低 Overall/Old，当前 LoRa 表征预训练线停止。
 - 2026-08-02：完成 Stage 41 LoRa hybrid backbone 修复与 seed7 Job `45664059`；结果显示 hybrid 的 New/Overall 下降，已通过结果分支 `stage41-results-45664059` 同步并归档为负消融。
-- 2026-08-02：新增 Stage 42 全局 discovery SSL 预训练脚本、seed7 Slurm 入口和报告器；本地 `py_compile`、轻量导入和 `git diff --check` 已通过，待提交 seed7 风险验证。
+- 2026-08-02：新增 Stage 42 全局 discovery SSL 预训练脚本、seed7 Slurm 入口和报告器；Job `45719018` 暴露独立 worktree 下 `datasets` 导入路径问题，已补项目根目录 `sys.path`，待重新提交 seed7。
 
 ## Next TODO
 
