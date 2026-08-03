@@ -32,6 +32,9 @@ Desktop.ini
 # 已确认超过普通 Git 托管平台单文件限制的本地原始数据（约 590 MB）
 /WiSig_CrossDay_40Tx_3Rx_4Day_300Sig_equalized.pkl
 
+# LoRa Setup 1 原始 I/Q 文件体量较大，仅保留 manifest、脚本和小型审计结果入库
+/datasets/lora25_compact/raw_setup1_iq/
+
 # 客户补充的超大射频原始数据压缩包及其本地解压目录
 /数据集/*.rar
 /数据集/*.zip
