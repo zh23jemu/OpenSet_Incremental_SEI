@@ -159,7 +159,7 @@
 - Stage 39 discovery 未标注物理预训练 seed7 Job `45652803` 已完成：在 Stage 38 基础上额外使用 Day2-4 IQ_1-7 discovery/enrollment 样本做无标签物理描述符回归，但 R3 Overall/Old/New/Forgetting 为 `0.2305/0.1821/0.4238/0.3381`，显著低于 Stage 38 seed7 `0.2705/0.2131/0.5000/0.2429`，归档为负消融，不扩三种子。
 - Stage 40 LoRa 域对抗表征预训练 seed7 Job `45654279` 已完成：R3 Overall/Old/New/Forgetting 为 `0.2114/0.1405/0.4952/0.2190`，Overall/Old 明显低于 Stage 38，说明直接做强域不变约束会一起压掉设备判别信息，归档为负消融，不扩三种子。
 - Stage 41 已完成 LoRa 门控双分支 backbone seed7 验证。修复解冻范围兼容后 Job `45664059` 正常完成：Chirp 对照 R3 Overall/Old/New/Forgetting=`0.2581/0.1988/0.4952/0.2738`，hybrid=`0.2486/0.2036/0.4286/0.2286`；Overall `-0.0095`、New `-0.0667`，按门槛归档为负消融，不扩三种子。
-- Stage 42 已新增 LoRa 全局 discovery 实例对比预训练候选：Day1 IQ_1-6 与 Day2-4 IQ_1-7 discovery 先做无标签双视图 InfoNCE，再用 Day1 标签 CE+SupCon 微调；不读取 IQ_8-10 held-out eval。首次 Slurm Job `45719018` 因脚本未设置项目根目录 `sys.path` 找不到本地 `datasets` 包，在 4 秒内失败，属于入口路径问题。
+- Stage 42 已完成 LoRa 全局 discovery 实例对比预训练 seed7 验证。修复入口路径后 Job `45891194` 正常完成：Chirp 对照 R3 Overall/Old/New/Forgetting=`0.2581/0.1988/0.4952/0.2738`，Global SSL=`0.1610/0.1333/0.2714/0.2000`；Overall `-0.0971`、New `-0.2238`，按门槛归档为负消融，不扩三种子。首次 Job `45719018` 仅是路径错误。
 
 ## Recent Changes
 
@@ -292,7 +292,7 @@
 - 2026-08-01：完成 Stage 39 discovery 未标注物理预训练 seed7 Job `45652803` 并同步小型结果；该候选降低 Overall/Old/New，确认当前紧凑子集上直接吸收跨天 discovery 未标注分布会污染初始化。
 - 2026-08-02：完成 Stage 40 域对抗表征预训练 seed7 Job `45654279` 并同步结果；域对抗降低 Overall/Old，当前 LoRa 表征预训练线停止。
 - 2026-08-02：完成 Stage 41 LoRa hybrid backbone 修复与 seed7 Job `45664059`；结果显示 hybrid 的 New/Overall 下降，已通过结果分支 `stage41-results-45664059` 同步并归档为负消融。
-- 2026-08-02：新增 Stage 42 全局 discovery SSL 预训练脚本、seed7 Slurm 入口和报告器；Job `45719018` 暴露独立 worktree 下 `datasets` 导入路径问题，已补项目根目录 `sys.path`，待重新提交 seed7。
+- 2026-08-03：完成 Stage 42 全局 discovery SSL 重跑 Job `45891194` 并同步结果分支 `stage42-results-45891194`；全局 SSL 明显降低 Overall/Old/New，归档为负消融。
 
 ## Next TODO
 
@@ -311,7 +311,7 @@
 - Stage 36 已完成真实 seed7 验证且未通过；LoRa 下一步不再调 prototype/consistency 相邻权重，转向更大的 LoRa-specific 物理域表征预训练、或重新审查 recording/transmission-level 评估口径。
 - Stage 40 已完成且未通过。下一步不再继续域权重、物理权重或未标注样本小矩阵；LoRa 若继续攻，只做更大规模预训练或评估口径/局限分析。
 - Stage 41 已完成且未通过；LoRa 当前仍以 Chirp backbone 三种子 `0.2540±0.0101` 为正式候选，hybrid 不再扩展。继续攻需要更大规模原始数据/预训练或重新审查评估粒度，不能继续叠加局部分支。
-- Stage 42 尚未产生真实 Slurm 结果；当前不能预判全局 discovery SSL 是否能改善 R3 Overall，若 seed7 不超过 Chirp 对照将直接归档。
+- Stage 42 已完成且未通过；LoRa 现有紧凑子集上的表征预训练线已连续失败，后续不再继续实例 SSL、物理回归或域对抗相邻变体。
 - Stage 11 当前已完成本地可执行入口和协议边界验证；下一步提交并推送后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only，结果不过门槛就归档，不进入 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
 - 阶段 5 补充风险已完成：不扩展分组双头或训练期原型锚定三种子；ManyTx/ManyRx 已作为补充稳定性验证汇总，当前继续以风险收敛和结果一致性为主。
