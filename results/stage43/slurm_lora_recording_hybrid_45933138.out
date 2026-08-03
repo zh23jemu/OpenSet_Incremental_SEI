@@ -1,0 +1,243 @@
+运行 Stage 43 LoRa hybrid recording：seed=7
+
+========== LoRa25 Different Days Indoor 10-Known 3-Round Incremental Experiment ==========
+Dataset: /mnt/users/xj62kv/OpenSet_Incremental_SEI/datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz
+Save dir: results/stage43/lora_hybrid_recording_seed7_45933138
+Device: cuda
+Protocol: 10 known + 5 unknown R1 + 5 unknown R2 + 5 unknown R3
+LoRa split: IQ_1-6 train | IQ_7 validation | IQ_8-10 held-out evaluation
+Old-class prototype bonus beta: 0.0
+Incremental dual-view consistency weight: 0.0
+Cross-day feature domain alignment weight: 0.0
+Pseudo-label cluster reliability weighting: False (floor=0.2)
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train IQ_1-6 train: (840, 2, 256), classes=10, labels=0-9
+Initial eval 30%:     (420, 2, 256), classes=10, labels=0-9, day=Day 1
+Unknown R1 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=10-14, day=Day 2
+After R1 IQ_8-10 eval: (630, 2, 256), classes=15, labels=0-14, day=Day 2
+Unknown R2 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=15-19, day=Day 3
+After R2 IQ_8-10 eval: (840, 2, 256), classes=20, labels=0-19, day=Day 3
+Unknown R3 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=20-24, day=Day 4
+After R3 IQ_8-10 eval: (1050, 2, 256), classes=25, labels=0-24, day=Day 4
+
+[Train-v2] classes=10 | train=840 | validation=140 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/020 | train_loss=3.0780 | train_acc=0.1029 | val_acc=0.1000 | val_loss=2.4952
+Epoch 002/020 | train_loss=2.8591 | train_acc=0.1224 | val_acc=0.1357 | val_loss=2.2831
+Epoch 003/020 | train_loss=2.8441 | train_acc=0.0977 | val_acc=0.1500 | val_loss=2.2694
+Epoch 004/020 | train_loss=2.8344 | train_acc=0.1237 | val_acc=0.1214 | val_loss=2.2706
+Epoch 005/020 | train_loss=2.8281 | train_acc=0.1393 | val_acc=0.1857 | val_loss=2.2696
+Epoch 006/020 | train_loss=2.7960 | train_acc=0.1797 | val_acc=0.1071 | val_loss=2.2698
+Epoch 007/020 | train_loss=2.7507 | train_acc=0.2057 | val_acc=0.2286 | val_loss=2.1910
+Epoch 008/020 | train_loss=2.5769 | train_acc=0.2188 | val_acc=0.1857 | val_loss=2.0905
+Epoch 009/020 | train_loss=2.4977 | train_acc=0.2122 | val_acc=0.1000 | val_loss=2.6881
+Epoch 010/020 | train_loss=2.3565 | train_acc=0.2865 | val_acc=0.1643 | val_loss=2.4474
+Epoch 011/020 | train_loss=2.1397 | train_acc=0.3346 | val_acc=0.1643 | val_loss=2.6120
+Epoch 012/020 | train_loss=2.0457 | train_acc=0.3620 | val_acc=0.3571 | val_loss=1.5759
+Epoch 013/020 | train_loss=2.0270 | train_acc=0.3646 | val_acc=0.2643 | val_loss=2.2039
+Epoch 014/020 | train_loss=1.8521 | train_acc=0.4310 | val_acc=0.3714 | val_loss=1.6063
+Epoch 015/020 | train_loss=1.7501 | train_acc=0.4948 | val_acc=0.3286 | val_loss=1.6222
+Epoch 016/020 | train_loss=1.7298 | train_acc=0.4961 | val_acc=0.3357 | val_loss=1.6330
+Epoch 017/020 | train_loss=1.5826 | train_acc=0.5586 | val_acc=0.4357 | val_loss=1.2752
+Epoch 018/020 | train_loss=1.5592 | train_acc=0.5352 | val_acc=0.4571 | val_loss=1.2993
+Epoch 019/020 | train_loss=1.4697 | train_acc=0.5638 | val_acc=0.5000 | val_loss=1.2518
+Epoch 020/020 | train_loss=1.4318 | train_acc=0.5703 | val_acc=0.3000 | val_loss=1.8332
+[Train-v2] best_val_acc=0.5000 | best_val_loss=1.2518 | saved=results/stage43/lora_hybrid_recording_seed7_45933138/closedset_lora25_lora_hybrid_10known.pth
+[Load] checkpoint=results/stage43/lora_hybrid_recording_seed7_45933138/closedset_lora25_lora_hybrid_10known.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.347 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.78
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Assignment Coverage  Noise Points  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc Discovery Backend Discovery Feature Adapter                          GPCC Backend  GPCC Target Clusters GPCC Selected Candidate                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  GPCC Candidate Scores  GPCC Silhouette  GPCC Prototype Margin Mean  GPCC Silhouette Confidence Mean  GPCC Confidence Mean  GPCC Confidence Min  GPCC Cluster Stability  GPCC Cluster Size CV  GPCC Uses HDBSCAN       Cross-Day Adapter  Cross-Day Epochs  Cross-Day Batch Size  Cross-Day LR  Cross-Day Consistency Weight  Cross-Day CORAL Weight  Cross-Day Known Samples  Cross-Day Discovery Samples  Cross-Day Final Total  Cross-Day Final CE  Cross-Day Final Consistency  Cross-Day Final CORAL                    LoRa SSL Adapter  LoRa SSL Epochs  LoRa SSL Batch Size  LoRa SSL LR  LoRa SSL CE Weight  LoRa SSL Instance Weight  LoRa SSL Teacher Weight  LoRa SSL Temperature  LoRa SSL Known Samples  LoRa SSL Discovery Samples  LoRa SSL Final Total  LoRa SSL Final CE  LoRa SSL Final Instance  LoRa SSL Final Teacher
+MV-ACC-CIL discovery    R1         Day 2                 5      490                      5                    5                    0                    1.0                  1.0             0         5    0.0 0.375250 0.316740 0.520408       0.518367              GPCC                      none graph_prototype_controlled_clustering                     5            kmeans_joint  {'kmeans_joint': {'score': 0.5184762757681488, 'silhouette': 0.20945322513580322, 'balance': 0.7663850097172853, 'stability': 1.0, 'cluster_size_cv': 0.30482719171254913}, 'kmeans_graph': {'score': 0.28194442546888165, 'silhouette': 0.11225459724664688, 'balance': 0.634531475509068, 'stability': 0.37319240752564914, 'cluster_size_cv': 0.5759659506216396}, 'agglomerative_joint': {'score': 0.4485979860712067, 'silhouette': 0.18056701123714447, 'balance': 0.861649732836622, 'stability': 0.7078247332938113, 'cluster_size_cv': 0.16056439396541952}}         0.209453                    0.306773                         0.604727              0.418857             0.062771                     1.0              0.304827              False train_consistency_coral                 2                   128       0.00001                           0.5                    0.05                      840                          490               0.952952            0.944891                     0.006966               0.091553 instance_contrastive_teacher_anchor                3                  128      0.00001                 1.0                       0.5                      0.2                   0.2                     840                         490              3.055295           0.893034                 4.322693                0.004572
+MV-ACC-CIL discovery    R2         Day 3                 5      490                      5                    5                    0                    1.0                  1.0             0         5    0.0 0.175368 0.138862 0.432653       0.416327              GPCC                      none graph_prototype_controlled_clustering                     5            kmeans_joint {'kmeans_joint': {'score': 0.5123027144766046, 'silhouette': 0.18485257029533386, 'balance': 0.8031690040708547, 'stability': 1.0, 'cluster_size_cv': 0.24506796817545146}, 'kmeans_graph': {'score': 0.3182423778941263, 'silhouette': 0.12893103063106537, 'balance': 0.7025241298659962, 'stability': 0.42730194029536434, 'cluster_size_cv': 0.4234386514108007}, 'agglomerative_joint': {'score': 0.43343046133576546, 'silhouette': 0.17186039686203003, 'balance': 0.7729384058682568, 'stability': 0.7372782475519903, 'cluster_size_cv': 0.2937641504262948}}         0.184853                    0.281703                         0.592426              0.396217             0.036363                     1.0              0.245068              False train_consistency_coral                 2                   128       0.00001                           0.5                    0.05                      840                          490               1.274145            1.266304                     0.003725               0.119594 instance_contrastive_teacher_anchor                3                  128      0.00001                 1.0                       0.5                      0.2                   0.2                     840                         490              3.270104           1.225258                 4.088481                0.003029
+MV-ACC-CIL discovery    R3         Day 4                 5      490                      5                    5                    0                    1.0                  1.0             0         5    0.0 0.411366 0.351673 0.518367       0.508163              GPCC                      none graph_prototype_controlled_clustering                     5            kmeans_joint {'kmeans_joint': {'score': 0.5227972835356136, 'silhouette': 0.22724537551403046, 'balance': 0.7390616350144839, 'stability': 1.0, 'cluster_size_cv': 0.3530671227175827}, 'kmeans_graph': {'score': 0.2943801562550654, 'silhouette': 0.14398810267448425, 'balance': 0.6722906586268919, 'stability': 0.32291427223488295, 'cluster_size_cv': 0.48745187392969624}, 'agglomerative_joint': {'score': 0.47189030778915186, 'silhouette': 0.2192777395248413, 'balance': 0.7267277405675722, 'stability': 0.8237680117478987, 'cluster_size_cv': 0.37603113817975764}}         0.227245                    0.335860                         0.613623              0.444159             0.058049                     1.0              0.353067              False train_consistency_coral                 2                   128       0.00001                           0.5                    0.05                      840                          490               1.714183            1.710761                     0.001274               0.055684 instance_contrastive_teacher_anchor                3                  128      0.00001                 1.0                       0.5                      0.2                   0.2                     840                         490              3.518063           1.591985                 3.851567                0.001471
+Saved: results/stage43/lora_hybrid_recording_seed7_45933138/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.488095 0.488095      NaN           0.488095         0.000000  0.451238
+MV-ACC-CIL After R1    Day 2   eval_r1_30pct_15_seen            15                5                   5                 5           630     0.315873 0.328571 0.290476           0.328571         0.159524  0.289764
+MV-ACC-CIL After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.254762 0.276190 0.190476           0.330952         0.157143  0.225037
+MV-ACC-CIL After R3    Day 4   eval_r3_30pct_25_seen            25                5                   5                 5          1050     0.242857 0.197619 0.423810           0.264286         0.223810  0.194737
+Saved: results/stage43/lora_hybrid_recording_seed7_45933138/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1              5                                 5                    0         1.000000 0.520408 0.375250 0.316740       0.518367     0.315873 0.290476         0.159524
+MV-ACC-CIL    R2              5                                 5                    0         1.000000 0.432653 0.175368 0.138862       0.416327     0.254762 0.190476         0.157143
+MV-ACC-CIL    R3              5                                 5                    0         1.000000 0.518367 0.411366 0.351673       0.508163     0.242857 0.423810         0.223810
+Saved: results/stage43/lora_hybrid_recording_seed7_45933138/per_round_summary_results.csv
+运行 Stage 43 LoRa hybrid recording：seed=13
+
+========== LoRa25 Different Days Indoor 10-Known 3-Round Incremental Experiment ==========
+Dataset: /mnt/users/xj62kv/OpenSet_Incremental_SEI/datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz
+Save dir: results/stage43/lora_hybrid_recording_seed13_45933138
+Device: cuda
+Protocol: 10 known + 5 unknown R1 + 5 unknown R2 + 5 unknown R3
+LoRa split: IQ_1-6 train | IQ_7 validation | IQ_8-10 held-out evaluation
+Old-class prototype bonus beta: 0.0
+Incremental dual-view consistency weight: 0.0
+Cross-day feature domain alignment weight: 0.0
+Pseudo-label cluster reliability weighting: False (floor=0.2)
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train IQ_1-6 train: (840, 2, 256), classes=10, labels=0-9
+Initial eval 30%:     (420, 2, 256), classes=10, labels=0-9, day=Day 1
+Unknown R1 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=10-14, day=Day 2
+After R1 IQ_8-10 eval: (630, 2, 256), classes=15, labels=0-14, day=Day 2
+Unknown R2 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=15-19, day=Day 3
+After R2 IQ_8-10 eval: (840, 2, 256), classes=20, labels=0-19, day=Day 3
+Unknown R3 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=20-24, day=Day 4
+After R3 IQ_8-10 eval: (1050, 2, 256), classes=25, labels=0-24, day=Day 4
+
+[Train-v2] classes=10 | train=840 | validation=140 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/020 | train_loss=3.0371 | train_acc=0.1003 | val_acc=0.1071 | val_loss=2.3423
+Epoch 002/020 | train_loss=2.8525 | train_acc=0.1250 | val_acc=0.1143 | val_loss=2.3050
+Epoch 003/020 | train_loss=2.7824 | train_acc=0.1628 | val_acc=0.1500 | val_loss=2.1381
+Epoch 004/020 | train_loss=2.5615 | train_acc=0.2188 | val_acc=0.2357 | val_loss=1.9027
+Epoch 005/020 | train_loss=2.4147 | train_acc=0.2070 | val_acc=0.2857 | val_loss=1.9429
+Epoch 006/020 | train_loss=2.3265 | train_acc=0.2708 | val_acc=0.3143 | val_loss=1.7876
+Epoch 007/020 | train_loss=2.1586 | train_acc=0.3346 | val_acc=0.2143 | val_loss=2.0113
+Epoch 008/020 | train_loss=1.9681 | train_acc=0.4089 | val_acc=0.3929 | val_loss=1.5576
+Epoch 009/020 | train_loss=1.9481 | train_acc=0.3880 | val_acc=0.3000 | val_loss=1.5509
+Epoch 010/020 | train_loss=1.7883 | train_acc=0.4492 | val_acc=0.3500 | val_loss=1.4098
+Epoch 011/020 | train_loss=1.6896 | train_acc=0.4844 | val_acc=0.2714 | val_loss=1.5453
+Epoch 012/020 | train_loss=1.6826 | train_acc=0.4896 | val_acc=0.2571 | val_loss=1.5272
+Epoch 013/020 | train_loss=1.5744 | train_acc=0.5208 | val_acc=0.2071 | val_loss=1.7481
+Epoch 014/020 | train_loss=1.6217 | train_acc=0.5130 | val_acc=0.3714 | val_loss=1.4748
+Epoch 015/020 | train_loss=1.5037 | train_acc=0.5391 | val_acc=0.4643 | val_loss=1.2849
+Epoch 016/020 | train_loss=1.5216 | train_acc=0.5482 | val_acc=0.0857 | val_loss=3.5439
+Epoch 017/020 | train_loss=1.5573 | train_acc=0.4974 | val_acc=0.4143 | val_loss=1.5488
+Epoch 018/020 | train_loss=1.4151 | train_acc=0.5664 | val_acc=0.3643 | val_loss=1.8595
+Epoch 019/020 | train_loss=1.3673 | train_acc=0.5729 | val_acc=0.6214 | val_loss=0.9963
+Epoch 020/020 | train_loss=1.2812 | train_acc=0.6185 | val_acc=0.5500 | val_loss=1.0524
+[Train-v2] best_val_acc=0.6214 | best_val_loss=0.9963 | saved=results/stage43/lora_hybrid_recording_seed13_45933138/closedset_lora25_lora_hybrid_10known.pth
+[Load] checkpoint=results/stage43/lora_hybrid_recording_seed13_45933138/closedset_lora25_lora_hybrid_10known.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.347 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Assignment Coverage  Noise Points  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc Discovery Backend Discovery Feature Adapter                          GPCC Backend  GPCC Target Clusters GPCC Selected Candidate                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 GPCC Candidate Scores  GPCC Silhouette  GPCC Prototype Margin Mean  GPCC Silhouette Confidence Mean  GPCC Confidence Mean  GPCC Confidence Min  GPCC Cluster Stability  GPCC Cluster Size CV  GPCC Uses HDBSCAN       Cross-Day Adapter  Cross-Day Epochs  Cross-Day Batch Size  Cross-Day LR  Cross-Day Consistency Weight  Cross-Day CORAL Weight  Cross-Day Known Samples  Cross-Day Discovery Samples  Cross-Day Final Total  Cross-Day Final CE  Cross-Day Final Consistency  Cross-Day Final CORAL                    LoRa SSL Adapter  LoRa SSL Epochs  LoRa SSL Batch Size  LoRa SSL LR  LoRa SSL CE Weight  LoRa SSL Instance Weight  LoRa SSL Teacher Weight  LoRa SSL Temperature  LoRa SSL Known Samples  LoRa SSL Discovery Samples  LoRa SSL Final Total  LoRa SSL Final CE  LoRa SSL Final Instance  LoRa SSL Final Teacher
+MV-ACC-CIL discovery    R1         Day 2                 5      490                      5                    5                    0                    1.0                  1.0             0         5    0.0 0.349629 0.278119 0.538776       0.538776              GPCC                      none graph_prototype_controlled_clustering                     5            kmeans_joint {'kmeans_joint': {'score': 0.5239070492169046, 'silhouette': 0.2172512412071228, 'balance': 0.7720943327649352, 'stability': 1.0, 'cluster_size_cv': 0.2951785262027703}, 'kmeans_graph': {'score': 0.32203222183205327, 'silhouette': 0.15552355349063873, 'balance': 0.6677539706407118, 'stability': 0.41177389313623847, 'cluster_size_cv': 0.4975575495874583}, 'agglomerative_joint': {'score': 0.4736889004622053, 'silhouette': 0.20460543036460876, 'balance': 0.7797785595776928, 'stability': 0.8208008073845275, 'cluster_size_cv': 0.28241535717726474}}         0.217251                    0.319633                         0.608626              0.430587             0.053782                     1.0              0.295179              False train_consistency_coral                 2                   128       0.00001                           0.5                    0.05                      840                          490               0.841287            0.832752                     0.008009               0.090629 instance_contrastive_teacher_anchor                3                  128      0.00001                 1.0                       0.5                      0.2                   0.2                     840                         490              2.762918           0.792163                 3.938507                0.007505
+MV-ACC-CIL discovery    R2         Day 3                 5      490                      5                    5                    0                    1.0                  1.0             0         5    0.0 0.255347 0.191535 0.489796       0.487755              GPCC                      none graph_prototype_controlled_clustering                     5            kmeans_joint   {'kmeans_joint': {'score': 0.5154752482946053, 'silhouette': 0.1688612997531891, 'balance': 0.8630076671517566, 'stability': 1.0, 'cluster_size_cv': 0.1587382569848639}, 'kmeans_graph': {'score': 0.35794236483123937, 'silhouette': 0.13320352137088776, 'balance': 0.86002691883979, 'stability': 0.4507001772371723, 'cluster_size_cv': 0.1627543023293262}, 'agglomerative_joint': {'score': 0.36118734646796724, 'silhouette': 0.16543030738830566, 'balance': 0.7953828276179846, 'stability': 0.44449644752320855, 'cluster_size_cv': 0.2572562108171277}}         0.168861                    0.262538                         0.584431              0.379103             0.071393                     1.0              0.158738              False train_consistency_coral                 2                   128       0.00001                           0.5                    0.05                      840                          490               1.377743            1.370609                     0.005072               0.091971 instance_contrastive_teacher_anchor                3                  128      0.00001                 1.0                       0.5                      0.2                   0.2                     840                         490              3.336929           1.302024                 4.067881                0.004824
+MV-ACC-CIL discovery    R3         Day 4                 5      490                      5                    5                    0                    1.0                  1.0             0         5    0.0 0.494670 0.424611 0.606122       0.606122              GPCC                      none graph_prototype_controlled_clustering                     5            kmeans_joint     {'kmeans_joint': {'score': 0.5435239248358671, 'silhouette': 0.24634328484535217, 'balance': 0.7901755908546172, 'stability': 1.0, 'cluster_size_cv': 0.2655414968190127}, 'kmeans_graph': {'score': 0.2716579410455946, 'silhouette': 0.11216378211975098, 'balance': 0.6808229511885803, 'stability': 0.295213082568062, 'cluster_size_cv': 0.4688106478405299}, 'agglomerative_joint': {'score': 0.5007359546098561, 'silhouette': 0.2349606156349182, 'balance': 0.7721363966500048, 'stability': 0.8683213467226002, 'cluster_size_cv': 0.2951079684089566}}         0.246343                    0.345274                         0.623172              0.455456             0.080519                     1.0              0.265541              False train_consistency_coral                 2                   128       0.00001                           0.5                    0.05                      840                          490               1.657529            1.654898                     0.001191               0.040715 instance_contrastive_teacher_anchor                3                  128      0.00001                 1.0                       0.5                      0.2                   0.2                     840                         490              3.684824           1.677303                 4.014257                0.001959
+Saved: results/stage43/lora_hybrid_recording_seed13_45933138/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.523810 0.523810      NaN           0.523810         0.000000  0.485555
+MV-ACC-CIL After R1    Day 2   eval_r1_30pct_15_seen            15                5                   5                 5           630     0.255556 0.307143 0.152381           0.307143         0.216667  0.241421
+MV-ACC-CIL After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.285714 0.273016 0.323810           0.316667         0.207143  0.253863
+MV-ACC-CIL After R3    Day 4   eval_r3_30pct_25_seen            25                5                   5                 5          1050     0.216190 0.159524 0.442857           0.235714         0.288095  0.169321
+Saved: results/stage43/lora_hybrid_recording_seed13_45933138/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1              5                                 5                    0         1.000000 0.538776 0.349629 0.278119       0.538776     0.255556 0.152381         0.216667
+MV-ACC-CIL    R2              5                                 5                    0         1.000000 0.489796 0.255347 0.191535       0.487755     0.285714 0.323810         0.207143
+MV-ACC-CIL    R3              5                                 5                    0         1.000000 0.606122 0.494670 0.424611       0.606122     0.216190 0.442857         0.288095
+Saved: results/stage43/lora_hybrid_recording_seed13_45933138/per_round_summary_results.csv
+运行 Stage 43 LoRa hybrid recording：seed=31
+
+========== LoRa25 Different Days Indoor 10-Known 3-Round Incremental Experiment ==========
+Dataset: /mnt/users/xj62kv/OpenSet_Incremental_SEI/datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz
+Save dir: results/stage43/lora_hybrid_recording_seed31_45933138
+Device: cuda
+Protocol: 10 known + 5 unknown R1 + 5 unknown R2 + 5 unknown R3
+LoRa split: IQ_1-6 train | IQ_7 validation | IQ_8-10 held-out evaluation
+Old-class prototype bonus beta: 0.0
+Incremental dual-view consistency weight: 0.0
+Cross-day feature domain alignment weight: 0.0
+Pseudo-label cluster reliability weighting: False (floor=0.2)
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train IQ_1-6 train: (840, 2, 256), classes=10, labels=0-9
+Initial eval 30%:     (420, 2, 256), classes=10, labels=0-9, day=Day 1
+Unknown R1 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=10-14, day=Day 2
+After R1 IQ_8-10 eval: (630, 2, 256), classes=15, labels=0-14, day=Day 2
+Unknown R2 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=15-19, day=Day 3
+After R2 IQ_8-10 eval: (840, 2, 256), classes=20, labels=0-19, day=Day 3
+Unknown R3 IQ_1-7 discovery: (490, 2, 256), classes=5, labels=20-24, day=Day 4
+After R3 IQ_8-10 eval: (1050, 2, 256), classes=25, labels=0-24, day=Day 4
+
+[Train-v2] classes=10 | train=840 | validation=140 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/020 | train_loss=3.0895 | train_acc=0.0977 | val_acc=0.0929 | val_loss=2.4388
+Epoch 002/020 | train_loss=2.8490 | train_acc=0.1172 | val_acc=0.1000 | val_loss=2.2716
+Epoch 003/020 | train_loss=2.7767 | train_acc=0.1680 | val_acc=0.2357 | val_loss=2.1526
+Epoch 004/020 | train_loss=2.5875 | train_acc=0.2135 | val_acc=0.2214 | val_loss=1.8930
+Epoch 005/020 | train_loss=2.3696 | train_acc=0.2721 | val_acc=0.3286 | val_loss=1.8158
+Epoch 006/020 | train_loss=2.1808 | train_acc=0.3073 | val_acc=0.2286 | val_loss=1.9109
+Epoch 007/020 | train_loss=2.1186 | train_acc=0.3372 | val_acc=0.2500 | val_loss=1.8513
+Epoch 008/020 | train_loss=1.9796 | train_acc=0.3724 | val_acc=0.3857 | val_loss=1.6648
+Epoch 009/020 | train_loss=1.8737 | train_acc=0.4141 | val_acc=0.3000 | val_loss=1.8455
+Epoch 010/020 | train_loss=1.9234 | train_acc=0.4128 | val_acc=0.3000 | val_loss=1.5807
+Epoch 011/020 | train_loss=1.8221 | train_acc=0.4206 | val_acc=0.2214 | val_loss=2.0077
+Epoch 012/020 | train_loss=1.7300 | train_acc=0.4740 | val_acc=0.4286 | val_loss=1.4226
+Epoch 013/020 | train_loss=1.6468 | train_acc=0.5013 | val_acc=0.6714 | val_loss=1.1105
+Epoch 014/020 | train_loss=1.5360 | train_acc=0.5560 | val_acc=0.4286 | val_loss=1.2149
+Epoch 015/020 | train_loss=1.4737 | train_acc=0.5521 | val_acc=0.5143 | val_loss=1.2995
+Epoch 016/020 | train_loss=1.4477 | train_acc=0.5911 | val_acc=0.4786 | val_loss=1.1893
+Epoch 017/020 | train_loss=1.4701 | train_acc=0.5677 | val_acc=0.5500 | val_loss=1.1681
+Epoch 018/020 | train_loss=1.3894 | train_acc=0.5729 | val_acc=0.4643 | val_loss=1.1738
+Epoch 019/020 | train_loss=1.4207 | train_acc=0.5495 | val_acc=0.2286 | val_loss=1.9421
+Epoch 020/020 | train_loss=1.3820 | train_acc=0.5794 | val_acc=0.2714 | val_loss=1.9132
+[Train-v2] best_val_acc=0.6714 | best_val_loss=1.1105 | saved=results/stage43/lora_hybrid_recording_seed31_45933138/closedset_lora25_lora_hybrid_10known.pth
+[Load] checkpoint=results/stage43/lora_hybrid_recording_seed31_45933138/closedset_lora25_lora_hybrid_10known.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.347 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Assignment Coverage  Noise Points  Clusters  Noise      NMI      ARI   Purity  Hungarian Acc Discovery Backend Discovery Feature Adapter                          GPCC Backend  GPCC Target Clusters GPCC Selected Candidate                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 GPCC Candidate Scores  GPCC Silhouette  GPCC Prototype Margin Mean  GPCC Silhouette Confidence Mean  GPCC Confidence Mean  GPCC Confidence Min  GPCC Cluster Stability  GPCC Cluster Size CV  GPCC Uses HDBSCAN       Cross-Day Adapter  Cross-Day Epochs  Cross-Day Batch Size  Cross-Day LR  Cross-Day Consistency Weight  Cross-Day CORAL Weight  Cross-Day Known Samples  Cross-Day Discovery Samples  Cross-Day Final Total  Cross-Day Final CE  Cross-Day Final Consistency  Cross-Day Final CORAL                    LoRa SSL Adapter  LoRa SSL Epochs  LoRa SSL Batch Size  LoRa SSL LR  LoRa SSL CE Weight  LoRa SSL Instance Weight  LoRa SSL Teacher Weight  LoRa SSL Temperature  LoRa SSL Known Samples  LoRa SSL Discovery Samples  LoRa SSL Final Total  LoRa SSL Final CE  LoRa SSL Final Instance  LoRa SSL Final Teacher
+MV-ACC-CIL discovery    R1         Day 2                 5      490                      5                    5                    0                    1.0                  1.0             0         5    0.0 0.397762 0.308171 0.526531       0.526531              GPCC                      none graph_prototype_controlled_clustering                     5            kmeans_joint {'kmeans_joint': {'score': 0.518646135632983, 'silhouette': 0.22642557322978973, 'balance': 0.7205603517829932, 'stability': 1.0, 'cluster_size_cv': 0.38780880397533174}, 'kmeans_graph': {'score': 0.38606189075162667, 'silhouette': 0.16968651115894318, 'balance': 0.7223288834370752, 'stability': 0.5930741317071714, 'cluster_size_cv': 0.3844109282210554}, 'agglomerative_joint': {'score': 0.5000306593064071, 'silhouette': 0.22142885625362396, 'balance': 0.7244664031325531, 'stability': 0.9334060309616132, 'cluster_size_cv': 0.38032625899014055}}         0.226426                    0.334283                         0.613213              0.444121             0.054215                     1.0              0.387809              False train_consistency_coral                 2                   128       0.00001                           0.5                    0.05                      840                          490               1.066560            1.059943                     0.004742               0.084924 instance_contrastive_teacher_anchor                3                  128      0.00001                 1.0                       0.5                      0.2                   0.2                     840                         490              3.266141           1.054218                 4.422021                0.004566
+MV-ACC-CIL discovery    R2         Day 3                 5      490                      5                    5                    0                    1.0                  1.0             0         5    0.0 0.319307 0.274392 0.504082       0.489796              GPCC                      none graph_prototype_controlled_clustering                     5            kmeans_joint     {'kmeans_joint': {'score': 0.5145003573642807, 'silhouette': 0.21724744141101837, 'balance': 0.725071322941103, 'stability': 1.0, 'cluster_size_cv': 0.3791746664917117}, 'kmeans_graph': {'score': 0.3131120293236407, 'silhouette': 0.13270846009254456, 'balance': 0.718129860204946, 'stability': 0.385985616927008, 'cluster_size_cv': 0.3925058062821837}, 'agglomerative_joint': {'score': 0.4211713125452401, 'silhouette': 0.18665219843387604, 'balance': 0.7890547692654538, 'stability': 0.6428065982140698, 'cluster_size_cv': 0.26733914925946034}}         0.217247                    0.322087                         0.608624              0.431028             0.037360                     1.0              0.379175              False train_consistency_coral                 2                   128       0.00001                           0.5                    0.05                      840                          490               1.599863            1.593193                     0.003170               0.101709 instance_contrastive_teacher_anchor                3                  128      0.00001                 1.0                       0.5                      0.2                   0.2                     840                         490              3.757944           1.551882                 4.410731                0.003482
+MV-ACC-CIL discovery    R3         Day 4                 5      490                      5                    5                    0                    1.0                  1.0             0         5    0.0 0.525694 0.426176 0.614286       0.606122              GPCC                      none graph_prototype_controlled_clustering                     5            kmeans_joint         {'kmeans_joint': {'score': 0.5467919885853681, 'silhouette': 0.2613140940666199, 'balance': 0.765346184243636, 'stability': 1.0, 'cluster_size_cv': 0.3065982696291403}, 'kmeans_graph': {'score': 0.2464495965395842, 'silhouette': 0.09596952795982361, 'balance': 0.6816283880370991, 'stability': 0.2293627142170455, 'cluster_size_cv': 0.46707504785668175}, 'agglomerative_joint': {'score': 0.51654664927532, 'silhouette': 0.2563033998012543, 'balance': 0.746151234735381, 'stability': 0.9053981297502158, 'cluster_size_cv': 0.340210876089544}}         0.261314                    0.360349                         0.630657              0.469796             0.091063                     1.0              0.306598              False train_consistency_coral                 2                   128       0.00001                           0.5                    0.05                      840                          490               2.085160            2.083044                     0.000953               0.032791 instance_contrastive_teacher_anchor                3                  128      0.00001                 1.0                       0.5                      0.2                   0.2                     840                         490              3.996150           1.897306                 4.197076                0.001532
+Saved: results/stage43/lora_hybrid_recording_seed31_45933138/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           420     0.585714 0.585714      NaN           0.585714         0.000000  0.560540
+MV-ACC-CIL After R1    Day 2   eval_r1_30pct_15_seen            15                5                   5                 5           630     0.352381 0.354762 0.347619           0.354762         0.230952  0.304295
+MV-ACC-CIL After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5           840     0.288095 0.287302 0.290476           0.333333         0.252381  0.233968
+MV-ACC-CIL After R3    Day 4   eval_r3_30pct_25_seen            25                5                   5                 5          1050     0.185714 0.129762 0.409524           0.195238         0.390476  0.125471
+Saved: results/stage43/lora_hybrid_recording_seed31_45933138/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1              5                                 5                    0         1.000000 0.526531 0.397762 0.308171       0.526531     0.352381 0.347619         0.230952
+MV-ACC-CIL    R2              5                                 5                    0         1.000000 0.504082 0.319307 0.274392       0.489796     0.288095 0.290476         0.252381
+MV-ACC-CIL    R3              5                                 5                    0         1.000000 0.614286 0.525694 0.426176       0.606122     0.185714 0.409524         0.390476
+Saved: results/stage43/lora_hybrid_recording_seed31_45933138/per_round_summary_results.csv
