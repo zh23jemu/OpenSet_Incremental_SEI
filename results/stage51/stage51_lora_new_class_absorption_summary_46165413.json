@@ -1,0 +1,78 @@
+{
+  "schema_version": "stage51_lora_new_class_absorption_summary_v1",
+  "job_id": "46165413",
+  "stage48_seed31": {
+    "overall": 0.2652380952,
+    "old": 0.225,
+    "new": 0.4261904762,
+    "forgetting": 0.2011904762
+  },
+  "records": [
+    {
+      "variant": "base",
+      "overall": 0.2728571428571428,
+      "old": 0.2410714285714285,
+      "new": 0.4,
+      "forgetting": 0.2392857142857142,
+      "macro_f1": 0.2177634331469732,
+      "delta_base_overall": 0.0,
+      "delta_stage48_overall": 0.0076190476571427745,
+      "delta_base_old": 0.0,
+      "delta_stage48_old": 0.016071428571428487,
+      "delta_base_new": 0.0,
+      "delta_stage48_new": -0.02619047619999998,
+      "delta_base_forgetting": 0.0,
+      "delta_stage48_forgetting": 0.03809523808571422
+    },
+    {
+      "variant": "new_proto_w0p10",
+      "overall": 0.2661904761904762,
+      "old": 0.2345238095238095,
+      "new": 0.3928571428571428,
+      "forgetting": 0.2607142857142857,
+      "macro_f1": 0.2165519698759657,
+      "delta_base_overall": -0.006666666666666599,
+      "delta_stage48_overall": 0.000952380990476176,
+      "delta_base_old": -0.006547619047618997,
+      "delta_stage48_old": 0.00952380952380949,
+      "delta_base_new": -0.0071428571428572285,
+      "delta_stage48_new": -0.03333333334285721,
+      "delta_base_forgetting": 0.021428571428571463,
+      "delta_stage48_forgetting": 0.05952380951428568
+    },
+    {
+      "variant": "head_boost2",
+      "overall": 0.2642857142857143,
+      "old": 0.2226190476190476,
+      "new": 0.430952380952381,
+      "forgetting": 0.2357142857142857,
+      "macro_f1": 0.2077724040100291,
+      "delta_base_overall": -0.008571428571428508,
+      "delta_stage48_overall": -0.0009523809142857331,
+      "delta_base_old": -0.018452380952380887,
+      "delta_stage48_old": -0.0023809523809524002,
+      "delta_base_new": 0.030952380952380953,
+      "delta_stage48_new": 0.004761904752380974,
+      "delta_base_forgetting": -0.0035714285714285032,
+      "delta_stage48_forgetting": 0.034523809514285714
+    },
+    {
+      "variant": "imprint_scale1p5",
+      "overall": 0.2176190476190476,
+      "old": 0.181547619047619,
+      "new": 0.3619047619047619,
+      "forgetting": 0.3273809523809524,
+      "macro_f1": 0.1668377915238454,
+      "delta_base_overall": -0.0552380952380952,
+      "delta_stage48_overall": -0.04761904758095242,
+      "delta_base_old": -0.05952380952380948,
+      "delta_stage48_old": -0.04345238095238099,
+      "delta_base_new": -0.038095238095238126,
+      "delta_stage48_new": -0.0642857142952381,
+      "delta_base_forgetting": 0.08809523809523817,
+      "delta_stage48_forgetting": 0.1261904761809524
+    }
+  ],
+  "passed_variants": [],
+  "gate": "FAIL"
+}
