@@ -1,0 +1,1 @@
+/var/spool/slurm_usmidet-com-prod-com047/d/job45959290/slurm_script: line 56: 1096664 Bus error               (core dumped) "${PYTHON_BIN}" "${ARGS[@]}"
