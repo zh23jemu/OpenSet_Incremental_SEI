@@ -163,6 +163,7 @@
 - Stage 43 已完成 LoRa recording-level hybrid 三种子验证：Job `45933138` 的 Hybrid recording Overall/New 为 `0.2444±0.0429/0.5778±0.0385`，低于 Stage 27 Chirp recording 对照 `0.2933/0.6444`；相对 Overall `-0.0489`、New `-0.0666`，未通过预注册门槛，归档为负消融。
 - Stage 44 已新增 LoRa Setup 1 原始 I/Q 必要下载入口：`download_lora25_setup1_raw_iq.py` 只覆盖 Different Days Indoor strict 协议需要的 385 个 `IQ_*.dat`，本地 probe 确认 OSU 链接可访问且单文件约 160 MB，总量估算约 61.6 GB；原始目录已精确加入 `.gitignore`。
 - Stage 44 LoRa Setup 1 原始 I/Q 已完整下载：Job `45959290` 因 Python 收尾 `Bus error` 标记为 `FAILED`，但 stdout 已到 `[0385/0385] downloaded`，manifest 为 `records_present_or_downloaded=385`，远端复核确认 385 个 `IQ_*.dat` 均存在且大小均为 `160000000` bytes；实际落盘在 `/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage44/raw_setup1_iq`。
+- Stage 45 已新增 LoRa 原始 I/Q 长窗/多窗 seed7 验证入口：`build_lora25_compact.py` 支持 `--raw_dir` 从 Stage44 完整 `.dat` 截取本地 range，`slurm/stage45_lora_raw_iq_multiwindow_seed7.sbatch` 将生成 1024 点 `s14/s28` 两个 aligned 子集，并用当前 LoRa Chirp + GPCC + cross-day + SSL + joint 后端验证是否超过 Stage27 候选。
 - 远端家目录瘦身已完成：`/mnt/users/xj62kv` 精确占用约 `99.86 GiB`，已将 `underwater-crack-correction`、`MASAM-MIB`、`sound-event-classification`、`.cache`、`OpenSet_Incremental_SEI` 和 Stage44 LoRa raw I/Q 目录迁移到 `/mnt/usmidet/billy_test` 并在原位置保留软链接。
 
 ## Recent Changes
@@ -301,6 +302,7 @@
 - 2026-08-03：完成 Stage 44 LoRa Setup 1 原始 I/Q 下载准备：新增 manifest-only/optional-download 脚本、Slurm 入口、probe/required manifest 和说明文档；默认不下载大文件，显式 `DOWNLOAD_RAW=1` 才在 Slurm 上拉取约 61.6 GB 必要原始 I/Q。
 - 2026-08-03：按用户要求将远端 `/mnt/users/xj62kv` 大目录迁移到 `/mnt/usmidet/billy_test` 并建软链接，家目录从约 130G 降至约 99.86GiB；LoRa Setup 1 下载 Job `45959290` 已续跑，继续写入软链接目标。
 - 2026-08-04：完成 Stage 44 LoRa Setup 1 原始 I/Q 下载结果校验并同步小型结果分支 `stage44-results-45959290`；尽管 Slurm 状态为 `FAILED`，数据完整性已通过，新增完成报告 `results/stage44/STAGE44_LORA_SETUP1_RAW_IQ_DOWNLOAD_REPORT_45959290.md`。
+- 2026-08-04：新增 Stage 45 原始 I/Q 长窗/多窗 seed7 入口和报告器；本地已通过 `.venv` 语法检查与 `--raw_dir` 假数据 smoke，下一步推送后在 Slurm 提交真实 raw I/Q 验证。
 
 ## Next TODO
 
@@ -321,7 +323,7 @@
 - Stage 41 已完成且未通过；LoRa 当前仍以 Chirp backbone 三种子 `0.2540±0.0101` 为正式候选，hybrid 不再扩展。继续攻需要更大规模原始数据/预训练或重新审查评估粒度，不能继续叠加局部分支。
 - Stage 42 已完成且未通过；LoRa 现有紧凑子集上的表征预训练线已连续失败，后续不再继续实例 SSL、物理回归或域对抗相邻变体。
 - Stage 43 已完成且未通过；LoRa 紧凑子集上的局部分支、实例 SSL、物理预训练、域对抗和 recording 聚合路线均已验证到瓶颈。若继续攻 LoRa，需要下载/处理更大原始 LoRa 数据，或正式把任务口径收束为客户可接受的 recording/transmission-level 分析，而不是继续在当前 9.7 MB 紧凑子集上叠小机制。
-- Stage 44 下一步基于完整原始 I/Q 重建长窗/多窗 LoRa 训练子集，并启动新一轮 LoRa-specific 预训练；不再复用 9.7 MB 紧凑子集做局部小机制搜索。
+- Stage 45 下一步推送代码并提交 `stage45_lora_raw_iq_multiwindow_seed7.sbatch`；若 `s14/s28` seed7 任一超过 Stage27 Chirp 的 R3 Overall 且 Old/New 不塌缩，再扩三种子，否则归档为原始 I/Q 多窗负消融。
 - 远端 Slurm 后续使用 `/mnt/users/xj62kv/OpenSet_Incremental_SEI` 路径仍可工作，但该路径现在是指向 `/mnt/usmidet/billy_test/OpenSet_Incremental_SEI_main` 的软链接；大文件继续优先落到 `/mnt/usmidet/billy_test`。
 - Stage 11 当前已完成本地可执行入口和协议边界验证；下一步提交并推送后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only，结果不过门槛就归档，不进入 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。

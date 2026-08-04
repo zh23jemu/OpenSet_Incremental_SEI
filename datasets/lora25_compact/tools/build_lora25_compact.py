@@ -73,13 +73,62 @@ def cache_path(cache_dir, record):
     )
 
 
-def download_range(record, cache_dir, start_sample, span_samples, retries=6):
+def raw_source_path(raw_dir, record):
+    """把 strict 协议记录映射到 Stage44 已下载的 OSU 原始目录结构。
+
+    Stage44 保留了官方目录层级，例如 ``Day1/Device1/IQ_1.dat``。这里仅用
+    公开的 day/device/transmission 元数据定位文件，不读取未知类真值，也不改变
+    LoRa strict split。返回路径后由 ``materialize_range`` 做统一的 range 截取。
+    """
+
+    return (
+        Path(raw_dir)
+        / f"Day{record['day']}"
+        / f"Device{record['device']}"
+        / f"IQ_{record['transmission']}.dat"
+    )
+
+
+def read_range_from_raw(record, raw_dir, start_sample, span_samples):
+    """从完整原始 I/Q 文件中读取一段 cf32 range，避免重复访问 OSU 网络。
+
+    原始文件是 little-endian complex64，每个样本 8 bytes。函数只截取当前
+    compact/aligned 构建需要的短片段并写入 cache，因此不会复制 58GB 原始包。
+    """
+
+    source = raw_source_path(raw_dir, record)
+    expected_bytes = int(span_samples) * 8
+    byte_start = int(start_sample) * 8
+    if not source.exists():
+        raise FileNotFoundError(f"Missing Stage44 raw IQ file: {source}")
+    with source.open("rb") as handle:
+        handle.seek(byte_start)
+        payload = handle.read(expected_bytes)
+    if len(payload) != expected_bytes:
+        raise ValueError(
+            f"Raw IQ range is too short for {source}: "
+            f"got {len(payload)} bytes, expected {expected_bytes}"
+        )
+    return payload, str(source.resolve())
+
+
+def materialize_range(record, cache_dir, start_sample, span_samples, raw_dir=None, retries=6):
     path = cache_path(cache_dir, record)
     expected_bytes = int(span_samples) * 8  # cf32 = complex float32
     byte_start = int(start_sample) * 8
     byte_end = byte_start + expected_bytes - 1
+    source_mode = "raw_dir" if raw_dir is not None else "remote_range"
+    raw_file = None
     if path.exists() and path.stat().st_size == expected_bytes:
         payload = path.read_bytes()
+    elif raw_dir is not None:
+        payload, raw_file = read_range_from_raw(
+            record,
+            raw_dir,
+            start_sample,
+            span_samples,
+        )
+        path.write_bytes(payload)
     else:
         url = source_url(record)
         last_error = None
@@ -124,6 +173,8 @@ def download_range(record, cache_dir, start_sample, span_samples, retries=6):
         "byte_end": byte_end,
         "bytes": len(payload),
         "sha256": hashlib.sha256(payload).hexdigest(),
+        "source_mode": source_mode,
+        "raw_file": raw_file,
     }
 
 
@@ -148,6 +199,14 @@ def main():
     parser.add_argument("--window_len", type=int, default=256)
     parser.add_argument("--stride", type=int, default=1024)
     parser.add_argument("--limit", type=int, default=None, help="Download only the first N records for a probe.")
+    parser.add_argument(
+        "--raw_dir",
+        default=None,
+        help=(
+            "Use already downloaded full OSU IQ_*.dat files instead of remote range "
+            "downloads. Expected layout: DayX/DeviceY/IQ_Z.dat."
+        ),
+    )
     args = parser.parse_args()
 
     output = Path(args.output)
@@ -168,18 +227,19 @@ def main():
     with ThreadPoolExecutor(max_workers=args.workers) as executor:
         futures = {
             executor.submit(
-                download_range,
-                record,
-                cache_dir,
-                args.start_sample,
-                span_samples,
-            ): record
-            for record in records
-        }
+            materialize_range,
+            record,
+            cache_dir,
+            args.start_sample,
+            span_samples,
+            args.raw_dir,
+        ): record
+        for record in records
+    }
         for index, future in enumerate(as_completed(futures), start=1):
             completed.append(future.result())
             if index == 1 or index % 10 == 0 or index == len(futures):
-                print(f"[download] {index}/{len(futures)} ranges complete", flush=True)
+                print(f"[range] {index}/{len(futures)} ranges complete", flush=True)
 
     completed.sort(key=lambda x: (x["day"], x["device"], x["transmission"]))
     manifest = {

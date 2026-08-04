@@ -80,3 +80,10 @@ Desktop.ini
 /results/stage40/*.pth
 /results/stage40/lora_domain_adversarial_seed*_*/*.pth
 /results/stage40/lora_domain_adversarial_seed*_*/*.npz
+
+# Stage45 会从完整 LoRa 原始 I/Q 生成本地 cache、长窗 NPZ 和 checkpoint；
+# 这些文件体积较大，报告、summary、CSV 和 Slurm 日志仍保留给 Git 同步。
+/results/stage45/cache_raw_setup1_*/
+/results/stage45/*.npz
+/results/stage45/lora_raw_*_seed*_*/*.pth
+/results/stage45/lora_raw_*_seed*_*/*.npz
