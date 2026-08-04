@@ -208,7 +208,7 @@ Strict loader 审计：
 43. Stage 41 Job `45664059` 已完成 LoRa 门控双分支 backbone seed7 验证：Chirp 对照 R3 Overall/Old/New/Forgetting=`0.2581/0.1988/0.4952/0.2738`，hybrid=`0.2486/0.2036/0.4286/0.2286`；Overall 和 New 下降，归档为负消融，不扩三种子。结果已通过 `stage41-results-45664059` 分支同步。
 44. Stage 42 Job `45891194` 已完成 LoRa 全局 discovery 实例对比预训练：Chirp 对照 R3 Overall/Old/New/Forgetting=`0.2581/0.1988/0.4952/0.2738`，Global SSL=`0.1610/0.1333/0.2714/0.2000`；Overall 和 New 大幅下降，归档为负消融，不扩三种子。结果已通过 `stage42-results-45891194` 分支同步。
 45. Stage 43 Job `45933138` 已完成 LoRa recording-level hybrid 三种子验证：Hybrid recording Overall/New=`0.2444±0.0429/0.5778±0.0385`，低于 Stage 27 Chirp recording 对照 `0.2933/0.6444`；该 recording 口径局部正信号未跨 seed 稳定，已通过 `stage43-results-45933138` 分支同步并归档为负消融。
-46. Stage 44 已新增 LoRa Setup 1 原始 I/Q 下载准备：`datasets/lora25_compact/tools/download_lora25_setup1_raw_iq.py` 生成 385 个必要 `IQ_*.dat` 清单，probe 确认 OSU 链接可访问，单文件约 160 MB，总量约 61.6 GB；`slurm/stage44_lora_setup1_raw_iq_prepare.sbatch` 支持显式 `DOWNLOAD_RAW=1` 后在 Slurm 下载。
+46. Stage 44 已完成 LoRa Setup 1 原始 I/Q 下载与校验：`datasets/lora25_compact/tools/download_lora25_setup1_raw_iq.py` 生成 385 个必要 `IQ_*.dat` 清单，Job `45959290` stdout 到 `[0385/0385] downloaded`，manifest 为 `records_present_or_downloaded=385`。Slurm 状态因 Python 收尾 `Bus error` 显示 `FAILED`，但远端复核确认 385 个文件均存在且大小均为 `160000000` bytes。数据实际位于 `/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage44/raw_setup1_iq`。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
@@ -226,7 +226,7 @@ Strict loader 审计：
 18. Stage 41 已完成且未通过；hybrid 相对 Chirp 的 Overall `-0.0095`、New `-0.0667`，停止该结构线。LoRa 后续若继续攻，只考虑更大规模数据/预训练或明确改为 recording-level 任务分析。
 19. Stage 42 已完成且未通过；全局 discovery SSL 线停止。LoRa 后续若继续攻，只考虑更大规模原始数据、不同任务定义或 recording-level 评估分析。
 20. Stage 43 已未通过；LoRa 紧凑子集继续攻分不能再靠局部分支或 recording 聚合包装，下一步应下载/处理更大原始 LoRa 数据，或把客户/论文口径明确收束到 recording/transmission-level 局限分析。
-21. Stage 44 下一步先确认 Slurm 磁盘空间，然后运行 Setup 1 必要原始 I/Q 下载；拿到原始 I/Q 后重建更长/多窗 LoRa 子集，再跑新一轮预训练，而不是继续复用 9.7 MB 紧凑子集。
+21. Stage 44 下一步基于完整 Setup 1 原始 I/Q 重建更长/多窗 LoRa 子集，再跑新一轮 LoRa-specific 预训练，而不是继续复用 9.7 MB 紧凑子集。
 8. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
 ## 8. 变更与 Git 状态
