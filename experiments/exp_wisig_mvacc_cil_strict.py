@@ -104,10 +104,21 @@ from utils.improved_closedset_training import (
 # ============================================================
 
 def set_seed(seed: int = 7):
+    """固定 Python/NumPy/PyTorch 随机源，并尽量减少 GPU 端同 seed 波动。"""
+    os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+    # LoRa 原始 I/Q 多窗实验对 seed31 较敏感；这里补齐 cuDNN 确定性设置，
+    # 避免同一 seed 在不同 Slurm job 中因卷积算法选择出现可见波动。
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    try:
+        # warn_only 保证遇到少数非确定性算子时给出警告而不是直接杀掉长任务。
+        torch.use_deterministic_algorithms(True, warn_only=True)
+    except TypeError:
+        torch.use_deterministic_algorithms(True)
 
 
 def ensure_dir(path: str):

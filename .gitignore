@@ -104,3 +104,8 @@ Desktop.ini
 /results/stage48/*.npz
 /results/stage48/lora_s28_rec065_seed*_*/*.pth
 /results/stage48/lora_s28_rec065_seed*_*/*.npz
+
+# Stage49 seed31 rec065 repeat 只提交小型指标和报告；模型权重/回放记忆不入库。
+/results/stage49/*.npz
+/results/stage49/lora_seed31_rec065_repeat*_*/*.pth
+/results/stage49/lora_seed31_rec065_repeat*_*/*.npz
