@@ -3,7 +3,7 @@
 - 状态：ADS-B Stage 21 联合 discovery-CIL 三种子已通过；LoRa Stage 48 原始 I/Q s28 + recording-consensus 0.65 三种子已通过，更新为当前 LoRa 正式候选
 - 版本：1.1
 - 创建日期：2026-07-26
-- 最近更新：2026-07-31
+- 最近更新：2026-08-05
 - 预计周期：3–4 周；前 5–7 天完成方案筛选和可运行初版
 - 用途：本文件同时作为项目执行计划、进度总表和客户汇报主入口；原独立进度报告已删除，后续只维护本文件，避免两份正文分叉。
 
@@ -42,6 +42,7 @@
 | Stage 48 LoRa 原始 I/Q s28 + rec065 | 三种子已通过 | Job `46124799` R3 Overall/Old/New/Forgetting 为 `0.2803±0.0148/0.2312±0.0133/0.4770±0.0463/0.1802±0.0185`；相对 Stage 27 Chirp，Overall `+0.0263`、Old `+0.0360`、Forgetting `-0.0992`，New 仅小幅下降 |
 | Stage 49 LoRa seed31 rec065 repeat | 已完成，未通过 | Job `46125830` 补齐确定性设置后三次 repeat 完全一致，R3 Overall/Old/New/Forgetting 为 `0.2729/0.2411/0.4000/0.2393`；相对 Stage48 seed31 Overall `+0.0076`、New `-0.0262`，Gate 失败 |
 | Stage 50 LoRa old:new ratio | 已完成，未通过 | seed31 rec065 ratio `0/1/2` 均未超过 Stage48 seed31 New `0.4262`；ratio `0/1` R3 Overall/Old/New/Forgetting 为 `0.2657/0.2262/0.4238/0.2417`，ratio `2` 为 `0.2729/0.2411/0.4000/0.2393` |
+| Stage 51 LoRa 新类吸收 | 已实现待 Slurm | 新增默认关闭的 `radcil_new_imprint_scale`、`radcil_new_imprint_bias`、`radcil_new_head_boost`，并准备 seed31 小矩阵：base / new prototype / head boost / imprint scale；只过预注册 New/Overall/Forgetting 门槛才扩三种子 |
 | ManyTx/ManyRx | 阶段 5 补充验证已完成 | 已只读汇总既有 seed7 三轮结果；ManyTx R3 Overall `0.2700`、ManyRx R3 Overall `0.5700`，作为辅助稳定性证据       |
 | 项目记忆与交接       | 部分已维护            | `AGENTS.md`、`PROJECT_HANDOFF.md` 已同步最新状态；RecallLoom rolling summary 当前因 receipt mismatch 暂停写入，未手工修改                |
 

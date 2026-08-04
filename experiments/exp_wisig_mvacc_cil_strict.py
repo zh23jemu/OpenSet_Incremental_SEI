@@ -1957,7 +1957,14 @@ def _evaluate_recording_level_predictions(
 # End-to-end pseudo-label class-incremental learning (MV-ACC-CIL)
 # ============================================================
 
-def _expand_closedset_classifier(old_model, new_out_dim, device, new_class_feature_means=None):
+def _expand_closedset_classifier(
+    old_model,
+    new_out_dim,
+    device,
+    new_class_feature_means=None,
+    new_imprint_scale=1.0,
+    new_imprint_bias=0.0,
+):
     """Expand the neural classifier while copying every old output weight."""
     old_out = int(old_model.classifier.out_features)
     if int(new_out_dim) < old_out:
@@ -1969,15 +1976,17 @@ def _expand_closedset_classifier(old_model, new_out_dim, device, new_class_featu
     with torch.no_grad():
         new_head.weight[:old_out].copy_(old_model.classifier.weight)
         new_head.bias[:old_out].copy_(old_model.classifier.bias)
-        # Classifier-weight imprinting is initialization only: final recognition
-        # still uses the neural classifier, never prototype matching.
+        # Classifier-weight imprinting 只作为新类 head 的初始化，不改变最终评估口径。
+        # Stage51 允许显式放大新类初始 weight/bias，用来验证 LoRa seed31 的
+        # 低 New 是否来自“新类刚注册时 logits 过弱”。该机制只使用当前轮
+        # discovery 的伪类特征均值，不读取 held-out eval 或未知真值。
         if new_class_feature_means is not None:
             means = torch.as_tensor(new_class_feature_means, dtype=new_head.weight.dtype, device=device)
             n = min(len(means), int(new_out_dim) - old_out)
             old_scale = old_model.classifier.weight.norm(dim=1).mean().clamp_min(1e-8)
-            means = F.normalize(means[:n], dim=1) * old_scale
+            means = F.normalize(means[:n], dim=1) * old_scale * float(new_imprint_scale)
             new_head.weight[old_out:old_out + n].copy_(means)
-            new_head.bias[old_out:old_out + n].zero_()
+            new_head.bias[old_out:old_out + n].fill_(float(new_imprint_bias))
     student.classifier = new_head
     student.num_known_classes = int(new_out_dim)
     return student
@@ -2341,6 +2350,15 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                 feat, logits = student(x)
                 logits_c, logits_m = logits[:len(xc)], logits[len(xc):]
                 ce_current = (F.cross_entropy(logits_c, yc, reduction="none") * wc).sum() / (wc.sum() + 1e-8)
+                if stage == "head" and float(args.radcil_new_head_boost) != 1.0:
+                    # LoRa 的当前轮 batch 本质上都是新伪类；head warmup 阶段
+                    # 临时提高当前轮 CE 相对 replay/KD 的权重，验证分类头是否
+                    # 因旧类 replay 和 teacher 约束太强而吸收新类不足。该缩放
+                    # 只在训练期使用伪标签，不参与聚类或 held-out 选参。
+                    new_fraction = (yc >= int(old_out_dim)).float().mean().detach()
+                    ce_current = ce_current * (
+                        1.0 + (float(args.radcil_new_head_boost) - 1.0) * float(new_fraction.item())
+                    )
                 ce_memory = F.cross_entropy(logits_m, ym)
                 with torch.no_grad():
                     teacher_feat_m, teacher_logits = teacher(xm)
@@ -4082,6 +4100,24 @@ def main():
         help="当前轮伪类原型归属损失权重；0保持历史训练路径。",
     )
     parser.add_argument(
+        "--radcil_new_imprint_scale",
+        type=float,
+        default=1.0,
+        help="新伪类 classifier imprint 的权重尺度倍率；1.0 保持历史初始化。",
+    )
+    parser.add_argument(
+        "--radcil_new_imprint_bias",
+        type=float,
+        default=0.0,
+        help="新伪类 classifier imprint 的 bias 初值；0.0 保持历史初始化。",
+    )
+    parser.add_argument(
+        "--radcil_new_head_boost",
+        type=float,
+        default=1.0,
+        help="head warmup 阶段当前轮新伪类 CE 的相对权重；1.0 保持历史训练。",
+    )
+    parser.add_argument(
         "--radcil_pseudo_aug_consistency_weight",
         type=float,
         default=0.0,
@@ -4856,7 +4892,14 @@ def main():
             ]
         ).astype(np.float32)
         next_label += len(cluster_ids)
-        student = _expand_closedset_classifier(teacher, next_label, device, imprinted_means)
+        student = _expand_closedset_classifier(
+            teacher,
+            next_label,
+            device,
+            imprinted_means,
+            new_imprint_scale=args.radcil_new_imprint_scale,
+            new_imprint_bias=args.radcil_new_imprint_bias,
+        )
         # 注册和训练故意分离：低置信样本仍参与加权 CE/SupCon，避免新类样本量
         # 因为注册筛选而塌缩；只有 replay memory 使用高置信注册子集。
         student = _train_end_to_end_cil(student, teacher, rd["X"], pseudo_y, current_w, memory_x, memory_y, old_out, args, device)

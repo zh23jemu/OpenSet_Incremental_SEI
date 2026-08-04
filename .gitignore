@@ -114,3 +114,8 @@ Desktop.ini
 /results/stage50/*.npz
 /results/stage50/lora_seed31_rec065_r*_*/*.pth
 /results/stage50/lora_seed31_rec065_r*_*/*.npz
+
+# Stage51 LoRa 新类吸收矩阵：保留小型 CSV/JSON/报告，忽略大模型与回放二进制。
+/results/stage51/*.npz
+/results/stage51/lora_s51_*_*/*.pth
+/results/stage51/lora_s51_*_*/*.npz
