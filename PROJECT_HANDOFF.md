@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-31
-- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 27 LoRa Chirp backbone 仍是当前 LoRa 正式候选；Stage 46 原始 I/Q s28 三种子改善 Overall/Old/遗忘但新类不稳，暂不替换正式候选
+- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 48 LoRa 原始 I/Q s28 + recording-consensus 0.65 已通过三种子门槛，更新为当前 LoRa 正式候选
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -215,11 +215,12 @@ Strict loader 审计：
 50. Stage 46 Job `46103936` 已完成：s28 三种子 R3 Overall/Old/New/Forgetting=`0.2806±0.0187/0.2413±0.0149/0.4381±0.1256/0.1643±0.0589`，相对 Stage27 Chirp 三种子 Overall/Old/Forgetting 改善，但 New 下降 `-0.0508` 且 seed31 New 仅 `0.2952`，未通过正式替换门槛。
 51. Stage 47 已新增 s28 seed31 新类修复小矩阵：比较 baseline、recording-consensus 0.65/0.75、高置信注册 top0.80 和组合项，目标是先修 seed31 New，再决定是否扩三种子。
 52. Stage 47 Job `46120703` 已完成：`rec065` R3 Overall/Old/New/Forgetting=`0.2986/0.2560/0.4690/0.2440`，修复 seed31 New 塌缩并通过扩展门槛；Stage 48 已新增 `rec065` 三种子确认入口。
+53. Stage 48 Job `46124799` 已完成并通过三种子门槛：LoRa 正式候选更新为完整 Setup 1 原始 I/Q s28 多窗 + recording-consensus 0.65，R3 Overall/Old/New/Forgetting=`0.2803±0.0148/0.2312±0.0133/0.4770±0.0463/0.1802±0.0185`；相对 Stage27 Chirp Overall/Old/Forgetting 改善，New 仅小幅下降。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
 7. Stage 22/23/24 LoRa 均未过采用门槛；Stage 27 seed7 的 Chirp backbone 出现明显正信号，但客户口径仍只能说“正在做三种子稳定性验证”，不能把单 seed 结果包装成已根本解决。
-8. Stage 27 三种子已稳定通过，Chirp backbone 锁定为当前 LoRa 正式候选。下一步不回到旧的 bias/BN/prototype 小调参，而是围绕发现纯度、跨天特征和新旧类联合训练继续做结构诊断；目标是把约 `25.4%` 的 Overall 继续提升，同时保持 Old/New 不塌缩。
+8. Stage 48 三种子已稳定通过，LoRa 正式候选从 Stage27 Chirp 更新为原始 I/Q s28 + recording-consensus 0.65；客户汇报和总表已同步更新。
 9. Stage 33/34 已完成：recording-consensus 能改善聚类但不能改善端到端 CIL，已归档为负消融。
 10. Stage 34 已完成且未通过端到端门槛；停止 recording 阈值搜索，下一步改做伪标签注册、置信度和增量训练联合优化。
 11. Stage 35 已完成且未通过平衡门槛；下一步不再调注册比例，改做 Student 预测一致性 + cluster prototype 联合更新的双目标 self-training。
@@ -232,7 +233,7 @@ Strict loader 审计：
 18. Stage 41 已完成且未通过；hybrid 相对 Chirp 的 Overall `-0.0095`、New `-0.0667`，停止该结构线。LoRa 后续若继续攻，只考虑更大规模数据/预训练或明确改为 recording-level 任务分析。
 19. Stage 42 已完成且未通过；全局 discovery SSL 线停止。LoRa 后续若继续攻，只考虑更大规模原始数据、不同任务定义或 recording-level 评估分析。
 20. Stage 43 已未通过；LoRa 紧凑子集继续攻分不能再靠局部分支或 recording 聚合包装，下一步应下载/处理更大原始 LoRa 数据，或把客户/论文口径明确收束到 recording/transmission-level 局限分析。
-21. Stage 48 下一步推送并提交 `stage48_lora_s28_rec065_multiseed.sbatch`；若三种子均值相对 Stage27 Chirp 保持 Overall/Old/Forgetting 改善且 New 不低于约 47%，则更新 LoRa 正式候选。
+21. Stage 48 已通过；客户汇报口径和总表已更新，说明 LoRa Overall 从 `25.4%` 提升到 `28.0%`，Old/遗忘明显改善，New 基本保持但仍略低于 Stage27。
 8. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
 ## 8. 变更与 Git 状态

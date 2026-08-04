@@ -8,25 +8,24 @@ DOI-style 是本项目中加入的简化版增量后端 baseline，不是官方�
 
 ## 2. LoRa 数据集能否下载
 
-LoRa 数据集可以下载，但完整数据体量较大。当前不下载完整 LoRa，只使用 `Comprehensive LoRa RF Datasets for Device Fingerprinting Using Deep Learning` 中的 `LoRa RFFP Dataset - Different Days Indoor Scenario` 必要子集，并已基于紧凑版数据完成 10+5x3 strict 协议验证。
+LoRa 数据集可以下载，但完整数据体量较大。当前已经按实验需要下载了 `Comprehensive LoRa RF Datasets for Device Fingerprinting Using Deep Learning` 里的 `LoRa RFFP Dataset - Different Days Indoor Scenario`，也就是 Setup 1 必要原始 I/Q 子集。
 
-必要子集已经准备好：`datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz`，约 9.7 MB。阶段 6 审计 `results/stage6/lora_required_subset_audit.json` 显示 `ok=true`。如果后续要扩展 LoRa 场景或设备范围，再在 Slurm 服务器上按需下载，不占用本地 C 盘。
+当前有两份口径：本地紧凑审计子集约 9.7 MB；服务器上实验用 Setup 1 原始 I/Q 为 385 个 `.dat`，约 58GB，放在 `/mnt/usmidet/billy_test`，不再占 `/mnt/users/xj62kv` 家目录。后续如果扩展 LoRa 其它场景，再继续按需下载，不需要一次性下载全部 LoRa。
 
 ## 3. ADS-B 和 LoRa 结果是否偏低
 
-是，应该如实承认。ADS-B 通过 long backbone 和默认 target split 后，R3 Overall 提升到约 `0.4932±0.0128`，接近 50%，但遗忘率仍高于 DOI-style。LoRa 当前 seed7 最好的一组 DOI-style / grouped hybrid 结果约为 `0.15-0.17`，明显低于主数据集水平。
+是，应该如实承认，但口径要更新。ADS-B 通过联合 discovery-CIL 后，R3 Overall 三种子到 `0.5149±0.0107`，已经过 50%。LoRa 也不是之前 15%-17% 或 25.4% 的版本了；Stage 48 用 Setup 1 原始 I/Q s28 多窗 + recording-consensus 0.65，R3 Overall/Old/New/Forgetting 为 `0.2803±0.0148/0.2312±0.0133/0.4770±0.0463/0.1802±0.0185`。
 
 因此 ADS-B 和 LoRa 不适合包装成“效果很好”。更稳妥的客户口径是：
 
-- ADS-B：训练期跨天表征适配在 seed7 有结构性改善，但三种子 R3 Overall 为 `0.4930±0.0091`，与 target split 基本持平，暂时不能锁定为正式主方案，剩余问题仍是旧新类权衡和稳定性。
-- LoRa：完整链路已经跑通，但跨天/跨体制旧类漂移很强，目前更适合作为局限分析和补充验证。
-- 训练期跨天表征适配能改善部分 discovery 指标，但没有稳定传递到三种子最终 Overall，因此不再继续叠加局部后端机制。
-- 后续若继续提升，应换更强的联合表征/发现结构，而不是继续调 density ratio、target split threshold、late-fusion 权重或 anchor 权重。
+- ADS-B：现在三种子已经过 50%，当前正式候选是联合 discovery-CIL，但还要如实说明稳定性和旧新类权衡。
+- LoRa：当前正式候选从 Stage 27 Chirp 的 `25.4%` 提升到 Stage 48 的 `28.0%`，Old 和遗忘改善明显，New 只小幅低一点；但绝对准确率仍偏低，不能说已经完全解决。
+- 后续若继续提升，应继续围绕原始 I/Q 多窗表征和 New 稳定性，而不是回到 density ratio、BN、old-logit bias、late-fusion 或 anchor 权重这类小参数。
 
 ## 4. 建议口语回复
 
 DOI-style 是我加的一个简化版 baseline，不是官方完整实现。原版来自 DOI 框架论文，但代码没完整开源，所以没法严格复现。我这里只是按论文思路做了一个简洁版，主要用来对比原型/记忆这类后端对旧类保持的效果。
 
-LoRa 完整数据先不下了，数据太大。现在实验需要的 Different Days Indoor 子集已经切好了，审计也通过，可以直接支撑现在的 LoRa 实验。
+LoRa 不用全量下载所有场景。我们现在已经下载了实验需要的 Setup 1 / Different Days Indoor 原始 I/Q，大概 58GB，放在服务器大盘里，不占家目录；本地还有 9.7MB 的紧凑审计子集。
 
-ADS-B 和 LoRa 目前结果确实不高。ADS-B 的 seed7 新结构有改善，但三种子均值还是接近 50%；LoRa 更低一些，主要说明跨体制很难。所以这两个现在更适合做补充实验和局限分析，不能硬说效果很好。
+ADS-B 现在三种子已经过 50%，LoRa 也从之前 25.4% 提到 28.0%。LoRa 这块提升主要来自 Setup 1 原始 I/Q 重新切 s28 多窗，再加 recording-consensus 0.65；Old 和遗忘改善明显，New 基本还在 47.7%。但 LoRa 绝对值还是不算高，所以可以说“有结构性提升”，不能说“已经完全解决”。
