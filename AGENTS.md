@@ -172,7 +172,7 @@
 - Stage 48 Job `46124799` 已完成并通过三种子门槛：LoRa 正式候选更新为完整 Setup 1 原始 I/Q s28 多窗 + recording-consensus 0.65，R3 Overall/Old/New/Forgetting 为 `0.2803±0.0148/0.2312±0.0133/0.4770±0.0463/0.1802±0.0185`；相对 Stage27 Chirp Overall `+0.0263`、Old `+0.0360`、New `-0.0119`、Forgetting `-0.0992`。
 - Stage 49 Job `46125830` 已完成 seed31 rec065 三次 repeat 复现验证：补齐确定性设置后三次结果完全一致，R3 Overall/Old/New/Forgetting 为 `0.2729/0.2411/0.4000/0.2393`，Gate 失败；Stage47 的 seed31 高 New 不可作为继续扩展依据。
 - Stage 50 手动提交的 seed31 rec065 old:new batch ratio `0/1/2` 矩阵已完成：ratio `0/1` 的 R3 Overall/Old/New/Forgetting 为 `0.2657/0.2262/0.4238/0.2417`，ratio `2` 为 `0.2729/0.2411/0.4000/0.2393`；没有超过 Stage48 seed31 New `0.4262`，归档为负消融。
-- Stage 51 已实现 LoRa 新类吸收 seed31 小矩阵：新增默认关闭的 `radcil_new_imprint_scale`、`radcil_new_imprint_bias`、`radcil_new_head_boost`，并提供 `slurm/stage51_lora_new_class_absorption_seed31.sbatch` 与 `tools/stage51_lora_new_class_absorption_report.py`；本地 `py_compile`、CLI 参数检查和 `git diff --check` 已通过，待 Slurm 验证。
+- Stage 51 LoRa 新类吸收 seed31 Job `46165413` 已完成：最佳 `head_boost2` 的 R3 Overall/Old/New/Forgetting 为 `0.2643/0.2226/0.4310/0.2357`，New 仅比 Stage48 seed31 高 `+0.0048` 且 Overall 低于门槛；`new_proto_w0p10` 与 `imprint_scale1p5` 退化，归档为负消融，不扩三种子。
 - 远端家目录瘦身已完成：`/mnt/users/xj62kv` 精确占用约 `99.86 GiB`，已将 `underwater-crack-correction`、`MASAM-MIB`、`sound-event-classification`、`.cache`、`OpenSet_Incremental_SEI` 和 Stage44 LoRa raw I/Q 目录迁移到 `/mnt/usmidet/billy_test` 并在原位置保留软链接。
 
 ## Recent Changes
@@ -320,6 +320,7 @@
 - 2026-08-04：Stage49 Job `46125830` 已完成并通过 `stage49-results-46125830` 分支同步；确定性修复后三次 repeat 无波动，但 New 未恢复，归档为复现风险收敛/负消融。
 - 2026-08-04：Stage50 old:new batch ratio `0/1/2` seed31 小矩阵已完成；降低旧类采样压力未超过 Stage48 seed31 New，归档为负消融。
 - 2026-08-05：新增 Stage51 LoRa 新类吸收候选，在新类 classifier imprint 和 head warmup CE 两处提供显式开关；新增 seed31 Slurm 矩阵和报告器，预注册 New/Overall/Forgetting 通过门槛。
+- 2026-08-05：完成 Stage51 Job `46165413` 并同步小型结果；`head_boost2` 只小幅提高 New 但牺牲 Overall，整体未过门槛，停止新类吸收小矩阵扩种子。
 
 ## Next TODO
 
@@ -342,7 +343,7 @@
 - Stage 43 已完成且未通过；LoRa 紧凑子集上的局部分支、实例 SSL、物理预训练、域对抗和 recording 聚合路线均已验证到瓶颈。若继续攻 LoRa，需要下载/处理更大原始 LoRa 数据，或正式把任务口径收束为客户可接受的 recording/transmission-level 分析，而不是继续在当前 9.7 MB 紧凑子集上叠小机制。
 - Stage 48 已通过，客户汇报口径和总表已更新：LoRa 从 Stage27 Chirp 的 `25.4%` Overall 提升到 Stage48 的 `28.0%`，Old/遗忘显著改善，New 基本保持在可接受范围内但仍略低于 Stage27。
 - Stage 49 已证明同 seed repeat 现在可稳定复现，但 seed31 rec065 的 New 稳定值仅 `0.4000`，不再把 Stage47 单次高 New 作为扩展依据；下一步若继续攻 LoRa，应换成更直接的新类吸收/分类头设计，而不是重复 rec065。
-- Stage 50 已证明降低 old:new batch ratio 不能救 seed31 New；Stage 51 已转向新类原型/分类头吸收机制，下一步提交 seed31 Slurm 小矩阵，只有 New 明显超过 Stage48 seed31 且 Overall/Forgetting 不恶化才扩三种子。
+- Stage 50 已证明降低 old:new batch ratio 不能救 seed31 New；Stage 51 进一步证明新类原型归属、head warmup boost 和 imprint scale 也不能稳定超过 Stage48 seed31。下一步若继续攻 LoRa，应转向更大粒度的伪标签结构或任务口径，不继续相邻倍率。
 - 远端 Slurm 后续使用 `/mnt/users/xj62kv/OpenSet_Incremental_SEI` 路径仍可工作，但该路径现在是指向 `/mnt/usmidet/billy_test/OpenSet_Incremental_SEI_main` 的软链接；大文件继续优先落到 `/mnt/usmidet/billy_test`。
 - Stage 11 当前已完成本地可执行入口和协议边界验证；下一步提交并推送后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only，结果不过门槛就归档，不进入 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
@@ -382,7 +383,7 @@
 - Stage 39 说明直接把跨天 discovery 未标注样本加入初始化物理目标会放大域偏移；Stage 48 后仍需继续提高绝对准确率。
 - Stage 40 已确认域对抗目标可能压掉设备指纹；Stage 48 证明原始 I/Q 多窗更有效，当前不宜继续回到紧凑数据上的局部调参。
 - Stage 49 说明 Stage47/Stage48 的 seed31 差异不是简单报告问题；确定性修复后结果稳定但 New 更低，LoRa 后续重点应转向新类吸收机制，而不是继续依赖 recording-consensus 单项。
-- Stage 51 只是 seed31 风险验证，不能提前声称 LoRa 已继续提升；若 head boost、new prototype 或 imprint scale 仍未过门槛，应停止该线并转向更大粒度的伪标签结构/任务口径，而不是继续调相邻倍率。
+- Stage 51 已未过门槛：`head_boost2` 只带来 New 小幅回升但 Overall 不达标，说明 LoRa 低分不是单纯新类 head 吸收不足；不能包装成进一步提升。
 - Stage 17 已未过门槛；ADS-B seed7 的后端/注册结构已多次表现为“Old 变好、New 下降”。下一步若继续攻低分，应转向更激进的联合表征发现或重新训练 discovery backbone，而不是继续加权/过滤当前伪标签。
 - Stage 18 discovery-only 已通过，但完整 CIL R3 Overall `0.4981` 仍低于当前 seed7 强对照 `0.5057`；当前根因进一步收敛为“聚类正确，但增量训练阶段重新破坏表征/新旧类边界”。
 - Stage 19 初始表征教师蒸馏尚未跑真实 Slurm；只有 seed7 同时改善 Overall 且不牺牲 New，才考虑扩三种子，否则归档并停止 ADS-B 小机制搜索。
