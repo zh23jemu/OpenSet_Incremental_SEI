@@ -210,6 +210,7 @@ Strict loader 审计：
 45. Stage 43 Job `45933138` 已完成 LoRa recording-level hybrid 三种子验证：Hybrid recording Overall/New=`0.2444±0.0429/0.5778±0.0385`，低于 Stage 27 Chirp recording 对照 `0.2933/0.6444`；该 recording 口径局部正信号未跨 seed 稳定，已通过 `stage43-results-45933138` 分支同步并归档为负消融。
 46. Stage 44 已完成 LoRa Setup 1 原始 I/Q 下载与校验：`datasets/lora25_compact/tools/download_lora25_setup1_raw_iq.py` 生成 385 个必要 `IQ_*.dat` 清单，Job `45959290` stdout 到 `[0385/0385] downloaded`，manifest 为 `records_present_or_downloaded=385`。Slurm 状态因 Python 收尾 `Bus error` 显示 `FAILED`，但远端复核确认 385 个文件均存在且大小均为 `160000000` bytes。数据实际位于 `/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage44/raw_setup1_iq`。
 47. Stage 45 已新增 LoRa 原始 I/Q 长窗/多窗 seed7 入口：`build_lora25_compact.py --raw_dir` 直接从 Stage44 完整 `.dat` 截取 range，`slurm/stage45_lora_raw_iq_multiwindow_seed7.sbatch` 生成 1024 点 `s14/s28` aligned 子集，并复用当前 LoRa Chirp + GPCC + cross-day + SSL + joint 后端验证是否超过 Stage27 候选。
+48. Stage 45 seed7 Job `46100168` 已从干净 worktree `/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage45-worktree` 提交。原始提交在 `gpu` 分区因节点约束 pending，已将同一个 job 改到 `gpuHz`，当前为 `PENDING (Priority)`，尚未生成报告。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
@@ -227,7 +228,7 @@ Strict loader 审计：
 18. Stage 41 已完成且未通过；hybrid 相对 Chirp 的 Overall `-0.0095`、New `-0.0667`，停止该结构线。LoRa 后续若继续攻，只考虑更大规模数据/预训练或明确改为 recording-level 任务分析。
 19. Stage 42 已完成且未通过；全局 discovery SSL 线停止。LoRa 后续若继续攻，只考虑更大规模原始数据、不同任务定义或 recording-level 评估分析。
 20. Stage 43 已未通过；LoRa 紧凑子集继续攻分不能再靠局部分支或 recording 聚合包装，下一步应下载/处理更大原始 LoRa 数据，或把客户/论文口径明确收束到 recording/transmission-level 局限分析。
-21. Stage 45 下一步推送代码并提交真实 raw I/Q seed7 Slurm；若 `s14/s28` 任一超过 Stage27 Chirp 且 Old/New 不塌缩，再扩三种子，否则将原始 I/Q 多窗路线归档为负消融。
+21. Stage 45 下一步跟踪 Job `46100168`；启动后先确认 raw_dir/cache/aligned NPZ 日志正常，完成后读取 Stage45 报告。若 `s14/s28` 任一超过 Stage27 Chirp 且 Old/New 不塌缩，再扩三种子，否则将原始 I/Q 多窗路线归档为负消融。
 8. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
 ## 8. 变更与 Git 状态
