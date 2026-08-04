@@ -75,6 +75,23 @@ def fmt_stats(stats: dict[str, float]) -> str:
     return f"{stats['mean']:.4f}±{stats['std']:.4f}，range={stats['range']:.4f}"
 
 
+def records_to_markdown(records: list[dict[str, float | int]]) -> str:
+    """生成不依赖 tabulate 的 Markdown 表格，保证远端最小环境也能运行。"""
+    columns = ["repeat", "overall", "old", "new", "forgetting", "macro_f1"]
+    headers = ["Repeat", "Overall", "Old", "New", "Forgetting", "Macro F1"]
+    rows = ["| " + " | ".join(headers) + " |", "| " + " | ".join(["---"] * len(headers)) + " |"]
+    for item in records:
+        values: list[str] = []
+        for column in columns:
+            value = item[column]
+            if isinstance(value, int):
+                values.append(str(value))
+            else:
+                values.append(f"{float(value):.4f}")
+        rows.append("| " + " | ".join(values) + " |")
+    return "\n".join(rows)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Stage49 LoRa seed31 rec065 repeat 报告器")
     parser.add_argument("--root", default="results/stage49")
@@ -97,8 +114,7 @@ def main() -> int:
     improves_stage48 = delta48["overall"] >= 0.01 and delta48["new"] >= 0.03 and delta48["forgetting"] <= 0.05
     gate = "PASS" if stable and improves_stage48 else "FAIL"
 
-    table = pd.DataFrame(records)
-    table_md = table.to_markdown(index=False, floatfmt=".4f")
+    table_md = records_to_markdown(records)
     lines = [
         f"# Stage49 LoRa Seed31 rec065 repeat 报告（Job {args.job_id}）",
         "",
