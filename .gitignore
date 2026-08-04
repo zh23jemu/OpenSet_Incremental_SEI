@@ -109,3 +109,8 @@ Desktop.ini
 /results/stage49/*.npz
 /results/stage49/lora_seed31_rec065_repeat*_*/*.pth
 /results/stage49/lora_seed31_rec065_repeat*_*/*.npz
+
+# Stage50 LoRa ratio 矩阵只提交小型指标和日志；checkpoint/replay 留在训练盘。
+/results/stage50/*.npz
+/results/stage50/lora_seed31_rec065_r*_*/*.pth
+/results/stage50/lora_seed31_rec065_r*_*/*.npz
