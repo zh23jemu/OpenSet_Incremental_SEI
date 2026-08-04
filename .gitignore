@@ -87,3 +87,9 @@ Desktop.ini
 /results/stage45/*.npz
 /results/stage45/lora_raw_*_seed*_*/*.pth
 /results/stage45/lora_raw_*_seed*_*/*.npz
+
+# Stage46 复用完整 LoRa 原始 I/Q 构建 s28 三种子数据；只提交报告和小型 CSV/JSON。
+/results/stage46/cache_raw_setup1_s28_*/
+/results/stage46/*.npz
+/results/stage46/lora_raw_s28_seed*_*/*.pth
+/results/stage46/lora_raw_s28_seed*_*/*.npz
