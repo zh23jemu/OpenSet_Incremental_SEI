@@ -24,12 +24,24 @@ BASELINE = {
 
 
 def _r3_row(path: Path) -> pd.Series:
-    """读取增量结果的最后一轮指标；缺文件时直接报错，避免静默漏报。"""
+    """读取增量结果的最后一轮指标；兼容不同阶段脚本的 R3 标识方式。
+
+    历史工具里有两种 CSV 格式：部分报告表保留数值列 ``Round``，而主实验
+    ``incremental_results.csv`` 使用文本列 ``Stage``（例如 ``After R3``）。
+    Stage45 只需要最终 R3 指标，因此这里按列名自适应定位，避免因为报告器
+    口径不一致把已经完成的训练误判为失败。
+    """
 
     if not path.exists():
         raise FileNotFoundError(f"Missing result CSV: {path}")
     frame = pd.read_csv(path)
-    row = frame.loc[frame["Round"] == 3]
+    if "Round" in frame.columns:
+        row = frame.loc[frame["Round"] == 3]
+    elif "Stage" in frame.columns:
+        stage_values = frame["Stage"].astype(str).str.strip().str.lower()
+        row = frame.loc[stage_values.isin({"after r3", "r3"})]
+    else:
+        raise KeyError(f"{path} has neither Round nor Stage column: {list(frame.columns)}")
     if row.empty:
         raise ValueError(f"Missing R3 row in {path}")
     return row.iloc[-1]
