@@ -1,0 +1,45 @@
+{
+  "job_id": "46100168",
+  "baseline": {
+    "overall": 0.2543,
+    "old": 0.1929,
+    "new": 0.5,
+    "forgetting": 0.269
+  },
+  "records": [
+    {
+      "variant": "s14",
+      "save_dir": "results/stage45/lora_raw_s14_seed7_46100168",
+      "overall": 0.2104761904761904,
+      "old": 0.1738095238095238,
+      "new": 0.3571428571428571,
+      "forgetting": 0.3142857142857143,
+      "macro_f1": 0.1716445368964646,
+      "recording_overall": 0.2,
+      "recording_new": 0.4666666666666667,
+      "delta_overall": -0.043823809523809626,
+      "delta_old": -0.019090476190476185,
+      "delta_new": -0.1428571428571429,
+      "delta_forgetting": 0.04528571428571426,
+      "passed_seed7_gate": false
+    },
+    {
+      "variant": "s28",
+      "save_dir": "results/stage45/lora_raw_s28_seed7_46100168",
+      "overall": 0.2961904761904761,
+      "old": 0.2309523809523809,
+      "new": 0.5571428571428572,
+      "forgetting": 0.2011904761904762,
+      "macro_f1": 0.2425992400990929,
+      "recording_overall": 0.3466666666666667,
+      "recording_new": 0.6666666666666666,
+      "delta_overall": 0.04189047619047609,
+      "delta_old": 0.03805238095238092,
+      "delta_new": 0.05714285714285716,
+      "delta_forgetting": -0.06780952380952382,
+      "passed_seed7_gate": true
+    }
+  ],
+  "best_variant": "s28",
+  "verdict": "s28 通过 seed7 门槛，可进入三种子。"
+}
