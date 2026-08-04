@@ -93,3 +93,9 @@ Desktop.ini
 /results/stage46/*.npz
 /results/stage46/lora_raw_s28_seed*_*/*.pth
 /results/stage46/lora_raw_s28_seed*_*/*.npz
+
+# Stage47 seed31 rescue 会复用/重建 LoRa s28 数据和 checkpoint；小型指标仍入库。
+/results/stage47/cache_raw_setup1_s28_*/
+/results/stage47/*.npz
+/results/stage47/lora_s28_seed31_*/*.pth
+/results/stage47/lora_s28_seed31_*/*.npz
