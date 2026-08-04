@@ -216,6 +216,7 @@ Strict loader 审计：
 51. Stage 47 已新增 s28 seed31 新类修复小矩阵：比较 baseline、recording-consensus 0.65/0.75、高置信注册 top0.80 和组合项，目标是先修 seed31 New，再决定是否扩三种子。
 52. Stage 47 Job `46120703` 已完成：`rec065` R3 Overall/Old/New/Forgetting=`0.2986/0.2560/0.4690/0.2440`，修复 seed31 New 塌缩并通过扩展门槛；Stage 48 已新增 `rec065` 三种子确认入口。
 53. Stage 48 Job `46124799` 已完成并通过三种子门槛：LoRa 正式候选更新为完整 Setup 1 原始 I/Q s28 多窗 + recording-consensus 0.65，R3 Overall/Old/New/Forgetting=`0.2803±0.0148/0.2312±0.0133/0.4770±0.0463/0.1802±0.0185`；相对 Stage27 Chirp Overall/Old/Forgetting 改善，New 仅小幅下降。
+54. Stage 49 Job `46125830` 已完成 seed31 rec065 三次 repeat：补齐确定性设置后三次完全一致，R3 Overall/Old/New/Forgetting=`0.2729/0.2411/0.4000/0.2393`，Gate 失败；不要再用 Stage47 单次高 New 继续扩 rec065。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
@@ -234,6 +235,7 @@ Strict loader 审计：
 19. Stage 42 已完成且未通过；全局 discovery SSL 线停止。LoRa 后续若继续攻，只考虑更大规模原始数据、不同任务定义或 recording-level 评估分析。
 20. Stage 43 已未通过；LoRa 紧凑子集继续攻分不能再靠局部分支或 recording 聚合包装，下一步应下载/处理更大原始 LoRa 数据，或把客户/论文口径明确收束到 recording/transmission-level 局限分析。
 21. Stage 48 已通过；客户汇报口径和总表已更新，说明 LoRa Overall 从 `25.4%` 提升到 `28.0%`，Old/遗忘明显改善，New 基本保持但仍略低于 Stage27。
+22. Stage 49 已完成；确定性复现收敛，但 rec065 的 seed31 New 稳定值只有 `0.4000`，下一步不能继续押 recording-consensus 单项，需要换更直接的新类吸收/分类头机制。
 8. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
 ## 8. 变更与 Git 状态
