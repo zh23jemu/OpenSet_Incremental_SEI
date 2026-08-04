@@ -1,0 +1,20 @@
+{
+  "dataset_profile": "lora25",
+  "split_level": "transmission-disjoint fixed split",
+  "seed": 31,
+  "day1_backbone_train_samples": 1680,
+  "day1_validation_samples": 280,
+  "day1_heldout_evaluation_samples": 840,
+  "development_ratio": 0.7,
+  "validation_split_key": "day1_known_validation",
+  "lora_recording_level_eval_enabled": true,
+  "lora_ssl_adaptation_enabled": true,
+  "lora_recording_ssl_adaptation_enabled": false,
+  "frozen_before_unknown_rounds": [
+    "checkpoint",
+    "CF-LCG",
+    "MV-ACC parameters",
+    "grouped DOI candidate set and Day1 validation-only selection rule",
+    "iCaRL fallback candidate set and Day1 validation-only selection rule"
+  ]
+}
