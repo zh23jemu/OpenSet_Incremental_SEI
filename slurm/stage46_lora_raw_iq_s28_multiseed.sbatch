@@ -36,8 +36,19 @@ ALIGN_MANIFEST="${ROOT}/lora25_alignment_manifest_raw1024_s28_${JOB_ID}.json"
 
 mkdir -p "${ROOT}" "${CACHE_DIR}"
 
+if [ ! -x "${PYTHON_BIN}" ]; then
+    # 远端通常用干净 git worktree 跑实验，worktree 本身不复制 .venv。
+    # 若当前目录没有虚拟环境，则回退到主项目软链接下已经验证过的环境。
+    PYTHON_BIN="/mnt/users/xj62kv/OpenSet_Incremental_SEI/.venv/bin/python"
+fi
+if [ ! -x "${PYTHON_BIN}" ]; then
+    echo "Python interpreter not found: ${PYTHON_BIN}" >&2
+    exit 127
+fi
+
 echo "Stage46 raw_dir=${RAW_DIR}"
 echo "Stage46 cache_dir=${CACHE_DIR}"
+echo "Stage46 python=${PYTHON_BIN}"
 
 # 生成 s28 所需的本地 range cache。这里从 Stage44 完整 IQ_*.dat 读取，不访问 OSU 网络。
 if [ ! -f "${RAW_PROBE_NPZ}" ]; then
