@@ -168,6 +168,7 @@
 - Stage 46 已新增 LoRa 原始 I/Q `s28` 三种子验证入口和报告器：`slurm/stage46_lora_raw_iq_s28_multiseed.sbatch` 只扩展通过门槛的 s28 到 seed 7/13/31，用于判断 Stage45 单种子收益是否稳定。
 - Stage 46 Job `46103936` 已完成：s28 三种子 R3 Overall/Old/New/Forgetting 为 `0.2806±0.0187/0.2413±0.0149/0.4381±0.1256/0.1643±0.0589`；相对 Stage27 Chirp 三种子 Overall `+0.0266`、Old `+0.0461`、Forgetting `-0.1151`，但 New `-0.0508` 且 seed31 New 仅 `0.2952`，未通过正式替换门槛。
 - Stage 47 已新增 LoRa s28 seed31 新类修复小矩阵：`slurm/stage47_lora_s28_new_class_rescue_seed31.sbatch` 比较 baseline、recording-consensus 0.65/0.75、高置信注册 top0.80 及组合项，目标是专门修复 seed31 R3 New 塌缩。
+- Stage 47 Job `46120703` 已完成：`rec065` 通过 seed31 修复门槛，R3 Overall/Old/New/Forgetting 为 `0.2986/0.2560/0.4690/0.2440`，相对 Stage46 seed31 New 提升 `+0.1738` 且 Overall/Old 不塌；Stage 48 已新增 `rec065` 三种子确认入口。
 - 远端家目录瘦身已完成：`/mnt/users/xj62kv` 精确占用约 `99.86 GiB`，已将 `underwater-crack-correction`、`MASAM-MIB`、`sound-event-classification`、`.cache`、`OpenSet_Incremental_SEI` 和 Stage44 LoRa raw I/Q 目录迁移到 `/mnt/usmidet/billy_test` 并在原位置保留软链接。
 
 ## Recent Changes
@@ -331,7 +332,7 @@
 - Stage 41 已完成且未通过；LoRa 当前仍以 Chirp backbone 三种子 `0.2540±0.0101` 为正式候选，hybrid 不再扩展。继续攻需要更大规模原始数据/预训练或重新审查评估粒度，不能继续叠加局部分支。
 - Stage 42 已完成且未通过；LoRa 现有紧凑子集上的表征预训练线已连续失败，后续不再继续实例 SSL、物理回归或域对抗相邻变体。
 - Stage 43 已完成且未通过；LoRa 紧凑子集上的局部分支、实例 SSL、物理预训练、域对抗和 recording 聚合路线均已验证到瓶颈。若继续攻 LoRa，需要下载/处理更大原始 LoRa 数据，或正式把任务口径收束为客户可接受的 recording/transmission-level 分析，而不是继续在当前 9.7 MB 紧凑子集上叠小机制。
-- Stage 47 下一步推送并提交 seed31 新类修复小矩阵；若任一变体把 seed31 R3 New 至少提升 5pt 且 Overall/Old/Forgetting 不塌缩，再扩三种子。
+- Stage 48 下一步推送并提交 `stage48_lora_s28_rec065_multiseed.sbatch`；若三种子均值相对 Stage27 Chirp 保持 Overall/Old/Forgetting 改善且 New 不低于约 47%，则更新 LoRa 正式候选。
 - 远端 Slurm 后续使用 `/mnt/users/xj62kv/OpenSet_Incremental_SEI` 路径仍可工作，但该路径现在是指向 `/mnt/usmidet/billy_test/OpenSet_Incremental_SEI_main` 的软链接；大文件继续优先落到 `/mnt/usmidet/billy_test`。
 - Stage 11 当前已完成本地可执行入口和协议边界验证；下一步提交并推送后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only，结果不过门槛就归档，不进入 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。

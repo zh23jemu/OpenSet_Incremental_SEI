@@ -99,3 +99,8 @@ Desktop.ini
 /results/stage47/*.npz
 /results/stage47/lora_s28_seed31_*/*.pth
 /results/stage47/lora_s28_seed31_*/*.npz
+
+# Stage48 只提交 rec065 三种子小型指标；checkpoint/NPZ 仍留在训练盘。
+/results/stage48/*.npz
+/results/stage48/lora_s28_rec065_seed*_*/*.pth
+/results/stage48/lora_s28_rec065_seed*_*/*.npz
