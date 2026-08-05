@@ -186,6 +186,8 @@
 - Stage 62 LoRa oracle discovery 后端保护诊断 seed7 Job `46314706` 已完成：oracle base R3 Overall/Old/New/Forgetting=`0.2986/0.2220/0.6048/0.2095`；old-route 为 `0.2757/0.2524/0.3690/0.2571`，救 Old 但压塌 New；grouped DOI 为 `0.3000/0.2232/0.6071/0.2750`，仅微升 Overall 且遗忘变差。结论是现有后端保护在完美聚类上界下也没有打开 Old/New 同时可行的突破口。
 - Stage 63 LoRa raw s28 增强一致性预训练 seed7 Job `46319406` 已完成：R3 Overall/Old/New/Forgetting=`0.3029/0.2494/0.5167/0.2524`，相对 Stage48 seed7 Overall `+0.0219`、Old `+0.0274`、New 持平，但 Forgetting `+0.0798`，记录为弱正但未过预注册门槛，不直接扩三种子。
 - Stage 64 LoRa masked reconstruction 原始 I/Q 预训练 seed7 Job `46321233` 已完成：R3 Overall/Old/New/Forgetting=`0.2676/0.2518/0.3310/0.1560`，Old 和遗忘优于 Stage48 seed7，但 New 大幅下降、Overall 低于 Stage48，归档为负消融，不扩三种子。
+- Stage 65 LoRa recording/transmission-level 任务口径可行性汇总已完成：Stage48 三种子 recording-level R3 Overall/Old/New/Forgetting=`0.3244±0.0251/0.2500±0.0360/0.6222±0.0314/0.2111±0.0567`，最好单点 Overall 仅 `0.3600`，不能靠改评估粒度达到或接近 50%。
+- Stage 66 LoRa 50% 目标缺口分解已完成：R3 时旧类占 20/25，Old 权重约 `0.80`；Stage48 Old 均值仅 `0.2312`，即使 New 提到 100%，Overall 理论上也只有约 `0.3849`；若保持当前 New，Old 需升到约 `0.5058` 才能到 50%，当前主风险定位为旧类跨天保持。
 - 远端家目录瘦身已完成：`/mnt/users/xj62kv` 精确占用约 `99.86 GiB`，已将 `underwater-crack-correction`、`MASAM-MIB`、`sound-event-classification`、`.cache`、`OpenSet_Incremental_SEI` 和 Stage44 LoRa raw I/Q 目录迁移到 `/mnt/usmidet/billy_test` 并在原位置保留软链接。
 
 ## Recent Changes
@@ -347,6 +349,7 @@
 - 2026-08-05：新增并完成 Stage62 LoRa oracle discovery 后端保护诊断；代码提交 `dd8ef45`，Job `46314706` 干净完成，小型结果通过 `stage62-results-46314706` 分支同步并合并。本次结果说明即便聚类完美，old-route/grouped DOI 也不能同时提高 Old、New 和 Overall。
 - 2026-08-05：新增并完成 Stage63 LoRa 增强一致性预训练 seed7；代码提交 `df786f0`，Job `46319406` 干净完成，小型结果通过 `stage63-results-46319406` 分支同步并合并。该候选提升 Overall/Old 且保住 New，但遗忘指标变差，暂不扩三种子。
 - 2026-08-05：新增并完成 Stage64 LoRa masked reconstruction 原始 I/Q 预训练；代码提交 `e0e59cc`，Job `46321233` 干净完成，小型结果通过 `stage64-results-46321233` 分支同步并合并。该候选救 Old/Forgetting 但明显牺牲 New，归档为负消融。
+- 2026-08-05：新增并完成 Stage65/66 LoRa 任务口径和 50% 缺口分析；结果显示 recording-level 最好也只有 `0.3600`，且 R3 Overall 受旧类 0.80 权重主导，继续冲分必须优先救旧类跨天保持。
 
 ## Next TODO
 
@@ -378,7 +381,7 @@
 - Stage59 已完成且未过门槛，不扩三种子；纯物理描述符链路远低于 Chirp backbone。LoRa 当前正式候选仍保持 Stage48 raw s28 + recording-consensus 0.65，后续不再切向传统 RF 统计原型基线。
 - Stage60 已完成且未过门槛，不扩三种子；累积伪标签全量重训被伪标签噪声拖垮。
 - Stage61/62 已完成 oracle 聚类与 oracle 后端保护诊断；LoRa 低分不是 discovery-only，也不是现有 old-route/grouped DOI 后端能单独解决。后续若继续攻，应转向更大结构：更强 LoRa 原始 I/Q 自监督预训练、跨天/recording 级任务重定义，或面向客户收口为跨体制局限。
-- Stage63 已完成弱正但未过门槛；Stage64 masked reconstruction 已验证失败。LoRa 后续不再继续当前预训练小变体，下一步应转向 recording/transmission-level 任务口径验证，或明确客户/论文口径为跨天跨体制局限。
+- Stage63 已完成弱正但未过门槛；Stage64 masked reconstruction 已验证失败；Stage65/66 已证明 recording-level 口径也不能把 LoRa 推近 50%。LoRa 后续若继续攻，应只做旧类跨天保持的大结构，或明确客户/论文口径为跨天跨体制局限。
 - 远端 Slurm 后续使用 `/mnt/users/xj62kv/OpenSet_Incremental_SEI` 路径仍可工作，但该路径现在是指向 `/mnt/usmidet/billy_test/OpenSet_Incremental_SEI_main` 的软链接；大文件继续优先落到 `/mnt/usmidet/billy_test`。
 - Stage 11 当前已完成本地可执行入口和协议边界验证；下一步提交并推送后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only，结果不过门槛就归档，不进入 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
@@ -429,6 +432,7 @@
 - Stage60 已验证失败：累积伪标签重训让 New 降到 `0.0095`，说明当前伪标签噪声不能直接作为全量监督训练数据。
 - Stage61/62 已验证：完美 discovery 只能把 seed7 Overall 推到约 `0.30`，old-route 会牺牲 New，grouped DOI 只微升 Overall 且遗忘更差；LoRa 当前瓶颈更接近跨天表征/任务口径上限，不能再包装为简单聚类或后端参数问题。
 - Stage63/64 已验证：增强一致性预训练能把 seed7 Overall 推到 `0.3029` 但遗忘恶化；masked reconstruction 救 Old/Forgetting 但 New 降到 `0.3310`。当前 LoRa 仍存在 Old/New 跷跷板，继续做同类自监督小变体收益预期较低。
+- Stage65/66 已验证：recording-level majority vote 最好 Overall 仅 `0.3600`；在 10+5×3 协议 R3 中旧类占 80%，当前 Stage48 Old 约 `0.2312`，即使 New 完美也只能到约 `0.3849`。LoRa 冲 50 的必要条件是旧类跨天保持接近 `0.51`，不是继续小幅抬 New。
 - Stage 17 已未过门槛；ADS-B seed7 的后端/注册结构已多次表现为“Old 变好、New 下降”。下一步若继续攻低分，应转向更激进的联合表征发现或重新训练 discovery backbone，而不是继续加权/过滤当前伪标签。
 - Stage 18 discovery-only 已通过，但完整 CIL R3 Overall `0.4981` 仍低于当前 seed7 强对照 `0.5057`；当前根因进一步收敛为“聚类正确，但增量训练阶段重新破坏表征/新旧类边界”。
 - Stage 19 初始表征教师蒸馏尚未跑真实 Slurm；只有 seed7 同时改善 Overall 且不牺牲 New，才考虑扩三种子，否则归档并停止 ADS-B 小机制搜索。
