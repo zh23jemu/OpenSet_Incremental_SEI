@@ -1,0 +1,214 @@
+{
+  "schema_version": "stage58_lora_dual_model_route_summary_v1",
+  "job_id": "46268271",
+  "stage48_seed7": {
+    "overall": 0.280952381,
+    "old": 0.2220238095,
+    "new": 0.5166666667,
+    "forgetting": 0.1726190476
+  },
+  "records": [
+    {
+      "variant": "base",
+      "stage": "Initial",
+      "overall": 0.5773809523809523,
+      "old": 0.5773809523809523,
+      "new": NaN,
+      "initial_known": 0.5773809523809523,
+      "forgetting": 0.0,
+      "macro_f1": 0.5248029818857789
+    },
+    {
+      "variant": "base",
+      "stage": "After R1",
+      "overall": 0.3341269841269841,
+      "old": 0.39166666666666666,
+      "new": 0.21904761904761905,
+      "initial_known": 0.39166666666666666,
+      "forgetting": 0.18571428571428567,
+      "macro_f1": 0.29623395716279116
+    },
+    {
+      "variant": "base",
+      "stage": "After R2",
+      "overall": 0.3279761904761905,
+      "old": 0.3325396825396825,
+      "new": 0.3142857142857143,
+      "initial_known": 0.45714285714285713,
+      "forgetting": 0.1202380952380952,
+      "macro_f1": 0.2989861040744096
+    },
+    {
+      "variant": "base",
+      "stage": "After R3",
+      "overall": 0.2814285714285714,
+      "old": 0.21369047619047618,
+      "new": 0.5523809523809524,
+      "initial_known": 0.35595238095238096,
+      "forgetting": 0.22142857142857136,
+      "macro_f1": 0.2260094188359864
+    },
+    {
+      "variant": "top80",
+      "stage": "Initial",
+      "overall": 0.5773809523809523,
+      "old": 0.5773809523809523,
+      "new": NaN,
+      "initial_known": 0.5773809523809523,
+      "forgetting": 0.0,
+      "macro_f1": 0.5248029818857789
+    },
+    {
+      "variant": "top80",
+      "stage": "After R1",
+      "overall": 0.32936507936507936,
+      "old": 0.3821428571428571,
+      "new": 0.22380952380952382,
+      "initial_known": 0.3821428571428571,
+      "forgetting": 0.1952380952380952,
+      "macro_f1": 0.27130935067322326
+    },
+    {
+      "variant": "top80",
+      "stage": "After R2",
+      "overall": 0.32857142857142857,
+      "old": 0.3388888888888889,
+      "new": 0.2976190476190476,
+      "initial_known": 0.4666666666666667,
+      "forgetting": 0.11071428571428565,
+      "macro_f1": 0.2865390582022264
+    },
+    {
+      "variant": "top80",
+      "stage": "After R3",
+      "overall": 0.27904761904761904,
+      "old": 0.20714285714285716,
+      "new": 0.5666666666666667,
+      "initial_known": 0.34404761904761905,
+      "forgetting": 0.23333333333333328,
+      "macro_f1": 0.2137378086597446
+    },
+    {
+      "variant": "new_conf_delta_0p00",
+      "stage": "Initial",
+      "overall": 0.5773809523809523,
+      "old": 0.5773809523809523,
+      "new": NaN,
+      "initial_known": 0.5773809523809523,
+      "forgetting": 0.0,
+      "macro_f1": 0.5248029818857789
+    },
+    {
+      "variant": "new_conf_delta_0p00",
+      "stage": "After R1",
+      "overall": 0.3373015873015873,
+      "old": 0.37857142857142856,
+      "new": 0.25476190476190474,
+      "initial_known": 0.37857142857142856,
+      "forgetting": 0.19880952380952377,
+      "macro_f1": 0.2955713000924084
+    },
+    {
+      "variant": "new_conf_delta_0p00",
+      "stage": "After R2",
+      "overall": 0.33630952380952384,
+      "old": 0.3325396825396825,
+      "new": 0.3476190476190476,
+      "initial_known": 0.45714285714285713,
+      "forgetting": 0.1202380952380952,
+      "macro_f1": 0.30512512017275145
+    },
+    {
+      "variant": "new_conf_delta_0p00",
+      "stage": "After R3",
+      "overall": 0.27904761904761904,
+      "old": 0.20773809523809525,
+      "new": 0.5642857142857143,
+      "initial_known": 0.3464285714285714,
+      "forgetting": 0.2309523809523809,
+      "macro_f1": 0.21890487562097252
+    },
+    {
+      "variant": "new_conf_delta_0p05",
+      "stage": "Initial",
+      "overall": 0.5773809523809523,
+      "old": 0.5773809523809523,
+      "new": NaN,
+      "initial_known": 0.5773809523809523,
+      "forgetting": 0.0,
+      "macro_f1": 0.5248029818857789
+    },
+    {
+      "variant": "new_conf_delta_0p05",
+      "stage": "After R1",
+      "overall": 0.3396825396825397,
+      "old": 0.3773809523809524,
+      "new": 0.2642857142857143,
+      "initial_known": 0.3773809523809524,
+      "forgetting": 0.19999999999999996,
+      "macro_f1": 0.2973879710542878
+    },
+    {
+      "variant": "new_conf_delta_0p05",
+      "stage": "After R2",
+      "overall": 0.34285714285714286,
+      "old": 0.33174603174603173,
+      "new": 0.3761904761904762,
+      "initial_known": 0.45595238095238094,
+      "forgetting": 0.12142857142857139,
+      "macro_f1": 0.30960970089833206
+    },
+    {
+      "variant": "new_conf_delta_0p05",
+      "stage": "After R3",
+      "overall": 0.2780952380952381,
+      "old": 0.20535714285714285,
+      "new": 0.569047619047619,
+      "initial_known": 0.34523809523809523,
+      "forgetting": 0.2321428571428571,
+      "macro_f1": 0.21596071653429688
+    },
+    {
+      "variant": "new_conf_delta_0p10",
+      "stage": "Initial",
+      "overall": 0.5773809523809523,
+      "old": 0.5773809523809523,
+      "new": NaN,
+      "initial_known": 0.5773809523809523,
+      "forgetting": 0.0,
+      "macro_f1": 0.5248029818857789
+    },
+    {
+      "variant": "new_conf_delta_0p10",
+      "stage": "After R1",
+      "overall": 0.3396825396825397,
+      "old": 0.3773809523809524,
+      "new": 0.2642857142857143,
+      "initial_known": 0.3773809523809524,
+      "forgetting": 0.19999999999999996,
+      "macro_f1": 0.29762911443529894
+    },
+    {
+      "variant": "new_conf_delta_0p10",
+      "stage": "After R2",
+      "overall": 0.34285714285714286,
+      "old": 0.33174603174603173,
+      "new": 0.3761904761904762,
+      "initial_known": 0.45595238095238094,
+      "forgetting": 0.12142857142857139,
+      "macro_f1": 0.3096263331492128
+    },
+    {
+      "variant": "new_conf_delta_0p10",
+      "stage": "After R3",
+      "overall": 0.2785714285714286,
+      "old": 0.20535714285714285,
+      "new": 0.5714285714285714,
+      "initial_known": 0.34523809523809523,
+      "forgetting": 0.2321428571428571,
+      "macro_f1": 0.21558960470547028
+    }
+  ],
+  "passed_variants": [],
+  "gate": "FAIL"
+}
