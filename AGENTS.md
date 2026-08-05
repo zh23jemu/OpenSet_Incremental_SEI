@@ -174,7 +174,8 @@
 - Stage 50 手动提交的 seed31 rec065 old:new batch ratio `0/1/2` 矩阵已完成：ratio `0/1` 的 R3 Overall/Old/New/Forgetting 为 `0.2657/0.2262/0.4238/0.2417`，ratio `2` 为 `0.2729/0.2411/0.4000/0.2393`；没有超过 Stage48 seed31 New `0.4262`，归档为负消融。
 - Stage 51 LoRa 新类吸收 seed31 Job `46165413` 已完成：最佳 `head_boost2` 的 R3 Overall/Old/New/Forgetting 为 `0.2643/0.2226/0.4310/0.2357`，New 仅比 Stage48 seed31 高 `+0.0048` 且 Overall 低于门槛；`new_proto_w0p10` 与 `imprint_scale1p5` 退化，归档为负消融，不扩三种子。
 - Stage 52 LoRa dechirped s28 seed7 Job `46166237` 已完成：R3 Overall/Old/New/Forgetting 为 `0.0367/0.0137/0.1286/0.0988`，远低于 Stage48 seed7 raw s28+rec065；dechirped 表示破坏闭集判别和聚类结构，归档为负消融，不扩三种子。
-- Stage 53 已新增 LoRa 训练期 recording/transmission 级 logits 一致性候选：固定 Stage48 raw s28 + recording-consensus 0.65 主配置，只在当前轮 discovery 训练 batch 内使用可观测 `recording_id` 和伪标签做同 recording、同伪类 symbol 预测分布一致性约束；默认权重为 0，历史实验路径不变。seed7 Slurm 矩阵入口为 `slurm/stage53_lora_recording_consistency_seed7.sbatch`，报告器为 `tools/stage53_lora_recording_consistency_report.py`。
+- Stage 53 LoRa 训练期 recording/transmission 级 logits 一致性 seed7 Job `46166288` 已完成：base R3 Overall/Old/New/Forgetting=`0.2814/0.2137/0.5524/0.2214`，`rec_w0p10`=`0.2800/0.2113/0.5548/0.2250`，`rec_w0p30`=`0.2667/0.2054/0.5119/0.2298`；非零一致性只极小提高 New 或直接退化，Overall/Old/Forgetting 未过门槛，归档为负消融，不扩三种子。
+- Stage 54 已新增 LoRa recording-level mean-logit CE 候选：固定 Stage48 raw s28 + recording-consensus 0.65，把当前轮 discovery 内同 `recording_id`、同伪类的 symbol logits 聚合后做 CE；默认权重为 0，历史训练路径不变。seed7 Slurm 入口为 `slurm/stage54_lora_recording_mean_ce_seed7.sbatch`，报告器为 `tools/stage54_lora_recording_mean_ce_report.py`。
 - 远端家目录瘦身已完成：`/mnt/users/xj62kv` 精确占用约 `99.86 GiB`，已将 `underwater-crack-correction`、`MASAM-MIB`、`sound-event-classification`、`.cache`、`OpenSet_Incremental_SEI` 和 Stage44 LoRa raw I/Q 目录迁移到 `/mnt/usmidet/billy_test` 并在原位置保留软链接。
 
 ## Recent Changes
@@ -325,7 +326,8 @@
 - 2026-08-05：完成 Stage51 Job `46165413` 并同步小型结果；`head_boost2` 只小幅提高 New 但牺牲 Overall，整体未过门槛，停止新类吸收小矩阵扩种子。
 - 2026-08-05：新增 Stage52 LoRa dechirped s28 seed7 入口和报告器；该方向改变 raw symbol 表示，目标是压低 payload 对设备指纹的干扰，而不是继续调增量后端权重。
 - 2026-08-05：完成 Stage52 Job `46166237` 并同步小型结果；dechirped s28 将 R3 Overall 压到 `0.0367`，确认该表示不能用于当前 LoRa 主线。
-- 2026-08-05：新增 Stage53 LoRa recording 一致性训练候选、Slurm seed7 矩阵和报告器；该方向利用 Setup 1 的 recording/transmission 粒度结构，验证是否能把 recording-level 诊断收益转化为 symbol-level CIL 提升。
+- 2026-08-05：完成 Stage53 Job `46166288` 并同步小型结果；recording logits 一致性没有把 recording-level 诊断收益稳定转化为 symbol-level CIL 提升，归档为负消融。
+- 2026-08-05：新增 Stage54 LoRa recording mean-logit CE 候选、Slurm seed7 矩阵和报告器；该方向比 Stage53 更直接地把 recording 粒度监督放进 CIL 当前轮训练。
 
 ## Next TODO
 
@@ -349,7 +351,7 @@
 - Stage 48 已通过，客户汇报口径和总表已更新：LoRa 从 Stage27 Chirp 的 `25.4%` Overall 提升到 Stage48 的 `28.0%`，Old/遗忘显著改善，New 基本保持在可接受范围内但仍略低于 Stage27。
 - Stage 49 已证明同 seed repeat 现在可稳定复现，但 seed31 rec065 的 New 稳定值仅 `0.4000`，不再把 Stage47 单次高 New 作为扩展依据；下一步若继续攻 LoRa，应换成更直接的新类吸收/分类头设计，而不是重复 rec065。
 - Stage 50 已证明降低 old:new batch ratio 不能救 seed31 New；Stage 51 进一步证明新类原型归属、head warmup boost 和 imprint scale 也不能稳定超过 Stage48 seed31。下一步若继续攻 LoRa，应转向更大粒度的伪标签结构或任务口径，不继续相邻倍率。
-- Stage 52 已未过门槛，说明直接去 payload bin 会同时损失设备判别信息。当前下一步是提交 Stage53 seed7 矩阵，验证训练期 recording/transmission 级一致性是否能提升 LoRa symbol-level Overall；若仍未过门槛，再转向客户口径收口或更大规模任务重定义。
+- Stage 52/53 均未过门槛：直接去 payload bin 会损失设备判别信息，训练期 recording 一致性也不能稳定提高 symbol-level Overall。当前下一步提交 Stage54 seed7 矩阵，验证 recording mean-logit CE 是否比单纯一致性更有效；若仍未过门槛，LoRa 当前正式候选保持 Stage48，并转向更大任务重定义/更强原始预训练。
 - 远端 Slurm 后续使用 `/mnt/users/xj62kv/OpenSet_Incremental_SEI` 路径仍可工作，但该路径现在是指向 `/mnt/usmidet/billy_test/OpenSet_Incremental_SEI_main` 的软链接；大文件继续优先落到 `/mnt/usmidet/billy_test`。
 - Stage 11 当前已完成本地可执行入口和协议边界验证；下一步提交并推送后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only，结果不过门槛就归档，不进入 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
@@ -390,7 +392,8 @@
 - Stage 40 已确认域对抗目标可能压掉设备指纹；Stage 48 证明原始 I/Q 多窗更有效，当前不宜继续回到紧凑数据上的局部调参。
 - Stage 49 说明 Stage47/Stage48 的 seed31 差异不是简单报告问题；确定性修复后结果稳定但 New 更低，LoRa 后续重点应转向新类吸收机制，而不是继续依赖 recording-consensus 单项。
 - Stage 51 已未过门槛：`head_boost2` 只带来 New 小幅回升但 Overall 不达标，说明 LoRa 低分不是单纯新类 head 吸收不足；不能包装成进一步提升。
-- Stage 53 的 recording 一致性只使用训练期可观测 `recording_id` 和伪标签，不读取 held-out eval 或未知真值；该候选用于验证更大粒度训练目标，而不是继续调 old:new、head boost 或 symbol 表示小参数。
+- Stage 53 已未过门槛：该候选严格只使用训练期可观测 `recording_id` 和伪标签，但结果显示同 recording 预测一致性会继续放大旧新类权衡，不能作为 LoRa 正式方案。
+- Stage 54 的 recording mean-logit CE 同样只使用训练期可观测 `recording_id` 和伪标签；它验证的是 recording 粒度监督本身，而不是 held-out eval 后处理或按真值重标。
 - Stage 17 已未过门槛；ADS-B seed7 的后端/注册结构已多次表现为“Old 变好、New 下降”。下一步若继续攻低分，应转向更激进的联合表征发现或重新训练 discovery backbone，而不是继续加权/过滤当前伪标签。
 - Stage 18 discovery-only 已通过，但完整 CIL R3 Overall `0.4981` 仍低于当前 seed7 强对照 `0.5057`；当前根因进一步收敛为“聚类正确，但增量训练阶段重新破坏表征/新旧类边界”。
 - Stage 19 初始表征教师蒸馏尚未跑真实 Slurm；只有 seed7 同时改善 Overall 且不牺牲 New，才考虑扩三种子，否则归档并停止 ADS-B 小机制搜索。

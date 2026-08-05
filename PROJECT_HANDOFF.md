@@ -220,7 +220,8 @@ Strict loader 审计：
 55. Stage 50 seed31 rec065 old:new batch ratio `0/1/2` 矩阵已完成：ratio `0/1` 的 R3 New 为 `0.4238`，ratio `2` 为 `0.4000`，均未超过 Stage48 seed31 New `0.4262`，归档为负消融。
 56. Stage 51 LoRa 新类吸收 seed31 Job `46165413` 已完成并同步小型结果：base R3 Overall/Old/New=`0.2729/0.2411/0.4000`；最佳 New 的 `head_boost2` 为 `0.2643/0.2226/0.4310`，New 只比 Stage48 seed31 高 `+0.0048` 且 Overall 低于门槛；`new_proto_w0p10` 和 `imprint_scale1p5` 退化，归档为负消融，不扩三种子。
 57. Stage 52 LoRa dechirped s28 seed7 Job `46166237` 已完成并同步小型结果：R3 Overall/Old/New/Forgetting=`0.0367/0.0137/0.1286/0.0988`，Recording Overall/New=`0.0667/0.3333`；该表示显著破坏闭集和聚类结构，归档为负消融，不扩三种子。
-58. Stage 53 已新增 LoRa 训练期 recording/transmission 级 logits 一致性候选：固定 Stage48 raw s28 + recording-consensus 0.65，只在当前轮 discovery batch 内使用可观测 `recording_id` 和伪标签做同 recording、同伪类 symbol 预测分布一致性约束；入口为 `slurm/stage53_lora_recording_consistency_seed7.sbatch`，待 seed7 矩阵验证。
+58. Stage 53 LoRa 训练期 recording/transmission 级 logits 一致性 seed7 Job `46166288` 已完成并同步小型结果：base R3 Overall/Old/New=`0.2814/0.2137/0.5524`；`rec_w0p10` 为 `0.2800/0.2113/0.5548`，New 只小幅增加但 Overall/Old/Forgetting 变差；`rec_w0p30` 明显退化。该方向归档为负消融，不扩三种子。
+59. Stage 54 已新增 LoRa recording-level mean-logit CE 候选：固定 Stage48 raw s28 + recording-consensus 0.65，把当前轮 discovery 内同 `recording_id`、同伪类的 symbol logits 聚合后做 CE；入口为 `slurm/stage54_lora_recording_mean_ce_seed7.sbatch`，待 seed7 矩阵验证。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。

@@ -2250,6 +2250,45 @@ def _recording_logit_consistency_loss(logits, labels, recording_ids, temperature
     return torch.stack(losses).mean()
 
 
+def _recording_mean_logit_ce_loss(logits, labels, sample_weights, recording_ids):
+    """对 LoRa recording 内同伪类 symbol 的平均 logits 直接做交叉熵。
+
+    Stage53 的一致性项只要求同一 recording 内预测分布彼此接近，但没有改变
+    当前轮伪标签监督的粒度。这里把同一 ``recording_id + pseudo label`` 的
+    多个 symbol logits 先求均值，再对聚合后的 recording-level 表示做 CE。
+    它仍然只使用训练期可见的 current discovery 伪标签和 recording_id，不读取
+    held-out eval，也不假设同一 recording 中不同伪类应该被合并。
+    """
+    if recording_ids is None or logits.numel() == 0:
+        return logits.sum() * 0.0
+    if logits.shape[0] != recording_ids.shape[0] or logits.shape[0] != labels.shape[0]:
+        raise ValueError(
+            "Recording mean-logit CE requires logits, labels and recording_ids with equal batch length."
+        )
+    if sample_weights.shape[0] != logits.shape[0]:
+        raise ValueError("Recording mean-logit CE requires one sample weight per current sample.")
+
+    group_logits = []
+    group_labels = []
+    group_weights = []
+    for recording_value in torch.unique(recording_ids).tolist():
+        recording_mask = recording_ids == int(recording_value)
+        for label_value in torch.unique(labels[recording_mask]).tolist():
+            group_mask = recording_mask & (labels == int(label_value))
+            if not torch.any(group_mask):
+                continue
+            group_logits.append(logits[group_mask].mean(dim=0))
+            group_labels.append(int(label_value))
+            group_weights.append(sample_weights[group_mask].mean())
+    if not group_logits:
+        return logits.sum() * 0.0
+    stacked_logits = torch.stack(group_logits, dim=0)
+    stacked_labels = torch.as_tensor(group_labels, dtype=torch.long, device=logits.device)
+    stacked_weights = torch.stack(group_weights).to(logits.device).clamp_min(1e-6)
+    per_group = F.cross_entropy(stacked_logits, stacked_labels, reduction="none")
+    return (per_group * stacked_weights).sum() / (stacked_weights.sum() + 1e-8)
+
+
 def _train_end_to_end_cil(
     student,
     teacher,
@@ -2524,6 +2563,18 @@ def _train_end_to_end_cil(
                     )
                 else:
                     recording_consistency = logits_c.sum() * 0.0
+                if float(args.radcil_recording_ce_weight) > 0 and rc is not None:
+                    # 与逐 symbol CE 并行的 recording-level CE：同一 recording
+                    # 内同伪类 symbol 先聚合 logits，再用同一伪标签监督。该项
+                    # 不替换 discovery 标签，也不读取 held-out evaluation。
+                    recording_ce = _recording_mean_logit_ce_loss(
+                        logits_c,
+                        yc,
+                        wc,
+                        rc,
+                    )
+                else:
+                    recording_ce = logits_c.sum() * 0.0
                 high = wc >= float(args.cil_supcon_threshold)
                 feat_con = torch.cat([feat[:len(xc)][high], feat[len(xc):]], dim=0)
                 y_con = torch.cat([yc[high], ym], dim=0)
@@ -2549,6 +2600,7 @@ def _train_end_to_end_cil(
                     + float(args.radcil_new_prototype_weight) * prototype_assignment
                     + float(args.radcil_pseudo_aug_consistency_weight) * pseudo_aug_consistency
                     + float(args.radcil_recording_consistency_weight) * recording_consistency
+                    + float(args.radcil_recording_ce_weight) * recording_ce
                     + float(args.cil_supcon_weight) * con
                     + float(args.radcil_metric_weight) * metric_loss
                 )
@@ -4224,6 +4276,12 @@ def main():
         type=float,
         default=2.0,
         help="LoRa recording logits 一致性 KL 温度，仅在权重大于0时使用。",
+    )
+    parser.add_argument(
+        "--radcil_recording_ce_weight",
+        type=float,
+        default=0.0,
+        help="LoRa 当前轮同 recording、同伪类 symbol 的 mean-logit CE 权重；0保持历史训练路径。",
     )
 
 
