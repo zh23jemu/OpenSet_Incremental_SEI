@@ -159,3 +159,8 @@ Desktop.ini
 /results/stage63/*.pth
 /results/stage63/lora_s28_consistency_seed*_*/*.pth
 /results/stage63/lora_s28_consistency_seed*_*/*.npz
+
+# Stage64 LoRa masked reconstruction 预训练：checkpoint/replay 留在训练盘，小型结果入库。
+/results/stage64/*.pth
+/results/stage64/lora_s28_masked_recon_seed*_*/*.pth
+/results/stage64/lora_s28_masked_recon_seed*_*/*.npz
