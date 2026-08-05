@@ -2580,6 +2580,22 @@ def _train_end_to_end_cil(
                     feature_distill = F.mse_loss(F.normalize(feat[len(xc):], dim=1), F.normalize(teacher_feat_m, dim=1))
                 else:
                     feature_distill = logits_m.sum() * 0.0
+                if float(args.radcil_old_replay_supcon_weight) > 0:
+                    # Stage67 旧类跨天保持项：只在当前轮开始前已有的 replay 旧类
+                    # 样本上做监督对比学习。它不接触当前 discovery 伪标签，也不
+                    # 读取 held-out eval 真值，专门验证 Stage66 定位出的 Old Acc
+                    # 缺口是否来自旧类类内结构松散。
+                    old_replay_mask = ym < int(old_out_dim)
+                    if torch.any(old_replay_mask):
+                        old_replay_supcon = _supcon_incremental(
+                            feat[len(xc):][old_replay_mask],
+                            ym[old_replay_mask],
+                            args.supcon_temperature,
+                        )
+                    else:
+                        old_replay_supcon = logits_m.sum() * 0.0
+                else:
+                    old_replay_supcon = logits_m.sum() * 0.0
                 if anchor_prototypes is not None:
                     anchor_mask = (ym < int(old_out_dim)) & anchor_valid[ym.clamp(max=int(old_out_dim) - 1)]
                     if torch.any(anchor_mask):
@@ -2676,6 +2692,7 @@ def _train_end_to_end_cil(
                     + float(args.cil_replay_weight) * ce_memory
                     + kd_weight * kd
                     + float(args.radcil_feature_distill_weight) * feature_distill
+                    + float(args.radcil_old_replay_supcon_weight) * old_replay_supcon
                     + float(args.radcil_prototype_anchor_weight) * prototype_anchor
                     + float(args.radcil_aug_consistency_weight) * view_consistency
                     + float(args.radcil_domain_alignment_weight) * domain_alignment
@@ -4365,6 +4382,12 @@ def main():
     parser.add_argument("--radcil_masked_kd", action="store_true", help="Apply KD only on replay samples whose labels are inside the teacher output range.")
     parser.add_argument("--radcil_kd_schedule", choices=["constant", "cosine", "linear_decay"], default="constant", help="Schedule for the end-to-end CIL KD weight inside each training stage.")
     parser.add_argument("--radcil_feature_distill_weight", type=float, default=0.0, help="Replay-feature distillation weight for constraining old-class backbone drift.")
+    parser.add_argument(
+        "--radcil_old_replay_supcon_weight",
+        type=float,
+        default=0.0,
+        help="Replay-only old-class supervised contrastive weight; 0 preserves historical RADCIL behavior.",
+    )
     parser.add_argument("--radcil_prototype_anchor_weight", type=float, default=0.0, help="Teacher replay class-prototype anchor weight; 0 preserves historical RADCIL behavior.")
     parser.add_argument(
         "--radcil_aug_consistency_weight",
@@ -4575,6 +4598,10 @@ def main():
     print(
         "Cross-day feature domain alignment weight: "
         f"{args.radcil_domain_alignment_weight}"
+    )
+    print(
+        "Old replay SupCon weight: "
+        f"{args.radcil_old_replay_supcon_weight}"
     )
     print(
         "Pseudo-label cluster reliability weighting: "
@@ -5612,6 +5639,7 @@ def main():
             "radcil_doi_effective_fusion_weight": float(doi_fusion_weight),
             "radcil_grouped_doi_fusion": bool(args.radcil_grouped_doi_fusion),
             "radcil_prototype_anchor_weight": float(args.radcil_prototype_anchor_weight),
+            "radcil_old_replay_supcon_weight": float(args.radcil_old_replay_supcon_weight),
             "radcil_aug_consistency_weight": float(args.radcil_aug_consistency_weight),
             "radcil_domain_alignment_weight": float(args.radcil_domain_alignment_weight),
             "radcil_metric_weight": float(args.radcil_metric_weight),
