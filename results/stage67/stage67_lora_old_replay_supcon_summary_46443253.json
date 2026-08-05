@@ -1,0 +1,98 @@
+{
+  "schema_version": "stage67_lora_old_replay_supcon_summary_v1",
+  "job_id": "46443253",
+  "stage48_seed7": {
+    "overall": 0.280952381,
+    "old": 0.2220238095,
+    "new": 0.5166666667,
+    "forgetting": 0.1726190476
+  },
+  "records": [
+    {
+      "label": "w0p00",
+      "weight": 0.0,
+      "save_dir": "results/stage67/lora_s67_oldreplay_supcon_w0p00_seed7_46443253",
+      "overall": 0.2814285714285714,
+      "old": 0.2136904761904761,
+      "new": 0.5523809523809524,
+      "forgetting": 0.2214285714285713,
+      "macro_f1": 0.2260094188359864,
+      "recording_overall": 0.3066666666666666,
+      "recording_new": 0.6666666666666666,
+      "delta_stage48_overall": 0.00047619042857144356,
+      "delta_stage48_old": -0.008333333309523905,
+      "delta_stage48_new": 0.03571428568095236,
+      "delta_stage48_forgetting": 0.048809523828571316
+    },
+    {
+      "label": "w0p05",
+      "weight": 0.05,
+      "save_dir": "results/stage67/lora_s67_oldreplay_supcon_w0p05_seed7_46443253",
+      "overall": 0.2795238095238095,
+      "old": 0.2107142857142857,
+      "new": 0.5547619047619048,
+      "forgetting": 0.2226190476190475,
+      "macro_f1": 0.2207328700116121,
+      "recording_overall": 0.32,
+      "recording_new": 0.6666666666666666,
+      "delta_stage48_overall": -0.0014285714761904655,
+      "delta_stage48_old": -0.011309523785714315,
+      "delta_stage48_new": 0.038095238061904735,
+      "delta_stage48_forgetting": 0.0500000000190475
+    },
+    {
+      "label": "w0p10",
+      "weight": 0.1,
+      "save_dir": "results/stage67/lora_s67_oldreplay_supcon_w0p10_seed7_46443253",
+      "overall": 0.2823809523809524,
+      "old": 0.2142857142857142,
+      "new": 0.5547619047619048,
+      "forgetting": 0.219047619047619,
+      "macro_f1": 0.2258591020626068,
+      "recording_overall": 0.32,
+      "recording_new": 0.6666666666666666,
+      "delta_stage48_overall": 0.0014285713809524259,
+      "delta_stage48_old": -0.007738095214285812,
+      "delta_stage48_new": 0.038095238061904735,
+      "delta_stage48_forgetting": 0.046428571447619
+    }
+  ],
+  "baseline": {
+    "label": "w0p00",
+    "weight": 0.0,
+    "save_dir": "results/stage67/lora_s67_oldreplay_supcon_w0p00_seed7_46443253",
+    "overall": 0.2814285714285714,
+    "old": 0.2136904761904761,
+    "new": 0.5523809523809524,
+    "forgetting": 0.2214285714285713,
+    "macro_f1": 0.2260094188359864,
+    "recording_overall": 0.3066666666666666,
+    "recording_new": 0.6666666666666666,
+    "delta_stage48_overall": 0.00047619042857144356,
+    "delta_stage48_old": -0.008333333309523905,
+    "delta_stage48_new": 0.03571428568095236,
+    "delta_stage48_forgetting": 0.048809523828571316
+  },
+  "best": {
+    "label": "w0p10",
+    "weight": 0.1,
+    "save_dir": "results/stage67/lora_s67_oldreplay_supcon_w0p10_seed7_46443253",
+    "overall": 0.2823809523809524,
+    "old": 0.2142857142857142,
+    "new": 0.5547619047619048,
+    "forgetting": 0.219047619047619,
+    "macro_f1": 0.2258591020626068,
+    "recording_overall": 0.32,
+    "recording_new": 0.6666666666666666,
+    "delta_stage48_overall": 0.0014285713809524259,
+    "delta_stage48_old": -0.007738095214285812,
+    "delta_stage48_new": 0.038095238061904735,
+    "delta_stage48_forgetting": 0.046428571447619
+  },
+  "gates": {
+    "w0p00": false,
+    "w0p05": false,
+    "w0p10": false
+  },
+  "any_pass": false
+}

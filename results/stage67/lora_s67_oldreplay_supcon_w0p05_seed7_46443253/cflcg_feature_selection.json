@@ -1,0 +1,19 @@
+{
+  "method": "CF-LCG",
+  "calibration_split": "Day1 validation only",
+  "k": 10,
+  "gate_threshold": 0.8,
+  "candidate_purity": {
+    "amplitude_8d": 0.2032142857142857,
+    "phase_frequency_4d": 0.2717857142857143,
+    "iq_imbalance_9d": 0.14607142857142857,
+    "spectral_3d": 0.35928571428571426,
+    "all24_base": 0.1792857142857143,
+    "all48_extended": 0.19
+  },
+  "best_candidate": "spectral_3d",
+  "best_purity": 0.35928571428571426,
+  "rf_gate_open": false,
+  "output_feature_group": "all24_base",
+  "output_dimension": 24
+}
