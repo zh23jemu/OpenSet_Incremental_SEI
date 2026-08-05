@@ -2856,6 +2856,45 @@ def _predict_end_to_end(model, X, batch_size, device, old_class_count=0, old_log
     return np.argmax(logits, axis=1).astype(np.int64) if len(logits) else np.empty(0, dtype=np.int64)
 
 
+def _save_end_to_end_eval_dump(
+    save_dir,
+    stage_name,
+    eval_x,
+    eval_y,
+    pred_raw,
+    pseudo_to_true,
+    batch_size,
+    device,
+    model,
+    recording_id=None,
+):
+    """保存端到端评估预测，供离线组合/路由诊断复用。
+
+    该转储默认关闭，只在显式传入 ``--save_end_to_end_eval_dumps`` 时生效。
+    文件只记录已经完成训练后的 held-out 评估预测、logits 和当轮报告用
+    ``pseudo_to_true`` 映射，不参与训练、发现、阈值校准或模型选择。
+    """
+    dump_dir = os.path.join(save_dir, "end_to_end_eval_dumps")
+    ensure_dir(dump_dir)
+    safe_stage = str(stage_name).lower().replace(" ", "_").replace("-", "_")
+    _, logits = _extract_end_to_end_outputs(model, eval_x, batch_size, device)
+    mapping_keys = np.asarray(sorted(int(k) for k in pseudo_to_true.keys()), dtype=np.int64)
+    mapping_values = np.asarray([int(pseudo_to_true[int(k)]) for k in mapping_keys], dtype=np.int64)
+    pred_raw = np.asarray(pred_raw, dtype=np.int64)
+    pred_mapped = np.asarray([pseudo_to_true.get(int(p), int(p)) for p in pred_raw], dtype=np.int64)
+    payload = {
+        "y_true": np.asarray(eval_y, dtype=np.int64),
+        "pred_raw": pred_raw,
+        "pred_mapped": pred_mapped,
+        "logits": np.asarray(logits, dtype=np.float32),
+        "pseudo_to_true_keys": mapping_keys,
+        "pseudo_to_true_values": mapping_values,
+    }
+    if recording_id is not None:
+        payload["recording_id"] = np.asarray(recording_id)
+    np.savez_compressed(os.path.join(dump_dir, f"{safe_stage}.npz"), **payload)
+
+
 def _calibrate_old_logit_bias_on_validation(model, X_val, y_val, batch_size, device, candidates, old_class_count):
     """只用 Day1/IQ_7 验证集选择旧类 logit 偏置。
 
@@ -4216,6 +4255,7 @@ def main():
     parser.add_argument("--discovery_adapter_repulsion_weight", type=float, default=0.15, help="Known-prototype repulsion weight for proto_repulse adapter.")
     parser.add_argument("--discovery_only", action="store_true", help="只运行严格发现前端并保存聚类表；用于先验证聚类质量，不进入增量训练后端。")
     parser.add_argument("--enable_lora_recording_eval", action="store_true", help="LoRa held-out eval 额外输出 recording_id 多数投票诊断，不改变训练或正式 symbol-level 指标。")
+    parser.add_argument("--save_end_to_end_eval_dumps", action="store_true", help="保存端到端 held-out eval logits/pred/mapping，用于离线组合路由诊断；默认关闭。")
     parser.add_argument("--development_ratio", type=float, default=0.70, help="Per-day development ratio: Day1 becomes 60%% backbone training + 10%% validation; remaining 30%% is held-out evaluation.")
     parser.add_argument(
         "--selected_rx_list",
@@ -4947,6 +4987,19 @@ def main():
         "-", "-", "-", args.initial_known_classes, args.round_size, None,
     )
     incremental_rows.append(initial_row)
+    if args.save_end_to_end_eval_dumps:
+        _save_end_to_end_eval_dump(
+            args.save_dir,
+            "Initial",
+            eval_data["eval_initial"]["X"],
+            eval_y_dict["eval_initial"],
+            initial_pred,
+            pseudo_to_true,
+            args.test_batch_size,
+            device,
+            student,
+            recording_id=eval_data["eval_initial"].get("recording_id"),
+        )
     if args.enable_lora_recording_eval:
         recording_initial_row = _evaluate_recording_level_predictions(
             main_method_name,
@@ -5406,6 +5459,19 @@ def main():
             pseudo_to_true, args.round_size, info["discovered_clusters"], len(cluster_ids),
             args.initial_known_classes, args.round_size, initial_reference_acc,
         ))
+        if args.save_end_to_end_eval_dumps:
+            _save_end_to_end_eval_dump(
+                args.save_dir,
+                f"After R{i}",
+                eval_data[eval_key]["X"],
+                eval_y_dict[eval_key],
+                pred,
+                pseudo_to_true,
+                args.test_batch_size,
+                device,
+                student,
+                recording_id=eval_data[eval_key].get("recording_id"),
+            )
         if args.enable_lora_recording_eval:
             recording_row = _evaluate_recording_level_predictions(
                 main_method_name,
