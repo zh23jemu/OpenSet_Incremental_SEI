@@ -1,0 +1,20 @@
+{
+  "schema_version": "stage61_lora_oracle_discovery_summary_v1",
+  "job_id": "46308084",
+  "save_dir": "results/stage61/lora_s61_oracle_seed7_46308084",
+  "oracle_warning": "uses current discovery true labels; diagnostic upper bound only",
+  "r3": {
+    "overall": 0.2985714285714286,
+    "old": 0.2220238095238095,
+    "new": 0.6047619047619047,
+    "forgetting": 0.2095238095238094,
+    "macro_f1": 0.2482389488725562
+  },
+  "stage48_multiseed": {
+    "overall": 0.2803,
+    "old": 0.2312,
+    "new": 0.477,
+    "forgetting": 0.1802
+  },
+  "diagnostic_gate": "NOT_DISCOVERY_ONLY"
+}
