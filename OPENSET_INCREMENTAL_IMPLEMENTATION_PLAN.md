@@ -43,7 +43,7 @@
 | Stage 49 LoRa seed31 rec065 repeat | 已完成，未通过 | Job `46125830` 补齐确定性设置后三次 repeat 完全一致，R3 Overall/Old/New/Forgetting 为 `0.2729/0.2411/0.4000/0.2393`；相对 Stage48 seed31 Overall `+0.0076`、New `-0.0262`，Gate 失败 |
 | Stage 50 LoRa old:new ratio | 已完成，未通过 | seed31 rec065 ratio `0/1/2` 均未超过 Stage48 seed31 New `0.4262`；ratio `0/1` R3 Overall/Old/New/Forgetting 为 `0.2657/0.2262/0.4238/0.2417`，ratio `2` 为 `0.2729/0.2411/0.4000/0.2393` |
 | Stage 51 LoRa 新类吸收 | 已完成，未通过 | Job `46165413` 中最佳 New 为 `head_boost2`，R3 Overall/Old/New/Forgetting=`0.2643/0.2226/0.4310/0.2357`；New 仅比 Stage48 seed31 高 `+0.0048` 且 Overall 低于门槛，不扩三种子 |
-| Stage 52 LoRa dechirped s28 | 已实现待 Slurm | 改变原始 I/Q 表示而不是后端小权重：每个 aligned symbol 做 dechirp 并移除主 payload bin，固定 Stage48 rec065 后端先跑 seed7；过 Stage48 seed7 门槛才扩三种子 |
+| Stage 52 LoRa dechirped s28 | 已完成，未通过 | Job `46166237` 中 dechirped s28 R3 Overall/Old/New/Forgetting=`0.0367/0.0137/0.1286/0.0988`，远低于 Stage48 seed7 raw s28+rec065，对闭集和聚类均有破坏，不扩三种子 |
 | ManyTx/ManyRx | 阶段 5 补充验证已完成 | 已只读汇总既有 seed7 三轮结果；ManyTx R3 Overall `0.2700`、ManyRx R3 Overall `0.5700`，作为辅助稳定性证据       |
 | 项目记忆与交接       | 部分已维护            | `AGENTS.md`、`PROJECT_HANDOFF.md` 已同步最新状态；RecallLoom rolling summary 当前因 receipt mismatch 暂停写入，未手工修改                |
 
