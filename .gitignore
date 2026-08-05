@@ -134,3 +134,7 @@ Desktop.ini
 # Stage56 LoRa refined filter：保留小型 CSV/JSON/报告，忽略每个变体的模型和 replay 二进制。
 /results/stage56/lora_s56_*_*/*.pth
 /results/stage56/lora_s56_*_*/*.npz
+
+# Stage57 LoRa new-specialist + old-route：保留小型 CSV/JSON/报告，忽略模型、replay 和原型库二进制。
+/results/stage57/lora_s57_*_*/*.pth
+/results/stage57/lora_s57_*_*/*.npz

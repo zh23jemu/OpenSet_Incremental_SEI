@@ -178,6 +178,7 @@
 - Stage 54 LoRa recording-level mean-logit CE seed7 Job `46166320` 已完成：base R3 Overall/Old/New/Forgetting=`0.2814/0.2137/0.5524/0.2214`，`rce_w0p25`=`0.2662/0.1893/0.5738/0.2393`，`rce_w0p50`=`0.2624/0.1839/0.5762/0.2476`；recording CE 能抬 New，但明显牺牲 Overall、Old 和遗忘，归档为负消融，不扩三种子。
 - Stage 55 LoRa raw s28 物理域预训练 seed7 Job `46166372` 已完成：R3 Overall/Old/New/Forgetting=`0.2805/0.2345/0.4643/0.2310`；相对 Stage48 seed7 Old `+0.0125`，但 Overall `-0.0005`、New `-0.0524`、Forgetting `+0.0583`，归档为负消融，不扩三种子。
 - Stage 56 LoRa joint refinement 高置信一致过滤 Job `46177364` 已完成：base R3 Overall/Old/New/Forgetting=`0.2814/0.2137/0.5524/0.2214`；`filter_top060`=`0.2743/0.2065/0.5452/0.2310`；`filter_top080`=`0.2790/0.2071/0.5667/0.2333`。top80 只提升 New，Overall/Old/Forgetting 未过门槛，归档为负消融，不扩三种子。
+- Stage 57 已新增 LoRa top80 + old-prototype-route seed7 入口和报告器：组合 Stage56 的 New-specialist 与 IQ_7 校准旧类原型路由，待 Slurm 验证。
 - 远端家目录瘦身已完成：`/mnt/users/xj62kv` 精确占用约 `99.86 GiB`，已将 `underwater-crack-correction`、`MASAM-MIB`、`sound-event-classification`、`.cache`、`OpenSet_Incremental_SEI` 和 Stage44 LoRa raw I/Q 目录迁移到 `/mnt/usmidet/billy_test` 并在原位置保留软链接。
 
 ## Recent Changes
@@ -332,6 +333,7 @@
 - 2026-08-05：完成 Stage54 Job `46166320` 并同步小型结果；recording mean-logit CE 提高 New 但显著牺牲 Overall/Old/Forgetting，归档为负消融。
 - 2026-08-05：新增并完成 Stage55 LoRa raw s28 物理域预训练 seed7 验证；小型结果已通过 `stage55-results-46166372` 分支同步，本地已拉回。该候选提升 Old 但压低 New、恶化 Forgetting，不作为正式方案。
 - 2026-08-05：新增并完成 Stage56 LoRa refined filter seed7 验证；小型结果已通过 `stage56-results-46177364` 分支同步，本地已拉回。该机制能局部抬 New，但牺牲 Overall/Old/Forgetting，不作为正式方案。
+- 2026-08-05：新增 Stage57 LoRa top80 + old-route seed7 Slurm 入口和报告器，用于验证新类吸收与旧类保护能否互补。
 
 ## Next TODO
 
@@ -358,6 +360,7 @@
 - Stage 52/53/54 均未过门槛：直接去 payload bin 会损失设备判别信息，训练期 recording 一致性和 recording CE 都不能稳定提高 symbol-level Overall。LoRa 当前正式候选保持 Stage48；继续工程小机制预期收益很低，下一步应转向更大任务重定义/更强原始预训练，或客户口径收口为 LoRa 跨体制局限。
 - Stage55 已完成且未过门槛，不扩三种子；LoRa 当前正式候选仍保持 Stage48 raw s28 + recording-consensus 0.65。
 - Stage56 已完成且未过门槛，不扩三种子；LoRa 当前正式候选仍保持 Stage48 raw s28 + recording-consensus 0.65。
+- Stage57 下一步提交 Slurm seed7；若 top80+old-route 不能过 Overall/Old/New/Forgetting 平衡门槛，则保持 Stage48，并停止这类新旧类拼接小机制。
 - 远端 Slurm 后续使用 `/mnt/users/xj62kv/OpenSet_Incremental_SEI` 路径仍可工作，但该路径现在是指向 `/mnt/usmidet/billy_test/OpenSet_Incremental_SEI_main` 的软链接；大文件继续优先落到 `/mnt/usmidet/billy_test`。
 - Stage 11 当前已完成本地可执行入口和协议边界验证；下一步提交并推送后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only，结果不过门槛就归档，不进入 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
