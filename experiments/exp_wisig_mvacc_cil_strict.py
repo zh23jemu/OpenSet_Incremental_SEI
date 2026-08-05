@@ -3875,6 +3875,53 @@ def run_discovery(
         "gpcc_recording",
         "gpcc_recording_consensus",
     }
+    if mv_acc_method and discovery_backend == "oracle":
+        if not bool(getattr(args, "oracle_discovery_diagnostic", False)):
+            raise ValueError(
+                "--discovery_backend oracle is diagnostic-only. "
+                "Pass --oracle_discovery_diagnostic to make the upper-bound leakage explicit."
+            )
+        # Stage61 上界诊断：这里故意把当前 discovery 真值变成完美簇，
+        # 只用于定位 LoRa 低分是 discovery 还是后端/表征瓶颈。该路径读取
+        # 未知真值，绝不能作为正式方法或论文主结果。
+        true_ids = sorted(np.unique(np.asarray(y_round, dtype=np.int64)).tolist())
+        true_to_cluster = {int(label): idx for idx, label in enumerate(true_ids)}
+        labels_for_metrics = np.asarray([true_to_cluster[int(label)] for label in y_round], dtype=np.int64)
+        raw_metrics = clustering_metrics(y_round, labels_for_metrics)
+        raw_cluster_count = int(raw_metrics["Clusters"])
+        initial_cluster_count = int(raw_cluster_count)
+        enrolled_ids, details_final = all_non_noise_as_accepted(labels_for_metrics)
+        reliability_map = {int(cid): 1.0 for cid in enrolled_ids}
+        final_metrics = clustering_metrics(y_round, labels_for_metrics)
+        cluster_row = {
+            "Method": method,
+            "Round": round_name,
+            "Discovery Day": day_name,
+            "True New Classes": int(true_new_classes),
+            "Samples": int(len(y_round)),
+            "Initial Cluster Count": int(initial_cluster_count),
+            "Final Cluster Count": int(final_metrics["Clusters"]),
+            "Cluster Count Error": abs(int(final_metrics["Clusters"]) - int(true_new_classes)),
+            "Over-clustering Ratio": float(final_metrics["Clusters"] / max(1, true_new_classes)),
+            "Assignment Coverage": float(np.mean(labels_for_metrics >= 0)),
+            "Noise Points": int(np.sum(labels_for_metrics < 0)),
+            **final_metrics,
+            "Discovery Backend": "oracle_diagnostic",
+            "Oracle Discovery Diagnostic": True,
+            "Oracle Discovery Warning": "uses current discovery true labels; upper bound only",
+            "GPCC Uses HDBSCAN": False,
+        }
+        info = {
+            "labels": labels_for_metrics,
+            "accepted_ids": enrolled_ids,
+            "details": details_final,
+            "features": feats,
+            "proto_feat_type": proto_feat_type,
+            "reliability_map": reliability_map,
+            "discovered_clusters": int(final_metrics["Clusters"]),
+        }
+        save_discovery_visualizations(method, round_name, day_name, discovery_feat, y_round, labels_for_metrics, enrolled_ids, args, full_method)
+        return cluster_row, info
     if gpcc_method:
         if discovery_backend in {"gpcc_recording", "gpcc_recording_consensus"}:
             # LoRa 的同一次物理 transmission 可观测地包含多个 aligned
@@ -4199,10 +4246,11 @@ def main():
     parser.add_argument("--num_rounds", type=int, default=3)
     parser.add_argument(
         "--discovery_backend",
-        choices=["mvacc", "gpcc", "gpcc_recording", "gpcc_recording_consensus"],
+        choices=["mvacc", "gpcc", "gpcc_recording", "gpcc_recording_consensus", "oracle"],
         default="mvacc",
-        help="Discovery front-end: gpcc fixes K=round_size; gpcc_recording aggregates LoRa recording groups; gpcc_recording_consensus applies selective recording consensus after symbol-level GPCC.",
+        help="Discovery front-end: gpcc fixes K=round_size; oracle is diagnostic-only and requires --oracle_discovery_diagnostic.",
     )
+    parser.add_argument("--oracle_discovery_diagnostic", action="store_true", help="允许 discovery_backend=oracle 读取当前 discovery 真值做上界诊断；该结果不能作为正式方法。")
     parser.add_argument(
         "--recording_consensus_threshold",
         type=float,

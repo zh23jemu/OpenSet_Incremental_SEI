@@ -146,3 +146,7 @@ Desktop.ini
 
 # Stage60 LoRa 累积伪标签重训：保留小型 CSV/JSON/报告和日志，忽略每轮重训 checkpoint。
 /results/stage60/lora_s60_*_*/*.pth
+
+# Stage61 LoRa oracle discovery 上界诊断：保留小型 CSV/JSON/报告和日志，忽略模型与回放二进制。
+/results/stage61/lora_s61_*_*/*.pth
+/results/stage61/lora_s61_*_*/*.npz
