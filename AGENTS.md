@@ -182,6 +182,7 @@
 - Stage 58 LoRa 双模型 confidence 后验路由 seed7 Job `46268271` 已完成：base R3 Overall/Old/New/Forgetting=`0.2814/0.2137/0.5524/0.2214`；top80=`0.2790/0.2071/0.5667/0.2333`；最佳仍为 base，双模型路由 `new_conf_delta_0p00/0p05/0p10` 的 R3 Overall 为 `0.2790/0.2781/0.2786`，均低于 base 且 Old/Forgetting 变差，归档为负消融。
 - Stage 59 LoRa 纯物理描述符 + KMeans + 原型分类 seed7 Job `46274803` 已完成：raw s28 上 `kmeans` R3 Overall/Old/New/Forgetting=`0.0510/0.0565/0.0286/0.1321`，`kmeans_rec065` 为 `0.0533/0.0589/0.0310/0.1345`，显著低于 Stage48，说明纯传统物理统计特征无法支撑 LoRa strict 跨天识别。
 - Stage 60 LoRa 累积伪标签全量重训 seed7 Job `46281697` 已完成：R3 Overall/Old/New/Forgetting=`0.1029/0.1262/0.0095/0.1917`，显著低于 Stage48；伪标签噪声会直接污染从头重训分类器，绕开 RADCIL 并不能自动解决 LoRa 低分。
+- Stage 61 LoRa oracle discovery 上界诊断 seed7 Job `46308084` 已完成：R3 Overall/Old/New/Forgetting=`0.2986/0.2220/0.6048/0.2095`。完美聚类能明显抬 New，但 Overall 只比 Stage48 seed7/三种子略高且 Old/Forgetting 变差，诊断判定为 `NOT_DISCOVERY_ONLY`。
 - 远端家目录瘦身已完成：`/mnt/users/xj62kv` 精确占用约 `99.86 GiB`，已将 `underwater-crack-correction`、`MASAM-MIB`、`sound-event-classification`、`.cache`、`OpenSet_Incremental_SEI` 和 Stage44 LoRa raw I/Q 目录迁移到 `/mnt/usmidet/billy_test` 并在原位置保留软链接。
 
 ## Recent Changes
@@ -370,6 +371,7 @@
 - Stage58 已完成且未过门槛，不扩三种子；LoRa 当前正式候选仍保持 Stage48 raw s28 + recording-consensus 0.65。后续停止 base/top80 confidence 路由这类后验组合，若继续攻应转向更大粒度的半监督表征重训或任务口径重定义。
 - Stage59 已完成且未过门槛，不扩三种子；纯物理描述符链路远低于 Chirp backbone。LoRa 当前正式候选仍保持 Stage48 raw s28 + recording-consensus 0.65，后续不再切向传统 RF 统计原型基线。
 - Stage60 已完成且未过门槛，不扩三种子；累积伪标签全量重训被伪标签噪声拖垮。下一步做 LoRa oracle 聚类上界诊断，判断剩余瓶颈到底主要在 discovery 还是后端/表征。
+- Stage61 已完成 oracle 聚类上界诊断；LoRa 瓶颈不是 discovery-only。下一步在 oracle discovery 下比较旧类保护后端，判断是否存在 Old/New 同时可行的后端上界。
 - 远端 Slurm 后续使用 `/mnt/users/xj62kv/OpenSet_Incremental_SEI` 路径仍可工作，但该路径现在是指向 `/mnt/usmidet/billy_test/OpenSet_Incremental_SEI_main` 的软链接；大文件继续优先落到 `/mnt/usmidet/billy_test`。
 - Stage 11 当前已完成本地可执行入口和协议边界验证；下一步提交并推送后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only，结果不过门槛就归档，不进入 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
