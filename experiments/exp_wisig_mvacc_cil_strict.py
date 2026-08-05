@@ -2152,6 +2152,88 @@ def _select_pseudo_registration_mask(pseudo_y, confidence, top_fraction, min_per
     return keep
 
 
+def _select_refined_consensus_training_mask(refined_pseudo_y, logits, top_fraction, min_per_class):
+    """为二次 discovery refinement 选择高置信且与 Student 预测一致的样本。
+
+    Stage56 只作用于 ``enable_joint_discovery_refinement`` 的第二次 CIL。第一次
+    discovery 仍按原协议固定注册所有伪类；第一次 CIL 后，Student 已经给当前轮
+    discovery 样本形成了一个网络分类判断。这里要求样本满足两个训练期可见条件：
+
+    1. 二次聚类对齐后的伪标签与 Student 最大 logit 预测一致；
+    2. 在该伪类内部属于较高置信样本。
+
+    该函数不读取未知真实标签或 held-out eval，只使用当前轮 discovery 样本的
+    伪标签和 Student logits。若某个伪类完全没有一致样本，则保留该类最高置信
+    的一个样本，避免二次训练把已注册新类整列饿死。
+    """
+
+    labels = np.asarray(refined_pseudo_y, dtype=np.int64)
+    logits = np.asarray(logits, dtype=np.float32)
+    if labels.size == 0:
+        return np.zeros(0, dtype=bool), {
+            "Refined Filter Kept": 0,
+            "Refined Filter Total": 0,
+            "Refined Filter Keep Rate": 0.0,
+            "Refined Filter Agreement Rate": 0.0,
+            "Refined Filter Mean Confidence": 0.0,
+        }
+    if logits.ndim != 2 or logits.shape[0] != labels.shape[0]:
+        raise ValueError(
+            f"Refined consensus filter expects logits shape (N,C), got {logits.shape} for {labels.shape} labels."
+        )
+    if float(top_fraction) >= 0.999:
+        keep = np.ones(labels.size, dtype=bool)
+        predictions = np.argmax(logits, axis=1)
+        agreement = predictions == labels
+        return keep, {
+            "Refined Filter Kept": int(labels.size),
+            "Refined Filter Total": int(labels.size),
+            "Refined Filter Keep Rate": 1.0,
+            "Refined Filter Agreement Rate": float(np.mean(agreement)),
+            "Refined Filter Mean Confidence": 1.0,
+        }
+
+    stable_logits = logits - logits.max(axis=1, keepdims=True)
+    exp_logits = np.exp(stable_logits)
+    probs = exp_logits / np.maximum(exp_logits.sum(axis=1, keepdims=True), 1e-12)
+    predictions = np.argmax(probs, axis=1).astype(np.int64)
+    label_indices = np.clip(labels, 0, probs.shape[1] - 1)
+    assigned_confidence = probs[np.arange(labels.size), label_indices].astype(np.float32)
+    agreement = predictions == labels
+
+    keep = np.zeros(labels.size, dtype=bool)
+    fraction = float(np.clip(top_fraction, 0.01, 1.0))
+    minimum = max(1, int(min_per_class))
+    fallback_classes = 0
+    for class_id in sorted(np.unique(labels).tolist()):
+        class_indices = np.where(labels == int(class_id))[0]
+        if class_indices.size == 0:
+            continue
+        target = min(class_indices.size, max(minimum, int(np.ceil(class_indices.size * fraction))))
+        agreed = class_indices[agreement[class_indices]]
+        if agreed.size > 0:
+            order = np.argsort(-assigned_confidence[agreed], kind="mergesort")
+            chosen = agreed[order[: min(target, agreed.size)]]
+        else:
+            fallback_classes += 1
+            order = np.argsort(-assigned_confidence[class_indices], kind="mergesort")
+            chosen = class_indices[order[:1]]
+        keep[chosen] = True
+
+    if not np.any(keep):
+        keep[np.argmax(assigned_confidence)] = True
+    kept_conf = assigned_confidence[keep]
+    diagnostics = {
+        "Refined Filter Kept": int(np.sum(keep)),
+        "Refined Filter Total": int(labels.size),
+        "Refined Filter Keep Rate": float(np.mean(keep)),
+        "Refined Filter Agreement Rate": float(np.mean(agreement)),
+        "Refined Filter Mean Confidence": float(np.mean(kept_conf)) if kept_conf.size else 0.0,
+        "Refined Filter Fallback Classes": int(fallback_classes),
+    }
+    return keep, diagnostics
+
+
 def _build_current_pseudo_prototypes(student, current_x, current_y, device):
     """用当前轮开始时的 Student 特征建立固定伪类原型。
 
@@ -4093,6 +4175,18 @@ def main():
         action="store_true",
         help="每轮先完成一次 CIL，再用 Student 表征重新发现并无标签对齐，最后进行第二次 CIL；默认关闭。",
     )
+    parser.add_argument(
+        "--radcil_refined_filter_top_fraction",
+        type=float,
+        default=1.0,
+        help="Joint refinement 第二次 CIL 仅保留 Student/二次伪标签一致的类内 top fraction；1.0 保持历史全量二次训练。",
+    )
+    parser.add_argument(
+        "--radcil_refined_filter_min_per_class",
+        type=int,
+        default=1,
+        help="Joint refinement 高置信一致过滤时每个二次伪类至少保留的样本数；仅在 top_fraction < 1 时生效。",
+    )
     parser.add_argument("--discovery_feature_adapter", choices=["none", "mn_smooth", "proto_repulse"], default="none", help="Strict discovery feature adapter before MV-ACC/GPCC; uses only known train and current discovery features.")
     parser.add_argument("--cross_day_repr_adaptation", action="store_true", help="每轮 Teacher discovery 前做训练期跨天表征适配，只使用 Day1 known train 标签和当前 discovery 无标签样本。")
     parser.add_argument("--cross_day_repr_epochs", type=int, default=2)
@@ -5118,25 +5212,65 @@ def main():
                 refined_z,
                 refined_info["labels"],
             )
+            refined_filter_mask = np.ones(len(refined_pseudo_y), dtype=bool)
+            if float(args.radcil_refined_filter_top_fraction) < 0.999:
+                # Stage56：二次发现后不再盲目把所有对齐伪标签喂回第二次 CIL。
+                # 这里用同一个 Student 的分类头 logits 做一致性检查，只保留
+                # Student 预测与 refined 伪标签一致且类内置信度靠前的样本。
+                # 整个过程只依赖当前轮 discovery 样本、伪标签和训练期模型输出，
+                # 不读取未知真值或 held-out eval。
+                _, refined_logits = _extract_end_to_end_outputs(
+                    student,
+                    rd["X"],
+                    args.test_batch_size,
+                    device,
+                )
+                refined_filter_mask, refined_filter_diag = _select_refined_consensus_training_mask(
+                    refined_pseudo_y,
+                    refined_logits,
+                    top_fraction=float(args.radcil_refined_filter_top_fraction),
+                    min_per_class=int(args.radcil_refined_filter_min_per_class),
+                )
+                refined_row.update(refined_filter_diag)
+                print(
+                    f"[refined filter] R{i}: kept={int(np.sum(refined_filter_mask))}/{len(refined_filter_mask)} "
+                    f"top_fraction={float(args.radcil_refined_filter_top_fraction):.2f} "
+                    f"agreement={float(refined_filter_diag['Refined Filter Agreement Rate']):.4f}"
+                )
+            else:
+                refined_row.update({
+                    "Refined Filter Kept": int(len(refined_pseudo_y)),
+                    "Refined Filter Total": int(len(refined_pseudo_y)),
+                    "Refined Filter Keep Rate": 1.0,
+                    "Refined Filter Agreement Rate": 1.0,
+                    "Refined Filter Mean Confidence": 1.0,
+                    "Refined Filter Fallback Classes": 0,
+                })
+            refined_recording_id = rd.get("recording_id")
+            refined_recording_id = (
+                None
+                if refined_recording_id is None
+                else np.asarray(refined_recording_id, dtype=np.int64)[refined_filter_mask]
+            )
             student = _train_end_to_end_cil(
                 student,
                 student,
-                rd["X"],
-                refined_pseudo_y,
-                current_w,
+                rd["X"][refined_filter_mask],
+                refined_pseudo_y[refined_filter_mask],
+                current_w[refined_filter_mask],
                 memory_x,
                 memory_y,
                 old_out,
                 args,
                 device,
-                current_recording_id=rd.get("recording_id"),
+                current_recording_id=refined_recording_id,
             )
             if int(args.radcil_balanced_head_recalibration_epochs) > 0:
                 student = _recalibrate_balanced_classifier_head(
                     student,
-                    rd["X"],
-                    refined_pseudo_y,
-                    current_w,
+                    rd["X"][refined_filter_mask],
+                    refined_pseudo_y[refined_filter_mask],
+                    current_w[refined_filter_mask],
                     memory_x,
                     memory_y,
                     args.radcil_balanced_head_recalibration_epochs,
@@ -5146,8 +5280,13 @@ def main():
                     new_distill_weight=args.radcil_balanced_head_new_distill_weight,
                 )
         memory_labels = refined_pseudo_y if args.enable_joint_discovery_refinement else pseudo_y
-        memory_source_x = rd["X"][registration_mask]
-        memory_source_y = memory_labels[registration_mask]
+        memory_mask = registration_mask
+        if args.enable_joint_discovery_refinement and float(args.radcil_refined_filter_top_fraction) < 0.999:
+            memory_mask = registration_mask & refined_filter_mask
+            if not np.any(memory_mask):
+                memory_mask = registration_mask
+        memory_source_x = rd["X"][memory_mask]
+        memory_source_y = memory_labels[memory_mask]
         memory_x, memory_y = _update_iq_memory(
             memory_x,
             memory_y,

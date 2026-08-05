@@ -130,3 +130,7 @@ Desktop.ini
 /results/stage55/*.pth
 /results/stage55/lora_s28_physical_seed*_*/*.pth
 /results/stage55/lora_s28_physical_seed*_*/*.npz
+
+# Stage56 LoRa refined filter：保留小型 CSV/JSON/报告，忽略每个变体的模型和 replay 二进制。
+/results/stage56/lora_s56_*_*/*.pth
+/results/stage56/lora_s56_*_*/*.npz
