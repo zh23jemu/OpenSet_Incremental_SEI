@@ -1,0 +1,257 @@
+Stage62 data_root=/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage45-worktree
+Stage62 s28_npz=results/stage46/lora25_diffdays_indoor_raw1024_s28_46103936.npz
+Stage62 python=/mnt/users/xj62kv/OpenSet_Incremental_SEI/.venv/bin/python
+== Stage62 variant oracle_base: save_dir=results/stage62/lora_s62_oracle_base_46314706 ==
+
+========== LoRa25 Different Days Indoor 10-Known 3-Round Incremental Experiment ==========
+Dataset: results/stage46/lora25_diffdays_indoor_raw1024_s28_46103936.npz
+Save dir: results/stage62/lora_s62_oracle_base_46314706
+Device: cuda
+Protocol: 10 known + 5 unknown R1 + 5 unknown R2 + 5 unknown R3
+LoRa split: IQ_1-6 train | IQ_7 validation | IQ_8-10 held-out evaluation
+Old-class prototype bonus beta: 0.0
+Incremental dual-view consistency weight: 0.0
+Cross-day feature domain alignment weight: 0.0
+Pseudo-label cluster reliability weighting: False (floor=0.2)
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train IQ_1-6 train: (1680, 2, 1024), classes=10, labels=0-9
+Initial eval 30%:     (840, 2, 1024), classes=10, labels=0-9, day=Day 1
+Unknown R1 IQ_1-7 discovery: (980, 2, 1024), classes=5, labels=10-14, day=Day 2
+After R1 IQ_8-10 eval: (1260, 2, 1024), classes=15, labels=0-14, day=Day 2
+Unknown R2 IQ_1-7 discovery: (980, 2, 1024), classes=5, labels=15-19, day=Day 3
+After R2 IQ_8-10 eval: (1680, 2, 1024), classes=20, labels=0-19, day=Day 3
+Unknown R3 IQ_1-7 discovery: (980, 2, 1024), classes=5, labels=20-24, day=Day 4
+After R3 IQ_8-10 eval: (2100, 2, 1024), classes=25, labels=0-24, day=Day 4
+
+[Train-v2] classes=10 | train=1680 | validation=280 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/020 | train_loss=2.9381 | train_acc=0.1016 | val_acc=0.0929 | val_loss=2.3061
+Epoch 002/020 | train_loss=2.7523 | train_acc=0.1899 | val_acc=0.2286 | val_loss=2.0263
+Epoch 003/020 | train_loss=2.3958 | train_acc=0.2656 | val_acc=0.1107 | val_loss=1.9310
+Epoch 004/020 | train_loss=2.3727 | train_acc=0.2500 | val_acc=0.3179 | val_loss=1.7063
+Epoch 005/020 | train_loss=2.1406 | train_acc=0.3588 | val_acc=0.2893 | val_loss=1.5842
+Epoch 006/020 | train_loss=1.9839 | train_acc=0.4008 | val_acc=0.3071 | val_loss=1.6444
+Epoch 007/020 | train_loss=1.9247 | train_acc=0.4008 | val_acc=0.4000 | val_loss=1.4880
+Epoch 008/020 | train_loss=1.7845 | train_acc=0.5012 | val_acc=0.3571 | val_loss=1.6760
+Epoch 009/020 | train_loss=1.7202 | train_acc=0.5102 | val_acc=0.1571 | val_loss=2.4275
+Epoch 010/020 | train_loss=1.7285 | train_acc=0.4772 | val_acc=0.3964 | val_loss=1.4780
+Epoch 011/020 | train_loss=1.7111 | train_acc=0.4838 | val_acc=0.1857 | val_loss=1.9994
+Epoch 012/020 | train_loss=1.6134 | train_acc=0.5481 | val_acc=0.3429 | val_loss=1.6853
+Epoch 013/020 | train_loss=1.4954 | train_acc=0.5823 | val_acc=0.5179 | val_loss=1.2127
+Epoch 014/020 | train_loss=1.4205 | train_acc=0.6004 | val_acc=0.3536 | val_loss=1.4638
+Epoch 015/020 | train_loss=1.3027 | train_acc=0.6575 | val_acc=0.5393 | val_loss=1.0888
+Epoch 016/020 | train_loss=1.4258 | train_acc=0.5715 | val_acc=0.5357 | val_loss=1.1260
+Epoch 017/020 | train_loss=1.2552 | train_acc=0.6689 | val_acc=0.5893 | val_loss=1.1206
+Epoch 018/020 | train_loss=1.1901 | train_acc=0.6953 | val_acc=0.4643 | val_loss=1.2521
+Epoch 019/020 | train_loss=1.1695 | train_acc=0.6803 | val_acc=0.5321 | val_loss=1.2378
+Epoch 020/020 | train_loss=1.2960 | train_acc=0.6208 | val_acc=0.3536 | val_loss=1.7304
+[Train-v2] best_val_acc=0.5893 | best_val_loss=1.1206 | saved=results/stage62/lora_s62_oracle_base_46314706/closedset_lora25_lora_chirp_10known.pth
+[Load] checkpoint=results/stage62/lora_s62_oracle_base_46314706/closedset_lora25_lora_chirp_10known.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.359 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL] End-to-end pseudo-label class-incremental learning
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Assignment Coverage  Noise Points  Clusters  Noise  NMI  ARI  Purity  Hungarian Acc Discovery Backend  Oracle Discovery Diagnostic                             Oracle Discovery Warning  GPCC Uses HDBSCAN       Cross-Day Adapter  Cross-Day Epochs  Cross-Day Batch Size  Cross-Day LR  Cross-Day Consistency Weight  Cross-Day CORAL Weight  Cross-Day Known Samples  Cross-Day Discovery Samples  Cross-Day Final Total  Cross-Day Final CE  Cross-Day Final Consistency  Cross-Day Final CORAL                    LoRa SSL Adapter  LoRa SSL Epochs  LoRa SSL Batch Size  LoRa SSL LR  LoRa SSL CE Weight  LoRa SSL Instance Weight  LoRa SSL Teacher Weight  LoRa SSL Temperature  LoRa SSL Known Samples  LoRa SSL Discovery Samples  LoRa SSL Final Total  LoRa SSL Final CE  LoRa SSL Final Instance  LoRa SSL Final Teacher
+MV-ACC-CIL discovery    R1         Day 2                 5      980                      5                    5                    0                    1.0                  1.0             0         5    0.0  1.0  1.0     1.0            1.0 oracle_diagnostic                         True uses current discovery true labels; upper bound only              False train_consistency_coral                 2                    96       0.00001                           0.5                    0.05                     1680                          980               0.751388            0.738857                     0.001626               0.234359 instance_contrastive_teacher_anchor                3                   96      0.00001                 1.0                       0.5                      0.2                   0.2                    1680                         980              2.679271           0.737661                 3.882659                0.001404
+MV-ACC-CIL discovery    R2         Day 3                 5      980                      5                    5                    0                    1.0                  1.0             0         5    0.0  1.0  1.0     1.0            1.0 oracle_diagnostic                         True uses current discovery true labels; upper bound only              False train_consistency_coral                 2                    96       0.00001                           0.5                    0.05                     1680                          980               0.960660            0.951103                     0.000530               0.185830 instance_contrastive_teacher_anchor                3                   96      0.00001                 1.0                       0.5                      0.2                   0.2                    1680                         980              2.689222           0.966111                 3.445782                0.001100
+MV-ACC-CIL discovery    R3         Day 4                 5      980                      5                    5                    0                    1.0                  1.0             0         5    0.0  1.0  1.0     1.0            1.0 oracle_diagnostic                         True uses current discovery true labels; upper bound only              False train_consistency_coral                 2                    96       0.00001                           0.5                    0.05                     1680                          980               1.198827            1.194121                     0.000640               0.087731 instance_contrastive_teacher_anchor                3                   96      0.00001                 1.0                       0.5                      0.2                   0.2                    1680                         980              2.646901           1.061321                 3.170785                0.000938
+Saved: results/stage62/lora_s62_oracle_base_46314706/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+    Method    Stage Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           840     0.577381 0.577381      NaN           0.577381         0.000000  0.524803
+MV-ACC-CIL After R1    Day 2   eval_r1_30pct_15_seen            15                5                   5                 5          1260     0.323810 0.433333 0.104762           0.433333         0.144048  0.281130
+MV-ACC-CIL After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5          1680     0.348214 0.380952 0.250000           0.470238         0.107143  0.323653
+MV-ACC-CIL After R3    Day 4   eval_r3_30pct_25_seen            25                5                   5                 5          2100     0.298571 0.222024 0.604762           0.367857         0.209524  0.248239
+Saved: results/stage62/lora_s62_oracle_base_46314706/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+    Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL    R1              5                                 5                    0         1.000000 1.000000 1.000000 1.000000       1.000000     0.323810 0.104762         0.144048
+MV-ACC-CIL    R2              5                                 5                    0         1.000000 1.000000 1.000000 1.000000       1.000000     0.348214 0.250000         0.107143
+MV-ACC-CIL    R3              5                                 5                    0         1.000000 1.000000 1.000000 1.000000       1.000000     0.298571 0.604762         0.209524
+Saved: results/stage62/lora_s62_oracle_base_46314706/per_round_summary_results.csv
+== Stage62 variant oracle_oldroute: save_dir=results/stage62/lora_s62_oracle_oldroute_46314706 ==
+
+========== LoRa25 Different Days Indoor 10-Known 3-Round Incremental Experiment ==========
+Dataset: results/stage46/lora25_diffdays_indoor_raw1024_s28_46103936.npz
+Save dir: results/stage62/lora_s62_oracle_oldroute_46314706
+Device: cuda
+Protocol: 10 known + 5 unknown R1 + 5 unknown R2 + 5 unknown R3
+LoRa split: IQ_1-6 train | IQ_7 validation | IQ_8-10 held-out evaluation
+Old-class prototype bonus beta: 0.0
+Incremental dual-view consistency weight: 0.0
+Cross-day feature domain alignment weight: 0.0
+Pseudo-label cluster reliability weighting: False (floor=0.2)
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train IQ_1-6 train: (1680, 2, 1024), classes=10, labels=0-9
+Initial eval 30%:     (840, 2, 1024), classes=10, labels=0-9, day=Day 1
+Unknown R1 IQ_1-7 discovery: (980, 2, 1024), classes=5, labels=10-14, day=Day 2
+After R1 IQ_8-10 eval: (1260, 2, 1024), classes=15, labels=0-14, day=Day 2
+Unknown R2 IQ_1-7 discovery: (980, 2, 1024), classes=5, labels=15-19, day=Day 3
+After R2 IQ_8-10 eval: (1680, 2, 1024), classes=20, labels=0-19, day=Day 3
+Unknown R3 IQ_1-7 discovery: (980, 2, 1024), classes=5, labels=20-24, day=Day 4
+After R3 IQ_8-10 eval: (2100, 2, 1024), classes=25, labels=0-24, day=Day 4
+
+[Train-v2] classes=10 | train=1680 | validation=280 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/020 | train_loss=2.9381 | train_acc=0.1016 | val_acc=0.0929 | val_loss=2.3061
+Epoch 002/020 | train_loss=2.7523 | train_acc=0.1899 | val_acc=0.2286 | val_loss=2.0263
+Epoch 003/020 | train_loss=2.3958 | train_acc=0.2656 | val_acc=0.1107 | val_loss=1.9310
+Epoch 004/020 | train_loss=2.3727 | train_acc=0.2500 | val_acc=0.3179 | val_loss=1.7063
+Epoch 005/020 | train_loss=2.1406 | train_acc=0.3588 | val_acc=0.2893 | val_loss=1.5842
+Epoch 006/020 | train_loss=1.9839 | train_acc=0.4008 | val_acc=0.3071 | val_loss=1.6444
+Epoch 007/020 | train_loss=1.9247 | train_acc=0.4008 | val_acc=0.4000 | val_loss=1.4880
+Epoch 008/020 | train_loss=1.7845 | train_acc=0.5012 | val_acc=0.3571 | val_loss=1.6760
+Epoch 009/020 | train_loss=1.7202 | train_acc=0.5102 | val_acc=0.1571 | val_loss=2.4275
+Epoch 010/020 | train_loss=1.7285 | train_acc=0.4772 | val_acc=0.3964 | val_loss=1.4780
+Epoch 011/020 | train_loss=1.7111 | train_acc=0.4838 | val_acc=0.1857 | val_loss=1.9994
+Epoch 012/020 | train_loss=1.6134 | train_acc=0.5481 | val_acc=0.3429 | val_loss=1.6853
+Epoch 013/020 | train_loss=1.4954 | train_acc=0.5823 | val_acc=0.5179 | val_loss=1.2127
+Epoch 014/020 | train_loss=1.4205 | train_acc=0.6004 | val_acc=0.3536 | val_loss=1.4638
+Epoch 015/020 | train_loss=1.3027 | train_acc=0.6575 | val_acc=0.5393 | val_loss=1.0888
+Epoch 016/020 | train_loss=1.4258 | train_acc=0.5715 | val_acc=0.5357 | val_loss=1.1260
+Epoch 017/020 | train_loss=1.2552 | train_acc=0.6689 | val_acc=0.5893 | val_loss=1.1206
+Epoch 018/020 | train_loss=1.1901 | train_acc=0.6953 | val_acc=0.4643 | val_loss=1.2521
+Epoch 019/020 | train_loss=1.1695 | train_acc=0.6803 | val_acc=0.5321 | val_loss=1.2378
+Epoch 020/020 | train_loss=1.2960 | train_acc=0.6208 | val_acc=0.3536 | val_loss=1.7304
+[Train-v2] best_val_acc=0.5893 | best_val_loss=1.1206 | saved=results/stage62/lora_s62_oracle_oldroute_46314706/closedset_lora25_lora_chirp_10known.pth
+[Load] checkpoint=results/stage62/lora_s62_oracle_oldroute_46314706/closedset_lora25_lora_chirp_10known.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.359 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL + old-prototype-route] End-to-end pseudo-label class-incremental learning
+[Old prototype route] candidates=0.55,0.65,0.75,0.85,0.95, align_lambda=0.3
+[Old prototype route calibration] stage=Initial | Day1 validation only | threshold=0.95
+[Old prototype route calibration] stage=After R1 | Day1 validation only | threshold=0.95
+[Old prototype route calibration] stage=After R2 | Day1 validation only | threshold=0.95
+[Old prototype route calibration] stage=After R3 | Day1 validation only | threshold=0.55
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Assignment Coverage  Noise Points  Clusters  Noise  NMI  ARI  Purity  Hungarian Acc Discovery Backend  Oracle Discovery Diagnostic                             Oracle Discovery Warning  GPCC Uses HDBSCAN       Cross-Day Adapter  Cross-Day Epochs  Cross-Day Batch Size  Cross-Day LR  Cross-Day Consistency Weight  Cross-Day CORAL Weight  Cross-Day Known Samples  Cross-Day Discovery Samples  Cross-Day Final Total  Cross-Day Final CE  Cross-Day Final Consistency  Cross-Day Final CORAL                    LoRa SSL Adapter  LoRa SSL Epochs  LoRa SSL Batch Size  LoRa SSL LR  LoRa SSL CE Weight  LoRa SSL Instance Weight  LoRa SSL Teacher Weight  LoRa SSL Temperature  LoRa SSL Known Samples  LoRa SSL Discovery Samples  LoRa SSL Final Total  LoRa SSL Final CE  LoRa SSL Final Instance  LoRa SSL Final Teacher
+MV-ACC-CIL discovery    R1         Day 2                 5      980                      5                    5                    0                    1.0                  1.0             0         5    0.0  1.0  1.0     1.0            1.0 oracle_diagnostic                         True uses current discovery true labels; upper bound only              False train_consistency_coral                 2                    96       0.00001                           0.5                    0.05                     1680                          980               0.751388            0.738857                     0.001626               0.234359 instance_contrastive_teacher_anchor                3                   96      0.00001                 1.0                       0.5                      0.2                   0.2                    1680                         980              2.679271           0.737661                 3.882659                0.001404
+MV-ACC-CIL discovery    R2         Day 3                 5      980                      5                    5                    0                    1.0                  1.0             0         5    0.0  1.0  1.0     1.0            1.0 oracle_diagnostic                         True uses current discovery true labels; upper bound only              False train_consistency_coral                 2                    96       0.00001                           0.5                    0.05                     1680                          980               0.960660            0.951103                     0.000530               0.185830 instance_contrastive_teacher_anchor                3                   96      0.00001                 1.0                       0.5                      0.2                   0.2                    1680                         980              2.689222           0.966111                 3.445782                0.001100
+MV-ACC-CIL discovery    R3         Day 4                 5      980                      5                    5                    0                    1.0                  1.0             0         5    0.0  1.0  1.0     1.0            1.0 oracle_diagnostic                         True uses current discovery true labels; upper bound only              False train_consistency_coral                 2                    96       0.00001                           0.5                    0.05                     1680                          980               1.198827            1.194121                     0.000640               0.087731 instance_contrastive_teacher_anchor                3                   96      0.00001                 1.0                       0.5                      0.2                   0.2                    1680                         980              2.646901           1.061321                 3.170785                0.000938
+Saved: results/stage62/lora_s62_oracle_oldroute_46314706/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+                          Method    Stage Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL + old-prototype-route  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           840     0.647619 0.647619      NaN           0.647619         0.000000  0.620926
+MV-ACC-CIL + old-prototype-route After R1    Day 2   eval_r1_30pct_15_seen            15                5                   5                 5          1260     0.296825 0.392857 0.104762           0.392857         0.254762  0.254317
+MV-ACC-CIL + old-prototype-route After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5          1680     0.348810 0.381746 0.250000           0.470238         0.177381  0.326021
+MV-ACC-CIL + old-prototype-route After R3    Day 4   eval_r3_30pct_25_seen            25                5                   5                 5          2100     0.275714 0.252381 0.369048           0.390476         0.257143  0.254463
+Saved: results/stage62/lora_s62_oracle_oldroute_46314706/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+                          Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL + old-prototype-route    R1              5                                 5                    0         1.000000 1.000000 1.000000 1.000000       1.000000     0.296825 0.104762         0.254762
+MV-ACC-CIL + old-prototype-route    R2              5                                 5                    0         1.000000 1.000000 1.000000 1.000000       1.000000     0.348810 0.250000         0.177381
+MV-ACC-CIL + old-prototype-route    R3              5                                 5                    0         1.000000 1.000000 1.000000 1.000000       1.000000     0.275714 0.369048         0.257143
+Saved: results/stage62/lora_s62_oracle_oldroute_46314706/per_round_summary_results.csv
+== Stage62 variant oracle_grouped_doi: save_dir=results/stage62/lora_s62_oracle_grouped_doi_46314706 ==
+
+========== LoRa25 Different Days Indoor 10-Known 3-Round Incremental Experiment ==========
+Dataset: results/stage46/lora25_diffdays_indoor_raw1024_s28_46103936.npz
+Save dir: results/stage62/lora_s62_oracle_grouped_doi_46314706
+Device: cuda
+Protocol: 10 known + 5 unknown R1 + 5 unknown R2 + 5 unknown R3
+LoRa split: IQ_1-6 train | IQ_7 validation | IQ_8-10 held-out evaluation
+Old-class prototype bonus beta: 0.0
+Incremental dual-view consistency weight: 0.0
+Cross-day feature domain alignment weight: 0.0
+Pseudo-label cluster reliability weighting: False (floor=0.2)
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train IQ_1-6 train: (1680, 2, 1024), classes=10, labels=0-9
+Initial eval 30%:     (840, 2, 1024), classes=10, labels=0-9, day=Day 1
+Unknown R1 IQ_1-7 discovery: (980, 2, 1024), classes=5, labels=10-14, day=Day 2
+After R1 IQ_8-10 eval: (1260, 2, 1024), classes=15, labels=0-14, day=Day 2
+Unknown R2 IQ_1-7 discovery: (980, 2, 1024), classes=5, labels=15-19, day=Day 3
+After R2 IQ_8-10 eval: (1680, 2, 1024), classes=20, labels=0-19, day=Day 3
+Unknown R3 IQ_1-7 discovery: (980, 2, 1024), classes=5, labels=20-24, day=Day 4
+After R3 IQ_8-10 eval: (2100, 2, 1024), classes=25, labels=0-24, day=Day 4
+
+[Train-v2] classes=10 | train=1680 | validation=280 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/020 | train_loss=2.9381 | train_acc=0.1016 | val_acc=0.0929 | val_loss=2.3061
+Epoch 002/020 | train_loss=2.7523 | train_acc=0.1899 | val_acc=0.2286 | val_loss=2.0263
+Epoch 003/020 | train_loss=2.3958 | train_acc=0.2656 | val_acc=0.1107 | val_loss=1.9310
+Epoch 004/020 | train_loss=2.3727 | train_acc=0.2500 | val_acc=0.3179 | val_loss=1.7063
+Epoch 005/020 | train_loss=2.1406 | train_acc=0.3588 | val_acc=0.2893 | val_loss=1.5842
+Epoch 006/020 | train_loss=1.9839 | train_acc=0.4008 | val_acc=0.3071 | val_loss=1.6444
+Epoch 007/020 | train_loss=1.9247 | train_acc=0.4008 | val_acc=0.4000 | val_loss=1.4880
+Epoch 008/020 | train_loss=1.7845 | train_acc=0.5012 | val_acc=0.3571 | val_loss=1.6760
+Epoch 009/020 | train_loss=1.7202 | train_acc=0.5102 | val_acc=0.1571 | val_loss=2.4275
+Epoch 010/020 | train_loss=1.7285 | train_acc=0.4772 | val_acc=0.3964 | val_loss=1.4780
+Epoch 011/020 | train_loss=1.7111 | train_acc=0.4838 | val_acc=0.1857 | val_loss=1.9994
+Epoch 012/020 | train_loss=1.6134 | train_acc=0.5481 | val_acc=0.3429 | val_loss=1.6853
+Epoch 013/020 | train_loss=1.4954 | train_acc=0.5823 | val_acc=0.5179 | val_loss=1.2127
+Epoch 014/020 | train_loss=1.4205 | train_acc=0.6004 | val_acc=0.3536 | val_loss=1.4638
+Epoch 015/020 | train_loss=1.3027 | train_acc=0.6575 | val_acc=0.5393 | val_loss=1.0888
+Epoch 016/020 | train_loss=1.4258 | train_acc=0.5715 | val_acc=0.5357 | val_loss=1.1260
+Epoch 017/020 | train_loss=1.2552 | train_acc=0.6689 | val_acc=0.5893 | val_loss=1.1206
+Epoch 018/020 | train_loss=1.1901 | train_acc=0.6953 | val_acc=0.4643 | val_loss=1.2521
+Epoch 019/020 | train_loss=1.1695 | train_acc=0.6803 | val_acc=0.5321 | val_loss=1.2378
+Epoch 020/020 | train_loss=1.2960 | train_acc=0.6208 | val_acc=0.3536 | val_loss=1.7304
+[Train-v2] best_val_acc=0.5893 | best_val_loss=1.1206 | saved=results/stage62/lora_s62_oracle_grouped_doi_46314706/closedset_lora25_lora_chirp_10known.pth
+[Load] checkpoint=results/stage62/lora_s62_oracle_grouped_doi_46314706/closedset_lora25_lora_chirp_10known.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.359 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[MV-ACC-CIL + grouped DOI-memory] End-to-end pseudo-label class-incremental learning
+[Hybrid DOI] fusion_weight=0.0, align_lambda=0.3, prototype_temperature=0.1
+[Grouped DOI calibration] stage=Initial | Day1 validation only | weight=0.75
+[Grouped DOI calibration] stage=After R1 | Day1 validation only | old_class_count=10 | weight=0.1
+[Grouped DOI calibration] stage=After R2 | Day1 validation only | old_class_count=15 | weight=0.1
+[Grouped DOI calibration] stage=After R3 | Day1 validation only | old_class_count=20 | weight=0.1
+
+========== Table 1: Unknown Discovery / Clustering Results ==========
+              Method Round Discovery Day  True New Classes  Samples  Initial Cluster Count  Final Cluster Count  Cluster Count Error  Over-clustering Ratio  Assignment Coverage  Noise Points  Clusters  Noise  NMI  ARI  Purity  Hungarian Acc Discovery Backend  Oracle Discovery Diagnostic                             Oracle Discovery Warning  GPCC Uses HDBSCAN       Cross-Day Adapter  Cross-Day Epochs  Cross-Day Batch Size  Cross-Day LR  Cross-Day Consistency Weight  Cross-Day CORAL Weight  Cross-Day Known Samples  Cross-Day Discovery Samples  Cross-Day Final Total  Cross-Day Final CE  Cross-Day Final Consistency  Cross-Day Final CORAL                    LoRa SSL Adapter  LoRa SSL Epochs  LoRa SSL Batch Size  LoRa SSL LR  LoRa SSL CE Weight  LoRa SSL Instance Weight  LoRa SSL Teacher Weight  LoRa SSL Temperature  LoRa SSL Known Samples  LoRa SSL Discovery Samples  LoRa SSL Final Total  LoRa SSL Final CE  LoRa SSL Final Instance  LoRa SSL Final Teacher
+MV-ACC-CIL discovery    R1         Day 2                 5      980                      5                    5                    0                    1.0                  1.0             0         5    0.0  1.0  1.0     1.0            1.0 oracle_diagnostic                         True uses current discovery true labels; upper bound only              False train_consistency_coral                 2                    96       0.00001                           0.5                    0.05                     1680                          980               0.751388            0.738857                     0.001626               0.234359 instance_contrastive_teacher_anchor                3                   96      0.00001                 1.0                       0.5                      0.2                   0.2                    1680                         980              2.679271           0.737661                 3.882659                0.001404
+MV-ACC-CIL discovery    R2         Day 3                 5      980                      5                    5                    0                    1.0                  1.0             0         5    0.0  1.0  1.0     1.0            1.0 oracle_diagnostic                         True uses current discovery true labels; upper bound only              False train_consistency_coral                 2                    96       0.00001                           0.5                    0.05                     1680                          980               0.960660            0.951103                     0.000530               0.185830 instance_contrastive_teacher_anchor                3                   96      0.00001                 1.0                       0.5                      0.2                   0.2                    1680                         980              2.689222           0.966111                 3.445782                0.001100
+MV-ACC-CIL discovery    R3         Day 4                 5      980                      5                    5                    0                    1.0                  1.0             0         5    0.0  1.0  1.0     1.0            1.0 oracle_diagnostic                         True uses current discovery true labels; upper bound only              False train_consistency_coral                 2                    96       0.00001                           0.5                    0.05                     1680                          980               1.198827            1.194121                     0.000640               0.087731 instance_contrastive_teacher_anchor                3                   96      0.00001                 1.0                       0.5                      0.2                   0.2                    1680                         980              2.646901           1.061321                 3.170785                0.000938
+Saved: results/stage62/lora_s62_oracle_grouped_doi_46314706/clustering_results.csv
+
+========== Table 2: Incremental Recognition Results ==========
+                         Method    Stage Eval Day              Eval Split  Seen Classes True New Classes Discovered Clusters Enrolled Clusters  Eval Samples  Overall Acc  Old Acc  New Acc  Initial Known Acc  Forgetting Rate  Macro F1
+MV-ACC-CIL + grouped DOI-memory  Initial    Day 1 day1_eval_initial_30pct            10                -                   -                 -           840     0.645238 0.645238      NaN           0.645238         0.000000  0.615509
+MV-ACC-CIL + grouped DOI-memory After R1    Day 2   eval_r1_30pct_15_seen            15                5                   5                 5          1260     0.326190 0.434524 0.109524           0.434524         0.210714  0.284906
+MV-ACC-CIL + grouped DOI-memory After R2    Day 3   eval_r2_30pct_20_seen            20                5                   5                 5          1680     0.357143 0.389683 0.259524           0.472619         0.172619  0.327244
+MV-ACC-CIL + grouped DOI-memory After R3    Day 4   eval_r3_30pct_25_seen            25                5                   5                 5          2100     0.300000 0.223214 0.607143           0.370238         0.275000  0.249749
+Saved: results/stage62/lora_s62_oracle_grouped_doi_46314706/incremental_results.csv
+
+========== Table 3: Per-Round Summary Results ==========
+                         Method Round  Cluster Count  Incremental Pseudo-label Classes  Cluster Count Error  Sample Coverage   Purity      NMI      ARI  Hungarian Acc  Overall Acc  New Acc  Forgetting Rate
+MV-ACC-CIL + grouped DOI-memory    R1              5                                 5                    0         1.000000 1.000000 1.000000 1.000000       1.000000     0.326190 0.109524         0.210714
+MV-ACC-CIL + grouped DOI-memory    R2              5                                 5                    0         1.000000 1.000000 1.000000 1.000000       1.000000     0.357143 0.259524         0.172619
+MV-ACC-CIL + grouped DOI-memory    R3              5                                 5                    0         1.000000 1.000000 1.000000 1.000000       1.000000     0.300000 0.607143         0.275000
+Saved: results/stage62/lora_s62_oracle_grouped_doi_46314706/per_round_summary_results.csv
+Wrote results/stage62/STAGE62_LORA_ORACLE_BACKEND_REPORT_46314706.md
