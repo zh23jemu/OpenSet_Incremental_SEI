@@ -179,6 +179,7 @@
 - Stage 55 LoRa raw s28 物理域预训练 seed7 Job `46166372` 已完成：R3 Overall/Old/New/Forgetting=`0.2805/0.2345/0.4643/0.2310`；相对 Stage48 seed7 Old `+0.0125`，但 Overall `-0.0005`、New `-0.0524`、Forgetting `+0.0583`，归档为负消融，不扩三种子。
 - Stage 56 LoRa joint refinement 高置信一致过滤 Job `46177364` 已完成：base R3 Overall/Old/New/Forgetting=`0.2814/0.2137/0.5524/0.2214`；`filter_top060`=`0.2743/0.2065/0.5452/0.2310`；`filter_top080`=`0.2790/0.2071/0.5667/0.2333`。top80 只提升 New，Overall/Old/Forgetting 未过门槛，归档为负消融，不扩三种子。
 - Stage 57 LoRa top80 + old-prototype-route seed7 Job `46178133` 已完成：base R3 Overall/Old/New/Forgetting=`0.2814/0.2137/0.5524/0.2214`；top80=`0.2790/0.2071/0.5667/0.2333`；top80+old-route=`0.2762/0.2470/0.3929/0.2940`。旧类提升但新类和遗忘明显塌，归档为负消融，不扩三种子。
+- Stage 58 LoRa 双模型 confidence 后验路由 seed7 Job `46268271` 已完成：base R3 Overall/Old/New/Forgetting=`0.2814/0.2137/0.5524/0.2214`；top80=`0.2790/0.2071/0.5667/0.2333`；最佳仍为 base，双模型路由 `new_conf_delta_0p00/0p05/0p10` 的 R3 Overall 为 `0.2790/0.2781/0.2786`，均低于 base 且 Old/Forgetting 变差，归档为负消融。
 - 远端家目录瘦身已完成：`/mnt/users/xj62kv` 精确占用约 `99.86 GiB`，已将 `underwater-crack-correction`、`MASAM-MIB`、`sound-event-classification`、`.cache`、`OpenSet_Incremental_SEI` 和 Stage44 LoRa raw I/Q 目录迁移到 `/mnt/usmidet/billy_test` 并在原位置保留软链接。
 
 ## Recent Changes
@@ -334,6 +335,7 @@
 - 2026-08-05：新增并完成 Stage55 LoRa raw s28 物理域预训练 seed7 验证；小型结果已通过 `stage55-results-46166372` 分支同步，本地已拉回。该候选提升 Old 但压低 New、恶化 Forgetting，不作为正式方案。
 - 2026-08-05：新增并完成 Stage56 LoRa refined filter seed7 验证；小型结果已通过 `stage56-results-46177364` 分支同步，本地已拉回。该机制能局部抬 New，但牺牲 Overall/Old/Forgetting，不作为正式方案。
 - 2026-08-05：新增并完成 Stage57 LoRa top80 + old-route seed7 验证；小型结果已通过 `stage57-results-46178133` 分支同步，本地已拉回。该机制提升 Old 但显著压低 New，不作为正式方案。
+- 2026-08-05：新增并完成 Stage58 LoRa 双模型 confidence 路由 seed7 验证；代码提交 `70cdd46`，`.gitignore` 提交 `5fa09c5`，小型结果通过 `stage58-results-46268271` 分支同步，本地已拉回。结果显示路由继续牺牲 Old/Forgetting，未打开可扩方向。
 
 ## Next TODO
 
@@ -361,6 +363,7 @@
 - Stage55 已完成且未过门槛，不扩三种子；LoRa 当前正式候选仍保持 Stage48 raw s28 + recording-consensus 0.65。
 - Stage56 已完成且未过门槛，不扩三种子；LoRa 当前正式候选仍保持 Stage48 raw s28 + recording-consensus 0.65。
 - Stage57 已完成且未过门槛，不扩三种子；LoRa 当前正式候选仍保持 Stage48 raw s28 + recording-consensus 0.65。后续停止 top80/old-route 这类新旧类拼接小机制。
+- Stage58 已完成且未过门槛，不扩三种子；LoRa 当前正式候选仍保持 Stage48 raw s28 + recording-consensus 0.65。后续停止 base/top80 confidence 路由这类后验组合，若继续攻应转向更大粒度的半监督表征重训或任务口径重定义。
 - 远端 Slurm 后续使用 `/mnt/users/xj62kv/OpenSet_Incremental_SEI` 路径仍可工作，但该路径现在是指向 `/mnt/usmidet/billy_test/OpenSet_Incremental_SEI_main` 的软链接；大文件继续优先落到 `/mnt/usmidet/billy_test`。
 - Stage 11 当前已完成本地可执行入口和协议边界验证；下一步提交并推送后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only，结果不过门槛就归档，不进入 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
@@ -406,6 +409,7 @@
 - Stage55 已验证失败：物理域初始化在 raw s28 口径下能改善 Old，但会牺牲 New 并提高 Forgetting，不能声称 LoRa 已继续提升。
 - Stage56 已验证失败：二次 refinement 高置信过滤能提高 New，但进一步压低 Old 并恶化 Forgetting，说明 LoRa 当前瓶颈不是简单剔除低置信伪标签。
 - Stage57 已验证失败：IQ_7 校准 old-route 能补 Old，但会把 New 大幅吸回旧类；当前 LoRa 低分仍是新旧类不可兼得的结构性瓶颈。
+- Stage58 已验证失败：双模型 confidence 路由能保留或提高 New，但仍拉低 Overall/Old 并恶化遗忘，说明 LoRa 低分不是简单模型后验选择能解决。
 - Stage 17 已未过门槛；ADS-B seed7 的后端/注册结构已多次表现为“Old 变好、New 下降”。下一步若继续攻低分，应转向更激进的联合表征发现或重新训练 discovery backbone，而不是继续加权/过滤当前伪标签。
 - Stage 18 discovery-only 已通过，但完整 CIL R3 Overall `0.4981` 仍低于当前 seed7 强对照 `0.5057`；当前根因进一步收敛为“聚类正确，但增量训练阶段重新破坏表征/新旧类边界”。
 - Stage 19 初始表征教师蒸馏尚未跑真实 Slurm；只有 seed7 同时改善 Overall 且不牺牲 New，才考虑扩三种子，否则归档并停止 ADS-B 小机制搜索。
