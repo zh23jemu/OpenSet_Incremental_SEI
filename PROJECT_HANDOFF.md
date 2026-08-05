@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-31
-- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 48 LoRa 原始 I/Q s28 + recording-consensus 0.65 仍是当前 LoRa 正式候选；Stage 61/62 oracle 诊断已确认 LoRa 低分不是单纯聚类或现有后端小机制能解决
+- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 48 LoRa 原始 I/Q s28 + recording-consensus 0.65 仍是当前 LoRa 正式候选；Stage 63 增强一致性预训练弱正但遗忘变差，Stage 64 masked reconstruction 已归档为负消融
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -230,6 +230,8 @@ Strict loader 审计：
 65. Stage 60 LoRa 累积伪标签全量重训 seed7 Job `46281697` 已完成并同步小型结果：R3 Overall/Old/New/Forgetting=`0.1029/0.1262/0.0095/0.1917`，显著低于 Stage48；说明当前 discovery 伪标签噪声不能直接作为全量监督数据重训分类器，不扩三种子。
 66. Stage 61 LoRa oracle discovery 上界诊断 Job `46308084` 已完成：R3 Overall/Old/New/Forgetting=`0.2986/0.2220/0.6048/0.2095`，完美聚类明显抬 New，但 Overall 仍只有约 30%，Old/Forgetting 仍差，判定为 `NOT_DISCOVERY_ONLY`。
 67. Stage 62 LoRa oracle 后端保护诊断 Job `46314706` 已完成并同步小型结果：old-route R3 `0.2757/0.2524/0.3690/0.2571`，grouped DOI R3 `0.3000/0.2232/0.6071/0.2750`；两者均未通过 Old/New 同时改善门槛。LoRa 正式候选仍保持 Stage48，后续不能继续包装为单纯聚类/后端小参数问题。
+68. Stage 63 LoRa raw s28 增强一致性预训练 Job `46319406` 已完成并同步小型结果：R3 Overall/Old/New/Forgetting=`0.3029/0.2494/0.5167/0.2524`，相对 Stage48 seed7 Overall/Old 提升且 New 持平，但遗忘明显变差，暂不扩三种子。
+69. Stage 64 LoRa masked reconstruction 原始 I/Q 预训练 Job `46321233` 已完成并同步小型结果：R3 Overall/Old/New/Forgetting=`0.2676/0.2518/0.3310/0.1560`。该候选提升 Old 并降低 Forgetting，但 New 大幅下降、Overall 低于 Stage48，归档为负消融。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
@@ -249,7 +251,7 @@ Strict loader 审计：
 20. Stage 43 已未通过；LoRa 紧凑子集继续攻分不能再靠局部分支或 recording 聚合包装，下一步应下载/处理更大原始 LoRa 数据，或把客户/论文口径明确收束到 recording/transmission-level 局限分析。
 21. Stage 48 已通过；客户汇报口径和总表已更新，说明 LoRa Overall 从 `25.4%` 提升到 `28.0%`，Old/遗忘明显改善，New 基本保持但仍略低于 Stage27。
 22. Stage 49 已完成；确定性复现收敛，但 rec065 的 seed31 New 稳定值只有 `0.4000`，下一步不能继续押 recording-consensus 单项，需要换更直接的新类吸收/分类头机制。
-23. Stage 50/51/52 已完成；old:new batch ratio、新类吸收和 dechirped symbol 表示都不是突破口。Stage 53/54 说明 recording 训练目标会放大旧新类权衡，Stage55 说明物理域初始化只抬 Old、不救 Overall/New；Stage56 说明简单半监督伪标签过滤只抬 New、不救 Overall/Old；Stage57/58 说明 top80+old-route 与双模型 confidence 路由都只是转移 Old/New 矛盾；Stage59 说明纯物理统计原型链路远弱于 Chirp backbone；Stage60 说明累积伪标签重训会被噪声拖垮；Stage61/62 说明即使 oracle discovery 和现有后端保护也只能到约 30% Overall。LoRa 正式候选保持 Stage48，后续只建议更强原始 I/Q 预训练、recording/transmission 级任务重定义，或按跨体制局限收口客户口径。
+23. Stage 50/51/52 已完成；old:new batch ratio、新类吸收和 dechirped symbol 表示都不是突破口。Stage 53/54 说明 recording 训练目标会放大旧新类权衡，Stage55 说明物理域初始化只抬 Old、不救 Overall/New；Stage56 说明简单半监督伪标签过滤只抬 New、不救 Overall/Old；Stage57/58 说明 top80+old-route 与双模型 confidence 路由都只是转移 Old/New 矛盾；Stage59 说明纯物理统计原型链路远弱于 Chirp backbone；Stage60 说明累积伪标签重训会被噪声拖垮；Stage61/62 说明即使 oracle discovery 和现有后端保护也只能到约 30% Overall；Stage63 增强一致性预训练为弱正但遗忘变差；Stage64 masked reconstruction 救 Old/Forgetting 但 New 大幅下降。LoRa 正式候选保持 Stage48，下一步应转 recording/transmission 级任务口径验证。
 8. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
 ## 8. 变更与 Git 状态
