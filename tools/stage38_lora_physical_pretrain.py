@@ -148,6 +148,9 @@ def _checkpoint_metadata(args: argparse.Namespace) -> dict[str, object]:
         "physical_pretrain": {
             "schema_version": "stage38_lora_physical_pretrain_v1",
             "physical_weight": float(args.physical_weight),
+            "view_logit_consistency_weight": float(args.view_logit_consistency_weight),
+            "view_feature_consistency_weight": float(args.view_feature_consistency_weight),
+            "view_consistency_temperature": float(args.view_consistency_temperature),
             "include_discovery_unlabeled": bool(args.include_discovery_unlabeled),
             "unlabeled_physical_weight": float(args.unlabeled_physical_weight),
             "domain_adversarial": bool(args.domain_adversarial),
@@ -316,7 +319,7 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
             view_two = augment_iq_batch(xb, augmentation_config)
 
             feat_one, logits_one = model(view_one)
-            feat_two, _ = model(view_two)
+            feat_two, logits_two = model(view_two)
             raw_feat, _ = model(xb)
             descriptor_target = (_physical_descriptors(xb) - descriptor_mean) / descriptor_std
             descriptor_pred = physical_head(raw_feat)
@@ -329,6 +332,28 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
             )
             physical = F.mse_loss(descriptor_pred, descriptor_target)
             total = ce + float(args.supcon_weight) * supcon + float(args.physical_weight) * physical
+            # Stage63 默认关闭该项；开启时只约束同一个训练样本的两种增强视图，
+            # 不引入未知类真值，也不读取 held-out evaluation。logit 一致性让分类边界
+            # 对轻微相位/时移/噪声扰动更稳，feature 一致性让 discovery embedding
+            # 少受随机增强扰动影响。
+            consistency_temperature = float(max(args.view_consistency_temperature, 1e-6))
+            log_prob_one = F.log_softmax(logits_one / consistency_temperature, dim=1)
+            log_prob_two = F.log_softmax(logits_two / consistency_temperature, dim=1)
+            prob_one = F.softmax(logits_one.detach() / consistency_temperature, dim=1)
+            prob_two = F.softmax(logits_two.detach() / consistency_temperature, dim=1)
+            logit_consistency = 0.5 * (
+                F.kl_div(log_prob_one, prob_two, reduction="batchmean")
+                + F.kl_div(log_prob_two, prob_one, reduction="batchmean")
+            ) * (consistency_temperature**2)
+            feature_consistency = F.mse_loss(
+                F.normalize(feat_one, dim=1),
+                F.normalize(feat_two, dim=1),
+            )
+            total = (
+                total
+                + float(args.view_logit_consistency_weight) * logit_consistency
+                + float(args.view_feature_consistency_weight) * feature_consistency
+            )
             unlabeled_physical = torch.zeros((), device=device)
             domain_loss = torch.zeros((), device=device)
             if unlabeled_iter is not None:
@@ -373,6 +398,8 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
                     "ce": float(ce.detach().cpu()),
                     "supcon": float(supcon.detach().cpu()),
                     "physical": float(physical.detach().cpu()),
+                    "logit_consistency": float(logit_consistency.detach().cpu()),
+                    "feature_consistency": float(feature_consistency.detach().cpu()),
                     "unlabeled_physical": float(unlabeled_physical.detach().cpu()),
                     "domain": float(domain_loss.detach().cpu()),
                     "total": float(total.detach().cpu()),
@@ -387,6 +414,8 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
             "train_ce": float(np.mean([item["ce"] for item in epoch_rows])),
             "train_supcon": float(np.mean([item["supcon"] for item in epoch_rows])),
             "train_physical": float(np.mean([item["physical"] for item in epoch_rows])),
+            "train_logit_consistency": float(np.mean([item["logit_consistency"] for item in epoch_rows])),
+            "train_feature_consistency": float(np.mean([item["feature_consistency"] for item in epoch_rows])),
             "train_unlabeled_physical": float(np.mean([item["unlabeled_physical"] for item in epoch_rows])),
             "train_domain": float(np.mean([item["domain"] for item in epoch_rows])),
             "train_total": float(np.mean([item["total"] for item in epoch_rows])),
@@ -396,6 +425,8 @@ def train_physical_checkpoint(args: argparse.Namespace) -> dict[str, object]:
             f"Epoch {epoch:03d}/{args.epochs:03d} | "
             f"val_acc={validation_accuracy:.4f} | val_loss={validation_loss:.4f} | "
             f"physical={row['train_physical']:.4f} | "
+            f"logit_cons={row['train_logit_consistency']:.4f} | "
+            f"feat_cons={row['train_feature_consistency']:.4f} | "
             f"unlabeled_physical={row['train_unlabeled_physical']:.4f} | "
             f"domain={row['train_domain']:.4f}"
         )
@@ -457,6 +488,9 @@ def main() -> int:
     parser.add_argument("--supcon-weight", type=float, default=0.1)
     parser.add_argument("--supcon-temperature", type=float, default=0.2)
     parser.add_argument("--physical-weight", type=float, default=0.10)
+    parser.add_argument("--view-logit-consistency-weight", type=float, default=0.0)
+    parser.add_argument("--view-feature-consistency-weight", type=float, default=0.0)
+    parser.add_argument("--view-consistency-temperature", type=float, default=2.0)
     parser.add_argument(
         "--include-discovery-unlabeled",
         action="store_true",

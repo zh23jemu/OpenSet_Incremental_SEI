@@ -154,3 +154,8 @@ Desktop.ini
 # Stage62 LoRa oracle discovery 后端保护诊断：保留小型 CSV/JSON/报告和日志，忽略模型与回放二进制。
 /results/stage62/lora_s62_*_*/*.pth
 /results/stage62/lora_s62_*_*/*.npz
+
+# Stage63 LoRa 增强一致性物理预训练：checkpoint/replay 留在训练盘，小型结果入库。
+/results/stage63/*.pth
+/results/stage63/lora_s28_consistency_seed*_*/*.pth
+/results/stage63/lora_s28_consistency_seed*_*/*.npz
