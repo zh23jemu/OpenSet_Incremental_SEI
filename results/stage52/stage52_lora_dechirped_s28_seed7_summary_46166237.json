@@ -1,0 +1,30 @@
+{
+  "schema_version": "stage52_lora_dechirped_s28_seed7_summary_v1",
+  "job_id": "46166237",
+  "stage48_seed7": {
+    "overall": 0.280952381,
+    "old": 0.2220238095,
+    "new": 0.5166666667,
+    "forgetting": 0.1726190476,
+    "recording_overall": 0.3066666667,
+    "recording_new": 0.6666666667
+  },
+  "record": {
+    "variant": "dechirped_s28_rec065",
+    "save_dir": "results/stage52/lora_dechirped_s28_rec065_seed7_46166237",
+    "overall": 0.0366666666666666,
+    "old": 0.0136904761904761,
+    "new": 0.1285714285714285,
+    "forgetting": 0.0988095238095238,
+    "macro_f1": 0.0221038152501728,
+    "recording_overall": 0.0666666666666666,
+    "recording_new": 0.3333333333333333,
+    "delta_overall": -0.24428571433333338,
+    "delta_old": -0.20833333330952392,
+    "delta_new": -0.38809523812857155,
+    "delta_forgetting": -0.07380952379047619,
+    "delta_recording_overall": -0.24000000003333338,
+    "delta_recording_new": -0.33333333336666665
+  },
+  "gate": "FAIL"
+}
