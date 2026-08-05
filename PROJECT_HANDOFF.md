@@ -222,6 +222,7 @@ Strict loader 审计：
 57. Stage 52 LoRa dechirped s28 seed7 Job `46166237` 已完成并同步小型结果：R3 Overall/Old/New/Forgetting=`0.0367/0.0137/0.1286/0.0988`，Recording Overall/New=`0.0667/0.3333`；该表示显著破坏闭集和聚类结构，归档为负消融，不扩三种子。
 58. Stage 53 LoRa 训练期 recording/transmission 级 logits 一致性 seed7 Job `46166288` 已完成并同步小型结果：base R3 Overall/Old/New=`0.2814/0.2137/0.5524`；`rec_w0p10` 为 `0.2800/0.2113/0.5548`，New 只小幅增加但 Overall/Old/Forgetting 变差；`rec_w0p30` 明显退化。该方向归档为负消融，不扩三种子。
 59. Stage 54 LoRa recording-level mean-logit CE seed7 Job `46166320` 已完成并同步小型结果：base R3 Overall/Old/New=`0.2814/0.2137/0.5524`；`rce_w0p25` 为 `0.2662/0.1893/0.5738`，`rce_w0p50` 为 `0.2624/0.1839/0.5762`。New 提升但 Overall/Old/Forgetting 明显变差，归档为负消融，不扩三种子。
+60. Stage 55 已新增 LoRa raw s28 物理域预训练 seed7 入口和报告器：复用 Stage38 物理描述符 checkpoint 训练逻辑，但切到 Stage48 完整 Setup 1 raw s28 + recording-consensus 0.65 当前正式口径；只要 seed7 未超过 Stage48 预注册门槛，就不扩三种子。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
@@ -241,7 +242,7 @@ Strict loader 审计：
 20. Stage 43 已未通过；LoRa 紧凑子集继续攻分不能再靠局部分支或 recording 聚合包装，下一步应下载/处理更大原始 LoRa 数据，或把客户/论文口径明确收束到 recording/transmission-level 局限分析。
 21. Stage 48 已通过；客户汇报口径和总表已更新，说明 LoRa Overall 从 `25.4%` 提升到 `28.0%`，Old/遗忘明显改善，New 基本保持但仍略低于 Stage27。
 22. Stage 49 已完成；确定性复现收敛，但 rec065 的 seed31 New 稳定值只有 `0.4000`，下一步不能继续押 recording-consensus 单项，需要换更直接的新类吸收/分类头机制。
-23. Stage 50/51/52 已完成；old:new batch ratio、新类吸收和 dechirped symbol 表示都不是突破口。继续攻 LoRa 应转向 transmission/recording 级训练目标或直接收口客户口径，不再继续简单后端倍率或 symbol 表示替换。
+23. Stage 50/51/52 已完成；old:new batch ratio、新类吸收和 dechirped symbol 表示都不是突破口。Stage 53/54 进一步说明 recording 训练目标会放大旧新类权衡；当前下一步是跑 Stage55 raw s28 物理域预训练 seed7，验证失败则保持 Stage48 作为 LoRa 正式候选。
 8. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
 ## 8. 变更与 Git 状态

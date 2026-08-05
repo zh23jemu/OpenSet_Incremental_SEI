@@ -125,3 +125,8 @@ Desktop.ini
 /results/stage52/*.npz
 /results/stage52/lora_dechirped_s28_rec065_seed*_*/*.pth
 /results/stage52/lora_dechirped_s28_rec065_seed*_*/*.npz
+
+# Stage55 LoRa raw s28 物理域预训练：checkpoint 和 replay 二进制留在训练盘，报告/CSV/JSON/日志入库。
+/results/stage55/*.pth
+/results/stage55/lora_s28_physical_seed*_*/*.pth
+/results/stage55/lora_s28_physical_seed*_*/*.npz
