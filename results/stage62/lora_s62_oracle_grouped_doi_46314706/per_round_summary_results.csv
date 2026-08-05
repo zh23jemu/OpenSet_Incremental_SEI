@@ -1,0 +1,4 @@
+﻿Method,Round,Cluster Count,Incremental Pseudo-label Classes,Cluster Count Error,Sample Coverage,Purity,NMI,ARI,Hungarian Acc,Overall Acc,New Acc,Forgetting Rate
+MV-ACC-CIL + grouped DOI-memory,R1,5,5,0,1.0,1.0,1.0,1.0,1.0,0.3261904761904762,0.10952380952380952,0.21071428571428574
+MV-ACC-CIL + grouped DOI-memory,R2,5,5,0,1.0,1.0,1.0,1.0,1.0,0.35714285714285715,0.25952380952380955,0.17261904761904767
+MV-ACC-CIL + grouped DOI-memory,R3,5,5,0,1.0,1.0,1.0,1.0,1.0,0.3,0.6071428571428571,0.275

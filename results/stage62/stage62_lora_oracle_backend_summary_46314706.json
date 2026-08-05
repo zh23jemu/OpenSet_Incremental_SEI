@@ -1,0 +1,53 @@
+{
+  "schema_version": "stage62_lora_oracle_backend_summary_v1",
+  "job_id": "46314706",
+  "oracle_warning": "uses current discovery true labels; diagnostic upper bound only",
+  "stage61_oracle_base": {
+    "overall": 0.2986,
+    "old": 0.222,
+    "new": 0.6048,
+    "forgetting": 0.2095
+  },
+  "job_oracle_base": {
+    "variant": "oracle_base",
+    "save_dir": "results/stage62/lora_s62_oracle_base_46314706",
+    "overall": 0.2985714285714286,
+    "old": 0.2220238095238095,
+    "new": 0.6047619047619047,
+    "forgetting": 0.2095238095238094,
+    "macro_f1": 0.2482389488725562
+  },
+  "records": [
+    {
+      "variant": "oracle_base",
+      "save_dir": "results/stage62/lora_s62_oracle_base_46314706",
+      "overall": 0.2985714285714286,
+      "old": 0.2220238095238095,
+      "new": 0.6047619047619047,
+      "forgetting": 0.2095238095238094,
+      "macro_f1": 0.2482389488725562
+    },
+    {
+      "variant": "oracle_oldroute",
+      "save_dir": "results/stage62/lora_s62_oracle_oldroute_46314706",
+      "overall": 0.2757142857142857,
+      "old": 0.2523809523809524,
+      "new": 0.369047619047619,
+      "forgetting": 0.2571428571428572,
+      "macro_f1": 0.2544629765728483,
+      "old_route_threshold": 0.95
+    },
+    {
+      "variant": "oracle_grouped_doi",
+      "save_dir": "results/stage62/lora_s62_oracle_grouped_doi_46314706",
+      "overall": 0.3,
+      "old": 0.2232142857142857,
+      "new": 0.6071428571428571,
+      "forgetting": 0.275,
+      "macro_f1": 0.2497490708527087,
+      "grouped_doi_weight": 0.75
+    }
+  ],
+  "passed_variants": [],
+  "gate": "FAIL"
+}
