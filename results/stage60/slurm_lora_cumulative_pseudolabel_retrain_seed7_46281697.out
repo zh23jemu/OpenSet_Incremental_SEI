@@ -1,0 +1,83 @@
+Stage60 data_root=/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage45-worktree
+Stage60 s28_npz=results/stage46/lora25_diffdays_indoor_raw1024_s28_46103936.npz
+Stage60 python=/mnt/users/xj62kv/OpenSet_Incremental_SEI/.venv/bin/python
+Stage60 save_dir=results/stage60/lora_s60_cumulative_seed7_46281697
+
+[Train-v2] classes=10 | train=1680 | validation=280 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/010 | train_loss=2.9018 | train_acc=0.1060 | val_acc=0.1036 | val_loss=2.3432
+Epoch 002/010 | train_loss=2.7988 | train_acc=0.1293 | val_acc=0.0929 | val_loss=2.3495
+Epoch 003/010 | train_loss=2.4799 | train_acc=0.2224 | val_acc=0.1929 | val_loss=1.9264
+Epoch 004/010 | train_loss=2.3087 | train_acc=0.2672 | val_acc=0.1857 | val_loss=2.0637
+Epoch 005/010 | train_loss=2.1855 | train_acc=0.2953 | val_acc=0.2714 | val_loss=1.7157
+Epoch 006/010 | train_loss=1.9951 | train_acc=0.3879 | val_acc=0.3393 | val_loss=1.5426
+Epoch 007/010 | train_loss=1.9295 | train_acc=0.4044 | val_acc=0.2536 | val_loss=1.6830
+Epoch 008/010 | train_loss=1.7325 | train_acc=0.5031 | val_acc=0.1393 | val_loss=1.9369
+Epoch 009/010 | train_loss=1.5908 | train_acc=0.5472 | val_acc=0.2107 | val_loss=2.1078
+Epoch 010/010 | train_loss=1.6672 | train_acc=0.4926 | val_acc=0.2893 | val_loss=1.6649
+[Train-v2] best_val_acc=0.3393 | best_val_loss=1.5426 | saved=results/stage60/lora_s60_cumulative_seed7_46281697/cumulative_model_initial.pth
+
+[Train-v2] classes=15 | train=2660 | validation=280 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/010 | train_loss=2.9680 | train_acc=0.1844 | val_acc=0.0857 | val_loss=2.5352
+Epoch 002/010 | train_loss=2.4870 | train_acc=0.2608 | val_acc=0.0929 | val_loss=2.3180
+Epoch 003/010 | train_loss=2.1571 | train_acc=0.3584 | val_acc=0.2214 | val_loss=1.9768
+Epoch 004/010 | train_loss=2.0640 | train_acc=0.3823 | val_acc=0.0250 | val_loss=3.0529
+Epoch 005/010 | train_loss=1.9005 | train_acc=0.4537 | val_acc=0.1036 | val_loss=2.0202
+Epoch 006/010 | train_loss=2.0034 | train_acc=0.3920 | val_acc=0.0071 | val_loss=3.1068
+Epoch 007/010 | train_loss=1.8869 | train_acc=0.4645 | val_acc=0.2000 | val_loss=2.2771
+Epoch 008/010 | train_loss=1.8826 | train_acc=0.4572 | val_acc=0.1929 | val_loss=1.7954
+Epoch 009/010 | train_loss=1.7814 | train_acc=0.4838 | val_acc=0.2464 | val_loss=1.4965
+Epoch 010/010 | train_loss=1.6057 | train_acc=0.5575 | val_acc=0.2179 | val_loss=1.5580
+[Train-v2] best_val_acc=0.2464 | best_val_loss=1.4965 | saved=results/stage60/lora_s60_cumulative_seed7_46281697/cumulative_model_after_r1.pth
+
+[Train-v2] classes=20 | train=3640 | validation=280 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/010 | train_loss=3.2502 | train_acc=0.1292 | val_acc=0.0000 | val_loss=3.1009
+Epoch 002/010 | train_loss=2.8531 | train_acc=0.1957 | val_acc=0.0107 | val_loss=3.0562
+Epoch 003/010 | train_loss=2.4613 | train_acc=0.2843 | val_acc=0.2036 | val_loss=2.2023
+Epoch 004/010 | train_loss=2.3116 | train_acc=0.3238 | val_acc=0.2000 | val_loss=2.1317
+Epoch 005/010 | train_loss=2.1810 | train_acc=0.3623 | val_acc=0.1643 | val_loss=2.6322
+Epoch 006/010 | train_loss=2.0484 | train_acc=0.3998 | val_acc=0.2500 | val_loss=2.0964
+Epoch 007/010 | train_loss=1.9614 | train_acc=0.4313 | val_acc=0.2929 | val_loss=1.7923
+Epoch 008/010 | train_loss=1.9044 | train_acc=0.4434 | val_acc=0.2964 | val_loss=1.8210
+Epoch 009/010 | train_loss=1.8237 | train_acc=0.4870 | val_acc=0.2464 | val_loss=2.1181
+Epoch 010/010 | train_loss=1.8117 | train_acc=0.4783 | val_acc=0.3786 | val_loss=1.6150
+[Train-v2] best_val_acc=0.3786 | best_val_loss=1.6150 | saved=results/stage60/lora_s60_cumulative_seed7_46281697/cumulative_model_after_r2.pth
+
+[Train-v2] classes=25 | train=4620 | validation=280 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/010 | train_loss=3.4412 | train_acc=0.1053 | val_acc=0.0000 | val_loss=3.3567
+Epoch 002/010 | train_loss=3.0545 | train_acc=0.1667 | val_acc=0.0929 | val_loss=2.7534
+Epoch 003/010 | train_loss=2.6302 | train_acc=0.2585 | val_acc=0.0000 | val_loss=5.6115
+Epoch 004/010 | train_loss=2.4487 | train_acc=0.2884 | val_acc=0.0786 | val_loss=4.4959
+Epoch 005/010 | train_loss=2.3249 | train_acc=0.3179 | val_acc=0.2429 | val_loss=2.3953
+Epoch 006/010 | train_loss=2.2156 | train_acc=0.3513 | val_acc=0.2679 | val_loss=1.9972
+Epoch 007/010 | train_loss=2.1300 | train_acc=0.3815 | val_acc=0.1893 | val_loss=2.3326
+Epoch 008/010 | train_loss=2.0760 | train_acc=0.3961 | val_acc=0.2143 | val_loss=2.3077
+Epoch 009/010 | train_loss=2.0185 | train_acc=0.4134 | val_acc=0.2536 | val_loss=1.7326
+Epoch 010/010 | train_loss=1.9711 | train_acc=0.4084 | val_acc=0.2893 | val_loss=3.3683
+[Train-v2] best_val_acc=0.2893 | best_val_loss=3.3683 | saved=results/stage60/lora_s60_cumulative_seed7_46281697/cumulative_model_after_r3.pth
+{
+  "schema_version": "stage60_lora_cumulative_pseudolabel_retrain_v1",
+  "dataset_path": "results/stage46/lora25_diffdays_indoor_raw1024_s28_46103936.npz",
+  "save_dir": "results/stage60/lora_s60_cumulative_seed7_46281697",
+  "seed": 7,
+  "epochs": 10,
+  "recording_consensus_threshold": 0.65,
+  "device": "cuda",
+  "r3": {
+    "overall": 0.10285714285714286,
+    "old": 0.1261904761904762,
+    "new": 0.009523809523809525,
+    "forgetting": 0.19166666666666668,
+    "macro_f1": 0.06271314579899091
+  },
+  "stage48_multiseed": {
+    "overall": 0.2803,
+    "old": 0.2312,
+    "new": 0.477,
+    "forgetting": 0.1802
+  },
+  "gate": "FAIL"
+}

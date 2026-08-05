@@ -1,0 +1,23 @@
+{
+  "schema_version": "stage60_lora_cumulative_pseudolabel_retrain_v1",
+  "dataset_path": "results/stage46/lora25_diffdays_indoor_raw1024_s28_46103936.npz",
+  "save_dir": "results/stage60/lora_s60_cumulative_seed7_46281697",
+  "seed": 7,
+  "epochs": 10,
+  "recording_consensus_threshold": 0.65,
+  "device": "cuda",
+  "r3": {
+    "overall": 0.10285714285714286,
+    "old": 0.1261904761904762,
+    "new": 0.009523809523809525,
+    "forgetting": 0.19166666666666668,
+    "macro_f1": 0.06271314579899091
+  },
+  "stage48_multiseed": {
+    "overall": 0.2803,
+    "old": 0.2312,
+    "new": 0.477,
+    "forgetting": 0.1802
+  },
+  "gate": "FAIL"
+}
