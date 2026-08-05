@@ -2208,7 +2208,61 @@ def _prototype_assignment_loss(features, labels, prototypes, valid, temperature=
     return F.cross_entropy(logits[usable], labels[usable])
 
 
-def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, memory_x, memory_y, old_out_dim, args, device):
+def _recording_logit_consistency_loss(logits, labels, recording_ids, temperature=2.0):
+    """约束同一 LoRa recording 内、同一伪类样本的预测分布保持一致。
+
+    LoRa strict split 中一个 recording 会被切成多个 symbol 片段。Stage48 的
+    recording-level 诊断高于 symbol-level，说明同一 transmission 内存在可利用
+    的稳定结构。这里仅使用训练期 current discovery 的可观测 recording_id 和
+    已有伪标签，不读取 held-out eval，也不把不同伪类强行拉到一起；同一
+    recording 若被聚类成多个伪类，则按 ``recording_id + pseudo label`` 分组。
+    """
+    if recording_ids is None or logits.numel() == 0 or logits.shape[0] <= 1:
+        return logits.sum() * 0.0
+    if logits.shape[0] != recording_ids.shape[0] or logits.shape[0] != labels.shape[0]:
+        raise ValueError(
+            "Recording consistency requires logits, labels and recording_ids with equal batch length."
+        )
+
+    temperature = max(float(temperature), 1e-4)
+    log_probs = F.log_softmax(logits / temperature, dim=1)
+    probs = log_probs.exp()
+    losses = []
+    for recording_value in torch.unique(recording_ids).tolist():
+        recording_mask = recording_ids == int(recording_value)
+        if int(recording_mask.sum().item()) < 2:
+            continue
+        for label_value in torch.unique(labels[recording_mask]).tolist():
+            group_mask = recording_mask & (labels == int(label_value))
+            if int(group_mask.sum().item()) < 2:
+                continue
+            target = probs[group_mask].mean(dim=0).detach()
+            losses.append(
+                F.kl_div(
+                    log_probs[group_mask],
+                    target.expand(int(group_mask.sum().item()), -1),
+                    reduction="batchmean",
+                )
+                * (temperature * temperature)
+            )
+    if not losses:
+        return logits.sum() * 0.0
+    return torch.stack(losses).mean()
+
+
+def _train_end_to_end_cil(
+    student,
+    teacher,
+    current_x,
+    current_y,
+    current_w,
+    memory_x,
+    memory_y,
+    old_out_dim,
+    args,
+    device,
+    current_recording_id=None,
+):
     """Head warm-up followed by last-block backbone adaptation on raw IQ samples.
 
     ``radcil_aug_consistency_weight`` 开启后，当前轮 discovery 和 replay 样本
@@ -2221,6 +2275,14 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
     current_w = np.asarray(current_w, dtype=np.float32)
     memory_x = np.asarray(memory_x, dtype=np.float32)
     memory_y = np.asarray(memory_y, dtype=np.int64)
+    recording_tensor = None
+    if current_recording_id is not None:
+        current_recording_id = np.asarray(current_recording_id, dtype=np.int64)
+        if current_recording_id.shape != current_y.shape:
+            raise ValueError(
+                f"current_recording_id shape mismatch: {current_recording_id.shape} vs {current_y.shape}"
+            )
+        recording_tensor = torch.as_tensor(current_recording_id, dtype=torch.long)
     # 默认保持旧实现：当前伪标签 batch 和 replay batch 使用相同大小。
     # 若显式设置 old:new batch 比例，则只调整 replay loader 的 batch size，
     # 便于独立验证“采样配比”和“replay loss 权重”的贡献。
@@ -2229,8 +2291,17 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
         memory_batch_size = max(1, int(round(current_batch_size * float(args.radcil_old_new_batch_ratio))))
     else:
         memory_batch_size = current_batch_size
+    if recording_tensor is None:
+        cur_dataset = TensorDataset(torch.as_tensor(current_x), torch.as_tensor(current_y), torch.as_tensor(current_w))
+    else:
+        cur_dataset = TensorDataset(
+            torch.as_tensor(current_x),
+            torch.as_tensor(current_y),
+            torch.as_tensor(current_w),
+            recording_tensor,
+        )
     cur_loader = DataLoader(
-        TensorDataset(torch.as_tensor(current_x), torch.as_tensor(current_y), torch.as_tensor(current_w)),
+        cur_dataset,
         batch_size=current_batch_size, shuffle=True, drop_last=False, num_workers=0,
     )
     mem_loader = DataLoader(
@@ -2342,9 +2413,15 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
         for epoch_index in range(epochs):
             student.train()
             mem_iter = itertools.cycle(mem_loader)
-            for xc, yc, wc in cur_loader:
+            for current_batch in cur_loader:
+                if recording_tensor is None:
+                    xc, yc, wc = current_batch
+                    rc = None
+                else:
+                    xc, yc, wc, rc = current_batch
                 xm, ym = next(mem_iter)
                 xc, yc, wc = xc.to(device), yc.to(device), wc.to(device)
+                rc = rc.to(device) if rc is not None else None
                 xm, ym = xm.to(device), ym.to(device)
                 x = torch.cat([xc, xm], dim=0)
                 feat, logits = student(x)
@@ -2435,6 +2512,18 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                         pseudo_aug_consistency = logits_c.sum() * 0.0
                 else:
                     pseudo_aug_consistency = logits_c.sum() * 0.0
+                if float(args.radcil_recording_consistency_weight) > 0 and rc is not None:
+                    # 该项只看当前轮 discovery batch 内的 recording_id，不接触
+                    # 评估集，也不修改伪标签。它验证 LoRa 多 symbol recording
+                    # 结构是否能在 CIL 训练期稳定新类预测。
+                    recording_consistency = _recording_logit_consistency_loss(
+                        logits_c,
+                        yc,
+                        rc,
+                        temperature=float(args.radcil_recording_consistency_temperature),
+                    )
+                else:
+                    recording_consistency = logits_c.sum() * 0.0
                 high = wc >= float(args.cil_supcon_threshold)
                 feat_con = torch.cat([feat[:len(xc)][high], feat[len(xc):]], dim=0)
                 y_con = torch.cat([yc[high], ym], dim=0)
@@ -2459,6 +2548,7 @@ def _train_end_to_end_cil(student, teacher, current_x, current_y, current_w, mem
                     + float(args.radcil_domain_alignment_weight) * domain_alignment
                     + float(args.radcil_new_prototype_weight) * prototype_assignment
                     + float(args.radcil_pseudo_aug_consistency_weight) * pseudo_aug_consistency
+                    + float(args.radcil_recording_consistency_weight) * recording_consistency
                     + float(args.cil_supcon_weight) * con
                     + float(args.radcil_metric_weight) * metric_loss
                 )
@@ -4123,6 +4213,18 @@ def main():
         default=0.0,
         help="当前轮高置信伪标签样本的增强前后logits一致性权重；0保持历史训练路径。",
     )
+    parser.add_argument(
+        "--radcil_recording_consistency_weight",
+        type=float,
+        default=0.0,
+        help="LoRa 当前轮同一 recording 内同伪类 symbol 的 logits 一致性权重；0保持历史训练路径。",
+    )
+    parser.add_argument(
+        "--radcil_recording_consistency_temperature",
+        type=float,
+        default=2.0,
+        help="LoRa recording logits 一致性 KL 温度，仅在权重大于0时使用。",
+    )
 
 
     parser.add_argument("--min_cluster_size", type=int, default=10)
@@ -4902,7 +5004,19 @@ def main():
         )
         # 注册和训练故意分离：低置信样本仍参与加权 CE/SupCon，避免新类样本量
         # 因为注册筛选而塌缩；只有 replay memory 使用高置信注册子集。
-        student = _train_end_to_end_cil(student, teacher, rd["X"], pseudo_y, current_w, memory_x, memory_y, old_out, args, device)
+        student = _train_end_to_end_cil(
+            student,
+            teacher,
+            rd["X"],
+            pseudo_y,
+            current_w,
+            memory_x,
+            memory_y,
+            old_out,
+            args,
+            device,
+            current_recording_id=rd.get("recording_id"),
+        )
         if int(args.radcil_balanced_head_recalibration_epochs) > 0:
             student = _recalibrate_balanced_classifier_head(
                 student,
@@ -4957,6 +5071,7 @@ def main():
                 old_out,
                 args,
                 device,
+                current_recording_id=rd.get("recording_id"),
             )
             if int(args.radcil_balanced_head_recalibration_epochs) > 0:
                 student = _recalibrate_balanced_classifier_head(
