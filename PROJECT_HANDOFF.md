@@ -219,6 +219,7 @@ Strict loader 审计：
 54. Stage 49 Job `46125830` 已完成 seed31 rec065 三次 repeat：补齐确定性设置后三次完全一致，R3 Overall/Old/New/Forgetting=`0.2729/0.2411/0.4000/0.2393`，Gate 失败；不要再用 Stage47 单次高 New 继续扩 rec065。
 55. Stage 50 seed31 rec065 old:new batch ratio `0/1/2` 矩阵已完成：ratio `0/1` 的 R3 New 为 `0.4238`，ratio `2` 为 `0.4000`，均未超过 Stage48 seed31 New `0.4262`，归档为负消融。
 56. Stage 51 LoRa 新类吸收 seed31 Job `46165413` 已完成并同步小型结果：base R3 Overall/Old/New=`0.2729/0.2411/0.4000`；最佳 New 的 `head_boost2` 为 `0.2643/0.2226/0.4310`，New 只比 Stage48 seed31 高 `+0.0048` 且 Overall 低于门槛；`new_proto_w0p10` 和 `imprint_scale1p5` 退化，归档为负消融，不扩三种子。
+57. Stage 52 已实现 LoRa dechirped s28 seed7 验证：新增 `slurm/stage52_lora_dechirped_s28_seed7.sbatch` 和 `tools/stage52_lora_dechirped_s28_seed7_report.py`。该阶段只改变原始 I/Q aligned symbol 表示，去掉主 payload bin 后继续使用 Stage48 rec065 后端；下一步推送后提交 seed7 短任务。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
@@ -238,7 +239,7 @@ Strict loader 审计：
 20. Stage 43 已未通过；LoRa 紧凑子集继续攻分不能再靠局部分支或 recording 聚合包装，下一步应下载/处理更大原始 LoRa 数据，或把客户/论文口径明确收束到 recording/transmission-level 局限分析。
 21. Stage 48 已通过；客户汇报口径和总表已更新，说明 LoRa Overall 从 `25.4%` 提升到 `28.0%`，Old/遗忘明显改善，New 基本保持但仍略低于 Stage27。
 22. Stage 49 已完成；确定性复现收敛，但 rec065 的 seed31 New 稳定值只有 `0.4000`，下一步不能继续押 recording-consensus 单项，需要换更直接的新类吸收/分类头机制。
-23. Stage 50/51 已完成；old:new batch ratio、新类原型吸收、head warmup boost 和 imprint scale 都不是突破口。继续攻 LoRa 应换更大粒度方向，例如伪标签结构重构或任务口径/recording-transmission 级建模。
+23. Stage 50/51 已完成；old:new batch ratio、新类原型吸收、head warmup boost 和 imprint scale 都不是突破口。Stage 52 改攻 symbol 表示本身，先跑 dechirped s28 seed7，未过 Stage48 seed7 门槛就停止该线。
 8. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
 ## 8. 变更与 Git 状态

@@ -119,3 +119,9 @@ Desktop.ini
 /results/stage51/*.npz
 /results/stage51/lora_s51_*_*/*.pth
 /results/stage51/lora_s51_*_*/*.npz
+
+# Stage52 LoRa dechirped s28：保留小型 CSV/JSON/报告，忽略大数据集、cache 和模型二进制。
+/results/stage52/cache_raw_setup1_dechirped_s28_*/
+/results/stage52/*.npz
+/results/stage52/lora_dechirped_s28_rec065_seed*_*/*.pth
+/results/stage52/lora_dechirped_s28_rec065_seed*_*/*.npz
