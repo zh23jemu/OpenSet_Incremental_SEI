@@ -1,0 +1,23 @@
+{
+  "schema_version": "stage59_lora_physical_descriptor_proto_v1",
+  "dataset_path": "results/stage46/lora25_diffdays_indoor_raw1024_s28_46103936.npz",
+  "save_dir": "results/stage59/lora_s59_kmeans_rec065_46274803",
+  "seed": 7,
+  "pca_dim": 64,
+  "spectrum_bins": 32,
+  "recording_consensus_threshold": 0.65,
+  "r3": {
+    "overall": 0.05333333333333334,
+    "old": 0.05892857142857143,
+    "new": 0.030952380952380953,
+    "forgetting": 0.13452380952380952,
+    "macro_f1": 0.040720298682673
+  },
+  "stage48_multiseed": {
+    "overall": 0.2803,
+    "old": 0.2312,
+    "new": 0.477,
+    "forgetting": 0.1802
+  },
+  "gate": "FAIL"
+}

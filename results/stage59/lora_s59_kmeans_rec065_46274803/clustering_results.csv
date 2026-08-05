@@ -1,0 +1,4 @@
+﻿Method,Round,True New Classes,Samples,Final Cluster Count,Cluster Count Error,Assignment Coverage,NMI,ARI,Hungarian Acc,Cluster Size CV,recording_groups,recording_consensus_accepted,recording_consensus_changed,recording_consensus_mean
+physical-descriptor KMeans,R1,5,980,5,0,1.0,0.06278253015065692,0.0235963404334558,0.2724489795918367,1.3665661797029436,35,12,94,0.6224489795918366
+physical-descriptor KMeans,R2,5,980,5,0,1.0,0.020263769460289655,0.002847881132148232,0.23877551020408164,1.274325980812466,35,9,64,0.6122448979591836
+physical-descriptor KMeans,R3,5,980,5,0,1.0,0.06284132717588134,0.008866944239660756,0.24591836734693878,1.3411284697949402,35,11,81,0.6346938775510205
