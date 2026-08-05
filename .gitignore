@@ -143,3 +143,6 @@ Desktop.ini
 /results/stage58/lora_s58_*_*/*.pth
 /results/stage58/lora_s58_*_*/*.npz
 /results/stage58/lora_s58_*_*/end_to_end_eval_dumps/*.npz
+
+# Stage60 LoRa 累积伪标签重训：保留小型 CSV/JSON/报告和日志，忽略每轮重训 checkpoint。
+/results/stage60/lora_s60_*_*/*.pth
