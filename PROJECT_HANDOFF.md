@@ -226,6 +226,7 @@ Strict loader 审计：
 61. Stage 56 LoRa joint refinement 高置信一致过滤 Job `46177364` 已完成并同步小型结果：base R3 Overall/Old/New/Forgetting=`0.2814/0.2137/0.5524/0.2214`；`filter_top060`=`0.2743/0.2065/0.5452/0.2310`；`filter_top080`=`0.2790/0.2071/0.5667/0.2333`。top80 只提升 New，Overall/Old/Forgetting 均未过门槛，不扩三种子。
 62. Stage 57 LoRa top80 + old-prototype-route seed7 Job `46178133` 已完成并同步小型结果：base R3 Overall/Old/New/Forgetting=`0.2814/0.2137/0.5524/0.2214`；top80=`0.2790/0.2071/0.5667/0.2333`；top80+old-route=`0.2762/0.2470/0.3929/0.2940`。旧类被补回，但新类和遗忘明显塌，不扩三种子。
 63. Stage 58 LoRa 双模型 confidence 后验路由 seed7 Job `46268271` 已完成并同步小型结果：base R3 Overall/Old/New/Forgetting=`0.2814/0.2137/0.5524/0.2214`；top80=`0.2790/0.2071/0.5667/0.2333`；`new_conf_delta_0p00/0p05/0p10` 的 R3 Overall=`0.2790/0.2781/0.2786`，均未超过 base，Old/Forgetting 继续变差，不扩三种子。
+64. Stage 59 LoRa 纯物理描述符 + KMeans + 原型分类 seed7 Job `46274803` 已完成并同步小型结果：`kmeans` R3 Overall/Old/New/Forgetting=`0.0510/0.0565/0.0286/0.1321`，`kmeans_rec065` 为 `0.0533/0.0589/0.0310/0.1345`，远低于 Stage48，归档为负消融。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
@@ -245,7 +246,7 @@ Strict loader 审计：
 20. Stage 43 已未通过；LoRa 紧凑子集继续攻分不能再靠局部分支或 recording 聚合包装，下一步应下载/处理更大原始 LoRa 数据，或把客户/论文口径明确收束到 recording/transmission-level 局限分析。
 21. Stage 48 已通过；客户汇报口径和总表已更新，说明 LoRa Overall 从 `25.4%` 提升到 `28.0%`，Old/遗忘明显改善，New 基本保持但仍略低于 Stage27。
 22. Stage 49 已完成；确定性复现收敛，但 rec065 的 seed31 New 稳定值只有 `0.4000`，下一步不能继续押 recording-consensus 单项，需要换更直接的新类吸收/分类头机制。
-23. Stage 50/51/52 已完成；old:new batch ratio、新类吸收和 dechirped symbol 表示都不是突破口。Stage 53/54 说明 recording 训练目标会放大旧新类权衡，Stage55 说明物理域初始化只抬 Old、不救 Overall/New；Stage56 说明简单半监督伪标签过滤只抬 New、不救 Overall/Old；Stage57/58 说明 top80+old-route 与双模型 confidence 路由都只是转移 Old/New 矛盾。LoRa 正式候选保持 Stage48。
+23. Stage 50/51/52 已完成；old:new batch ratio、新类吸收和 dechirped symbol 表示都不是突破口。Stage 53/54 说明 recording 训练目标会放大旧新类权衡，Stage55 说明物理域初始化只抬 Old、不救 Overall/New；Stage56 说明简单半监督伪标签过滤只抬 New、不救 Overall/Old；Stage57/58 说明 top80+old-route 与双模型 confidence 路由都只是转移 Old/New 矛盾；Stage59 说明纯物理统计原型链路远弱于 Chirp backbone。LoRa 正式候选保持 Stage48。
 8. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
 ## 8. 变更与 Git 状态
