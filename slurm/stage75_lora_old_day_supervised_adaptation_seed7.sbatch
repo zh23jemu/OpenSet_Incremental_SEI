@@ -1,0 +1,99 @@
+#!/bin/bash
+# Stage 75：LoRa 训练期旧类跨天监督表征适配 seed7。
+#
+# 该实验把 Day2/Day3/Day4 的旧设备标注 IQ_1-7 放进每轮 discovery 前的
+# backbone 适配，不再只在最终 logits 上做后验校准。IQ_8-10 仍严格保留
+# 为 held-out evaluation，不会被读取。
+#
+# 结果仅用于验证“客户若允许少量旧设备跨天标注数据，能否从训练期改善
+# LoRa 旧类跨天漂移”；它与无额外标注的 Stage48 strict 主结果分开报告。
+
+#SBATCH --job-name=stage75-lora-old-day
+#SBATCH --partition=gpuHz
+#SBATCH --account=gpo-ifv7xx
+#SBATCH --qos=shortjobs
+#SBATCH --time=01:00:00
+#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=64G
+#SBATCH --output=results/stage75/slurm_lora_old_day_supervised_seed7_%j.out
+#SBATCH --error=results/stage75/slurm_lora_old_day_supervised_seed7_%j.err
+
+set -euo pipefail
+module load slurm
+
+PROJECT_ROOT="${PROJECT_ROOT:-${SLURM_SUBMIT_DIR:-$(pwd)}}"
+cd "${PROJECT_ROOT}"
+DATA_ROOT="${DATA_ROOT:-/mnt/usmidet/billy_test/OpenSet_Incremental_SEI}"
+PYTHON_BIN="${PYTHON_BIN:-${DATA_ROOT}/.venv/bin/python}"
+if [ ! -x "${PYTHON_BIN}" ]; then
+    PYTHON_BIN="/mnt/users/xj62kv/OpenSet_Incremental_SEI/.venv/bin/python"
+fi
+if [ ! -x "${PYTHON_BIN}" ]; then
+    echo "Python interpreter not found: ${PYTHON_BIN}" >&2
+    exit 127
+fi
+
+JOB_ID="${SLURM_JOB_ID:-manual}"
+ROOT="results/stage75"
+SAVE_DIR="${ROOT}/lora_old_day_supervised_seed7_${JOB_ID}"
+CHECKPOINT="${SAVE_DIR}/closedset_lora25_lora_chirp_10known.pth"
+LORA_NPZ="${LORA25_NPZ:-${DATA_ROOT}/results/stage46/lora25_diffdays_indoor_raw1024_s28_46103936.npz}"
+RAW_DIR="${LORA_RAW_DIR:-/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage44/raw_setup1_iq}"
+
+mkdir -p "${SAVE_DIR}"
+echo "Stage75 project=${PROJECT_ROOT}"
+echo "Stage75 data_root=${DATA_ROOT}"
+echo "Stage75 lora_npz=${LORA_NPZ}"
+echo "Stage75 raw_dir=${RAW_DIR}"
+echo "Stage75 python=${PYTHON_BIN}"
+
+"${PYTHON_BIN}" experiments/exp_lora25_mvacc_cil_strict.py \
+    --dataset_profile lora25 \
+    --dataset_path "${LORA_NPZ}" \
+    --save_dir "${SAVE_DIR}" \
+    --checkpoint "${CHECKPOINT}" \
+    --train_closedset --epochs 20 \
+    --closedset_backbone lora_chirp \
+    --seed 7 --initial_known_classes 10 --round_size 5 --num_rounds 3 \
+    --use_supcon --supcon_weight 0.1 \
+    --disable_cil_baselines --disable_visualization \
+    --discovery_backend gpcc_recording_consensus \
+    --recording_consensus_threshold 0.65 \
+    --cross_day_repr_adaptation \
+    --cross_day_repr_epochs 2 \
+    --cross_day_repr_batch_size 96 \
+    --cross_day_repr_lr 1e-5 \
+    --cross_day_repr_consistency_weight 0.5 \
+    --cross_day_repr_coral_weight 0.05 \
+    --lora_ssl_adaptation \
+    --lora_ssl_epochs 3 \
+    --lora_ssl_batch_size 96 \
+    --lora_ssl_lr 1e-5 \
+    --lora_ssl_ce_weight 1.0 \
+    --lora_ssl_instance_weight 0.5 \
+    --lora_ssl_teacher_weight 0.2 \
+    --lora_ssl_temperature 0.2 \
+    --lora_old_day_calibration_adaptation \
+    --lora_old_day_calibration_raw_dir "${RAW_DIR}" \
+    --lora_old_day_calibration_transmissions 1,2,3,4,5,6,7 \
+    --lora_old_day_calibration_symbols 28 \
+    --lora_old_day_calibration_decimation 1 \
+    --lora_old_day_calibration_representation raw \
+    --lora_old_day_calibration_epochs 2 \
+    --lora_old_day_calibration_batch_size 96 \
+    --lora_old_day_calibration_lr 2e-5 \
+    --lora_old_day_calibration_ce_weight 1.0 \
+    --lora_old_day_calibration_known_ce_weight 0.25 \
+    --lora_old_day_calibration_feature_weight 0.5 \
+    --lora_old_day_calibration_anchor_weight 0.1 \
+    --enable_joint_discovery_refinement \
+    --enable_lora_recording_eval \
+    --cil_head_warmup_epochs 2 \
+    --cil_joint_epochs 8 \
+    --incremental_batch_size 96 \
+    --test_batch_size 192 \
+    --cil_replay_weight 3.0 \
+    --radcil_old_new_batch_ratio 2.0
+
+echo "Stage75 LoRa 旧类跨天监督适配 seed7 完成。"

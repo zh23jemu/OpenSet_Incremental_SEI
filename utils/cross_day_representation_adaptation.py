@@ -17,6 +17,7 @@ import copy
 import random
 from dataclasses import dataclass
 from itertools import cycle
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -24,6 +25,14 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset
 
+from datasets.lora25_compact.tools.build_lora25_compact import (
+    DEVICE_ORDER,
+    DEVICE_TO_LABEL,
+)
+from datasets.lora25_compact.tools.build_lora25_aligned import (
+    aligned_symbols,
+    lora_upchirp,
+)
 from utils.improved_closedset_training import SupConProjectionHead, augment_iq_batch
 
 
@@ -203,6 +212,220 @@ def adapt_model_cross_day(
         "Cross-Day Final CE": float(stats["CE"][-1]),
         "Cross-Day Final Consistency": float(stats["Consistency"][-1]),
         "Cross-Day Final CORAL": float(stats["CORAL"][-1]),
+    }
+    return CrossDayAdaptationResult(student, diagnostics)
+
+
+def load_lora_old_day_calibration(
+    raw_dir: str,
+    *,
+    day: int,
+    old_class_count: int,
+    transmissions: list[int],
+    symbols_per_transmission: int,
+    decimation: int = 1,
+    representation: str = "raw",
+) -> tuple[np.ndarray, np.ndarray, list[dict[str, Any]]]:
+    """读取当前轮之前旧设备的跨天标注 IQ 校准样本。
+
+    该函数只读取当前轮对应日期的旧设备 ``IQ_1-7``（由调用方传入
+    transmissions），不读取 ``IQ_8-10``。它服务于训练期表征适配，
+    因此旧类设备身份标签是协议已知信息；当前轮未知设备的标签不会进入
+    任何训练损失。
+
+    参数：
+        raw_dir: Oregon State LoRa Setup 1 原始 I/Q 根目录。
+        day: 当前增量轮对应的采集日，R1/R2/R3 分别为 2/3/4。
+        old_class_count: 当前轮之前已注册的旧类数量。
+        transmissions: 允许读取的 transmission 编号，通常为 1..7。
+        symbols_per_transmission: 每个原始 transmission 切出的符号数。
+        decimation: 原始 1024 点符号的下采样比例。
+        representation: ``raw`` 或 ``dechirped``。
+
+    返回：
+        ``(X, y, manifest_rows)``，其中 X 是 [N, 2, L] 的模型输入，
+        y 是连续的协议类标签，manifest_rows 记录实际读取的文件。
+    """
+    raw_root = Path(raw_dir)
+    reference = lora_upchirp()
+    xs: list[np.ndarray] = []
+    ys: list[np.ndarray] = []
+    rows: list[dict[str, Any]] = []
+    if int(day) not in (2, 3, 4):
+        raise ValueError(f"LoRa old-day calibration requires day 2/3/4, got {day}.")
+    if int(old_class_count) <= 0 or int(old_class_count) > len(DEVICE_ORDER):
+        raise ValueError(f"Invalid old_class_count={old_class_count}.")
+    if not transmissions:
+        raise ValueError("transmissions must contain at least one IQ index.")
+
+    for label in range(int(old_class_count)):
+        device = int(DEVICE_ORDER[label])
+        for transmission in transmissions:
+            path = (
+                raw_root
+                / f"Day{int(day)}"
+                / f"Device{device}"
+                / f"IQ_{int(transmission)}.dat"
+            )
+            if not path.exists():
+                raise FileNotFoundError(f"Missing LoRa old-day calibration file: {path}")
+            x, offset, score = aligned_symbols(
+                path,
+                reference,
+                symbols_per_transmission=int(symbols_per_transmission),
+                decimation=int(decimation),
+                representation=str(representation),
+            )
+            xs.append(x)
+            ys.append(np.full(len(x), DEVICE_TO_LABEL[device], dtype=np.int64))
+            rows.append(
+                {
+                    "day": int(day),
+                    "device": device,
+                    "label": int(DEVICE_TO_LABEL[device]),
+                    "transmission": int(transmission),
+                    "samples": int(len(x)),
+                    "symbol_offset": int(offset),
+                    "alignment_score": float(score),
+                }
+            )
+    return np.concatenate(xs, axis=0), np.concatenate(ys, axis=0), rows
+
+
+def adapt_model_lora_old_day_supervised(
+    model: torch.nn.Module,
+    known_x: np.ndarray,
+    known_y: np.ndarray,
+    calibration_x: np.ndarray,
+    calibration_y: np.ndarray,
+    discovery_x: np.ndarray,
+    *,
+    device: str,
+    epochs: int = 2,
+    batch_size: int = 96,
+    lr: float = 2e-5,
+    calibration_ce_weight: float = 1.0,
+    known_ce_weight: float = 0.25,
+    feature_alignment_weight: float = 0.5,
+    discovery_anchor_weight: float = 0.1,
+    seed: int = 7,
+) -> CrossDayAdaptationResult:
+    """用旧类跨天标注样本在训练期直接对齐 LoRa backbone。
+
+    与 Stage69/73/74 的后验 logits 校准不同，本函数在当前轮 discovery
+    前更新模型表征。校准样本只包含当前日期的旧设备 IQ_1-7；Day1
+    known train 用于保留原有类别边界，当前 discovery 只做 teacher 特征
+    锚定。整个过程不读取 IQ_8-10 held-out evaluation。
+    """
+    _set_seed(seed)
+    if len(known_x) == 0 or len(calibration_x) == 0 or len(discovery_x) == 0:
+        raise ValueError("LoRa supervised cross-day adaptation requires three non-empty inputs.")
+
+    student = copy.deepcopy(model).to(device)
+    teacher = copy.deepcopy(model).to(device).eval()
+    for parameter in teacher.parameters():
+        parameter.requires_grad_(False)
+
+    def labelled_loader(x: np.ndarray, y: np.ndarray) -> DataLoader:
+        return DataLoader(
+            TensorDataset(
+                torch.as_tensor(x, dtype=torch.float32),
+                torch.as_tensor(y, dtype=torch.long),
+            ),
+            batch_size=max(2, int(batch_size)),
+            shuffle=True,
+            drop_last=False,
+            num_workers=0,
+        )
+
+    known_loader = labelled_loader(known_x, known_y)
+    calibration_loader = labelled_loader(calibration_x, calibration_y)
+    discovery_loader = DataLoader(
+        TensorDataset(torch.as_tensor(discovery_x, dtype=torch.float32)),
+        batch_size=max(2, int(batch_size)),
+        shuffle=True,
+        drop_last=False,
+        num_workers=0,
+    )
+    optimizer = torch.optim.AdamW(student.parameters(), lr=float(lr), weight_decay=1e-4)
+    stats = {
+        "Calibration CE": [],
+        "Known CE": [],
+        "Feature Alignment": [],
+        "Discovery Anchor": [],
+        "Total": [],
+    }
+
+    student.train()
+    for _ in range(max(1, int(epochs))):
+        known_iter = cycle(known_loader)
+        calibration_iter = cycle(calibration_loader)
+        epoch_values = {key: [] for key in stats}
+        for (xd,) in discovery_loader:
+            xk, yk = next(known_iter)
+            xc, yc = next(calibration_iter)
+            xk, yk = xk.to(device), yk.to(device)
+            xc, yc, xd = xc.to(device), yc.to(device), xd.to(device)
+
+            known_feat, known_logits = student(augment_iq_batch(xk))
+            calibration_feat, calibration_logits = student(xc)
+            with torch.no_grad():
+                teacher_calibration_feat, _ = teacher(xc)
+                teacher_discovery_feat, _ = teacher(xd)
+            student_discovery_feat, _ = student(augment_iq_batch(xd))
+
+            calibration_ce = F.cross_entropy(calibration_logits, yc)
+            known_ce = F.cross_entropy(known_logits, yk)
+            feature_alignment = F.mse_loss(
+                F.normalize(calibration_feat, dim=1),
+                F.normalize(teacher_calibration_feat, dim=1),
+            )
+            discovery_anchor = F.mse_loss(
+                F.normalize(student_discovery_feat, dim=1),
+                F.normalize(teacher_discovery_feat, dim=1),
+            )
+            total = (
+                float(calibration_ce_weight) * calibration_ce
+                + float(known_ce_weight) * known_ce
+                + float(feature_alignment_weight) * feature_alignment
+                + float(discovery_anchor_weight) * discovery_anchor
+            )
+
+            optimizer.zero_grad()
+            total.backward()
+            torch.nn.utils.clip_grad_norm_(student.parameters(), max_norm=5.0)
+            optimizer.step()
+
+            values = {
+                "Calibration CE": float(calibration_ce.detach().cpu()),
+                "Known CE": float(known_ce.detach().cpu()),
+                "Feature Alignment": float(feature_alignment.detach().cpu()),
+                "Discovery Anchor": float(discovery_anchor.detach().cpu()),
+                "Total": float(total.detach().cpu()),
+            }
+            for key, value in values.items():
+                epoch_values[key].append(value)
+        for key in stats:
+            stats[key].append(float(np.mean(epoch_values[key])))
+
+    student.eval()
+    diagnostics = {
+        "Cross-Day Adapter": "lora_old_day_supervised_feature_alignment",
+        "Cross-Day Epochs": int(max(1, int(epochs))),
+        "Cross-Day Batch Size": int(batch_size),
+        "Cross-Day LR": float(lr),
+        "Cross-Day Calibration CE Weight": float(calibration_ce_weight),
+        "Cross-Day Known CE Weight": float(known_ce_weight),
+        "Cross-Day Feature Alignment Weight": float(feature_alignment_weight),
+        "Cross-Day Discovery Anchor Weight": float(discovery_anchor_weight),
+        "Cross-Day Known Samples": int(len(known_x)),
+        "Cross-Day Calibration Samples": int(len(calibration_x)),
+        "Cross-Day Discovery Samples": int(len(discovery_x)),
+        "Cross-Day Final Total": float(stats["Total"][-1]),
+        "Cross-Day Final Calibration CE": float(stats["Calibration CE"][-1]),
+        "Cross-Day Final Known CE": float(stats["Known CE"][-1]),
+        "Cross-Day Final Feature Alignment": float(stats["Feature Alignment"][-1]),
+        "Cross-Day Final Discovery Anchor": float(stats["Discovery Anchor"][-1]),
     }
     return CrossDayAdaptationResult(student, diagnostics)
 

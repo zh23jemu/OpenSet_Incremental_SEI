@@ -83,8 +83,10 @@ from utils.graph_prototype_discovery_adapter import run_gpcc
 from utils.recording_consensus_discovery_adapter import run_recording_consensus_gpcc, run_recording_gpcc
 from utils.cross_day_representation_adaptation import (
     adapt_model_cross_day,
+    adapt_model_lora_old_day_supervised,
     adapt_model_lora_recording_ssl,
     adapt_model_lora_ssl,
+    load_lora_old_day_calibration,
 )
 from utils.incremental_visualization import save_seen_class_visualizations, save_paper_method_visualizations
 from utils.incremental_metric_learning import cosine_proxy_metric_loss
@@ -4298,6 +4300,28 @@ def main():
     parser.add_argument("--cross_day_repr_lr", type=float, default=1e-5)
     parser.add_argument("--cross_day_repr_consistency_weight", type=float, default=0.5)
     parser.add_argument("--cross_day_repr_coral_weight", type=float, default=0.05)
+    parser.add_argument(
+        "--lora_old_day_calibration_adaptation",
+        action="store_true",
+        help="LoRa 专用训练期跨天旧类监督适配；读取当前日期旧设备 IQ_1-7 标注样本，不读取 IQ_8-10。",
+    )
+    parser.add_argument(
+        "--lora_old_day_calibration_raw_dir",
+        type=str,
+        default=None,
+        help="LoRa Setup 1 原始 I/Q 根目录，需包含 Day2/Day3/Day4/Device*/IQ_*.dat。",
+    )
+    parser.add_argument("--lora_old_day_calibration_transmissions", type=str, default="1,2,3,4,5,6,7")
+    parser.add_argument("--lora_old_day_calibration_symbols", type=int, default=28)
+    parser.add_argument("--lora_old_day_calibration_decimation", type=int, default=1)
+    parser.add_argument("--lora_old_day_calibration_representation", choices=["raw", "dechirped"], default="raw")
+    parser.add_argument("--lora_old_day_calibration_epochs", type=int, default=2)
+    parser.add_argument("--lora_old_day_calibration_batch_size", type=int, default=96)
+    parser.add_argument("--lora_old_day_calibration_lr", type=float, default=2e-5)
+    parser.add_argument("--lora_old_day_calibration_ce_weight", type=float, default=1.0)
+    parser.add_argument("--lora_old_day_calibration_known_ce_weight", type=float, default=0.25)
+    parser.add_argument("--lora_old_day_calibration_feature_weight", type=float, default=0.5)
+    parser.add_argument("--lora_old_day_calibration_anchor_weight", type=float, default=0.1)
     parser.add_argument("--lora_ssl_adaptation", action="store_true", help="每轮 LoRa discovery 前做无标签 instance contrastive 自监督适配；默认关闭。")
     parser.add_argument("--lora_ssl_epochs", type=int, default=3)
     parser.add_argument("--lora_ssl_batch_size", type=int, default=128)
@@ -4570,6 +4594,11 @@ def main():
         )
     if args.closedset_backbone in {"lora_chirp", "lora_hybrid"} and args.dataset_profile != "lora25":
         raise ValueError("--closedset_backbone lora_chirp/lora_hybrid is only valid for the LoRa25 strict profile.")
+    if args.lora_old_day_calibration_adaptation:
+        if args.dataset_profile != "lora25":
+            raise ValueError("--lora_old_day_calibration_adaptation is only supported for the LoRa25 strict profile.")
+        if not args.lora_old_day_calibration_raw_dir:
+            raise ValueError("--lora_old_day_calibration_raw_dir is required when old-day adaptation is enabled.")
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if args.checkpoint is None:
@@ -5151,6 +5180,48 @@ def main():
             )
             teacher = adaptation_result.model
             rd["cross_day_adaptation_diagnostics"] = adaptation_result.diagnostics
+        if args.lora_old_day_calibration_adaptation:
+            # 旧类跨天监督适配只读取当前日期已知旧设备的 IQ_1-7。
+            # 当前轮未知设备和 IQ_8-10 held-out eval 均不进入训练。
+            old_class_count = int(args.initial_known_classes + (i - 1) * args.round_size)
+            calibration_transmissions = [
+                int(item.strip())
+                for item in str(args.lora_old_day_calibration_transmissions).split(",")
+                if item.strip()
+            ]
+            calibration_x, calibration_y, calibration_rows = load_lora_old_day_calibration(
+                args.lora_old_day_calibration_raw_dir,
+                day=i + 1,
+                old_class_count=old_class_count,
+                transmissions=calibration_transmissions,
+                symbols_per_transmission=args.lora_old_day_calibration_symbols,
+                decimation=args.lora_old_day_calibration_decimation,
+                representation=args.lora_old_day_calibration_representation,
+            )
+            adaptation_result = adapt_model_lora_old_day_supervised(
+                teacher,
+                X_train,
+                y_train,
+                calibration_x,
+                calibration_y,
+                rd["X"],
+                device=device,
+                epochs=args.lora_old_day_calibration_epochs,
+                batch_size=args.lora_old_day_calibration_batch_size,
+                lr=args.lora_old_day_calibration_lr,
+                calibration_ce_weight=args.lora_old_day_calibration_ce_weight,
+                known_ce_weight=args.lora_old_day_calibration_known_ce_weight,
+                feature_alignment_weight=args.lora_old_day_calibration_feature_weight,
+                discovery_anchor_weight=args.lora_old_day_calibration_anchor_weight,
+                seed=args.seed + 100 + i,
+            )
+            teacher = adaptation_result.model
+            rd["lora_old_day_calibration_diagnostics"] = {
+                **adaptation_result.diagnostics,
+                "Calibration Day": int(i + 1),
+                "Calibration Transmissions": calibration_transmissions,
+                "Calibration Manifest Rows": calibration_rows,
+            }
         if args.lora_ssl_adaptation:
             if args.dataset_profile != "lora25":
                 raise ValueError("--lora_ssl_adaptation is only supported for the LoRa25 strict profile.")
