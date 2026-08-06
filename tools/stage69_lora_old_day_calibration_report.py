@@ -25,6 +25,7 @@ from typing import Any
 import numpy as np
 import torch
 from scipy.optimize import linear_sum_assignment
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
 from torch.utils.data import DataLoader, TensorDataset
 
@@ -243,6 +244,40 @@ def _apply_old_day_calibration(
     return pred
 
 
+def _apply_old_day_logreg_calibration(
+    dump: dict[str, np.ndarray],
+    calibration_logits: np.ndarray,
+    calibration_y: np.ndarray,
+    stage: str,
+) -> np.ndarray:
+    """用旧类校准 logits 训练一个轻量多分类线性分类器。
+
+    这个分支仍然只看 Stage44 的 Day2-4 旧类标注校准样本，不读取 IQ_8-10
+    held-out 真值。它比原型均值更灵活，但仍然是可解释的线性校准，不引入
+    新的发现前端或额外数据边界。
+    """
+
+    y_true = dump["y_true"].astype(np.int64)
+    pred = dump["pred_mapped"].astype(np.int64).copy()
+    old_end = int(_stage_bounds(stage)["old_end"])
+    old_mask = y_true < old_end
+    if not np.any(old_mask):
+        return pred
+
+    # 只用旧类校准 logits 训练一个多分类线性分类器；特征仍然来自同一套
+    # closed-set backbone 输出，因此不会引入新的传感器信息。
+    clf = LogisticRegression(
+        max_iter=2000,
+        solver="lbfgs",
+        multi_class="multinomial",
+        n_jobs=1,
+    )
+    clf.fit(np.asarray(calibration_logits, dtype=np.float32), np.asarray(calibration_y, dtype=np.int64))
+    predicted_old = clf.predict(np.asarray(dump["logits"][old_mask], dtype=np.float32))
+    pred[old_mask] = np.asarray(predicted_old, dtype=np.int64)
+    return pred
+
+
 def _old_label_remap_oracle(dump: dict[str, np.ndarray], stage: str) -> np.ndarray:
     """保留 Stage68 的旧类标签重映射 oracle，作为结构是否错位的参考上界。"""
 
@@ -273,6 +308,7 @@ def collect_records(
     batch_size: int,
     device: str,
     feat_dim: int,
+    calibration_strategy: str,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """收集 baseline、正式校准候选和 oracle 参考的逐阶段结果。"""
 
@@ -303,12 +339,22 @@ def collect_records(
                 representation=representation,
             )
             calibration_logits = _extract_logits(model, calibration_x, batch_size=batch_size, device=device)
-            variants["old_iq1_calibration"] = _apply_old_day_calibration(
-                dump,
-                calibration_logits=calibration_logits,
-                calibration_y=calibration_y,
-                stage=stage,
-            )
+            if calibration_strategy == "prototype":
+                variants["old_iq1_calibration"] = _apply_old_day_calibration(
+                    dump,
+                    calibration_logits=calibration_logits,
+                    calibration_y=calibration_y,
+                    stage=stage,
+                )
+            elif calibration_strategy == "logreg":
+                variants["old_iq1_calibration"] = _apply_old_day_logreg_calibration(
+                    dump,
+                    calibration_logits=calibration_logits,
+                    calibration_y=calibration_y,
+                    stage=stage,
+                )
+            else:
+                raise ValueError(f"Unsupported calibration strategy: {calibration_strategy}")
             for row in stage_rows:
                 calibration_rows.append({"stage": stage, **row})
         else:
@@ -381,6 +427,12 @@ def main() -> int:
     parser.add_argument("--representation", choices=("raw", "dechirped"), default="raw")
     parser.add_argument("--batch-size", type=int, default=192)
     parser.add_argument("--feat-dim", type=int, default=128)
+    parser.add_argument(
+        "--calibration-strategy",
+        choices=("prototype", "logreg"),
+        default="prototype",
+        help="旧类校准方式：prototype 为最近原型，logreg 为 logits 上的多分类线性校准。",
+    )
     parser.add_argument("--device", default="auto", choices=("auto", "cpu", "cuda"))
     args = parser.parse_args()
 
@@ -401,6 +453,7 @@ def main() -> int:
         batch_size=args.batch_size,
         device=device,
         feat_dim=args.feat_dim,
+        calibration_strategy=args.calibration_strategy,
     )
     baseline = _r3(records, "baseline")
     calibrated = _r3(records, "old_iq1_calibration")
@@ -412,7 +465,7 @@ def main() -> int:
         "",
         "## 结论",
         "",
-        f"- 当前判定：{'通过 50% 目标，可作为“新增少量旧类跨天校准数据”的方案候选。' if passes else '未达到 50% 目标，说明真实 IQ_1 旧类校准仍不足以复现 Stage68 oracle 上界。'}",
+        f"- 当前判定：{'通过 50% 目标，可作为“新增少量旧类跨天校准数据”的方案候选。' if passes else '未达到 50% 目标，说明真实旧类校准仍不足以复现 Stage68 oracle 上界。'}",
         f"- Baseline R3 Overall/Old/New = {_fmt(baseline['overall'])}/{_fmt(baseline['old'])}/{_fmt(baseline['new'])}。",
         f"- 旧类 IQ 校准 R3 Overall/Old/New = {_fmt(calibrated['overall'])}/{_fmt(calibrated['old'])}/{_fmt(calibrated['new'])}。",
         f"- 旧类标签重映射 oracle R3 Overall/Old/New = {_fmt(remapped['overall'])}/{_fmt(remapped['old'])}/{_fmt(remapped['new'])}。",
@@ -428,6 +481,7 @@ def main() -> int:
         f"- 原始 I/Q 目录：`{args.raw_dir}`",
         f"- 旧类校准 transmissions：`{','.join(str(v) for v in transmissions)}`",
         f"- 每个 transmission 使用 `{args.symbols_per_transmission}` 个 aligned symbols，representation=`{args.representation}`，decimation=`{args.decimation}`。",
+        f"- 旧类校准策略：`{args.calibration_strategy}`。",
         "",
     ]
 
@@ -452,6 +506,7 @@ def main() -> int:
                 "stage68_save_dir": str(args.stage68_save_dir),
                 "raw_dir": str(args.raw_dir),
                 "transmissions": transmissions,
+                "calibration_strategy": args.calibration_strategy,
                 "records": records,
                 "r3": {
                     "baseline": baseline,
