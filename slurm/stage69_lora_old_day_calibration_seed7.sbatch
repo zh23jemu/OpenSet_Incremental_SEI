@@ -49,6 +49,7 @@ echo "Stage69 python=${PYTHON_BIN}"
     --raw-dir "${RAW_DIR}" \
     --manifest "${CALIB_MANIFEST}" \
     --transmissions "1" \
+    --jobs 4 \
     --download
 
 "${PYTHON_BIN}" tools/stage69_lora_old_day_calibration_report.py \
