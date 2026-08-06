@@ -57,6 +57,7 @@
 | Stage 64 LoRa masked reconstruction 预训练 | 已完成，未通过 | Job `46321233` R3 Overall/Old/New/Forgetting=`0.2676/0.2518/0.3310/0.1560`；Old 和遗忘改善，但 New 大幅下降、Overall 低于 Stage48，不扩三种子 |
 | Stage 65 LoRa recording-level 口径可行性 | 已完成，未通过 | Stage48 三种子 recording-level R3 Overall/Old/New/Forgetting=`0.3244±0.0251/0.2500±0.0360/0.6222±0.0314/0.2111±0.0567`；最好单点 Overall 仅 `0.3600`，不能靠改评估粒度接近 50% |
 | Stage 66 LoRa 50% 缺口分解 | 已完成，定位风险 | R3 时旧类占 20/25，Old 权重约 `0.80`；Stage48 Old 均值仅 `0.2312`，即使 New 提到 100%，Overall 理论上也只有约 `0.3849`；若保持当前 New，Old 需升到约 `0.5058` 才能到 50% |
+| Stage 67 LoRa 旧类 replay SupCon | 已完成，未通过 | Job `46443253` seed7 中权重 `0.05/0.10` 均未提高 Old；最好 `w0p10` R3 Overall/Old/New/Forgetting=`0.2824/0.2143/0.5548/0.2190`，相对同 job 对照 Old 仅 `+0.0006`，未过 Old/Overall 门槛，不扩三种子 |
 | ManyTx/ManyRx | 阶段 5 补充验证已完成 | 已只读汇总既有 seed7 三轮结果；ManyTx R3 Overall `0.2700`、ManyRx R3 Overall `0.5700`，作为辅助稳定性证据       |
 | 项目记忆与交接       | 部分已维护            | `AGENTS.md`、`PROJECT_HANDOFF.md` 已同步最新状态；RecallLoom rolling summary 当前因 receipt mismatch 暂停写入，未手工修改                |
 
@@ -439,7 +440,7 @@ Stage 12 Job `45082769` 已完成。ADS-B `cross_day + GPCC + 当前 RADCIL` 的
 | IGCD-minimal 不是完整复现            | 客户或论文审稿可能质疑 SOTA 公平性                                             | 明确标注为 minimal strict adaptation，必要时后续补齐更完整适配           |
 | ADS-B R2/R3 发现欠聚类              | 原正式三种子 R3 仅发现 6–7/10 类；target split 已补齐 R3，并在后端对照中保持 Overall/New 优势 | 采用默认 target split 作为欠聚类收敛候选；保守门控已验证不优，停止继续小参数搜索并如实报告局限 |
 | ADS-B 后端旧新类权衡                  | target split 下 MV-ACC-CIL Overall/New 高于 DOI-style，但 Forgetting 仍高约 `0.0522`；训练期旧类原型锚定 seed7 未降低遗忘 | 风险已从发现前端转为后端权衡；后续若继续改 ADS-B，应换结构不同的遗忘控制机制，而不是继续调 target split 或 anchor 权重 |
-| LoRa 新旧类后端权衡                   | Grouped fusion、训练期类中心锚定、old-logit bias、BN 重校准、新类吸收、dechirped 表示、Stage53 recording 一致性、Stage54 recording CE、Stage55 raw s28 物理域预训练、Stage56 refined filter、Stage57 top80+old-route、Stage58 双模型后验路由、Stage59 纯物理描述符原型、Stage60 累积伪标签重训、Stage61 oracle discovery、Stage62 oracle 后端保护、Stage63 增强一致性预训练和 Stage64 masked reconstruction 均未通过最终门槛；Stage 48 原始 I/Q s28 + recording-consensus 将 Overall 提到 `0.2803±0.0148` 并把遗忘降到 `0.1802±0.0185`；Stage65 证明 recording-level 最好也只有 `0.3600`，Stage66 证明 50% 缺口主要来自旧类跨天保持 | 当前正式候选保持 Stage 48；后续若继续攻 LoRa，应优先设计旧类跨天保持的大结构，而不是继续调 New、recording 阈值或评估口径；客户/论文口径必须如实说明 LoRa 尚未达到 50% |
+| LoRa 新旧类后端权衡                   | Grouped fusion、训练期类中心锚定、old-logit bias、BN 重校准、新类吸收、dechirped 表示、Stage53 recording 一致性、Stage54 recording CE、Stage55 raw s28 物理域预训练、Stage56 refined filter、Stage57 top80+old-route、Stage58 双模型后验路由、Stage59 纯物理描述符原型、Stage60 累积伪标签重训、Stage61 oracle discovery、Stage62 oracle 后端保护、Stage63 增强一致性预训练、Stage64 masked reconstruction 和 Stage67 旧类 replay SupCon 均未通过最终门槛；Stage 48 原始 I/Q s28 + recording-consensus 将 Overall 提到 `0.2803±0.0148` 并把遗忘降到 `0.1802±0.0185`；Stage65 证明 recording-level 最好也只有 `0.3600`，Stage66 证明 50% 缺口主要来自旧类跨天保持 | 当前正式候选保持 Stage 48；Stage67 说明只对 replay 旧类做类内对比仍不能救 Old。后续若继续攻 LoRa，需要更根本的跨天旧类域泛化/数据层设计，而不是继续加单项 replay loss；客户/论文口径必须如实说明 LoRa 尚未达到 50% |
 | GPCC 真实数据收益不足                  | ADS-B discovery-only 的 mean ARI/Hungarian 从 MV-ACC `0.6436/0.6902` 提升到 `0.6672/0.7364`，但完整增量 R3 Overall `0.4839` 低于 target split 对照约 `0.4932`；LoRa discovery-only Hungarian 提升但 ARI 下降 | GPCC 作为结构性前端候选保留，不扩三种子；后续若继续攻低分，应转向训练期域适应或伪标签质量控制，而不是继续替换聚类器小参数 |
 | 增量双视图一致性无收益          | LoRa seed7 权重 `0.05/0.10` 的 IQ_7 Old 与 Overall 均低于权重 `0` 基线 | 已归档负消融，不继续调一致性权重 |
 | discovery 簇可靠性加权无收益     | Job `45048052` 开启/关闭结果逐项完全一致，未改变 IQ_7 旧类保持或 held-out R3 指标 | 已归档负消融；停止 LoRa 后端小机制搜索，后续只考虑训练期跨天表征和表征-发现联合设计 |
@@ -453,7 +454,7 @@ Stage 12 Job `45082769` 已完成。ADS-B `cross_day + GPCC + 当前 RADCIL` 的
 
 1. GPCC seed7 闭环结论：LoRa discovery-only 未过门槛；ADS-B discovery-only 聚类通过，但完整增量 seed7 未超过 target split，因此不扩三种子。
 2. ADS-B 欠聚类风险已收束：正式 ratio 0.03 不变，自适应密度归档为负消融，默认 target split 作为当前最佳欠聚类收敛候选；固定 target split 后端对照、训练期旧类原型锚定和 GPCC 完整增量结果均显示，剩余问题不能靠继续调 target split、anchor 权重或替换聚类器解决。
-3. LoRa 双视图一致性、簇可靠性加权、训练期跨天特征分布对齐和 Stage 8 代理度量均已归档为负消融；Stage 48 通过原始 I/Q s28 多窗和 recording-consensus 将正式候选提升到 `0.2803±0.0148`，Stage 49-60 证明相邻后端、伪标签过滤、物理描述符和全量重训均不是突破口；Stage61/62 进一步证明完美聚类和现有后端保护也只能到约 `0.30` Overall；Stage63 增强一致性预训练把 seed7 Overall 推到 `0.3029` 但遗忘变差；Stage64 masked reconstruction New 大幅下降；Stage65/66 证明 recording-level 口径也到不了 50%，真正缺口是 R3 旧类跨天保持需要从约 `0.23` 提到约 `0.51`。
+3. LoRa 双视图一致性、簇可靠性加权、训练期跨天特征分布对齐和 Stage 8 代理度量均已归档为负消融；Stage 48 通过原始 I/Q s28 多窗和 recording-consensus 将正式候选提升到 `0.2803±0.0148`，Stage 49-60 证明相邻后端、伪标签过滤、物理描述符和全量重训均不是突破口；Stage61/62 进一步证明完美聚类和现有后端保护也只能到约 `0.30` Overall；Stage63 增强一致性预训练把 seed7 Overall 推到 `0.3029` 但遗忘变差；Stage64 masked reconstruction New 大幅下降；Stage65/66 证明 recording-level 口径也到不了 50%，真正缺口是 R3 旧类跨天保持需要从约 `0.23` 提到约 `0.51`；Stage67 证明 replay-only old SupCon 也不能打开该缺口。
 4. 先跑 Stage 10 GPCC + `none/mn_smooth/proto_repulse` seed7 discovery-only 矩阵；LoRa 看三轮 mean Hungarian/Purity，ADS-B 看 R3，未过门槛不进入 CIL。
 5. Stage 10 已未过门槛；不扩 seed13/31，不进入 CIL，下一步转向训练期跨天表征重训或表征-发现联合学习。
 6. Stage 11 先在 ADS-B/LoRa seed7 跑 `none/cross_day` discovery-only；严格使用独立 worktree、主项目绝对数据/checkpoint 路径和项目 `.venv`，通过门槛后才考虑完整增量。
