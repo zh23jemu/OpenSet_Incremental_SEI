@@ -362,6 +362,7 @@
 - 2026-08-06：Stage73 Job `46491367` 干净完成并同步小型结果；IQ_1-7 旧类普通 logits-space logreg 校准将 R3 Overall/Old/New 提到 `0.4695/0.4488/0.5524`，仍未达到 50%。Stage74 Job `46525882` 使用增强 logits 特征后降到 `0.4567/0.4327/0.5524`，归档为负消融。
 - 2026-08-06：新增并完成 Stage75 训练期旧类跨天监督适配：`utils/cross_day_representation_adaptation.py` 从 Day2-4 旧设备 IQ_1-7 构造标注校准样本，在每轮 discovery 前联合优化旧类 CE、Day1 known CE、旧类特征对齐和 discovery teacher 锚定。Job `46537156` 因缺少临时 s28 NPZ 失败，修复入口自动重建同口径 raw-IQ s28 后，Job `46537623` 干净完成；R3 Overall/Old/New=`0.2776/0.2185/0.5143`，略低于 Stage48 对照，归档为负消融，不扩三种子。
 - 2026-08-06：新增 Stage76 旧类跨天校准与当前伪新类联合 CIL：`--lora_old_day_joint_cil` 将 Day2-4 旧设备 IQ_1-7 标注 batch 直接并入每轮 head warmup、joint backbone 和第二次 discovery refinement 的 CIL 优化；默认关闭，严格排除 IQ_8-10。新增 `slurm/stage76_lora_old_day_joint_cil_seed7.sbatch`，本地 `py_compile`、CLI help 和合成反向传播 smoke 已通过，待 Git 同步后提交 seed7。
+- 2026-08-06：Stage76 已通过 GitHub 代理推送到 `codex/stage0-strict-audit`，服务器独立 worktree fast-forward 到提交 `4edd26b`；Slurm Job `46630851` 已提交，当前状态为 `PENDING (Resources)`，尚无运行错误。
 
 ## Next TODO
 

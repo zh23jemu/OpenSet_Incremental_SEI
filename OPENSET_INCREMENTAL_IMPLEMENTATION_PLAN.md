@@ -66,7 +66,7 @@
 | Stage 73 LoRa 扩展旧类 logreg 校准 | 已完成，正向但不足 | Job `46491367`：IQ_1-6/IQ_1-7 的 R3 Overall/Old/New 为 `0.4619/0.4393/0.5524`、`0.4695/0.4488/0.5524`；7 条 transmission 仍未达到 50% |
 | Stage 74 LoRa 增强 logits 校准 | 已完成，负消融 | Job `46525882`：在 IQ_1-7 上加入归一化 logits、softmax、中心化 logits 和 top1-top2 margin 后，R3 Overall/Old/New=`0.4567/0.4327/0.5524`，低于 Stage73；停止继续改校准器特征形式 |
 | Stage 75 LoRa 训练期旧类跨天监督适配 | 已完成，负消融 | Job `46537623` 从 Stage44 原始 IQ 自动重建同口径 s28 输入并完整训练；R3 Overall/Old/New=`0.2776/0.2185/0.5143`，略低于 Stage48 对照约 `0.2810/0.2220/0.5167`，不扩三种子 |
-| Stage 76 LoRa 旧类跨天校准联合 CIL | 已实现，待 seed7 | 新增 `--lora_old_day_joint_cil`，把 Day2-4 旧设备 IQ_1-7 标注 batch 并入每轮 head/joint CIL 和第二次 refinement；默认关闭，严格排除 IQ_8-10；本地语法、CLI、合成反向传播 smoke 已通过，Slurm 入口为 `slurm/stage76_lora_old_day_joint_cil_seed7.sbatch` |
+| Stage 76 LoRa 旧类跨天校准联合 CIL | 已提交，等待 seed7 | 新增 `--lora_old_day_joint_cil`，把 Day2-4 旧设备 IQ_1-7 标注 batch 并入每轮 head/joint CIL 和第二次 refinement；默认关闭，严格排除 IQ_8-10；Job `46630851` 已提交，当前 `PENDING (Resources)` |
 | ManyTx/ManyRx | 阶段 5 补充验证已完成 | 已只读汇总既有 seed7 三轮结果；ManyTx R3 Overall `0.2700`、ManyRx R3 Overall `0.5700`，作为辅助稳定性证据       |
 | 项目记忆与交接       | 部分已维护            | `AGENTS.md`、`PROJECT_HANDOFF.md` 已同步最新状态；RecallLoom rolling summary 当前因 receipt mismatch 暂停写入，未手工修改                |
 

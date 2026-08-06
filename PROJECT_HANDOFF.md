@@ -288,3 +288,4 @@ Strict loader 审计：
 - 当前判断：真实旧类跨天标注校准确实有效，但继续改校准器形式不能稳定突破 50%；后续不再做相邻校准器小改。
 - Stage75 已完成训练期旧类跨天监督适配：每轮读取当前日期旧设备 IQ_1-7 标注样本，直接优化 LoRa backbone 的旧类 CE、Day1 known CE、旧类特征对齐和 discovery teacher 锚定；严格不读取 IQ_8-10。Job `46537156` 因缺少临时 s28 NPZ 失败，修复后 Job `46537623` 完整完成；R3 Overall/Old/New=`0.2776/0.2185/0.5143`，略低于 Stage48 对照，归档为负消融，不扩三种子。
 - Stage76 已实现旧类跨天校准与当前伪新类联合 CIL：新增 `--lora_old_day_joint_cil`，将 Day2-4 旧设备 IQ_1-7 标注 batch 加入每轮 head warmup、joint backbone 和第二次 refinement CIL；默认关闭，严格不读取 IQ_8-10。新增 Slurm 入口 `slurm/stage76_lora_old_day_joint_cil_seed7.sbatch`，本地 `py_compile`、CLI 参数检查和合成反向传播 smoke 已通过，待 Git 同步后提交 seed7。
+- Stage76 已通过 GitHub 代理推送并同步到服务器独立 worktree；Job `46630851` 已提交，当前为 `PENDING (Resources)`，需要继续跟踪最终 Slurm 结果。
