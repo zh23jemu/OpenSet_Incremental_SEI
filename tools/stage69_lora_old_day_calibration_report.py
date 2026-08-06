@@ -278,6 +278,70 @@ def _apply_old_day_logreg_calibration(
     return pred
 
 
+def _augment_logits_for_calibration(logits: np.ndarray) -> np.ndarray:
+    """构造只依赖 logits 的校准特征。
+
+    Stage68 保存的 held-out dump 只有最终 logits，没有保存 backbone 的
+    penultimate feature。为了避免重跑完整 CIL，也避免读取 held-out 真值，本函数
+    只从同一份 logits 派生额外特征：原始 logits、行归一化 logits、softmax 概率、
+    类内中心化 logits，以及每个样本 top1/top2 的置信差。校准器的均值和方差只在
+    Day2-4 旧类标注校准样本上拟合，再应用到 held-out logits。
+    """
+
+    values = np.asarray(logits, dtype=np.float32)
+    shifted = values - np.max(values, axis=1, keepdims=True)
+    exp_values = np.exp(shifted)
+    probs = exp_values / np.maximum(exp_values.sum(axis=1, keepdims=True), 1e-8)
+    centred = values - values.mean(axis=1, keepdims=True)
+    if values.shape[1] >= 2:
+        top2 = np.partition(values, -2, axis=1)[:, -2:]
+        margin = (top2[:, 1] - top2[:, 0]).reshape(-1, 1)
+    else:
+        margin = np.zeros((values.shape[0], 1), dtype=np.float32)
+    return np.concatenate(
+        [values, _normalise_rows(values), probs.astype(np.float32), centred.astype(np.float32), margin.astype(np.float32)],
+        axis=1,
+    ).astype(np.float32)
+
+
+def _apply_old_day_logit_aug_logreg_calibration(
+    dump: dict[str, np.ndarray],
+    calibration_logits: np.ndarray,
+    calibration_y: np.ndarray,
+    stage: str,
+) -> np.ndarray:
+    """用增强 logits 特征训练旧类线性校准器。
+
+    该策略比普通 ``logreg`` 多看 logits 的概率形态和相对 margin，但仍只使用
+    Stage44 中可单独采集的旧设备跨天标注校准样本。New 样本的预测保持 baseline，
+    只重判 R3 已见旧类样本，避免把未知真值或 eval 校准样本引入训练。
+    """
+
+    y_true = dump["y_true"].astype(np.int64)
+    pred = dump["pred_mapped"].astype(np.int64).copy()
+    old_end = int(_stage_bounds(stage)["old_end"])
+    old_mask = y_true < old_end
+    if not np.any(old_mask):
+        return pred
+
+    calibration_features = _augment_logits_for_calibration(calibration_logits)
+    eval_features = _augment_logits_for_calibration(np.asarray(dump["logits"], dtype=np.float32))
+    mean = calibration_features.mean(axis=0, keepdims=True)
+    std = calibration_features.std(axis=0, keepdims=True)
+    calibration_features = (calibration_features - mean) / np.maximum(std, 1e-6)
+    eval_features = (eval_features - mean) / np.maximum(std, 1e-6)
+
+    clf = LogisticRegression(
+        max_iter=3000,
+        solver="lbfgs",
+        C=0.5,
+        n_jobs=1,
+    )
+    clf.fit(calibration_features.astype(np.float32), np.asarray(calibration_y, dtype=np.int64))
+    pred[old_mask] = clf.predict(eval_features[old_mask].astype(np.float32)).astype(np.int64)
+    return pred
+
+
 def _old_label_remap_oracle(dump: dict[str, np.ndarray], stage: str) -> np.ndarray:
     """保留 Stage68 的旧类标签重映射 oracle，作为结构是否错位的参考上界。"""
 
@@ -348,6 +412,13 @@ def collect_records(
                 )
             elif calibration_strategy == "logreg":
                 variants["old_iq1_calibration"] = _apply_old_day_logreg_calibration(
+                    dump,
+                    calibration_logits=calibration_logits,
+                    calibration_y=calibration_y,
+                    stage=stage,
+                )
+            elif calibration_strategy == "logit_aug_logreg":
+                variants["old_iq1_calibration"] = _apply_old_day_logit_aug_logreg_calibration(
                     dump,
                     calibration_logits=calibration_logits,
                     calibration_y=calibration_y,
@@ -429,9 +500,9 @@ def main() -> int:
     parser.add_argument("--feat-dim", type=int, default=128)
     parser.add_argument(
         "--calibration-strategy",
-        choices=("prototype", "logreg"),
+        choices=("prototype", "logreg", "logit_aug_logreg"),
         default="prototype",
-        help="旧类校准方式：prototype 为最近原型，logreg 为 logits 上的多分类线性校准。",
+        help="旧类校准方式：prototype 为最近原型，logreg 为 logits 线性校准，logit_aug_logreg 为增强 logits 特征线性校准。",
     )
     parser.add_argument("--device", default="auto", choices=("auto", "cpu", "cuda"))
     args = parser.parse_args()
