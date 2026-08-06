@@ -193,6 +193,7 @@
 - Stage 69 LoRa 旧类跨天少量标注校准已完成：首次 Job `46457598` 下载完 45 个 Day2-4 旧设备 IQ_1 文件后因 1 小时 shortjobs 时限超时；续跑 Job `46462472` 使用已下载数据完成报告。真实 IQ_1 校准将 R3 Overall/Old/New 从 `0.2814/0.2137/0.5524` 提到 `0.3429/0.2905/0.5524`，证明可落地旧类跨天校准方向有效但单个 transmission 不足以接近 50%。已新增 Stage 70 校准量矩阵入口，下一步比较 IQ_1、IQ_1-2、IQ_1-3 三档标注校准量。
 - Stage 70 LoRa 旧类校准量矩阵已完成：Job `46479985` 中 prototype 校准随 transmission 数增加有剂量收益，IQ_1/IQ_1-2/IQ_1-3 的 R3 Overall/Old/New 分别为 `0.3429/0.2905/0.5524`、`0.3867/0.3452/0.5524`、`0.3990/0.3607/0.5524`，但 3 条 transmission 仍不到 50%。
 - Stage 71 LoRa 旧类 logits-space logreg 校准已完成：修复远端 scikit-learn `multi_class` 兼容问题后，Job `46481693` 正常完成；IQ_1/IQ_1-2/IQ_1-3 的 R3 Overall/Old/New 分别为 `0.3643/0.3173/0.5524`、`0.3957/0.3565/0.5524`、`0.4114/0.3762/0.5524`。该方法超过 Stage70 prototype，并接近旧类标签重映射 oracle `0.4157/0.3815/0.5524`，但仍未达到 50%。
+- Stage 72 LoRa 更多旧类 logreg 校准已完成：Job `46484861` 使用 shortjobs 完成 IQ_1-4/IQ_1-5 两档，R3 Overall/Old/New 分别为 `0.4438/0.4167/0.5524` 和 `0.4524/0.4274/0.5524`。说明增加真实旧类跨天标注仍有效，但 5 条 transmission 仍未达到 50%，下一步可继续验证 IQ_1-6/IQ_1-7 是否接近门槛。
 - 远端家目录瘦身已完成：`/mnt/users/xj62kv` 精确占用约 `99.86 GiB`，已将 `underwater-crack-correction`、`MASAM-MIB`、`sound-event-classification`、`.cache`、`OpenSet_Incremental_SEI` 和 Stage44 LoRa raw I/Q 目录迁移到 `/mnt/usmidet/billy_test` 并在原位置保留软链接。
 
 ## Recent Changes
