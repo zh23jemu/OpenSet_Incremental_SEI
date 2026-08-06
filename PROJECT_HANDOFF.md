@@ -286,4 +286,4 @@ Strict loader 审计：
 - Stage73 Job `46491367`：IQ_1-7 旧类普通 logits-space logreg 校准，R3 Overall/Old/New=`0.4695/0.4488/0.5524`。
 - Stage74 Job `46525882`：增强 logits 校准，R3 Overall/Old/New=`0.4567/0.4327/0.5524`，低于 Stage73，归档为负消融。
 - 当前判断：真实旧类跨天标注校准确实有效，但继续改校准器形式不能稳定突破 50%；后续不再做相邻校准器小改。
-- Stage75 已新增训练期旧类跨天监督适配：每轮 discovery 前读取当前日期旧设备 IQ_1-7 标注样本，直接优化 LoRa backbone 的旧类 CE、Day1 known CE、旧类特征对齐和 discovery teacher 锚定；严格不读取 IQ_8-10。入口为 `slurm/stage75_lora_old_day_supervised_adaptation_seed7.sbatch`，本地语法、CLI 和合成训练 smoke 已通过，下一步提交并跟踪 seed7。
+- Stage75 已新增训练期旧类跨天监督适配：每轮 discovery 前读取当前日期旧设备 IQ_1-7 标注样本，直接优化 LoRa backbone 的旧类 CE、Day1 known CE、旧类特征对齐和 discovery teacher 锚定；严格不读取 IQ_8-10。入口为 `slurm/stage75_lora_old_day_supervised_adaptation_seed7.sbatch`，本地语法、CLI 和合成训练 smoke 已通过；独立 worktree Job `46537156` 已提交，当前等待资源。
