@@ -269,7 +269,7 @@ def _apply_old_day_logreg_calibration(
     clf = LogisticRegression(
         max_iter=2000,
         solver="lbfgs",
-        multi_class="multinomial",
+        # 兼容不同 scikit-learn 版本：多分类策略交给默认值，避免旧/新版本参数不一致。
         n_jobs=1,
     )
     clf.fit(np.asarray(calibration_logits, dtype=np.float32), np.asarray(calibration_y, dtype=np.int64))
