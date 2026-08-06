@@ -1,7 +1,7 @@
 # OpenSet Incremental SEI 新会话交接
 
 - 更新时间：2026-07-31
-- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 48 LoRa 原始 I/Q s28 + recording-consensus 0.65 仍是当前 LoRa 正式 strict 候选；Stage 65/66 已确认 LoRa 50% 缺口主要来自旧类跨天保持；Stage 67 replay-only old SupCon 已验证失败；Stage 68 oracle 证明同日旧类校准可把 seed7 R3 Overall/Old 提到 `0.5867/0.5952`，但该结果读取 held-out 真值；Stage 69 真实 IQ_1 旧类校准 Job `46462472` 已完成，R3 Overall/Old 提到 `0.3429/0.2905`，方向有效但仍不到 50；下一步 Stage70 验证 IQ_1/IQ_1-2/IQ_1-3 校准量矩阵。
+- 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 48 LoRa 原始 I/Q s28 + recording-consensus 0.65 仍是当前 LoRa 正式 strict 候选；Stage 65/66 已确认 LoRa 50% 缺口主要来自旧类跨天保持；Stage 68 oracle 证明同日旧类校准可把 seed7 R3 Overall/Old 提到 `0.5867/0.5952`，但该结果读取 held-out 真值；Stage 70 prototype 三条旧类 transmission 提到 `0.3990/0.3607/0.5524`；Stage 71 logreg 三条旧类 transmission 提到 `0.4114/0.3762/0.5524`，接近旧类重映射 oracle 但仍不到 50。
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
 - 项目主计划：`OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`
@@ -237,6 +237,8 @@ Strict loader 审计：
 72. Stage 67 LoRa 旧类 replay SupCon seed7 Job `46443253` 已完成并同步小型结果：同 job 对照 R3 Overall/Old/New/Forgetting=`0.2814/0.2137/0.5524/0.2214`，最佳 `w0p10` 为 `0.2824/0.2143/0.5548/0.2190`；Old 只比对照 `+0.0006`，未过门槛，不扩三种子。
 73. Stage 68 LoRa 旧类同日校准 oracle 诊断 Job `46450782` 已完成并同步小型结果：baseline R3 Overall/Old/New=`0.2814/0.2137/0.5524`；同日旧类校准 oracle=`0.5867/0.5952/0.5524`；旧类标签重映射 oracle=`0.4157/0.3815/0.5524`。结论是 LoRa 主要缺口来自旧设备跨天校准数据缺失；该 oracle 使用 held-out 真值，只作上界解释。
 74. Stage 69 LoRa 真实旧类 IQ 校准已完成：Job `46457598` 下载完 45 个 IQ_1 校准文件后因 shortjobs 时限超时，续跑 Job `46462472` 完成报告。真实 IQ_1 校准 R3 Overall/Old/New=`0.3429/0.2905/0.5524`，高于 baseline `0.2814/0.2137/0.5524`，但没有接近 Stage68 oracle `0.5867/0.5952`。已新增 Stage70 校准量矩阵入口，只补 IQ_2/IQ_3 等必要文件，验证额外 transmission 是否能继续提高 Old/Overall。
+75. Stage 70 LoRa 旧类校准量矩阵 Job `46479985` 已完成：prototype 校准 IQ_1/IQ_1-2/IQ_1-3 的 R3 Overall/Old/New=`0.3429/0.2905/0.5524`、`0.3867/0.3452/0.5524`、`0.3990/0.3607/0.5524`，证明标注量增加有效但边际变小。
+76. Stage 71 LoRa 旧类 logreg 校准 Job `46481693` 已完成：修复 `LogisticRegression.multi_class` 远端兼容问题后，logreg 校准 IQ_1/IQ_1-2/IQ_1-3 的 R3 Overall/Old/New=`0.3643/0.3173/0.5524`、`0.3957/0.3565/0.5524`、`0.4114/0.3762/0.5524`；超过 Stage70 prototype，接近旧类重映射 oracle `0.4157/0.3815/0.5524`，但仍未接近 50%。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。
@@ -256,7 +258,7 @@ Strict loader 审计：
 20. Stage 43 已未通过；LoRa 紧凑子集继续攻分不能再靠局部分支或 recording 聚合包装，下一步应下载/处理更大原始 LoRa 数据，或把客户/论文口径明确收束到 recording/transmission-level 局限分析。
 21. Stage 48 已通过；客户汇报口径和总表已更新，说明 LoRa Overall 从 `25.4%` 提升到 `28.0%`，Old/遗忘明显改善，New 基本保持但仍略低于 Stage27。
 22. Stage 49 已完成；确定性复现收敛，但 rec065 的 seed31 New 稳定值只有 `0.4000`，下一步不能继续押 recording-consensus 单项，需要换更直接的新类吸收/分类头机制。
-23. Stage 50/51/52 已完成；old:new batch ratio、新类吸收和 dechirped symbol 表示都不是突破口。Stage 53/54 说明 recording 训练目标会放大旧新类权衡，Stage55 说明物理域初始化只抬 Old、不救 Overall/New；Stage56 说明简单半监督伪标签过滤只抬 New、不救 Overall/Old；Stage57/58 说明 top80+old-route 与双模型 confidence 路由都只是转移 Old/New 矛盾；Stage59 说明纯物理统计原型链路远弱于 Chirp backbone；Stage60 说明累积伪标签重训会被噪声拖垮；Stage61/62 说明即使 oracle discovery 和现有后端保护也只能到约 30% Overall；Stage63 增强一致性预训练为弱正但遗忘变差；Stage64 masked reconstruction 救 Old/Forgetting 但 New 大幅下降；Stage65/66 说明 recording-level 口径也不能冲到 50%，真正缺口是旧类跨天保持；Stage67 说明 replay-only old SupCon 也不能打开该缺口。Stage68 已证明同日旧类校准上界可过 50；Stage69 真实 IQ_1 校准有正收益但仍不足。下一步跑 Stage70 校准量矩阵，判断客户侧少量标注校准需要多少 transmission 才可能接近 50。
+23. Stage 50/51/52 已完成；old:new batch ratio、新类吸收和 dechirped symbol 表示都不是突破口。Stage 53/54 说明 recording 训练目标会放大旧新类权衡，Stage55 说明物理域初始化只抬 Old、不救 Overall/New；Stage56 说明简单半监督伪标签过滤只抬 New、不救 Overall/Old；Stage57/58 说明 top80+old-route 与双模型 confidence 路由都只是转移 Old/New 矛盾；Stage59 说明纯物理统计原型链路远弱于 Chirp backbone；Stage60 说明累积伪标签重训会被噪声拖垮；Stage61/62 说明即使 oracle discovery 和现有后端保护也只能到约 30% Overall；Stage63 增强一致性预训练为弱正但遗忘变差；Stage64 masked reconstruction 救 Old/Forgetting 但 New 大幅下降；Stage65/66 说明 recording-level 口径也不能冲到 50%，真正缺口是旧类跨天保持；Stage67 说明 replay-only old SupCon 也不能打开该缺口。Stage68 已证明同日旧类校准上界可过 50；Stage69-71 真实少量旧类跨天校准持续正向，logreg 三条 transmission 已到 `0.4114`，但仍不到 50。下一步若继续攻，只能继续增加旧类校准 transmission 或引入更接近同日校准 oracle 的旧类对齐策略。
 8. 后续有空升级 RecallLoom 到建议版本 0.4.8.2；升级前后都必须继续使用 helper，不手工编辑受管侧车状态。
 
 ## 8. 变更与 Git 状态
