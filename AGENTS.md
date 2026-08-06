@@ -359,6 +359,7 @@
 - 2026-08-06：新增并完成 Stage67 LoRa replay-only old SupCon seed7；代码提交 `802a750`，Job `46443253` 干净完成，小型结果通过 `stage67-results-46443253` 分支同步并合并。该候选未提高 Old，归档为负消融。
 - 2026-08-06：新增 Stage68 LoRa 旧类同日校准 oracle 诊断报告器和 seed7 Slurm 入口；本地 `py_compile`、`bash -n` 和合成 dump smoke 已通过，待远端运行。
 - 2026-08-06：Stage68 Job `46450782` 干净完成并同步小型结果；同日旧类校准 oracle 将 R3 Overall/Old 提到 `0.5867/0.5952`，证明 LoRa 50% 缺口可由旧类跨天校准数据解释。Stage69 真实 IQ_1 旧类校准 Job `46462472` 完成，R3 Overall/Old 提到 `0.3429/0.2905`，未达到 50%；新增 Stage70 校准量矩阵入口。
+- 2026-08-06：Stage73 Job `46491367` 干净完成并同步小型结果；IQ_1-7 旧类普通 logits-space logreg 校准将 R3 Overall/Old/New 提到 `0.4695/0.4488/0.5524`，仍未达到 50%。Stage74 Job `46525882` 使用增强 logits 特征后降到 `0.4567/0.4327/0.5524`，归档为负消融。
 
 ## Next TODO
 
@@ -390,7 +391,7 @@
 - Stage59 已完成且未过门槛，不扩三种子；纯物理描述符链路远低于 Chirp backbone。LoRa 当前正式候选仍保持 Stage48 raw s28 + recording-consensus 0.65，后续不再切向传统 RF 统计原型基线。
 - Stage60 已完成且未过门槛，不扩三种子；累积伪标签全量重训被伪标签噪声拖垮。
 - Stage61/62 已完成 oracle 聚类与 oracle 后端保护诊断；LoRa 低分不是 discovery-only，也不是现有 old-route/grouped DOI 后端能单独解决。后续若继续攻，应转向更大结构：更强 LoRa 原始 I/Q 自监督预训练、跨天/recording 级任务重定义，或面向客户收口为跨体制局限。
-- Stage63 已完成弱正但未过门槛；Stage64 masked reconstruction 已验证失败；Stage65/66 已证明 recording-level 口径也不能把 LoRa 推近 50%；Stage67 replay-only old SupCon 未提高 Old。Stage68 已证明少量同日旧类校准 oracle 可过 50%；Stage69 真实 IQ_1 校准只能把 R3 Overall 提到 `0.3429`。下一步运行 Stage70 校准量矩阵，用 IQ_1-2/IQ_1-3 检查增加少量标注 transmission 是否能继续提升旧类跨天保持。
+- Stage63 已完成弱正但未过门槛；Stage64 masked reconstruction 已验证失败；Stage65/66 已证明 recording-level 口径也不能把 LoRa 推近 50%；Stage67 replay-only old SupCon 未提高 Old。Stage68 已证明少量同日旧类校准 oracle 可过 50%；Stage69-73 真实 IQ_1-7 旧类 logreg 校准最高把 R3 Overall 提到 `0.4695`，Stage74 增强 logits 校准降到 `0.4567`。下一步不再继续改校准器小特征，只考虑更大结构的跨天表征/联合训练，或明确客户侧需要更多同日旧设备标注。
 - 远端 Slurm 后续使用 `/mnt/users/xj62kv/OpenSet_Incremental_SEI` 路径仍可工作，但该路径现在是指向 `/mnt/usmidet/billy_test/OpenSet_Incremental_SEI_main` 的软链接；大文件继续优先落到 `/mnt/usmidet/billy_test`。
 - Stage 11 当前已完成本地可执行入口和协议边界验证；下一步提交并推送后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only，结果不过门槛就归档，不进入 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
