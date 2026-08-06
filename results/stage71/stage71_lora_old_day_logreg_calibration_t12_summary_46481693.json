@@ -1,0 +1,169 @@
+{
+  "schema_version": "stage69_lora_old_day_labeled_calibration_v1",
+  "job_id": "46481693_t12_logreg",
+  "stage68_save_dir": "/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage68-worktree/results/stage68/lora_s68_stage48_dump_seed7_46450782",
+  "raw_dir": "/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage44/raw_setup1_iq",
+  "transmissions": [
+    1,
+    2
+  ],
+  "calibration_strategy": "logreg",
+  "records": [
+    {
+      "variant": "baseline",
+      "stage": "Initial",
+      "overall": 0.5773809523809523,
+      "old": 0.5773809523809523,
+      "new": null,
+      "initial_known": 0.5773809523809523,
+      "forgetting": 0.0,
+      "macro_f1": 0.5248029818857789
+    },
+    {
+      "variant": "old_label_remap_oracle",
+      "stage": "Initial",
+      "overall": 0.5773809523809523,
+      "old": 0.5773809523809523,
+      "new": null,
+      "initial_known": 0.5773809523809523,
+      "forgetting": 0.0,
+      "macro_f1": 0.5248029818857789
+    },
+    {
+      "variant": "old_iq1_calibration",
+      "stage": "Initial",
+      "overall": 0.5773809523809523,
+      "old": 0.5773809523809523,
+      "new": null,
+      "initial_known": 0.5773809523809523,
+      "forgetting": 0.0,
+      "macro_f1": 0.5248029818857789
+    },
+    {
+      "variant": "baseline",
+      "stage": "After R1",
+      "overall": 0.3341269841269841,
+      "old": 0.39166666666666666,
+      "new": 0.21904761904761905,
+      "initial_known": 0.39166666666666666,
+      "forgetting": 0.18571428571428567,
+      "macro_f1": 0.29623395716279116
+    },
+    {
+      "variant": "old_label_remap_oracle",
+      "stage": "After R1",
+      "overall": 0.39285714285714285,
+      "old": 0.4797619047619048,
+      "new": 0.21904761904761905,
+      "initial_known": 0.4797619047619048,
+      "forgetting": 0.09761904761904755,
+      "macro_f1": 0.3479850745093295
+    },
+    {
+      "variant": "old_iq1_calibration",
+      "stage": "After R1",
+      "overall": 0.40634920634920635,
+      "old": 0.5,
+      "new": 0.21904761904761905,
+      "initial_known": 0.5,
+      "forgetting": 0.07738095238095233,
+      "macro_f1": 0.35914349497714
+    },
+    {
+      "variant": "baseline",
+      "stage": "After R2",
+      "overall": 0.3279761904761905,
+      "old": 0.3325396825396825,
+      "new": 0.3142857142857143,
+      "initial_known": 0.45714285714285713,
+      "forgetting": 0.1202380952380952,
+      "macro_f1": 0.2989861040744096
+    },
+    {
+      "variant": "old_label_remap_oracle",
+      "stage": "After R2",
+      "overall": 0.4773809523809524,
+      "old": 0.5317460317460317,
+      "new": 0.3142857142857143,
+      "initial_known": 0.5904761904761905,
+      "forgetting": -0.01309523809523816,
+      "macro_f1": 0.4491885876491721
+    },
+    {
+      "variant": "old_iq1_calibration",
+      "stage": "After R2",
+      "overall": 0.39345238095238094,
+      "old": 0.41984126984126985,
+      "new": 0.3142857142857143,
+      "initial_known": 0.45,
+      "forgetting": 0.12738095238095232,
+      "macro_f1": 0.3738352864777559
+    },
+    {
+      "variant": "baseline",
+      "stage": "After R3",
+      "overall": 0.2814285714285714,
+      "old": 0.21369047619047618,
+      "new": 0.5523809523809524,
+      "initial_known": 0.35595238095238096,
+      "forgetting": 0.22142857142857136,
+      "macro_f1": 0.2260094188359864
+    },
+    {
+      "variant": "old_label_remap_oracle",
+      "stage": "After R3",
+      "overall": 0.4157142857142857,
+      "old": 0.381547619047619,
+      "new": 0.5523809523809524,
+      "initial_known": 0.3380952380952381,
+      "forgetting": 0.2392857142857142,
+      "macro_f1": 0.37814687897975885
+    },
+    {
+      "variant": "old_iq1_calibration",
+      "stage": "After R3",
+      "overall": 0.39571428571428574,
+      "old": 0.35654761904761906,
+      "new": 0.5523809523809524,
+      "initial_known": 0.3952380952380952,
+      "forgetting": 0.1821428571428571,
+      "macro_f1": 0.3713988767276324
+    }
+  ],
+  "r3": {
+    "baseline": {
+      "variant": "baseline",
+      "stage": "After R3",
+      "overall": 0.2814285714285714,
+      "old": 0.21369047619047618,
+      "new": 0.5523809523809524,
+      "initial_known": 0.35595238095238096,
+      "forgetting": 0.22142857142857136,
+      "macro_f1": 0.2260094188359864
+    },
+    "old_iq1_calibration": {
+      "variant": "old_iq1_calibration",
+      "stage": "After R3",
+      "overall": 0.39571428571428574,
+      "old": 0.35654761904761906,
+      "new": 0.5523809523809524,
+      "initial_known": 0.3952380952380952,
+      "forgetting": 0.1821428571428571,
+      "macro_f1": 0.3713988767276324
+    },
+    "old_label_remap_oracle": {
+      "variant": "old_label_remap_oracle",
+      "stage": "After R3",
+      "overall": 0.4157142857142857,
+      "old": 0.381547619047619,
+      "new": 0.5523809523809524,
+      "initial_known": 0.3380952380952381,
+      "forgetting": 0.2392857142857142,
+      "macro_f1": 0.37814687897975885
+    }
+  },
+  "gate": {
+    "overall_and_old_reach_50": false,
+    "protocol_note": "新增 Day2-4 旧设备标注校准样本；不属于原 strict 无旧类跨天校准协议。"
+  }
+}

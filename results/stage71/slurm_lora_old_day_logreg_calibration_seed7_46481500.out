@@ -1,0 +1,50 @@
+Stage71 stage68_save_dir=/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage68-worktree/results/stage68/lora_s68_stage48_dump_seed7_46450782
+Stage71 raw_dir=/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage44/raw_setup1_iq
+Stage71 python=/mnt/users/xj62kv/OpenSet_Incremental_SEI/.venv/bin/python
+Stage71 running t1 transmissions=1 strategy=logreg
+[002/045] exists: Day2 Device2 IQ_1
+[004/045] exists: Day2 Device4 IQ_1
+[001/045] exists: Day2 Device1 IQ_1
+[003/045] exists: Day2 Device3 IQ_1
+[005/045] exists: Day2 Device5 IQ_1
+[006/045] exists: Day2 Device6 IQ_1
+[007/045] exists: Day2 Device7 IQ_1
+[008/045] exists: Day2 Device8 IQ_1
+[010/045] exists: Day2 Device11 IQ_1
+[009/045] exists: Day2 Device10 IQ_1
+[011/045] exists: Day3 Device1 IQ_1
+[014/045] exists: Day3 Device4 IQ_1
+[015/045] exists: Day3 Device5 IQ_1
+[013/045] exists: Day3 Device3 IQ_1
+[012/045] exists: Day3 Device2 IQ_1
+[016/045] exists: Day3 Device6 IQ_1
+[018/045] exists: Day3 Device8 IQ_1
+[019/045] exists: Day3 Device10 IQ_1
+[017/045] exists: Day3 Device7 IQ_1
+[020/045] exists: Day3 Device11 IQ_1
+[021/045] exists: Day3 Device12 IQ_1
+[022/045] exists: Day3 Device13 IQ_1
+[024/045] exists: Day3 Device15 IQ_1
+[023/045] exists: Day3 Device14 IQ_1
+[025/045] exists: Day3 Device16 IQ_1
+[026/045] exists: Day4 Device1 IQ_1
+[027/045] exists: Day4 Device2 IQ_1
+[029/045] exists: Day4 Device4 IQ_1
+[031/045] exists: Day4 Device6 IQ_1
+[028/045] exists: Day4 Device3 IQ_1
+[032/045] exists: Day4 Device7 IQ_1
+[030/045] exists: Day4 Device5 IQ_1
+[033/045] exists: Day4 Device8 IQ_1
+[036/045] exists: Day4 Device12 IQ_1
+[037/045] exists: Day4 Device13 IQ_1
+[038/045] exists: Day4 Device14 IQ_1
+[034/045] exists: Day4 Device10 IQ_1
+[035/045] exists: Day4 Device11 IQ_1
+[039/045] exists: Day4 Device15 IQ_1
+[041/045] exists: Day4 Device17 IQ_1
+[042/045] exists: Day4 Device18 IQ_1
+[040/045] exists: Day4 Device16 IQ_1
+[045/045] exists: Day4 Device21 IQ_1
+[043/045] exists: Day4 Device19 IQ_1
+[044/045] exists: Day4 Device20 IQ_1
+Saved manifest: /mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage68-worktree/results/stage71/stage71_lora_old_day_logreg_download_manifest_t1_46481500.json

@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage68-worktree/tools/stage69_lora_old_day_calibration_report.py", line 532, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage68-worktree/tools/stage69_lora_old_day_calibration_report.py", line 446, in main
+    records, calibration_rows = collect_records(
+                                ^^^^^^^^^^^^^^^^
+  File "/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage68-worktree/tools/stage69_lora_old_day_calibration_report.py", line 350, in collect_records
+    variants["old_iq1_calibration"] = _apply_old_day_logreg_calibration(
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage68-worktree/tools/stage69_lora_old_day_calibration_report.py", line 269, in _apply_old_day_logreg_calibration
+    clf = LogisticRegression(
+          ^^^^^^^^^^^^^^^^^^^
+TypeError: LogisticRegression.__init__() got an unexpected keyword argument 'multi_class'
