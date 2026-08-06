@@ -164,3 +164,8 @@ Desktop.ini
 /results/stage64/*.pth
 /results/stage64/lora_s28_masked_recon_seed*_*/*.pth
 /results/stage64/lora_s28_masked_recon_seed*_*/*.npz
+
+# Stage68 LoRa 旧类同日校准 oracle 诊断：报告和 CSV/JSON 入库，checkpoint/eval dump 留在训练盘。
+/results/stage68/lora_s68_*_*/*.pth
+/results/stage68/lora_s68_*_*/*.npz
+/results/stage68/lora_s68_*_*/end_to_end_eval_dumps/*.npz
