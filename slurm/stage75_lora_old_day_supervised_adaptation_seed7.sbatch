@@ -38,15 +38,37 @@ JOB_ID="${SLURM_JOB_ID:-manual}"
 ROOT="results/stage75"
 SAVE_DIR="${ROOT}/lora_old_day_supervised_seed7_${JOB_ID}"
 CHECKPOINT="${SAVE_DIR}/closedset_lora25_lora_chirp_10known.pth"
-LORA_NPZ="${LORA25_NPZ:-${DATA_ROOT}/results/stage46/lora25_diffdays_indoor_raw1024_s28_46103936.npz}"
 RAW_DIR="${LORA_RAW_DIR:-/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage44/raw_setup1_iq}"
+CACHE_DIR="${ROOT}/cache_raw_setup1_s28_${JOB_ID}"
+RAW_PROBE_NPZ="${ROOT}/lora25_raw_probe_s28_${JOB_ID}.npz"
+LORA_NPZ="${LORA25_NPZ:-${ROOT}/lora25_diffdays_indoor_raw1024_s28_${JOB_ID}.npz}"
+ALIGN_MANIFEST="${ROOT}/lora25_alignment_manifest_raw1024_s28_${JOB_ID}.json"
 
-mkdir -p "${SAVE_DIR}"
+mkdir -p "${SAVE_DIR}" "${CACHE_DIR}"
 echo "Stage75 project=${PROJECT_ROOT}"
 echo "Stage75 data_root=${DATA_ROOT}"
 echo "Stage75 lora_npz=${LORA_NPZ}"
 echo "Stage75 raw_dir=${RAW_DIR}"
 echo "Stage75 python=${PYTHON_BIN}"
+
+if [ ! -f "${LORA_NPZ}" ]; then
+    echo "Stage75 input NPZ missing; rebuild the same raw-IQ s28 input before training."
+    "${PYTHON_BIN}" datasets/lora25_compact/tools/build_lora25_compact.py \
+        --output "${RAW_PROBE_NPZ}" \
+        --cache_dir "${CACHE_DIR}" \
+        --manifest "${ROOT}/lora25_source_manifest_raw_s28_${JOB_ID}.json" \
+        --raw_dir "${RAW_DIR}" \
+        --window_len 1024 \
+        --stride 1024 \
+        --windows_per_transmission 30
+    "${PYTHON_BIN}" datasets/lora25_compact/tools/build_lora25_aligned.py \
+        --cache_dir "${CACHE_DIR}" \
+        --output "${LORA_NPZ}" \
+        --alignment_manifest "${ALIGN_MANIFEST}" \
+        --symbols_per_transmission 28 \
+        --decimation 1 \
+        --representation raw
+fi
 
 "${PYTHON_BIN}" experiments/exp_lora25_mvacc_cil_strict.py \
     --dataset_profile lora25 \

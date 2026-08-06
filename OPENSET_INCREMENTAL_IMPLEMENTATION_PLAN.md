@@ -65,7 +65,7 @@
 | Stage 72 LoRa 更多旧类 logreg 校准 | 已完成，正向但不足 | Job `46484861`：logreg 校准 IQ_1-4/IQ_1-5 的 R3 Overall/Old/New 为 `0.4438/0.4167/0.5524`、`0.4524/0.4274/0.5524`；旧类校准量继续有效，但 5 条 transmission 仍不到 50% |
 | Stage 73 LoRa 扩展旧类 logreg 校准 | 已完成，正向但不足 | Job `46491367`：IQ_1-6/IQ_1-7 的 R3 Overall/Old/New 为 `0.4619/0.4393/0.5524`、`0.4695/0.4488/0.5524`；7 条 transmission 仍未达到 50% |
 | Stage 74 LoRa 增强 logits 校准 | 已完成，负消融 | Job `46525882`：在 IQ_1-7 上加入归一化 logits、softmax、中心化 logits 和 top1-top2 margin 后，R3 Overall/Old/New=`0.4567/0.4327/0.5524`，低于 Stage73；停止继续改校准器特征形式 |
-| Stage 75 LoRa 训练期旧类跨天监督适配 | 已提交 seed7，Job `46537156` 排队中 | 每轮 discovery 前读取当前日期旧设备 IQ_1-7 标注样本，联合优化旧类 CE、Day1 known CE、旧类特征对齐和 discovery teacher 锚定；严格排除 IQ_8-10 held-out eval，Slurm 入口为 `slurm/stage75_lora_old_day_supervised_adaptation_seed7.sbatch` |
+| Stage 75 LoRa 训练期旧类跨天监督适配 | 首次 Job `46537156` 因输入缺失失败，已修复待重提 | 每轮 discovery 前读取当前日期旧设备 IQ_1-7 标注样本，联合优化旧类 CE、Day1 known CE、旧类特征对齐和 discovery teacher 锚定；入口现在会从 Stage44 原始 IQ 自动重建同口径 s28 输入，严格排除 IQ_8-10 held-out eval |
 | ManyTx/ManyRx | 阶段 5 补充验证已完成 | 已只读汇总既有 seed7 三轮结果；ManyTx R3 Overall `0.2700`、ManyRx R3 Overall `0.5700`，作为辅助稳定性证据       |
 | 项目记忆与交接       | 部分已维护            | `AGENTS.md`、`PROJECT_HANDOFF.md` 已同步最新状态；RecallLoom rolling summary 当前因 receipt mismatch 暂停写入，未手工修改                |
 
