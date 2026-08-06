@@ -2385,6 +2385,8 @@ def _train_end_to_end_cil(
     args,
     device,
     current_recording_id=None,
+    old_day_calibration_x=None,
+    old_day_calibration_y=None,
 ):
     """Head warm-up followed by last-block backbone adaptation on raw IQ samples.
 
@@ -2398,6 +2400,34 @@ def _train_end_to_end_cil(
     current_w = np.asarray(current_w, dtype=np.float32)
     memory_x = np.asarray(memory_x, dtype=np.float32)
     memory_y = np.asarray(memory_y, dtype=np.int64)
+    calibration_loader = None
+    if old_day_calibration_x is not None or old_day_calibration_y is not None:
+        if old_day_calibration_x is None or old_day_calibration_y is None:
+            raise ValueError("Old-day calibration inputs must be provided together.")
+        old_day_calibration_x = np.asarray(old_day_calibration_x, dtype=np.float32)
+        old_day_calibration_y = np.asarray(old_day_calibration_y, dtype=np.int64)
+        if len(old_day_calibration_x) == 0:
+            raise ValueError("Old-day calibration data must not be empty when enabled.")
+        if len(old_day_calibration_x) != len(old_day_calibration_y):
+            raise ValueError(
+                "Old-day calibration arrays have inconsistent lengths: "
+                f"{len(old_day_calibration_x)} vs {len(old_day_calibration_y)}"
+            )
+        if np.any(old_day_calibration_y < 0) or np.any(old_day_calibration_y >= int(old_out_dim)):
+            raise ValueError(
+                "Old-day calibration labels must refer to classes already registered "
+                f"in the current round: [0, {int(old_out_dim) - 1}]"
+            )
+        calibration_loader = DataLoader(
+            TensorDataset(
+                torch.as_tensor(old_day_calibration_x, dtype=torch.float32),
+                torch.as_tensor(old_day_calibration_y, dtype=torch.long),
+            ),
+            batch_size=max(2, int(args.lora_old_day_joint_cil_batch_size)),
+            shuffle=True,
+            drop_last=False,
+            num_workers=0,
+        )
     recording_tensor = None
     if current_recording_id is not None:
         current_recording_id = np.asarray(current_recording_id, dtype=np.int64)
@@ -2536,6 +2566,11 @@ def _train_end_to_end_cil(
         for epoch_index in range(epochs):
             student.train()
             mem_iter = itertools.cycle(mem_loader)
+            calibration_iter = (
+                itertools.cycle(calibration_loader)
+                if calibration_loader is not None
+                else None
+            )
             for current_batch in cur_loader:
                 if recording_tensor is None:
                     xc, yc, wc = current_batch
@@ -2549,6 +2584,20 @@ def _train_end_to_end_cil(
                 x = torch.cat([xc, xm], dim=0)
                 feat, logits = student(x)
                 logits_c, logits_m = logits[:len(xc)], logits[len(xc):]
+                if calibration_iter is not None:
+                    xcal, ycal = next(calibration_iter)
+                    xcal, ycal = xcal.to(device), ycal.to(device)
+                    calibration_feat, calibration_logits = student(xcal)
+                    with torch.no_grad():
+                        teacher_calibration_feat, _ = teacher(xcal)
+                    old_day_calibration_ce = F.cross_entropy(calibration_logits, ycal)
+                    old_day_calibration_feature = F.mse_loss(
+                        F.normalize(calibration_feat, dim=1),
+                        F.normalize(teacher_calibration_feat, dim=1),
+                    )
+                else:
+                    old_day_calibration_ce = logits_m.sum() * 0.0
+                    old_day_calibration_feature = logits_m.sum() * 0.0
                 ce_current = (F.cross_entropy(logits_c, yc, reduction="none") * wc).sum() / (wc.sum() + 1e-8)
                 if stage == "head" and float(args.radcil_new_head_boost) != 1.0:
                     # LoRa 的当前轮 batch 本质上都是新伪类；head warmup 阶段
@@ -2704,6 +2753,8 @@ def _train_end_to_end_cil(
                     + float(args.radcil_recording_ce_weight) * recording_ce
                     + float(args.cil_supcon_weight) * con
                     + float(args.radcil_metric_weight) * metric_loss
+                    + float(args.lora_old_day_joint_cil_ce_weight) * old_day_calibration_ce
+                    + float(args.lora_old_day_joint_cil_feature_weight) * old_day_calibration_feature
                 )
                 opt.zero_grad()
                 loss.backward()
@@ -4322,6 +4373,30 @@ def main():
     parser.add_argument("--lora_old_day_calibration_known_ce_weight", type=float, default=0.25)
     parser.add_argument("--lora_old_day_calibration_feature_weight", type=float, default=0.5)
     parser.add_argument("--lora_old_day_calibration_anchor_weight", type=float, default=0.1)
+    parser.add_argument(
+        "--lora_old_day_joint_cil",
+        action="store_true",
+        help="LoRa 专用：把当前日期旧设备 IQ_1-7 标注样本直接并入每轮 CIL，"
+        "与当前伪新类和 replay 旧类联合优化；默认关闭。",
+    )
+    parser.add_argument(
+        "--lora_old_day_joint_cil_batch_size",
+        type=int,
+        default=96,
+        help="每个 CIL 优化步抽取的旧类跨天校准 batch 大小。",
+    )
+    parser.add_argument(
+        "--lora_old_day_joint_cil_ce_weight",
+        type=float,
+        default=1.0,
+        help="旧类跨天校准监督 CE 权重。",
+    )
+    parser.add_argument(
+        "--lora_old_day_joint_cil_feature_weight",
+        type=float,
+        default=0.5,
+        help="旧类跨天校准 batch 与 CIL 开始前 Teacher 的特征方向对齐权重。",
+    )
     parser.add_argument("--lora_ssl_adaptation", action="store_true", help="每轮 LoRa discovery 前做无标签 instance contrastive 自监督适配；默认关闭。")
     parser.add_argument("--lora_ssl_epochs", type=int, default=3)
     parser.add_argument("--lora_ssl_batch_size", type=int, default=128)
@@ -4594,11 +4669,17 @@ def main():
         )
     if args.closedset_backbone in {"lora_chirp", "lora_hybrid"} and args.dataset_profile != "lora25":
         raise ValueError("--closedset_backbone lora_chirp/lora_hybrid is only valid for the LoRa25 strict profile.")
-    if args.lora_old_day_calibration_adaptation:
+    if args.lora_old_day_calibration_adaptation or args.lora_old_day_joint_cil:
         if args.dataset_profile != "lora25":
-            raise ValueError("--lora_old_day_calibration_adaptation is only supported for the LoRa25 strict profile.")
+            raise ValueError(
+                "--lora_old_day_calibration_adaptation/--lora_old_day_joint_cil "
+                "are only supported for the LoRa25 strict profile."
+            )
         if not args.lora_old_day_calibration_raw_dir:
-            raise ValueError("--lora_old_day_calibration_raw_dir is required when old-day adaptation is enabled.")
+            raise ValueError(
+                "--lora_old_day_calibration_raw_dir is required when old-day "
+                "calibration is enabled."
+            )
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if args.checkpoint is None:
@@ -5151,6 +5232,8 @@ def main():
 
     for i, rd in enumerate(round_data, start=1):
         teacher = copy.deepcopy(student).to(device).eval()
+        lora_old_day_calibration_x = None
+        lora_old_day_calibration_y = None
         if args.radcil_bn_recalibration:
             bn_recalibration_x = np.concatenate([memory_x, rd["X"]], axis=0)
             _recalibrate_batchnorm(
@@ -5180,7 +5263,7 @@ def main():
             )
             teacher = adaptation_result.model
             rd["cross_day_adaptation_diagnostics"] = adaptation_result.diagnostics
-        if args.lora_old_day_calibration_adaptation:
+        if args.lora_old_day_calibration_adaptation or args.lora_old_day_joint_cil:
             # 旧类跨天监督适配只读取当前日期已知旧设备的 IQ_1-7。
             # 当前轮未知设备和 IQ_8-10 held-out eval 均不进入训练。
             old_class_count = int(args.initial_known_classes + (i - 1) * args.round_size)
@@ -5198,30 +5281,41 @@ def main():
                 decimation=args.lora_old_day_calibration_decimation,
                 representation=args.lora_old_day_calibration_representation,
             )
-            adaptation_result = adapt_model_lora_old_day_supervised(
-                teacher,
-                X_train,
-                y_train,
-                calibration_x,
-                calibration_y,
-                rd["X"],
-                device=device,
-                epochs=args.lora_old_day_calibration_epochs,
-                batch_size=args.lora_old_day_calibration_batch_size,
-                lr=args.lora_old_day_calibration_lr,
-                calibration_ce_weight=args.lora_old_day_calibration_ce_weight,
-                known_ce_weight=args.lora_old_day_calibration_known_ce_weight,
-                feature_alignment_weight=args.lora_old_day_calibration_feature_weight,
-                discovery_anchor_weight=args.lora_old_day_calibration_anchor_weight,
-                seed=args.seed + 100 + i,
-            )
-            teacher = adaptation_result.model
-            rd["lora_old_day_calibration_diagnostics"] = {
-                **adaptation_result.diagnostics,
-                "Calibration Day": int(i + 1),
-                "Calibration Transmissions": calibration_transmissions,
-                "Calibration Manifest Rows": calibration_rows,
-            }
+            lora_old_day_calibration_x = calibration_x
+            lora_old_day_calibration_y = calibration_y
+            if args.lora_old_day_calibration_adaptation:
+                adaptation_result = adapt_model_lora_old_day_supervised(
+                    teacher,
+                    X_train,
+                    y_train,
+                    calibration_x,
+                    calibration_y,
+                    rd["X"],
+                    device=device,
+                    epochs=args.lora_old_day_calibration_epochs,
+                    batch_size=args.lora_old_day_calibration_batch_size,
+                    lr=args.lora_old_day_calibration_lr,
+                    calibration_ce_weight=args.lora_old_day_calibration_ce_weight,
+                    known_ce_weight=args.lora_old_day_calibration_known_ce_weight,
+                    feature_alignment_weight=args.lora_old_day_calibration_feature_weight,
+                    discovery_anchor_weight=args.lora_old_day_calibration_anchor_weight,
+                    seed=args.seed + 100 + i,
+                )
+                teacher = adaptation_result.model
+                rd["lora_old_day_calibration_diagnostics"] = {
+                    **adaptation_result.diagnostics,
+                    "Calibration Day": int(i + 1),
+                    "Calibration Transmissions": calibration_transmissions,
+                    "Calibration Manifest Rows": calibration_rows,
+                }
+            else:
+                rd["lora_old_day_calibration_diagnostics"] = {
+                    "Cross-Day Adapter": "joint_cil_only",
+                    "Calibration Day": int(i + 1),
+                    "Calibration Transmissions": calibration_transmissions,
+                    "Calibration Manifest Rows": calibration_rows,
+                    "Calibration Samples": int(len(calibration_x)),
+                }
         if args.lora_ssl_adaptation:
             if args.dataset_profile != "lora25":
                 raise ValueError("--lora_ssl_adaptation is only supported for the LoRa25 strict profile.")
@@ -5367,6 +5461,8 @@ def main():
             args,
             device,
             current_recording_id=rd.get("recording_id"),
+            old_day_calibration_x=lora_old_day_calibration_x,
+            old_day_calibration_y=lora_old_day_calibration_y,
         )
         if int(args.radcil_balanced_head_recalibration_epochs) > 0:
             student = _recalibrate_balanced_classifier_head(
@@ -5463,6 +5559,8 @@ def main():
                 args,
                 device,
                 current_recording_id=refined_recording_id,
+                old_day_calibration_x=lora_old_day_calibration_x,
+                old_day_calibration_y=lora_old_day_calibration_y,
             )
             if int(args.radcil_balanced_head_recalibration_epochs) > 0:
                 student = _recalibrate_balanced_classifier_head(

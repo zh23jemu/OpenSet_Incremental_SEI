@@ -1,6 +1,6 @@
 # OpenSet Incremental SEI 新会话交接
 
-- 更新时间：2026-07-31
+- 更新时间：2026-08-06
 - 当前阶段：Stage 21 ADS-B 三种子已通过；Stage 48 LoRa 原始 I/Q s28 + recording-consensus 0.65 仍是当前 LoRa 正式 strict 候选；Stage 65/66 已确认 LoRa 50% 缺口主要来自旧类跨天保持；Stage 68 oracle 证明同日旧类校准可把 seed7 R3 Overall/Old 提到 `0.5867/0.5952`，但该结果读取 held-out 真值；Stage 73 普通 logreg 在 IQ_1-7 旧类校准下达到 `0.4695/0.4488/0.5524`，Stage 74 增强 logits 校准降至 `0.4567/0.4327/0.5524`，仍不到 50。
 - 当前分支：`codex/stage0-strict-audit`
 - 阶段 0 交接基线提交：`78bae2e`；交接前远端基线提交：`33cc713`。新会话必须以 `git log -1` 和 `git status --short --branch` 的实时结果为准
@@ -287,3 +287,4 @@ Strict loader 审计：
 - Stage74 Job `46525882`：增强 logits 校准，R3 Overall/Old/New=`0.4567/0.4327/0.5524`，低于 Stage73，归档为负消融。
 - 当前判断：真实旧类跨天标注校准确实有效，但继续改校准器形式不能稳定突破 50%；后续不再做相邻校准器小改。
 - Stage75 已完成训练期旧类跨天监督适配：每轮读取当前日期旧设备 IQ_1-7 标注样本，直接优化 LoRa backbone 的旧类 CE、Day1 known CE、旧类特征对齐和 discovery teacher 锚定；严格不读取 IQ_8-10。Job `46537156` 因缺少临时 s28 NPZ 失败，修复后 Job `46537623` 完整完成；R3 Overall/Old/New=`0.2776/0.2185/0.5143`，略低于 Stage48 对照，归档为负消融，不扩三种子。
+- Stage76 已实现旧类跨天校准与当前伪新类联合 CIL：新增 `--lora_old_day_joint_cil`，将 Day2-4 旧设备 IQ_1-7 标注 batch 加入每轮 head warmup、joint backbone 和第二次 refinement CIL；默认关闭，严格不读取 IQ_8-10。新增 Slurm 入口 `slurm/stage76_lora_old_day_joint_cil_seed7.sbatch`，本地 `py_compile`、CLI 参数检查和合成反向传播 smoke 已通过，待 Git 同步后提交 seed7。

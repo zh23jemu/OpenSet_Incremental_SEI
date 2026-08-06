@@ -361,6 +361,7 @@
 - 2026-08-06：Stage68 Job `46450782` 干净完成并同步小型结果；同日旧类校准 oracle 将 R3 Overall/Old 提到 `0.5867/0.5952`，证明 LoRa 50% 缺口可由旧类跨天校准数据解释。Stage69 真实 IQ_1 旧类校准 Job `46462472` 完成，R3 Overall/Old 提到 `0.3429/0.2905`，未达到 50%；新增 Stage70 校准量矩阵入口。
 - 2026-08-06：Stage73 Job `46491367` 干净完成并同步小型结果；IQ_1-7 旧类普通 logits-space logreg 校准将 R3 Overall/Old/New 提到 `0.4695/0.4488/0.5524`，仍未达到 50%。Stage74 Job `46525882` 使用增强 logits 特征后降到 `0.4567/0.4327/0.5524`，归档为负消融。
 - 2026-08-06：新增并完成 Stage75 训练期旧类跨天监督适配：`utils/cross_day_representation_adaptation.py` 从 Day2-4 旧设备 IQ_1-7 构造标注校准样本，在每轮 discovery 前联合优化旧类 CE、Day1 known CE、旧类特征对齐和 discovery teacher 锚定。Job `46537156` 因缺少临时 s28 NPZ 失败，修复入口自动重建同口径 raw-IQ s28 后，Job `46537623` 干净完成；R3 Overall/Old/New=`0.2776/0.2185/0.5143`，略低于 Stage48 对照，归档为负消融，不扩三种子。
+- 2026-08-06：新增 Stage76 旧类跨天校准与当前伪新类联合 CIL：`--lora_old_day_joint_cil` 将 Day2-4 旧设备 IQ_1-7 标注 batch 直接并入每轮 head warmup、joint backbone 和第二次 discovery refinement 的 CIL 优化；默认关闭，严格排除 IQ_8-10。新增 `slurm/stage76_lora_old_day_joint_cil_seed7.sbatch`，本地 `py_compile`、CLI help 和合成反向传播 smoke 已通过，待 Git 同步后提交 seed7。
 
 ## Next TODO
 
@@ -394,6 +395,7 @@
 - Stage61/62 已完成 oracle 聚类与 oracle 后端保护诊断；LoRa 低分不是 discovery-only，也不是现有 old-route/grouped DOI 后端能单独解决。后续若继续攻，应转向更大结构：更强 LoRa 原始 I/Q 自监督预训练、跨天/recording 级任务重定义，或面向客户收口为跨体制局限。
 - Stage63 已完成弱正但未过门槛；Stage64 masked reconstruction 已验证失败；Stage65/66 已证明 recording-level 口径也不能把 LoRa 推近 50%；Stage67 replay-only old SupCon 未提高 Old。Stage68 已证明少量同日旧类校准 oracle 可过 50%；Stage69-73 真实 IQ_1-7 旧类 logreg 校准最高把 R3 Overall 提到 `0.4695`，Stage74 增强 logits 校准降到 `0.4567`。下一步不再继续改校准器小特征，只考虑更大结构的跨天表征/联合训练，或明确客户侧需要更多同日旧设备标注。
 - Stage75 Job `46537623` 已完成但未通过门槛：训练期旧类跨天监督适配没有提高 Overall/Old/New，且使用额外 Day2-4 旧设备标注数据，不属于原始无校准 strict 主结果。该线归档为负消融；LoRa 后续不再继续相邻的旧类校准/对齐小变体。
+- Stage76 当前是结构性验证，不是继续调 logits、BN、prototype 或阈值：如果联合 CIL 仍低于 Stage48，说明即使把跨天旧类监督放进增量训练，也不足以解决 LoRa 表征漂移；若 Old 提升但 New/Overall 下降，则按“额外跨天标注只能转移旧新类权衡”的证据归档。
 - 远端 Slurm 后续使用 `/mnt/users/xj62kv/OpenSet_Incremental_SEI` 路径仍可工作，但该路径现在是指向 `/mnt/usmidet/billy_test/OpenSet_Incremental_SEI_main` 的软链接；大文件继续优先落到 `/mnt/usmidet/billy_test`。
 - Stage 11 当前已完成本地可执行入口和协议边界验证；下一步提交并推送后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only，结果不过门槛就归档，不进入 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
@@ -491,6 +493,7 @@
 - `CUSTOMER_PROGRESS_REPORT.html` 是可离线交付的客户派生摘要，允许为展示裁剪内部执行细节，但所有数值、结论和状态必须追溯到 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md`，不得形成并行事实源。
 - LoRa 当前不继续 old-logit bias、原型锚定、late-fusion、BN 统计细调、双视图一致性或簇可靠性加权；这些都只作为低分根因证据和负消融保留，后续若继续应转向训练期跨天域适应和表征-发现联合训练。
 - Stage75 允许使用客户侧明确提供的旧设备跨天 IQ_1-7 标注样本做训练期表征对齐，但仍严格排除 IQ_8-10 held-out eval；该结果必须与 Stage48 无额外标注 strict 结果分开汇报。
+- Stage76 将同一类额外旧设备跨天标注放入每轮 CIL 的当前伪新类/replay 联合优化；该开关默认关闭，只有显式启用且 LoRa strict profile 才生效，结果必须单独标注为额外跨天标注方案。
 - Stage 27 选择 LoRa-specific Chirp backbone 作为新的结构性方向：多尺度卷积、dilation 残差块和 attention pooling 只替换 closed-set 初始表征，后续 strict split、GPCC、跨天适配、LoRa SSL、联合 discovery-CIL 和 held-out 评估边界保持不变。
 - `results/stage6/CUSTOMER_QA_RISK_RESPONSE.md` 是阶段 6 客户问答草稿，服务于沟通口径，不替代实施计划；其中 DOI-style、LoRa 数据和 ADS-B/LoRa 低结果结论必须与实施计划保持一致。
 - 原 MV-ACC、CF-LCG、HDBSCAN 和原型注册链路完整保留为 baseline，但不再约束新主方法结构；新主方法可重新设计深度表征、未知检测、类别发现、可靠伪标签和真实网络增量训练，经典特征仅用于旧方法对照与消融。
