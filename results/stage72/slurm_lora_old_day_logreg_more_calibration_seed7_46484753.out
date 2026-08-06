@@ -1,0 +1,16 @@
+Stage72 stage68_save_dir=/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage68-worktree/results/stage68/lora_s68_stage48_dump_seed7_46450782
+Stage72 raw_dir=/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage44/raw_setup1_iq
+Stage72 python=/mnt/users/xj62kv/OpenSet_Incremental_SEI/.venv/bin/python
+Stage72 running t1234 transmissions=1,2,3,4 strategy=logreg
+[002/180] exists: Day2 Device1 IQ_2
+[001/180] exists: Day2 Device1 IQ_1
+[003/180] exists: Day2 Device1 IQ_3
+[005/180] exists: Day2 Device2 IQ_1
+[007/180] exists: Day2 Device2 IQ_3
+[006/180] exists: Day2 Device2 IQ_2
+[009/180] exists: Day2 Device3 IQ_1
+[010/180] exists: Day2 Device3 IQ_2
+[011/180] exists: Day2 Device3 IQ_3
+[013/180] exists: Day2 Device4 IQ_1
+[014/180] exists: Day2 Device4 IQ_2
+[015/180] exists: Day2 Device4 IQ_3
