@@ -236,7 +236,7 @@ Strict loader 审计：
 71. Stage 66 LoRa 50% 缺口分解已完成：R3 时旧类占 20/25，Old 权重约 `0.80`；Stage48 Old 均值 `0.2312`，即使 New 达到 100%，Overall 理论上也只有约 `0.3849`；若保持当前 New，Old 需提高到约 `0.5058` 才能到 50%，下一步只能围绕旧类跨天保持做大结构。
 72. Stage 67 LoRa 旧类 replay SupCon seed7 Job `46443253` 已完成并同步小型结果：同 job 对照 R3 Overall/Old/New/Forgetting=`0.2814/0.2137/0.5524/0.2214`，最佳 `w0p10` 为 `0.2824/0.2143/0.5548/0.2190`；Old 只比对照 `+0.0006`，未过门槛，不扩三种子。
 73. Stage 68 LoRa 旧类同日校准 oracle 诊断 Job `46450782` 已完成并同步小型结果：baseline R3 Overall/Old/New=`0.2814/0.2137/0.5524`；同日旧类校准 oracle=`0.5867/0.5952/0.5524`；旧类标签重映射 oracle=`0.4157/0.3815/0.5524`。结论是 LoRa 主要缺口来自旧设备跨天校准数据缺失；该 oracle 使用 held-out 真值，只作上界解释。
-74. Stage 69 LoRa 真实旧类 IQ 校准入口已新增：从 Stage44 原始 `.dat` 切 Day2-4 旧设备 IQ_1，复用 Stage68 模型和 dump，验证新增少量标注校准数据时能否接近 Stage68 oracle 上界；该结果若有效，可作为客户侧数据采集/协议调整方案，不属于原 strict 无旧类跨天校准成绩。
+74. Stage 69 LoRa 真实旧类 IQ 校准入口已新增：从 Stage44 原始 `.dat` 切 Day2-4 旧设备 IQ_1，复用 Stage68 模型和 dump，验证新增少量标注校准数据时能否接近 Stage68 oracle 上界；该结果若有效，可作为客户侧数据采集/协议调整方案，不属于原 strict 无旧类跨天校准成绩。首次 Job `46455015` 因缺 Day2-4 旧设备 IQ_1 失败，已新增最小补下载脚本，只补 45 个 IQ_1 文件。
 5. ADS-B 保持 Long-RADCIL + 默认 target split 为当前最佳保守前端；GPCC 聚类均值更高但完整增量没涨，说明 ADS-B 需要前端与后端吸收联动，而不是单点 loss。
 5. 阶段汇报优先使用 `CUSTOMER_PROGRESS_REPORT.html`；关键结果变化时先更新实施计划，再同步派生页面并复核数值。
 6. Stage 21 ADS-B 三种子已通过，固定联合 discovery-CIL 结构，不再继续 ADS-B 相邻后端权重搜索；下一步整理客户报告并评估跨数据集验证。

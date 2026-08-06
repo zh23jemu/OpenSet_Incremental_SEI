@@ -190,7 +190,7 @@
 - Stage 66 LoRa 50% 目标缺口分解已完成：R3 时旧类占 20/25，Old 权重约 `0.80`；Stage48 Old 均值仅 `0.2312`，即使 New 提到 100%，Overall 理论上也只有约 `0.3849`；若保持当前 New，Old 需升到约 `0.5058` 才能到 50%，当前主风险定位为旧类跨天保持。
 - Stage 67 LoRa 旧类 replay SupCon seed7 Job `46443253` 已完成：同 job 对照 R3 Overall/Old/New/Forgetting=`0.2814/0.2137/0.5524/0.2214`，最佳 `w0p10` 为 `0.2824/0.2143/0.5548/0.2190`；Old 只比对照 `+0.0006`，未过门槛，不扩三种子。
 - Stage 68 LoRa 旧类跨天同日校准 oracle 诊断 Job `46450782` 已完成：baseline R3 Overall/Old/New=`0.2814/0.2137/0.5524`；同日旧类校准 oracle 为 `0.5867/0.5952/0.5524`；旧类标签重映射 oracle 为 `0.4157/0.3815/0.5524`。结论是 LoRa 主要瓶颈来自缺 Day2-4 旧设备同日校准数据，而不只是模型或聚类完全失败。该 oracle 使用 held-out 真值，只能定位瓶颈，不能作为正式方法成绩。
-- Stage 69 LoRa 旧类跨天少量标注校准入口已新增：从 Stage44 原始 `.dat` 切 Day2-4 旧设备 IQ_1 作为可落地校准集，复用 Stage68 最终模型和 eval dumps，验证不读取 IQ_8-10 held-out 真值时是否也能接近 Stage68 上界；当前待 Slurm seed7。
+- Stage 69 LoRa 旧类跨天少量标注校准入口已新增：从 Stage44 原始 `.dat` 切 Day2-4 旧设备 IQ_1 作为可落地校准集，复用 Stage68 最终模型和 eval dumps，验证不读取 IQ_8-10 held-out 真值时是否也能接近 Stage68 上界。首次 Job `46455015` 因 Stage44 只下载 strict 必要文件、缺 Day2-4 旧设备 IQ_1 而失败，不计入算法结论；已新增最小补下载脚本，只补 45 个旧类 IQ_1 文件，约 7.2GB。
 - 远端家目录瘦身已完成：`/mnt/users/xj62kv` 精确占用约 `99.86 GiB`，已将 `underwater-crack-correction`、`MASAM-MIB`、`sound-event-classification`、`.cache`、`OpenSet_Incremental_SEI` 和 Stage44 LoRa raw I/Q 目录迁移到 `/mnt/usmidet/billy_test` 并在原位置保留软链接。
 
 ## Recent Changes
@@ -355,7 +355,7 @@
 - 2026-08-05：新增并完成 Stage65/66 LoRa 任务口径和 50% 缺口分析；结果显示 recording-level 最好也只有 `0.3600`，且 R3 Overall 受旧类 0.80 权重主导，继续冲分必须优先救旧类跨天保持。
 - 2026-08-06：新增并完成 Stage67 LoRa replay-only old SupCon seed7；代码提交 `802a750`，Job `46443253` 干净完成，小型结果通过 `stage67-results-46443253` 分支同步并合并。该候选未提高 Old，归档为负消融。
 - 2026-08-06：新增 Stage68 LoRa 旧类同日校准 oracle 诊断报告器和 seed7 Slurm 入口；本地 `py_compile`、`bash -n` 和合成 dump smoke 已通过，待远端运行。
-- 2026-08-06：Stage68 Job `46450782` 干净完成并同步小型结果；同日旧类校准 oracle 将 R3 Overall/Old 提到 `0.5867/0.5952`，证明 LoRa 50% 缺口可由旧类跨天校准数据解释。新增 Stage69 真实 IQ_1 旧类校准验证入口，待运行。
+- 2026-08-06：Stage68 Job `46450782` 干净完成并同步小型结果；同日旧类校准 oracle 将 R3 Overall/Old 提到 `0.5867/0.5952`，证明 LoRa 50% 缺口可由旧类跨天校准数据解释。新增 Stage69 真实 IQ_1 旧类校准验证入口；首次 Job `46455015` 暴露旧类 IQ_1 未下载，已补充专用最小下载脚本。
 
 ## Next TODO
 

@@ -59,7 +59,7 @@
 | Stage 66 LoRa 50% 缺口分解 | 已完成，定位风险 | R3 时旧类占 20/25，Old 权重约 `0.80`；Stage48 Old 均值仅 `0.2312`，即使 New 提到 100%，Overall 理论上也只有约 `0.3849`；若保持当前 New，Old 需升到约 `0.5058` 才能到 50% |
 | Stage 67 LoRa 旧类 replay SupCon | 已完成，未通过 | Job `46443253` seed7 中权重 `0.05/0.10` 均未提高 Old；最好 `w0p10` R3 Overall/Old/New/Forgetting=`0.2824/0.2143/0.5548/0.2190`，相对同 job 对照 Old 仅 `+0.0006`，未过 Old/Overall 门槛，不扩三种子 |
 | Stage 68 LoRa 旧类同日校准 oracle | 已完成，定位突破口 | Job `46450782`：baseline R3 Overall/Old/New=`0.2814/0.2137/0.5524`；同日旧类校准 oracle=`0.5867/0.5952/0.5524`；旧类标签重映射 oracle=`0.4157/0.3815/0.5524`。该诊断读取 held-out 真值，只说明旧类跨天校准数据可打开上界，不作为正式方法成绩 |
-| Stage 69 LoRa 真实旧类 IQ 校准 | 已新增，待运行 | 从 Stage44 原始 `.dat` 切 Day2-4 旧设备 IQ_1 作为少量标注校准集，不读取 IQ_8-10 held-out 真值；验证可落地校准协议是否能接近 Stage68 oracle 上界 |
+| Stage 69 LoRa 真实旧类 IQ 校准 | 已新增，待重跑 | 从 Stage44 原始 `.dat` 切 Day2-4 旧设备 IQ_1 作为少量标注校准集，不读取 IQ_8-10 held-out 真值；首次 Job `46455015` 因 Stage44 未下载旧设备 IQ_1 失败，已新增专用最小下载脚本，只补 45 个文件约 7.2GB 后重跑 |
 | ManyTx/ManyRx | 阶段 5 补充验证已完成 | 已只读汇总既有 seed7 三轮结果；ManyTx R3 Overall `0.2700`、ManyRx R3 Overall `0.5700`，作为辅助稳定性证据       |
 | 项目记忆与交接       | 部分已维护            | `AGENTS.md`、`PROJECT_HANDOFF.md` 已同步最新状态；RecallLoom rolling summary 当前因 receipt mismatch 暂停写入，未手工修改                |
 

@@ -37,12 +37,19 @@ JOB_ID="${SLURM_JOB_ID:-manual}"
 ROOT="results/stage69"
 STAGE68_SAVE_DIR="${STAGE68_SAVE_DIR:-/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage68-worktree/results/stage68/lora_s68_stage48_dump_seed7_46450782}"
 RAW_DIR="${RAW_DIR:-/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage44/raw_setup1_iq}"
+CALIB_MANIFEST="${ROOT}/stage69_lora_old_day_calibration_download_manifest_${JOB_ID}.json"
 
 mkdir -p "${ROOT}"
 
 echo "Stage69 stage68_save_dir=${STAGE68_SAVE_DIR}"
 echo "Stage69 raw_dir=${RAW_DIR}"
 echo "Stage69 python=${PYTHON_BIN}"
+
+"${PYTHON_BIN}" datasets/lora25_compact/tools/download_lora25_old_day_calibration_iq.py \
+    --raw-dir "${RAW_DIR}" \
+    --manifest "${CALIB_MANIFEST}" \
+    --transmissions "1" \
+    --download
 
 "${PYTHON_BIN}" tools/stage69_lora_old_day_calibration_report.py \
     --stage68-save-dir "${STAGE68_SAVE_DIR}" \
