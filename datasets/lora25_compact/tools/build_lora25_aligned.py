@@ -61,7 +61,11 @@ def aligned_symbols(
     representation="raw",
     eps=1e-8,
 ):
-    iq = np.fromfile(cache_file, dtype="<c8")
+    # 原始 LoRa `.dat` 单文件约 153MB；校准和紧凑构建只需要前若干个
+    # symbol 片段。使用只读 memmap 可以避免每次把完整文件读入内存，
+    # 对 Stage69/70 这类多 transmission 校准矩阵尤其重要，同时保持切片
+    # 语义与原来的 ndarray 读取方式一致。
+    iq = np.memmap(cache_file, dtype="<c8", mode="r")
     offset, score = estimate_symbol_offset(iq, reference)
     symbols = []
     for index in range(symbols_per_transmission):
