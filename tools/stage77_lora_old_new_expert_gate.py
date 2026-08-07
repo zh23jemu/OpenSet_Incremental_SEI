@@ -161,7 +161,7 @@ def main() -> int:
     initial_reference = None
 
     for round_index in range(1, 4):
-        stage = f"r{round_index}"
+        stage = f"after_r{round_index}"
         bounds = _stage_bounds(stage)
         seen_classes = int(bounds["seen_end"])
         old_end = int(bounds["old_end"])
