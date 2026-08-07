@@ -198,7 +198,7 @@
 
 ## Recent Changes
 
-- 2026-08-07：新增 Stage79 LoRa 主模型旧类预测保守修正候选；它只在主模型已判旧类时才调用旧类专家，避免继续吞掉真实新类。job `46641707` 已提交，结果待回收。
+- 2026-08-07：Stage79 LoRa 主模型旧类预测保守修正 seed7 已完成，job `46641707` 的 R3 Overall/Old/New/Forgetting=`0.2724/0.2839/0.2262/0.2179`；相对 Stage78 把 New 保住了，但 Old 和 Overall 没有真正赢，未过门槛，归档为负消融。
 - 2026-07-26：新增 `tools/stage0_env_data_check.py`，检查 Python 依赖、CUDA、GPU 张量计算、大数据 SHA-256、ZIP 目录和紧凑 NPZ 元信息。
 - 2026-07-26：补齐 `requirements.txt` 中的 pandas、hdbscan 和 umap-learn，并在 Slurm 创建 Python 3.11 `.venv` 安装 CUDA 12.6 兼容 PyTorch 及项目依赖。
 - 2026-07-26：新增 `slurm/stage0_env_data_check.sbatch`，提交 Job `44398322`；任务在 L40S 计算节点完成，耗时 34 秒，stderr 为空，JSON 报告保存于 `results/stage0/`。
@@ -368,7 +368,7 @@
 
 ## Next TODO
 
-- 等待 Stage79 job `46641707` 结果，判断“主模型旧类限定修正”是否能在不吞 New 的前提下抬一点 Old。
+- Stage79 已完成且未过门槛；后续若继续攻 LoRa，优先转更大结构或新的发现/预训练方向，不再继续旧类限定修正小改。
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - RecallLoom 已升级至 0.5.0，但严格 provenance 校验仍报 `rolling_summary_receipt_mismatch` 并将侧车标记为 `inconsistent_or_tampered_evidence`；没有生成 D5 binding digest，因此禁止手工修改 `.recallloom/`，只能保持只读并等待正式恢复入口。
 - 阶段 4 ADS-B ratio 0.03 和自适应密度结论保持不变；默认 target split 已作为 ADS-B 欠聚类收敛候选，保守门控、max-added 消融和训练期旧类原型锚定均未找到更优折中。固定 target split 后端对照显示剩余风险是 RADCIL 偏新类、DOI-style 遗忘更低的后端旧新类权衡；Stage 8 只验证训练期特征几何，不继续 target split 小参数或原型锚定权重搜索。
@@ -499,7 +499,7 @@
 - Stage75 允许使用客户侧明确提供的旧设备跨天 IQ_1-7 标注样本做训练期表征对齐，但仍严格排除 IQ_8-10 held-out eval；该结果必须与 Stage48 无额外标注 strict 结果分开汇报。
 - Stage76 将同一类额外旧设备跨天标注放入每轮 CIL 的当前伪新类/replay 联合优化；该开关默认关闭，只有显式启用且 LoRa strict profile 才生效，结果必须单独标注为额外跨天标注方案。
 - Stage77 采用训练后旧类专家门控，不更新 CIL 主模型；旧类专家和门控只使用 Day2-4 旧设备 IQ_1-7 与当前轮 discovery，IQ_8-10 held-out 标签仅用于最终评估。seed7 未通过门槛，因此不作为正式 LoRa 方案。
-- Stage78 进一步加入 embedding 到旧类原型相似度的来源感知门控，但仍把真实新类样本吸回旧类专家，seed7 已归档为负消融。Stage79 已改成“只修主模型已判旧类的样本”，保住 New 的前提下再看 Old 是否还能抬一点；job `46641707` 已提交，结果待回收。
+- Stage78 进一步加入 embedding 到旧类原型相似度的来源感知门控，但仍把真实新类样本吸回旧类专家，seed7 已归档为负消融。Stage79 改成“只修主模型已判旧类的样本”后，虽然把 New 保住了，但 Old 和 Overall 仍没有超过基线，说明这条旧类限定修正线到头了。
 - Stage 27 选择 LoRa-specific Chirp backbone 作为新的结构性方向：多尺度卷积、dilation 残差块和 attention pooling 只替换 closed-set 初始表征，后续 strict split、GPCC、跨天适配、LoRa SSL、联合 discovery-CIL 和 held-out 评估边界保持不变。
 - `results/stage6/CUSTOMER_QA_RISK_RESPONSE.md` 是阶段 6 客户问答草稿，服务于沟通口径，不替代实施计划；其中 DOI-style、LoRa 数据和 ADS-B/LoRa 低结果结论必须与实施计划保持一致。
 - 原 MV-ACC、CF-LCG、HDBSCAN 和原型注册链路完整保留为 baseline，但不再约束新主方法结构；新主方法可重新设计深度表征、未知检测、类别发现、可靠伪标签和真实网络增量训练，经典特征仅用于旧方法对照与消融。
