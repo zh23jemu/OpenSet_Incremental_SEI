@@ -80,7 +80,11 @@ from features.rf_features import extract_rf_features_batch
 from utils.classic_feature_gating import select_classic_feature_view, save_selection, local_cross_view_consistency
 from utils.discovery_feature_adaptation import adapt_discovery_features
 from utils.graph_prototype_discovery_adapter import run_gpcc
-from utils.recording_consensus_discovery_adapter import run_recording_consensus_gpcc, run_recording_gpcc
+from utils.recording_consensus_discovery_adapter import (
+    run_recording_consensus_gpcc,
+    run_recording_gpcc,
+    run_transmission_prototype_gpcc,
+)
 from utils.cross_day_representation_adaptation import (
     adapt_model_cross_day,
     adapt_model_lora_old_day_supervised,
@@ -3944,6 +3948,7 @@ def run_discovery(
         "gpcc",
         "gpcc_recording",
         "gpcc_recording_consensus",
+        "gpcc_transmission_prototype",
     }
     if mv_acc_method and discovery_backend == "oracle":
         if not bool(getattr(args, "oracle_discovery_diagnostic", False)):
@@ -3993,7 +3998,11 @@ def run_discovery(
         save_discovery_visualizations(method, round_name, day_name, discovery_feat, y_round, labels_for_metrics, enrolled_ids, args, full_method)
         return cluster_row, info
     if gpcc_method:
-        if discovery_backend in {"gpcc_recording", "gpcc_recording_consensus"}:
+        if discovery_backend in {
+            "gpcc_recording",
+            "gpcc_recording_consensus",
+            "gpcc_transmission_prototype",
+        }:
             # LoRa 的同一次物理 transmission 可观测地包含多个 aligned
             # symbol。gpcc_recording 是 Stage 24 的组级平均版本；
             # gpcc_recording_consensus 则先保留 symbol 级 GPCC，再只对组内
@@ -4012,6 +4021,14 @@ def run_discovery(
                     consensus_threshold=float(args.recording_consensus_threshold),
                 )
                 backend_name = "Recording-Consensus-GPCC"
+            elif discovery_backend == "gpcc_transmission_prototype":
+                gpcc = run_transmission_prototype_gpcc(
+                    feats,
+                    recording_ids=np.asarray(recording_ids),
+                    target_clusters=int(true_new_classes),
+                    seed=int(args.seed),
+                )
+                backend_name = "Transmission-Prototype-GPCC"
             else:
                 gpcc = run_recording_gpcc(
                     feats,
@@ -4316,7 +4333,14 @@ def main():
     parser.add_argument("--num_rounds", type=int, default=3)
     parser.add_argument(
         "--discovery_backend",
-        choices=["mvacc", "gpcc", "gpcc_recording", "gpcc_recording_consensus", "oracle"],
+        choices=[
+            "mvacc",
+            "gpcc",
+            "gpcc_recording",
+            "gpcc_recording_consensus",
+            "gpcc_transmission_prototype",
+            "oracle",
+        ],
         default="mvacc",
         help="Discovery front-end: gpcc fixes K=round_size; oracle is diagnostic-only and requires --oracle_discovery_diagnostic.",
     )

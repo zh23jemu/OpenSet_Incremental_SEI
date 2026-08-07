@@ -197,3 +197,97 @@ def run_recording_gpcc(
         },
     }
     return RecordingGPCCResult(labels=labels, confidence=confidence, diagnostics=diagnostics)
+
+
+def _aggregate_robust_view_by_recording(
+    view: np.ndarray,
+    inverse: np.ndarray,
+    group_count: int,
+) -> np.ndarray:
+    """构造 transmission 级 robust prototype。
+
+    与旧的单纯均值池化不同，这里同时保留均值、中位数和组内标准差：
+    - mean 描述一次 transmission 的整体表征；
+    - median 抑制少数异常 symbol；
+    - std 保留该 transmission 内部的稳定性/波动模式。
+
+    这些统计量只由当前 discovery 的无标签 symbol 特征和 recording_id
+    计算，不访问未知真值或 held-out eval。
+    """
+
+    view = np.asarray(view, dtype=np.float32)
+    if view.ndim != 2:
+        raise ValueError(f"recording prototype view must be 2D, got {view.shape}")
+    grouped = []
+    for group_id in range(int(group_count)):
+        group_view = view[inverse == group_id]
+        if group_view.size == 0:
+            group_view = np.zeros((1, view.shape[1]), dtype=np.float32)
+        grouped.append(
+            np.concatenate(
+                [
+                    np.mean(group_view, axis=0),
+                    np.median(group_view, axis=0),
+                    np.std(group_view, axis=0),
+                ],
+                axis=0,
+            )
+        )
+    return np.asarray(grouped, dtype=np.float32)
+
+
+def run_transmission_prototype_gpcc(
+    feats: dict[str, np.ndarray],
+    recording_ids: np.ndarray,
+    target_clusters: int,
+    seed: int = 7,
+) -> RecordingGPCCResult:
+    """在 robust transmission prototype 上运行 GPCC。
+
+    该后端把一次 transmission 视为一个发现实例，而不是先对 symbol
+    聚类再做多数投票。聚类完成后再将 transmission 标签广播回每个 symbol，
+    因而下游训练接口和 strict 指标口径保持不变。
+    """
+
+    recording_ids = np.asarray(recording_ids)
+    sample_count = int(np.asarray(feats["deep"]).shape[0])
+    if recording_ids.shape != (sample_count,):
+        raise ValueError(
+            f"recording_ids must have shape ({sample_count},), got {recording_ids.shape}"
+        )
+    unique_recordings, inverse = np.unique(recording_ids, return_inverse=True)
+    group_count = int(unique_recordings.size)
+    if group_count < int(target_clusters):
+        raise ValueError(
+            "transmission prototype GPCC requires at least target_clusters groups: "
+            f"groups={group_count}, target={int(target_clusters)}"
+        )
+
+    group_feats = {
+        key: _aggregate_robust_view_by_recording(feats[key], inverse, group_count)
+        for key in ("deep", "rf", "graph")
+    }
+    group_result: GPCCResult = run_gpcc(
+        group_feats,
+        target_clusters=int(target_clusters),
+        seed=int(seed),
+    )
+    labels = group_result.labels[inverse].astype(np.int64)
+    group_confidence = group_result.confidence[inverse].astype(np.float32)
+    compactness = _group_compactness_confidence(feats["graph"], inverse, group_count)
+    confidence = np.sqrt(np.clip(group_confidence, 0.0, 1.0) * compactness)
+    confidence = np.nan_to_num(confidence, nan=0.0, posinf=1.0, neginf=0.0).astype(np.float32)
+
+    _, group_sizes = np.unique(inverse, return_counts=True)
+    diagnostics = {
+        "Transmission-Prototype Backend": "robust_mean_median_std_transmission_gpcc",
+        "Transmission-Prototype Groups": int(group_count),
+        "Transmission-Prototype Target Clusters": int(target_clusters),
+        "Transmission-Prototype Mean Group Size": float(np.mean(group_sizes)),
+        "Transmission-Prototype Min Group Size": int(np.min(group_sizes)),
+        "Transmission-Prototype Max Group Size": int(np.max(group_sizes)),
+        "Transmission-Prototype Confidence Mean": float(np.mean(confidence)),
+        "Transmission-Prototype Compactness Mean": float(np.mean(compactness)),
+        **{f"Group {key}": value for key, value in group_result.diagnostics.items()},
+    }
+    return RecordingGPCCResult(labels=labels, confidence=confidence, diagnostics=diagnostics)
