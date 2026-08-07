@@ -1,0 +1,24 @@
+{
+  "method": "old_day_expert_plus_pseudonew_head",
+  "protocol": "old calibration IQ_1-7 + current discovery gate; IQ_8-10 labels report-only",
+  "stage76_save_dir": "/mnt/usmidet/billy_test/OpenSet_Incremental_SEI_stage75/results/stage76/lora_old_day_joint_cil_seed7_46630851",
+  "r3": {
+    "Round": "R3",
+    "Overall Acc": 0.30428571428571427,
+    "Old Acc": 0.3386904761904762,
+    "New Acc": 0.16666666666666666,
+    "Forgetting Rate": 0.1797619047619048,
+    "Macro F1": 0.265671856745304,
+    "Old Route Fraction": 0.5704761904761905,
+    "Gate Threshold": 0.5,
+    "Gate Old Source Recall": 0.6598639455782312,
+    "Gate Discovery Reject": 0.6496598639455783
+  },
+  "delta_vs_stage48_seed7": {
+    "overall": 0.023285714285714243,
+    "old": 0.1166904761904762,
+    "new": -0.3500333333333334,
+    "forgetting": 0.007161904761904786
+  },
+  "gate": false
+}
