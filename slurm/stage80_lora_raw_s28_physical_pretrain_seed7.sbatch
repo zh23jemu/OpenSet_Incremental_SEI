@@ -57,7 +57,9 @@ if [ ! -f "${S28_NPZ}" ]; then
             --cache_dir "${CACHE_DIR}" \
             --manifest "${SOURCE_MANIFEST}" \
             --raw_dir "${RAW_DIR}" \
-            --windows_per_transmission 28
+            --window_len 1024 \
+            --stride 1024 \
+            --windows_per_transmission 30
     fi
 
     "${PYTHON_BIN}" datasets/lora25_compact/tools/build_lora25_aligned.py \
