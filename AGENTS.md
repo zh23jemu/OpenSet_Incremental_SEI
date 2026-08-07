@@ -198,7 +198,7 @@
 
 ## Recent Changes
 
-- 2026-08-07：新增 Stage80 LoRa raw-s28 + 物理域预训练 seed7 入口，串联 Setup1 原始 I/Q、s28 aligned 数据、物理域预训练和同配置 CIL；Job `46695207` 已提交，当前正常排队，结果待回收。
+- 2026-08-07：Stage80 LoRa raw-s28 + 物理域预训练 seed7 已完成，Job `46695207` 的 R3 Overall/Old/New/Forgetting=`0.2829/0.2286/0.5000/0.1726`，相对 Stage46 seed7 `-0.0176/-0.0143/-0.0310/+0.0571`，未过门槛，归档为负消融，不扩三种子。
 - 2026-08-07：Stage79 LoRa 主模型旧类预测保守修正 seed7 已完成，job `46641707` 的 R3 Overall/Old/New/Forgetting=`0.2724/0.2839/0.2262/0.2179`；相对 Stage78 把 New 保住了，但 Old 和 Overall 没有真正赢，未过门槛，归档为负消融。
 - 2026-07-26：新增 `tools/stage0_env_data_check.py`，检查 Python 依赖、CUDA、GPU 张量计算、大数据 SHA-256、ZIP 目录和紧凑 NPZ 元信息。
 - 2026-07-26：补齐 `requirements.txt` 中的 pandas、hdbscan 和 umap-learn，并在 Slurm 创建 Python 3.11 `.venv` 安装 CUDA 12.6 兼容 PyTorch 及项目依赖。
@@ -369,7 +369,7 @@
 
 ## Next TODO
 
-- 等待 Stage80 Job `46695207` 完成，先看 raw-s28 + 物理域预训练是否超过 Stage46 seed7 对照；未过门槛就不扩三种子。
+- Stage80 已完成且未过门槛；raw-s28 + 物理域预训练不作为正式候选，后续不再沿这条物理预训练小改继续搜索。
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - RecallLoom 已升级至 0.5.0，但严格 provenance 校验仍报 `rolling_summary_receipt_mismatch` 并将侧车标记为 `inconsistent_or_tampered_evidence`；没有生成 D5 binding digest，因此禁止手工修改 `.recallloom/`，只能保持只读并等待正式恢复入口。
 - 阶段 4 ADS-B ratio 0.03 和自适应密度结论保持不变；默认 target split 已作为 ADS-B 欠聚类收敛候选，保守门控、max-added 消融和训练期旧类原型锚定均未找到更优折中。固定 target split 后端对照显示剩余风险是 RADCIL 偏新类、DOI-style 遗忘更低的后端旧新类权衡；Stage 8 只验证训练期特征几何，不继续 target split 小参数或原型锚定权重搜索。
