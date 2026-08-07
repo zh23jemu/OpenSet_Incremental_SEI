@@ -362,12 +362,12 @@
 - 2026-08-06：Stage73 Job `46491367` 干净完成并同步小型结果；IQ_1-7 旧类普通 logits-space logreg 校准将 R3 Overall/Old/New 提到 `0.4695/0.4488/0.5524`，仍未达到 50%。Stage74 Job `46525882` 使用增强 logits 特征后降到 `0.4567/0.4327/0.5524`，归档为负消融。
 - 2026-08-06：新增并完成 Stage75 训练期旧类跨天监督适配：`utils/cross_day_representation_adaptation.py` 从 Day2-4 旧设备 IQ_1-7 构造标注校准样本，在每轮 discovery 前联合优化旧类 CE、Day1 known CE、旧类特征对齐和 discovery teacher 锚定。Job `46537156` 因缺少临时 s28 NPZ 失败，修复入口自动重建同口径 raw-IQ s28 后，Job `46537623` 干净完成；R3 Overall/Old/New=`0.2776/0.2185/0.5143`，略低于 Stage48 对照，归档为负消融，不扩三种子。
 - 2026-08-06：新增 Stage76 旧类跨天校准与当前伪新类联合 CIL：`--lora_old_day_joint_cil` 将 Day2-4 旧设备 IQ_1-7 标注 batch 直接并入每轮 head warmup、joint backbone 和第二次 discovery refinement 的 CIL 优化；默认关闭，严格排除 IQ_8-10。新增 `slurm/stage76_lora_old_day_joint_cil_seed7.sbatch`，本地 `py_compile`、CLI help 和合成反向传播 smoke 已通过，待 Git 同步后提交 seed7。
-- 2026-08-06：Stage76 已通过 GitHub 代理推送到 `codex/stage0-strict-audit`，服务器独立 worktree fast-forward 到提交 `4edd26b`；Slurm Job `46630851` 已提交，当前状态为 `PENDING (Resources)`，尚无运行错误。
+- 2026-08-07：Stage76 Job `46630851` 已干净完成（退出码 `0:0`）。额外 Day2-4 旧设备 IQ_1-7 标注直接参与每轮联合 CIL 后，R3 Overall/Old/New/Forgetting=`0.2886/0.2601/0.4024/0.1631`；相对 Stage48 seed7 Overall `+0.0076`、Old `+0.0381`，但 New `-0.1143`。该结果确认旧类跨天监督直接进入统一分类头只会把冲突从 Old 转移到 New，归档为负消融，不扩三种子。
 
 ## Next TODO
 
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
-- 后续有空升级 RecallLoom 到建议版本 0.4.8.2；当前 0.4.5 已可通过结构校验和完整 provenance 校验。
+- RecallLoom 已升级至 0.5.0，但严格 provenance 校验仍报 `rolling_summary_receipt_mismatch` 并将侧车标记为 `inconsistent_or_tampered_evidence`；没有生成 D5 binding digest，因此禁止手工修改 `.recallloom/`，只能保持只读并等待正式恢复入口。
 - 阶段 4 ADS-B ratio 0.03 和自适应密度结论保持不变；默认 target split 已作为 ADS-B 欠聚类收敛候选，保守门控、max-added 消融和训练期旧类原型锚定均未找到更优折中。固定 target split 后端对照显示剩余风险是 RADCIL 偏新类、DOI-style 遗忘更低的后端旧新类权衡；Stage 8 只验证训练期特征几何，不继续 target split 小参数或原型锚定权重搜索。
 - GPCC 已完成 LoRa/ADS-B seed7 验证：LoRa 不进入完整增量，ADS-B 完整增量未超过 target split。增量双视图一致性和 discovery 簇可靠性加权均未改善 LoRa；后续不继续围绕 HDBSCAN 替换、可靠性权重或一致性权重做小参数搜索，若继续攻 LoRa 必须转向训练期跨天表征/联合发现机制。
 - 阶段 7 训练期当前 discovery/replay 分布对齐和 Stage 8 代理度量均未通过双门槛；旧后端小机制停止。下一步先做 discovery 表征重训/域不变表征的 discovery-only 验证，过门槛后再跑 CIL。
@@ -396,7 +396,7 @@
 - Stage61/62 已完成 oracle 聚类与 oracle 后端保护诊断；LoRa 低分不是 discovery-only，也不是现有 old-route/grouped DOI 后端能单独解决。后续若继续攻，应转向更大结构：更强 LoRa 原始 I/Q 自监督预训练、跨天/recording 级任务重定义，或面向客户收口为跨体制局限。
 - Stage63 已完成弱正但未过门槛；Stage64 masked reconstruction 已验证失败；Stage65/66 已证明 recording-level 口径也不能把 LoRa 推近 50%；Stage67 replay-only old SupCon 未提高 Old。Stage68 已证明少量同日旧类校准 oracle 可过 50%；Stage69-73 真实 IQ_1-7 旧类 logreg 校准最高把 R3 Overall 提到 `0.4695`，Stage74 增强 logits 校准降到 `0.4567`。下一步不再继续改校准器小特征，只考虑更大结构的跨天表征/联合训练，或明确客户侧需要更多同日旧设备标注。
 - Stage75 Job `46537623` 已完成但未通过门槛：训练期旧类跨天监督适配没有提高 Overall/Old/New，且使用额外 Day2-4 旧设备标注数据，不属于原始无校准 strict 主结果。该线归档为负消融；LoRa 后续不再继续相邻的旧类校准/对齐小变体。
-- Stage76 当前是结构性验证，不是继续调 logits、BN、prototype 或阈值：如果联合 CIL 仍低于 Stage48，说明即使把跨天旧类监督放进增量训练，也不足以解决 LoRa 表征漂移；若 Old 提升但 New/Overall 下降，则按“额外跨天标注只能转移旧新类权衡”的证据归档。
+- Stage76 已完成：联合 CIL 将 Old 拉到 `0.2601`，但 New 降至 `0.4024`；额外跨天旧类标注直接参与统一分类头只会转移旧新类权衡。后续只验证“旧类跨天专家与伪新类分类头分离”的大结构，不再调旧类 CE、对齐或校准器特征权重。
 - 远端 Slurm 后续使用 `/mnt/users/xj62kv/OpenSet_Incremental_SEI` 路径仍可工作，但该路径现在是指向 `/mnt/usmidet/billy_test/OpenSet_Incremental_SEI_main` 的软链接；大文件继续优先落到 `/mnt/usmidet/billy_test`。
 - Stage 11 当前已完成本地可执行入口和协议边界验证；下一步提交并推送后，在独立 worktree 跑 ADS-B/LoRa seed7 `none/cross_day` discovery-only，结果不过门槛就归档，不进入 CIL。
 - WiSig 后端不继续调 DOI-memory late fusion 或 iCaRL fallback；两条混合吸收路径均已完成三种子验证并归档为负消融。
@@ -414,8 +414,7 @@
 
 ## Open Issues
 
-- 当前安装的 RecallLoom 为 0.4.5，支持执行但提示可升级到 0.4.8.2；这只是升级建议，不再阻塞读取、写入或完整 provenance 校验。
-- RecallLoom 结构校验和完整 provenance 校验已通过；`legacy_optional_metadata_missing` 仅为协议 1.0 旧侧车可省略字段的兼容性警告。
+- RecallLoom 已升级为 0.5.0；结构校验通过，但 `--require-provenance --changed-only` 仍报 `provenance_rolling_summary_receipt_mismatch`。当前缺少 D5 `inconsistent_review_binding_digest`，不能启动官方 proposal/review/promotion，侧车保持只读。
 - 2026-07-30 本轮尝试更新 RecallLoom rolling summary 时，dispatcher quick-summary 返回 `rolling_summary_receipt_mismatch` 且 mutation blocked；本轮未手工修改 `.recallloom/`，后续需先走 RecallLoom 支持的校验/修复路径再写入。
 - 当前 C 盘可用空间约 8.53 GB，不适合同时展开 ADS-B、ManyTx 和 ManyRx；完整解压应优先在训练服务器进行。
 - LoRa BN 重校准三种子未通过采用门槛；它说明跨天统计漂移存在，但仅刷新 BN 无法稳定解决发现不稳和旧新类权衡。
