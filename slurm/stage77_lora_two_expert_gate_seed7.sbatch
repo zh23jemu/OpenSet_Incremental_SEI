@@ -17,7 +17,16 @@
 set -euo pipefail
 
 PROJECT_ROOT="${PROJECT_ROOT:-/mnt/usmidet/billy_test/OpenSet_Incremental_SEI_stage75}"
-PYTHON_BIN="${PROJECT_ROOT}/.venv/bin/python"
+DATA_ROOT="${DATA_ROOT:-/mnt/usmidet/billy_test/OpenSet_Incremental_SEI}"
+PYTHON_BIN="${PYTHON_BIN:-${DATA_ROOT}/.venv/bin/python}"
+if [ ! -x "${PYTHON_BIN}" ]; then
+    # 独立 Git worktree 不复制虚拟环境，回退到主项目已经验证过的解释器。
+    PYTHON_BIN="/mnt/users/xj62kv/OpenSet_Incremental_SEI/.venv/bin/python"
+fi
+if [ ! -x "${PYTHON_BIN}" ]; then
+    echo "Python interpreter not found: ${PYTHON_BIN}" >&2
+    exit 127
+fi
 RAW_DIR="${LORA_RAW_DIR:-/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage44/raw_setup1_iq}"
 STAGE76_DIR="${STAGE76_DIR:-${PROJECT_ROOT}/results/stage76/lora_old_day_joint_cil_seed7_46630851}"
 DATASET_PATH="${LORA_S28_NPZ:-${PROJECT_ROOT}/results/stage76/lora25_diffdays_indoor_raw1024_s28_46630851.npz}"
