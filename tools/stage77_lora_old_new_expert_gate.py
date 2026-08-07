@@ -163,7 +163,7 @@ def main() -> int:
     for round_index in range(1, 4):
         stage = f"after_r{round_index}"
         bounds = _stage_bounds(stage)
-        seen_classes = int(bounds["seen_end"])
+        seen_classes = int(bounds["seen_classes"])
         old_end = int(bounds["old_end"])
         model = _load_lora_stage_model(
             _checkpoint_for_round(stage76_dir, round_index),
