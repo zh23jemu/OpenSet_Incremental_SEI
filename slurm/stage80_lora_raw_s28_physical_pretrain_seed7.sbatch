@@ -65,7 +65,6 @@ if [ ! -f "${S28_NPZ}" ]; then
         --output "${S28_NPZ}" \
         --alignment_manifest "${ALIGN_MANIFEST}" \
         --symbols_per_transmission 28 \
-        --target_len 1024 \
         --decimation 1 \
         --representation raw
 fi
