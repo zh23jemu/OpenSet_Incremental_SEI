@@ -197,6 +197,7 @@
 - 远端家目录瘦身已完成：`/mnt/users/xj62kv` 精确占用约 `99.86 GiB`，已将 `underwater-crack-correction`、`MASAM-MIB`、`sound-event-classification`、`.cache`、`OpenSet_Incremental_SEI` 和 Stage44 LoRa raw I/Q 目录迁移到 `/mnt/usmidet/billy_test` 并在原位置保留软链接。
 - Stage83 LoRa 旧类 logreg 校准 + 新类保护门控已完成：首次 Job `46808523` 因 compact 256 输入与 Stage68/73 checkpoint 不匹配导致主模型 R3 异常掉到 `0.0410`，随后修正为 raw1024_s28 输入并将 Slurm 日志/运行输出迁到 `/mnt/usmidet/billy_test`，Job `46808561` 正常完成。正确结果 R3 Overall/Old/New/Forgetting=`0.3138/0.3119/0.3214/0.1905`，相对主模型 `0.2576/0.2387/0.3333` 有 Old/Overall 提升，但 New 明显偏低，未通过扩 seed13/31 门槛。
 - Stage84 LoRa 保守新类保护门控矩阵已完成：首次 Job `46808661` 仍遇到 Slurm echo 写日志 `Input/output error`，已将 stdout/stderr 移到 `/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage84_runtime/logs` 并移除普通 echo；Job `46808696` 正常完成。最佳策略 `reject_0p80` 的 R3 Overall/Old/New/Forgetting=`0.2976/0.2929/0.3167/0.2036`，低于 Stage83 `0.3138/0.3119/0.3214`，说明单纯提高 discovery reject 目标无法恢复 New，不扩 seed13/31。
+- Stage85 LoRa 新类-旧类 logit margin 训练目标已完成：首次 Job `46829431` 因远端干净 worktree 缺少相对路径 s28 NPZ 立即失败，已修为 `/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage45-worktree/results/stage46/lora25_diffdays_indoor_raw1024_s28_46103936.npz`；Job `46829439` 正常完成。R3 Overall/Old/New/Forgetting=`0.2676/0.1911/0.5738/0.2321`，New 相对 Stage46 seed7 提升 `+0.0428`，但 Overall/Old 分别下降 `-0.0329/-0.0518`，未通过扩 seed13/31 门槛。
 
 ## Recent Changes
 
@@ -204,6 +205,7 @@
 - 当前会话：Stage82 已完成并通过 seed7 discovery-only 与完整 CIL。新增默认关闭的 `--lora_transmission_pooling`，在 discovery 前按可观测 `recording_id` 做无标签 transmission attention pooling，并在 CIL 中加入 transmission pooled CE 与 symbol/transmission 一致性损失；新增 discovery-only/CIL seed7 Slurm 入口和报告器。最终结果为负消融，不扩 seed13/31。
 - 当前会话：Stage83 已完成并同步小型结果。新增 `tools/stage83_lora_logreg_new_protect_gate.py` 和 CPU shortjobs 入口，将 Stage73 的旧类 logits-space logreg 诊断信号改造成不读取 held-out 真值的来源门控；正确 Job `46808561` 的 R3 Overall/Old/New=`0.3138/0.3119/0.3214`，未通过门槛，归档为诊断性负消融。
 - 当前会话：Stage84 已完成并同步小型结果。新增 `tools/stage84_lora_conservative_new_protect_sweep.py` 和 CPU shortjobs 入口，比较 discovery reject 目标 `0.80/0.90/0.95/0.98`；最佳 R3 Overall/Old/New=`0.2976/0.2929/0.3167`，低于 Stage83，归档为负消融。
+- 当前会话：Stage85 已完成并同步小型结果。新增默认关闭的 `radcil_new_old_margin_weight/margin` 训练目标、`slurm/stage85_lora_new_old_margin_seed7.sbatch` 和 `tools/stage85_lora_new_old_margin_report.py`；结果救回 New 到 `0.5738`，但 Old/Overall 掉到 `0.1911/0.2676`，归档为负消融。
 - 2026-08-07：Stage80 LoRa raw-s28 + 物理域预训练 seed7 已完成，Job `46695207` 的 R3 Overall/Old/New/Forgetting=`0.2829/0.2286/0.5000/0.1726`，相对 Stage46 seed7 `-0.0176/-0.0143/-0.0310/+0.0571`，未过门槛，归档为负消融，不扩三种子。
 - 2026-08-07：Stage79 LoRa 主模型旧类预测保守修正 seed7 已完成，job `46641707` 的 R3 Overall/Old/New/Forgetting=`0.2724/0.2839/0.2262/0.2179`；相对 Stage78 把 New 保住了，但 Old 和 Overall 没有真正赢，未过门槛，归档为负消融。
 - 2026-07-26：新增 `tools/stage0_env_data_check.py`，检查 Python 依赖、CUDA、GPU 张量计算、大数据 SHA-256、ZIP 目录和紧凑 NPZ 元信息。
@@ -376,6 +378,7 @@
 ## Next TODO
 
 - Stage84 已完成：提高 discovery reject 目标后，最佳 R3 Overall/Old/New 只有 `0.2976/0.2929/0.3167`，低于 Stage83；旧类路由/新类保护阈值小改正式停止。下一步若继续攻 LoRa，应转向训练期联合目标或客户口径收口，不再继续同类后处理阈值矩阵。
+- Stage85 已完成：新类-旧类 logit margin 能提升 New，但 Old/Overall 代价过大；下一步若继续攻 LoRa，应尝试动态平衡旧类跨天校准与新类 margin，而不是单边保护 New。
 - Stage83 已完成：可部署门控只能把 LoRa R3 Overall 拉到 `0.3138`，但 New 降到 `0.3214`，说明 Stage73 约 `0.4695` 主要仍依赖 oracle old-mask 诊断上限；不扩 seed13/31。
 - Stage82 已完成：discovery-only 过门槛，但完整 CIL R3 Overall `0.2671` 低于 Stage46 seed7 门槛 `0.3005`，因此归档为负消融，不扩 seed13/31；recording-level 仅保留诊断用途。
 - Stage81 已完成且未过门槛；transmission robust prototype 虽然能固定 5 簇，但没有把聚类收益传到 CIL，后续不再沿该聚合形式继续小改。
@@ -435,6 +438,7 @@
 - GPCC 真实 seed7 结果已闭环：ADS-B discovery-only 聚类指标有提升，但完整增量 R3 Overall `0.4839` 低于 target split 对照约 `0.4932`；LoRa discovery-only Hungarian 提升但 ARI 下降。不能声称 GPCC 已解决 ADS-B 约 50% 或 LoRa 低结果，只能作为结构性尝试和负/弱正消融报告。
 - Stage83 进一步确认 LoRa 的旧类跨天校准存在强诊断信号，但缺少可靠 old/new 路由时会牺牲 New；当前仍不能把 LoRa 包装成接近 50% 的完整严格增量结果。
 - Stage84 进一步确认保守阈值不能修复 Stage83 的 New 下滑；当前 LoRa 主要风险不再是阈值选择，而是 symbol-level 新类表征和旧类跨天校准之间的结构冲突。
+- Stage85 进一步确认单边保护新类会把旧类保持打塌；LoRa 低分不是单一 New 吸收或单一 Old 保持问题，而是两者目标冲突。
 - Stage 10 当前只有本地工程验证，尚无真实 ADS-B/LoRa 结果；适配器可能改善无标签局部结构但也可能放大错误近邻，必须以 discovery-only Slurm 结果判定，不能提前宣称有效。
 - Stage 10 真实 seed7 已证明局部近邻平滑和已知类原型排斥不能稳定改善聚类；当前根因仍是跨天表征漂移与 discovery 伪标签纯度，不再继续做相邻小参数搜索。
 - Stage 11 尚无真实 Slurm 结果；训练期跨天适配可能改善跨日统计，也可能破坏已知类判别，不能在实验完成前声称能解决 ADS-B/LoRa 低分。
