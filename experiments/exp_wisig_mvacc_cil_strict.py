@@ -2497,6 +2497,32 @@ def _recording_mean_logit_ce_loss(logits, labels, sample_weights, recording_ids)
     return (per_group * stacked_weights).sum() / (stacked_weights.sum() + 1e-8)
 
 
+def _new_class_old_logit_margin_loss(logits, labels, sample_weights, old_out_dim, margin):
+    """约束当前轮新伪类 logit 高于旧类最大 logit。
+
+    Stage83/84 显示 LoRa 旧类跨天校准能提升 Old，但会把新类样本吸回旧类。
+    这里反过来在训练期保护当前轮新伪类：只对 ``labels >= old_out_dim`` 的
+    当前 discovery 样本生效，要求伪标签对应的新类 logit 至少比所有旧类
+    logit 的最大值高 ``margin``。该损失不读取 held-out eval，也不需要未知
+    真值；权重默认为 0，关闭时完全保持历史训练路径。
+    """
+
+    if logits.numel() == 0 or int(old_out_dim) <= 0 or float(margin) <= 0:
+        return logits.sum() * 0.0
+    new_mask = labels >= int(old_out_dim)
+    if not torch.any(new_mask):
+        return logits.sum() * 0.0
+    selected_logits = logits[new_mask]
+    selected_labels = labels[new_mask]
+    selected_weights = sample_weights[new_mask].clamp_min(1e-6)
+    if selected_logits.shape[1] <= int(old_out_dim):
+        return logits.sum() * 0.0
+    true_new_logits = selected_logits.gather(1, selected_labels.view(-1, 1)).squeeze(1)
+    old_max_logits = selected_logits[:, : int(old_out_dim)].max(dim=1).values
+    per_sample = F.relu(old_max_logits + float(margin) - true_new_logits)
+    return (per_sample * selected_weights).sum() / (selected_weights.sum() + 1e-8)
+
+
 def _train_end_to_end_cil(
     student,
     teacher,
@@ -2863,6 +2889,13 @@ def _train_end_to_end_cil(
                     )
                 else:
                     recording_ce = logits_c.sum() * 0.0
+                new_old_margin = _new_class_old_logit_margin_loss(
+                    logits_c,
+                    yc,
+                    wc,
+                    old_out_dim=int(old_out_dim),
+                    margin=float(args.radcil_new_old_margin),
+                )
                 if transmission_pooler is not None and rc is not None:
                     pooled_feat, pooled_inverse, pooled_target = _transmission_pooling_losses(
                         transmission_pooler,
@@ -2917,6 +2950,7 @@ def _train_end_to_end_cil(
                     + float(args.radcil_pseudo_aug_consistency_weight) * pseudo_aug_consistency
                     + float(args.radcil_recording_consistency_weight) * recording_consistency
                     + float(args.radcil_recording_ce_weight) * recording_ce
+                    + float(args.radcil_new_old_margin_weight) * new_old_margin
                     + float(args.lora_transmission_ce_weight) * transmission_ce
                     + float(args.lora_transmission_consistency_weight) * transmission_consistency
                     + float(args.cil_supcon_weight) * con
@@ -4769,6 +4803,18 @@ def main():
         help="head warmup 阶段当前轮新伪类 CE 的相对权重；1.0 保持历史训练。",
     )
     parser.add_argument(
+        "--radcil_new_old_margin_weight",
+        type=float,
+        default=0.0,
+        help="当前轮新伪类 logit 相对旧类最大 logit 的 margin 损失权重；0保持历史训练路径。",
+    )
+    parser.add_argument(
+        "--radcil_new_old_margin",
+        type=float,
+        default=0.5,
+        help="当前轮新伪类 logit 需要高于旧类最大 logit 的 margin。",
+    )
+    parser.add_argument(
         "--radcil_pseudo_aug_consistency_weight",
         type=float,
         default=0.0,
@@ -6047,6 +6093,8 @@ def main():
             "radcil_metric_weight": float(args.radcil_metric_weight),
             "radcil_metric_scale": float(args.radcil_metric_scale),
             "radcil_metric_margin": float(args.radcil_metric_margin),
+            "radcil_new_old_margin_weight": float(args.radcil_new_old_margin_weight),
+            "radcil_new_old_margin": float(args.radcil_new_old_margin),
             "pseudo_weight_use_cluster_reliability": bool(args.pseudo_weight_use_cluster_reliability),
             "pseudo_weight_cluster_reliability_floor": float(
                 args.pseudo_weight_cluster_reliability_floor
