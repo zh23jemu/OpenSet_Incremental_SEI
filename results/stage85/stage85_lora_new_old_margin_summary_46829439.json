@@ -1,0 +1,31 @@
+{
+  "schema_version": "stage85_lora_new_old_margin_seed7_summary_v1",
+  "job_id": "46829439",
+  "save_dir": "results/stage85/lora_new_old_margin_seed7_46829439",
+  "margin_weight": 0.25,
+  "margin": 0.5,
+  "stage46_seed7_baseline": {
+    "overall": 0.3005,
+    "old": 0.2429,
+    "new": 0.531,
+    "forgetting": 0.1155
+  },
+  "metrics": {
+    "overall": 0.2676190476190476,
+    "old": 0.1910714285714285,
+    "new": 0.5738095238095238,
+    "forgetting": 0.2321428571428571,
+    "macro_f1": 0.1971427085060942
+  },
+  "recording_metrics": {
+    "recording_overall": 0.3066666666666666,
+    "recording_new": 0.6666666666666666
+  },
+  "delta_vs_stage46_seed7": {
+    "overall": -0.0328809523809524,
+    "old": -0.0518285714285715,
+    "new": 0.04280952380952374,
+    "forgetting": 0.11664285714285709
+  },
+  "passed_seed7_gate": false
+}
