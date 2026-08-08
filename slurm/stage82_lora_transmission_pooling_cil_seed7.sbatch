@@ -24,18 +24,42 @@ PYTHON_BIN="${PYTHON_BIN:-${DATA_ROOT}/.venv/bin/python}"
 JOB_ID="${SLURM_JOB_ID:-manual}"
 ROOT="results/stage82"
 LORA_NPZ="${LORA25_NPZ:-${PROJECT_ROOT}/results/stage46/lora25_diffdays_indoor_raw1024_s28_46103936.npz}"
+RAW_DIR="${LORA25_RAW_DIR:-/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage44/raw_setup1_iq}"
+CACHE_DIR="${LORA25_CACHE_DIR:-${ROOT}/cache_raw_setup1_s28_${JOB_ID}}"
+RAW_PROBE_NPZ="${ROOT}/lora25_raw_probe_s28_${JOB_ID}.npz"
+SOURCE_MANIFEST="${ROOT}/lora25_source_manifest_raw_s28_${JOB_ID}.json"
+ALIGN_MANIFEST="${ROOT}/lora25_alignment_manifest_raw1024_s28_${JOB_ID}.json"
 SAVE_DIR="${ROOT}/lora_tx_pool_cil_seed7_${JOB_ID}"
 
 cd "${PROJECT_ROOT}"
-mkdir -p "${ROOT}" "${SAVE_DIR}"
+mkdir -p "${ROOT}" "${SAVE_DIR}" "${CACHE_DIR}"
 
 if [ ! -x "${PYTHON_BIN}" ]; then
     echo "Python interpreter not found: ${PYTHON_BIN}" >&2
     exit 127
 fi
 if [ ! -f "${LORA_NPZ}" ]; then
-    echo "Missing raw-s28 strict NPZ: ${LORA_NPZ}" >&2
-    exit 2
+    echo "Stage82 raw-s28 NPZ missing, rebuilding from raw_dir=${RAW_DIR}"
+    LORA_NPZ="${ROOT}/lora25_diffdays_indoor_raw1024_s28_${JOB_ID}.npz"
+    if [ ! -f "${RAW_PROBE_NPZ}" ]; then
+        "${PYTHON_BIN}" datasets/lora25_compact/tools/build_lora25_compact.py \
+            --output "${RAW_PROBE_NPZ}" \
+            --cache_dir "${CACHE_DIR}" \
+            --manifest "${SOURCE_MANIFEST}" \
+            --raw_dir "${RAW_DIR}" \
+            --window_len 1024 \
+            --stride 1024 \
+            --windows_per_transmission 30
+    fi
+    if [ ! -f "${LORA_NPZ}" ]; then
+        "${PYTHON_BIN}" datasets/lora25_compact/tools/build_lora25_aligned.py \
+            --cache_dir "${CACHE_DIR}" \
+            --output "${LORA_NPZ}" \
+            --alignment_manifest "${ALIGN_MANIFEST}" \
+            --symbols_per_transmission 28 \
+            --decimation 1 \
+            --representation raw
+    fi
 fi
 
 "${PYTHON_BIN}" experiments/exp_lora25_mvacc_cil_strict.py \
