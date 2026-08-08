@@ -195,11 +195,13 @@
 - Stage 71 LoRa 旧类 logits-space logreg 校准已完成：修复远端 scikit-learn `multi_class` 兼容问题后，Job `46481693` 正常完成；IQ_1/IQ_1-2/IQ_1-3 的 R3 Overall/Old/New 分别为 `0.3643/0.3173/0.5524`、`0.3957/0.3565/0.5524`、`0.4114/0.3762/0.5524`。该方法超过 Stage70 prototype，并接近旧类标签重映射 oracle `0.4157/0.3815/0.5524`，但仍未达到 50%。
 - Stage 72 LoRa 更多旧类 logreg 校准已完成：Job `46484861` 使用 shortjobs 完成 IQ_1-4/IQ_1-5 两档，R3 Overall/Old/New 分别为 `0.4438/0.4167/0.5524` 和 `0.4524/0.4274/0.5524`。说明增加真实旧类跨天标注仍有效，但 5 条 transmission 仍未达到 50%，下一步可继续验证 IQ_1-6/IQ_1-7 是否接近门槛。
 - 远端家目录瘦身已完成：`/mnt/users/xj62kv` 精确占用约 `99.86 GiB`，已将 `underwater-crack-correction`、`MASAM-MIB`、`sound-event-classification`、`.cache`、`OpenSet_Incremental_SEI` 和 Stage44 LoRa raw I/Q 目录迁移到 `/mnt/usmidet/billy_test` 并在原位置保留软链接。
+- Stage83 LoRa 旧类 logreg 校准 + 新类保护门控已完成：首次 Job `46808523` 因 compact 256 输入与 Stage68/73 checkpoint 不匹配导致主模型 R3 异常掉到 `0.0410`，随后修正为 raw1024_s28 输入并将 Slurm 日志/运行输出迁到 `/mnt/usmidet/billy_test`，Job `46808561` 正常完成。正确结果 R3 Overall/Old/New/Forgetting=`0.3138/0.3119/0.3214/0.1905`，相对主模型 `0.2576/0.2387/0.3333` 有 Old/Overall 提升，但 New 明显偏低，未通过扩 seed13/31 门槛。
 
 ## Recent Changes
 
 - 2026-08-08：Stage81 `gpcc_transmission_prototype` seed7 已完成，Job `46707695` 的 R3 Overall/Old/New/Forgetting=`0.2695/0.2113/0.5024/0.2048`；聚类 Hungarian/ARI/Purity=`0.6571/0.5682/0.6857`，但 Overall、Old、New 均低于 Stage46 seed7，归档为负消融，不扩三种子。
 - 当前会话：Stage82 已完成并通过 seed7 discovery-only 与完整 CIL。新增默认关闭的 `--lora_transmission_pooling`，在 discovery 前按可观测 `recording_id` 做无标签 transmission attention pooling，并在 CIL 中加入 transmission pooled CE 与 symbol/transmission 一致性损失；新增 discovery-only/CIL seed7 Slurm 入口和报告器。最终结果为负消融，不扩 seed13/31。
+- 当前会话：Stage83 已完成并同步小型结果。新增 `tools/stage83_lora_logreg_new_protect_gate.py` 和 CPU shortjobs 入口，将 Stage73 的旧类 logits-space logreg 诊断信号改造成不读取 held-out 真值的来源门控；正确 Job `46808561` 的 R3 Overall/Old/New=`0.3138/0.3119/0.3214`，未通过门槛，归档为诊断性负消融。
 - 2026-08-07：Stage80 LoRa raw-s28 + 物理域预训练 seed7 已完成，Job `46695207` 的 R3 Overall/Old/New/Forgetting=`0.2829/0.2286/0.5000/0.1726`，相对 Stage46 seed7 `-0.0176/-0.0143/-0.0310/+0.0571`，未过门槛，归档为负消融，不扩三种子。
 - 2026-08-07：Stage79 LoRa 主模型旧类预测保守修正 seed7 已完成，job `46641707` 的 R3 Overall/Old/New/Forgetting=`0.2724/0.2839/0.2262/0.2179`；相对 Stage78 把 New 保住了，但 Old 和 Overall 没有真正赢，未过门槛，归档为负消融。
 - 2026-07-26：新增 `tools/stage0_env_data_check.py`，检查 Python 依赖、CUDA、GPU 张量计算、大数据 SHA-256、ZIP 目录和紧凑 NPZ 元信息。
@@ -371,6 +373,7 @@
 
 ## Next TODO
 
+- Stage83 已完成：可部署门控只能把 LoRa R3 Overall 拉到 `0.3138`，但 New 降到 `0.3214`，说明 Stage73 约 `0.4695` 主要仍依赖 oracle old-mask 诊断上限；不扩 seed13/31。下一步若继续攻 LoRa，需要避免继续旧类路由/校准小改，转向更强的新类保护式联合训练或重新定义需要少量旧设备跨天标注的客户口径。
 - Stage82 已完成：discovery-only 过门槛，但完整 CIL R3 Overall `0.2671` 低于 Stage46 seed7 门槛 `0.3005`，因此归档为负消融，不扩 seed13/31；recording-level 仅保留诊断用途。
 - Stage81 已完成且未过门槛；transmission robust prototype 虽然能固定 5 簇，但没有把聚类收益传到 CIL，后续不再沿该聚合形式继续小改。
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
@@ -427,6 +430,7 @@
 - 当前 C 盘可用空间约 8.53 GB，不适合同时展开 ADS-B、ManyTx 和 ManyRx；完整解压应优先在训练服务器进行。
 - LoRa BN 重校准三种子未通过采用门槛；它说明跨天统计漂移存在，但仅刷新 BN 无法稳定解决发现不稳和旧新类权衡。
 - GPCC 真实 seed7 结果已闭环：ADS-B discovery-only 聚类指标有提升，但完整增量 R3 Overall `0.4839` 低于 target split 对照约 `0.4932`；LoRa discovery-only Hungarian 提升但 ARI 下降。不能声称 GPCC 已解决 ADS-B 约 50% 或 LoRa 低结果，只能作为结构性尝试和负/弱正消融报告。
+- Stage83 进一步确认 LoRa 的旧类跨天校准存在强诊断信号，但缺少可靠 old/new 路由时会牺牲 New；当前仍不能把 LoRa 包装成接近 50% 的完整严格增量结果。
 - Stage 10 当前只有本地工程验证，尚无真实 ADS-B/LoRa 结果；适配器可能改善无标签局部结构但也可能放大错误近邻，必须以 discovery-only Slurm 结果判定，不能提前宣称有效。
 - Stage 10 真实 seed7 已证明局部近邻平滑和已知类原型排斥不能稳定改善聚类；当前根因仍是跨天表征漂移与 discovery 伪标签纯度，不再继续做相邻小参数搜索。
 - Stage 11 尚无真实 Slurm 结果；训练期跨天适配可能改善跨日统计，也可能破坏已知类判别，不能在实验完成前声称能解决 ADS-B/LoRa 低分。
