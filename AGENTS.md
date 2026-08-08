@@ -199,6 +199,7 @@
 ## Recent Changes
 
 - 2026-08-08：Stage81 `gpcc_transmission_prototype` seed7 已完成，Job `46707695` 的 R3 Overall/Old/New/Forgetting=`0.2695/0.2113/0.5024/0.2048`；聚类 Hungarian/ARI/Purity=`0.6571/0.5682/0.6857`，但 Overall、Old、New 均低于 Stage46 seed7，归档为负消融，不扩三种子。
+- 当前会话：Stage82 已完成本地实现但尚未提交 Slurm；新增默认关闭的 `--lora_transmission_pooling`，在 discovery 前按可观测 `recording_id` 做无标签 transmission attention pooling，并在 CIL 中加入 transmission pooled CE 与 symbol/transmission 一致性损失；新增 discovery-only/CIL seed7 Slurm 入口和报告器。下一步先跑 discovery-only，未过严格 symbol-level 门槛不进入完整 CIL。
 - 2026-08-07：Stage80 LoRa raw-s28 + 物理域预训练 seed7 已完成，Job `46695207` 的 R3 Overall/Old/New/Forgetting=`0.2829/0.2286/0.5000/0.1726`，相对 Stage46 seed7 `-0.0176/-0.0143/-0.0310/+0.0571`，未过门槛，归档为负消融，不扩三种子。
 - 2026-08-07：Stage79 LoRa 主模型旧类预测保守修正 seed7 已完成，job `46641707` 的 R3 Overall/Old/New/Forgetting=`0.2724/0.2839/0.2262/0.2179`；相对 Stage78 把 New 保住了，但 Old 和 Overall 没有真正赢，未过门槛，归档为负消融。
 - 2026-07-26：新增 `tools/stage0_env_data_check.py`，检查 Python 依赖、CUDA、GPU 张量计算、大数据 SHA-256、ZIP 目录和紧凑 NPZ 元信息。
@@ -370,6 +371,7 @@
 
 ## Next TODO
 
+- Stage82 首先提交并运行 `stage82_lora_transmission_pooling_discovery_seed7.sbatch`；只有严格 symbol-level discovery 门槛通过，才提交对应 CIL seed7 入口。recording-level 只保留诊断用途。
 - Stage81 已完成且未过门槛；transmission robust prototype 虽然能固定 5 簇，但没有把聚类收益传到 CIL，后续不再沿该聚合形式继续小改。
 - 新会话先运行 RecallLoom fast resume，并依次阅读 `PROJECT_HANDOFF.md`、`AGENTS.md` 和 `OPENSET_INCREMENTAL_IMPLEMENTATION_PLAN.md` 1.1。
 - RecallLoom 已升级至 0.5.0，但严格 provenance 校验仍报 `rolling_summary_receipt_mismatch` 并将侧车标记为 `inconsistent_or_tampered_evidence`；没有生成 D5 binding digest，因此禁止手工修改 `.recallloom/`，只能保持只读并等待正式恢复入口。

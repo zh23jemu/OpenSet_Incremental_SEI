@@ -105,6 +105,118 @@ from utils.improved_closedset_training import (
 )
 
 
+class TransmissionAttentionPool(torch.nn.Module):
+    """把同一 transmission 内的 symbol 特征聚合成 transmission 表征。
+
+    该模块只在显式打开 ``--lora_transmission_pooling`` 时在当前 Student
+    的增量训练函数内创建。输入的 group_ids 来自 strict loader 提供的可观测 recording_id，
+    不包含设备真值，也不会接触 held-out evaluation。每个 group 内先用
+    attention score 做加权池化，再经过一个轻量投影，供 transmission-level
+    CE 和 symbol/transmission 一致性损失共同训练。
+    """
+
+    def __init__(self, feat_dim: int):
+        super().__init__()
+        hidden = max(16, min(64, int(feat_dim) // 2))
+        self.score = torch.nn.Sequential(
+            torch.nn.Linear(int(feat_dim), hidden),
+            torch.nn.Tanh(),
+            torch.nn.Linear(hidden, 1),
+        )
+        self.projection = torch.nn.Sequential(
+            torch.nn.Linear(int(feat_dim), int(feat_dim)),
+            torch.nn.LayerNorm(int(feat_dim)),
+        )
+
+    def forward(self, features: torch.Tensor, group_ids: torch.Tensor):
+        """返回每个 group 的池化特征、组索引和组内伪标签位置。
+
+        ``group_ids`` 可以是任意整数编号；函数内部会压缩成连续 group
+        index，避免把 recording_id 的全局编号直接当作张量下标。
+        """
+        if features.ndim != 2 or group_ids.ndim != 1 or features.shape[0] != group_ids.shape[0]:
+            raise ValueError(
+                "TransmissionAttentionPool expects features=[N,D] and group_ids=[N]."
+            )
+        unique_ids, inverse = torch.unique(group_ids, sorted=True, return_inverse=True)
+        pooled = []
+        for group_index in range(int(unique_ids.numel())):
+            mask = inverse == group_index
+            group_features = features[mask]
+            scores = self.score(group_features).squeeze(-1)
+            weights = torch.softmax(scores, dim=0)
+            pooled.append(torch.sum(group_features * weights.unsqueeze(1), dim=0))
+        if not pooled:
+            empty = features.new_zeros((0, features.shape[1]))
+            return empty, inverse, unique_ids
+        return self.projection(torch.stack(pooled, dim=0)), inverse, unique_ids
+
+
+def _pool_discovery_features_by_transmission(
+    features: np.ndarray,
+    recording_ids: np.ndarray,
+) -> tuple[np.ndarray, dict[str, object]]:
+    """用无参数 attention 近似把 symbol 特征提升到 transmission 粒度。
+
+    discovery 发生在伪标签产生之前，不能训练一个依赖未知标签的 attention
+    head。因此这里使用特征范数作为稳定性权重：先对每个 symbol 做 L2
+    归一化，再在同一 recording/transmission 内对高信息量 symbol 做 softmax
+    加权平均，最后把组级表征广播回 symbol。CIL 阶段再用可训练
+    ``TransmissionAttentionPool`` 学习同一结构。
+    """
+    z = np.asarray(features, dtype=np.float32)
+    groups = np.asarray(recording_ids, dtype=np.int64)
+    if z.ndim != 2 or groups.shape != (z.shape[0],):
+        raise ValueError(
+            f"Transmission discovery pooling shape mismatch: features={z.shape}, groups={groups.shape}"
+        )
+    normalized = z / np.maximum(np.linalg.norm(z, axis=1, keepdims=True), 1e-8)
+    unique_groups, inverse = np.unique(groups, return_inverse=True)
+    pooled = np.zeros_like(normalized)
+    for group_index in range(len(unique_groups)):
+        mask = inverse == group_index
+        group_features = normalized[mask]
+        scores = np.linalg.norm(z[mask], axis=1)
+        scores = scores - np.max(scores)
+        weights = np.exp(scores)
+        weights /= np.maximum(weights.sum(), 1e-8)
+        center = np.sum(group_features * weights[:, None], axis=0)
+        center /= max(float(np.linalg.norm(center)), 1e-8)
+        pooled[mask] = center
+    diagnostics = {
+        "Transmission Pooling Enabled": True,
+        "Transmission Pooling Groups": int(len(unique_groups)),
+        "Transmission Pooling Mean Group Size": float(len(groups) / max(len(unique_groups), 1)),
+        "Transmission Pooling Feature Mode": "norm_weighted_l2_attention",
+    }
+    return pooled.astype(np.float32), diagnostics
+
+
+def _transmission_pooling_losses(
+    pooler: TransmissionAttentionPool,
+    symbol_features: torch.Tensor,
+    symbol_labels: torch.Tensor,
+    group_ids: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """计算 transmission-level CE 和 symbol/transmission 一致性损失。
+
+    同一 transmission 内如果出现多个伪标签，使用该组的多数伪标签，并
+    将组内 symbol 特征拉向池化表征。该情况只会影响当前 discovery batch，
+    不会把评估真值带回训练。
+    """
+    pooled_features, inverse, _ = pooler(symbol_features, group_ids)
+    if pooled_features.shape[0] == 0:
+        empty_targets = symbol_labels.new_zeros((0,))
+        return pooled_features, inverse, empty_targets
+    pooled_targets = []
+    for group_index in range(int(pooled_features.shape[0])):
+        labels = symbol_labels[inverse == group_index]
+        values, counts = torch.unique(labels, return_counts=True)
+        pooled_targets.append(values[torch.argmax(counts)])
+    pooled_targets = torch.stack(pooled_targets)
+    return pooled_features, inverse, pooled_targets
+
+
 # ============================================================
 # Basic utilities
 # ============================================================
@@ -339,6 +451,14 @@ def load_closedset_model(checkpoint_path, num_classes, feat_dim, device, expecte
             # 与当前默认 resnet1d 完全一致，允许继续读取；LoRa chirp 或其它
             # 新结构若缺字段仍然必须重新训练，避免静默错载模型。
             if key == "closedset_backbone" and stored_value is None and value == "resnet1d":
+                continue
+            # Stage82 的 transmission pooling 只发生在增量训练期，默认关闭；
+            # 历史 closed-set checkpoint 没有这些元数据时仍应保持可读取。
+            if (
+                key.startswith("lora_transmission_")
+                and stored_value is None
+                and value in (False, 0, 0.0)
+            ):
                 continue
             if stored_value != value:
                 mismatches[key] = {"expected": value, "stored": stored_value}
@@ -2465,6 +2585,14 @@ def _train_end_to_end_cil(
         TensorDataset(torch.as_tensor(memory_x), torch.as_tensor(memory_y)),
         batch_size=memory_batch_size, shuffle=True, drop_last=False, num_workers=0,
     )
+    transmission_pooler = None
+    if bool(getattr(args, "lora_transmission_pooling", False)):
+        if str(getattr(args, "dataset_profile", "")).lower() != "lora25":
+            raise ValueError("--lora_transmission_pooling is only supported for the LoRa25 strict profile.")
+        if recording_tensor is None:
+            raise ValueError("--lora_transmission_pooling requires current recording_id metadata.")
+        feat_dim = int(getattr(student, "feat_dim", 128))
+        transmission_pooler = TransmissionAttentionPool(feat_dim).to(device)
     teacher = copy.deepcopy(teacher).to(device).eval()
     for p in teacher.parameters():
         p.requires_grad_(False)
@@ -2559,6 +2687,13 @@ def _train_end_to_end_cil(
             for p in backbone_params:
                 p.requires_grad_(True)
         groups = [{"params": student.classifier.parameters(), "lr": float(args.cil_classifier_lr)}]
+        if transmission_pooler is not None:
+            groups.append(
+                {
+                    "params": transmission_pooler.parameters(),
+                    "lr": float(args.cil_classifier_lr),
+                }
+            )
         if stage == "joint" and len(backbone_params) > 0:
             groups.append({"params": backbone_params, "lr": float(args.cil_backbone_lr)})
         return torch.optim.AdamW(groups, weight_decay=float(args.cil_weight_decay))
@@ -2728,6 +2863,33 @@ def _train_end_to_end_cil(
                     )
                 else:
                     recording_ce = logits_c.sum() * 0.0
+                if transmission_pooler is not None and rc is not None:
+                    pooled_feat, pooled_inverse, pooled_target = _transmission_pooling_losses(
+                        transmission_pooler,
+                        feat[:len(xc)],
+                        yc,
+                        rc,
+                    )
+                    if pooled_feat.shape[0] > 0:
+                        transmission_ce = F.cross_entropy(
+                            student.classifier(pooled_feat),
+                            pooled_target,
+                        )
+                        pooled_per_symbol = pooled_feat[pooled_inverse]
+                        transmission_consistency = (
+                            1.0
+                            - F.cosine_similarity(
+                                F.normalize(feat[:len(xc)], dim=1),
+                                F.normalize(pooled_per_symbol, dim=1),
+                                dim=1,
+                            )
+                        ).mean()
+                    else:
+                        transmission_ce = logits_c.sum() * 0.0
+                        transmission_consistency = logits_c.sum() * 0.0
+                else:
+                    transmission_ce = logits_c.sum() * 0.0
+                    transmission_consistency = logits_c.sum() * 0.0
                 high = wc >= float(args.cil_supcon_threshold)
                 feat_con = torch.cat([feat[:len(xc)][high], feat[len(xc):]], dim=0)
                 y_con = torch.cat([yc[high], ym], dim=0)
@@ -2755,6 +2917,8 @@ def _train_end_to_end_cil(
                     + float(args.radcil_pseudo_aug_consistency_weight) * pseudo_aug_consistency
                     + float(args.radcil_recording_consistency_weight) * recording_consistency
                     + float(args.radcil_recording_ce_weight) * recording_ce
+                    + float(args.lora_transmission_ce_weight) * transmission_ce
+                    + float(args.lora_transmission_consistency_weight) * transmission_consistency
                     + float(args.cil_supcon_weight) * con
                     + float(args.radcil_metric_weight) * metric_loss
                     + float(args.lora_old_day_joint_cil_ce_weight) * old_day_calibration_ce
@@ -3928,7 +4092,24 @@ def run_discovery(
     recording_ids=None,
 ):
     cflcg_mode = cflcg_mode_for_method(method)
-    feats = build_round_features(X_round, Z_round, args, cflcg_mode=cflcg_mode)
+    discovery_z = np.asarray(Z_round, dtype=np.float32)
+    transmission_pooling_diagnostics = {}
+    if (
+        bool(getattr(args, "lora_transmission_pooling", False))
+        and str(getattr(args, "dataset_profile", "")).lower() == "lora25"
+    ):
+        if recording_ids is None:
+            raise ValueError(
+                "--lora_transmission_pooling requires observable recording_id metadata."
+            )
+        discovery_z, transmission_pooling_diagnostics = (
+            _pool_discovery_features_by_transmission(discovery_z, recording_ids)
+        )
+    feats = build_round_features(X_round, discovery_z, args, cflcg_mode=cflcg_mode)
+    if transmission_pooling_diagnostics:
+        feats.setdefault("feature_adapter_diagnostics", {}).update(
+            transmission_pooling_diagnostics
+        )
 
     base_method = method
 
@@ -4611,6 +4792,23 @@ def main():
         default=0.0,
         help="LoRa 当前轮同 recording、同伪类 symbol 的 mean-logit CE 权重；0保持历史训练路径。",
     )
+    parser.add_argument(
+        "--lora_transmission_pooling",
+        action="store_true",
+        help="LoRa 严格模式：按可观测 recording/transmission 做 attention pooling，并联合 symbol/transmission 训练；默认关闭。",
+    )
+    parser.add_argument(
+        "--lora_transmission_ce_weight",
+        type=float,
+        default=0.25,
+        help="transmission pooled classifier CE 权重；仅在 --lora_transmission_pooling 下生效。",
+    )
+    parser.add_argument(
+        "--lora_transmission_consistency_weight",
+        type=float,
+        default=0.10,
+        help="symbol 特征与 transmission pooled 特征的一致性权重；仅在 --lora_transmission_pooling 下生效。",
+    )
 
 
     parser.add_argument("--min_cluster_size", type=int, default=10)
@@ -4870,6 +5068,17 @@ def main():
         "rf_augmentation": bool(not args.disable_rf_augmentation),
         "supcon_projection_dim": int(args.projection_dim) if args.use_supcon else 0,
         "supcon_projection_hidden_dim": int(args.projection_hidden_dim) if args.use_supcon else 0,
+        "lora_transmission_pooling": bool(args.lora_transmission_pooling),
+        "lora_transmission_ce_weight": (
+            float(args.lora_transmission_ce_weight)
+            if args.lora_transmission_pooling
+            else 0.0
+        ),
+        "lora_transmission_consistency_weight": (
+            float(args.lora_transmission_consistency_weight)
+            if args.lora_transmission_pooling
+            else 0.0
+        ),
     }
     if args.train_closedset or not os.path.exists(args.checkpoint):
         model = train_closedset_model(
