@@ -17,8 +17,8 @@
 #SBATCH --time=01:00:00
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
-#SBATCH --output=results/stage83/slurm_lora_logreg_new_protect_gate_seed7_%j.out
-#SBATCH --error=results/stage83/slurm_lora_logreg_new_protect_gate_seed7_%j.err
+#SBATCH --output=/mnt/usmidet/billy_test/stage83_lora_logreg_new_protect_gate_seed7_%j.out
+#SBATCH --error=/mnt/usmidet/billy_test/stage83_lora_logreg_new_protect_gate_seed7_%j.err
 
 set -euo pipefail
 
@@ -40,7 +40,7 @@ STAGE_SAVE_DIR="${STAGE_SAVE_DIR:-/mnt/usmidet/billy_test/OpenSet_Incremental_SE
 # Stage68/73 的 LoRa Chirp checkpoint 对齐 raw1024_s28 输入；不能退回 256 点 compact NPZ，
 # 否则主模型 logits 会整体失真，R3 会异常掉到接近随机水平。
 DATASET_PATH="${LORA_DATASET_PATH:-/mnt/usmidet/billy_test/OpenSet_Incremental_SEI_stage75/results/stage76/lora25_diffdays_indoor_raw1024_s28_46630851.npz}"
-OUTPUT_DIR="${PROJECT_ROOT}/results/stage83/lora_logreg_new_protect_gate_seed7_${SLURM_JOB_ID}"
+OUTPUT_DIR="${STAGE83_OUTPUT_DIR:-/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage83_runtime/lora_logreg_new_protect_gate_seed7_${SLURM_JOB_ID}}"
 
 cd "${PROJECT_ROOT}"
 mkdir -p results/stage83 "${OUTPUT_DIR}"
