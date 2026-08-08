@@ -16,8 +16,8 @@
 #SBATCH --time=01:00:00
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
-#SBATCH --output=/mnt/usmidet/billy_test/stage84_lora_conservative_new_protect_sweep_seed7_%j.out
-#SBATCH --error=/mnt/usmidet/billy_test/stage84_lora_conservative_new_protect_sweep_seed7_%j.err
+#SBATCH --output=/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage84_runtime/logs/stage84_lora_conservative_new_protect_sweep_seed7_%j.out
+#SBATCH --error=/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage84_runtime/logs/stage84_lora_conservative_new_protect_sweep_seed7_%j.err
 
 set -euo pipefail
 
@@ -42,13 +42,6 @@ OUTPUT_DIR="${STAGE84_OUTPUT_DIR:-/mnt/usmidet/billy_test/OpenSet_Incremental_SE
 
 cd "${PROJECT_ROOT}"
 mkdir -p results/stage84 "${OUTPUT_DIR}"
-
-echo "Stage84 project_root=${PROJECT_ROOT}"
-echo "Stage84 stage_save_dir=${STAGE_SAVE_DIR}"
-echo "Stage84 raw_dir=${RAW_DIR}"
-echo "Stage84 dataset_path=${DATASET_PATH}"
-echo "Stage84 output_dir=${OUTPUT_DIR}"
-echo "Stage84 python=${PYTHON_BIN}"
 
 "${PYTHON_BIN}" tools/stage84_lora_conservative_new_protect_sweep.py \
     --dataset-path "${DATASET_PATH}" \
