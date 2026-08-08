@@ -11,13 +11,12 @@
 #   来源门控只使用旧类校准样本和当前 discovery/enrollment 样本选阈值；
 #   IQ_8-10 held-out 标签只在最终报告指标时读取。
 #SBATCH --job-name=stage83-lora-new-protect
-#SBATCH --partition=gpuHz
+#SBATCH --partition=defq
 #SBATCH --account=gpo-ifv7xx
 #SBATCH --qos=shortjobs
 #SBATCH --time=01:00:00
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
-#SBATCH --gres=gpu:1
 #SBATCH --output=results/stage83/slurm_lora_logreg_new_protect_gate_seed7_%j.out
 #SBATCH --error=results/stage83/slurm_lora_logreg_new_protect_gate_seed7_%j.err
 
@@ -38,7 +37,9 @@ fi
 
 RAW_DIR="${LORA_RAW_DIR:-/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage44/raw_setup1_iq}"
 STAGE_SAVE_DIR="${STAGE_SAVE_DIR:-/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage68-worktree/results/stage68/lora_s68_stage48_dump_seed7_46450782}"
-DATASET_PATH="${LORA_DATASET_PATH:-${PROJECT_ROOT}/datasets/lora25_compact/lora25_diffdays_indoor_aligned_group_256.npz}"
+# Stage68/73 的 LoRa Chirp checkpoint 对齐 raw1024_s28 输入；不能退回 256 点 compact NPZ，
+# 否则主模型 logits 会整体失真，R3 会异常掉到接近随机水平。
+DATASET_PATH="${LORA_DATASET_PATH:-/mnt/usmidet/billy_test/OpenSet_Incremental_SEI_stage75/results/stage76/lora25_diffdays_indoor_raw1024_s28_46630851.npz}"
 OUTPUT_DIR="${PROJECT_ROOT}/results/stage83/lora_logreg_new_protect_gate_seed7_${SLURM_JOB_ID}"
 
 cd "${PROJECT_ROOT}"
@@ -61,4 +62,4 @@ echo "Stage83 python=${PYTHON_BIN}"
     --feat-dim 128 \
     --batch-size 192 \
     --seed 7 \
-    --device auto
+    --device cpu
