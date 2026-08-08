@@ -1,0 +1,128 @@
+Stage83 project_root=/mnt/users/xj62kv/OpenSet_Incremental_SEI
+Stage83 stage_save_dir=/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage68-worktree/results/stage68/lora_s68_stage48_dump_seed7_46450782
+Stage83 raw_dir=/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage44/raw_setup1_iq
+Stage83 dataset_path=/mnt/usmidet/billy_test/OpenSet_Incremental_SEI_stage75/results/stage76/lora25_diffdays_indoor_raw1024_s28_46630851.npz
+Stage83 python=/mnt/users/xj62kv/OpenSet_Incremental_SEI/.venv/bin/python
+{
+  "schema_version": "stage83_lora_logreg_new_protect_gate_v1",
+  "method": "old_logreg_calibration_with_new_protection_gate",
+  "protocol": "old calibration IQ_1-7 + current discovery source gate; threshold selection excludes held-out IQ_8-10 truth",
+  "stage_save_dir": "/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage68-worktree/results/stage68/lora_s68_stage48_dump_seed7_46450782",
+  "device": "cpu",
+  "rows": [
+    {
+      "Round": "R1",
+      "Overall Acc": 0.423015873015873,
+      "Old Acc": 0.5869047619047619,
+      "New Acc": 0.09523809523809523,
+      "Forgetting Rate": NaN,
+      "Macro F1": 0.4030754012068405,
+      "Main Overall Acc": 0.29523809523809524,
+      "Main Old Acc": 0.39166666666666666,
+      "Main New Acc": 0.10238095238095238,
+      "Main Forgetting Rate": NaN,
+      "Old Route Fraction": 0.546031746031746,
+      "Protected New Fraction": 0.0992063492063492,
+      "Main New Prediction Fraction": 0.26904761904761904,
+      "Mean Old Probability": 0.5507112145423889,
+      "Gate Threshold": 0.3,
+      "New Confidence Threshold": 0.4592529982328415,
+      "New Margin Threshold": 0.21075204014778137,
+      "Valid Old Source Recall": 0.7772108843537415,
+      "Valid Discovery Reject": 0.8197278911564626,
+      "Valid Route Fraction": 0.5782312925170068
+    },
+    {
+      "Round": "R2",
+      "Overall Acc": 0.3380952380952381,
+      "Old Acc": 0.4174603174603175,
+      "New Acc": 0.1,
+      "Forgetting Rate": 0.11428571428571432,
+      "Macro F1": 0.3087392030518329,
+      "Main Overall Acc": 0.27380952380952384,
+      "Main Old Acc": 0.32142857142857145,
+      "Main New Acc": 0.13095238095238096,
+      "Main Forgetting Rate": -0.06547619047619047,
+      "Old Route Fraction": 0.6285714285714286,
+      "Protected New Fraction": 0.05416666666666667,
+      "Main New Prediction Fraction": 0.2863095238095238,
+      "Mean Old Probability": 0.6095327734947205,
+      "Gate Threshold": 0.44999999999999996,
+      "New Confidence Threshold": 0.5577242225408554,
+      "New Margin Threshold": 0.37234384566545486,
+      "Valid Old Source Recall": 0.7936507936507936,
+      "Valid Discovery Reject": 0.8333333333333334,
+      "Valid Route Fraction": 0.6369047619047619
+    },
+    {
+      "Round": "R3",
+      "Overall Acc": 0.3138095238095238,
+      "Old Acc": 0.3119047619047619,
+      "New Acc": 0.32142857142857145,
+      "Forgetting Rate": 0.19047619047619052,
+      "Macro F1": 0.28925529297463437,
+      "Main Overall Acc": 0.25761904761904764,
+      "Main Old Acc": 0.2386904761904762,
+      "Main New Acc": 0.3333333333333333,
+      "Main Forgetting Rate": 0.0357142857142857,
+      "Old Route Fraction": 0.5452380952380952,
+      "Protected New Fraction": 0.29714285714285715,
+      "Main New Prediction Fraction": 0.38857142857142857,
+      "Mean Old Probability": 0.5367916226387024,
+      "Gate Threshold": 0.4,
+      "New Confidence Threshold": 0.38042646646499634,
+      "New Margin Threshold": 0.12190985679626465,
+      "Valid Old Source Recall": 0.7380952380952381,
+      "Valid Discovery Reject": 0.7482993197278912,
+      "Valid Route Fraction": 0.6408163265306123
+    }
+  ],
+  "r3": {
+    "Round": "R3",
+    "Overall Acc": 0.3138095238095238,
+    "Old Acc": 0.3119047619047619,
+    "New Acc": 0.32142857142857145,
+    "Forgetting Rate": 0.19047619047619052,
+    "Macro F1": 0.28925529297463437,
+    "Main Overall Acc": 0.25761904761904764,
+    "Main Old Acc": 0.2386904761904762,
+    "Main New Acc": 0.3333333333333333,
+    "Main Forgetting Rate": 0.0357142857142857,
+    "Old Route Fraction": 0.5452380952380952,
+    "Protected New Fraction": 0.29714285714285715,
+    "Main New Prediction Fraction": 0.38857142857142857,
+    "Mean Old Probability": 0.5367916226387024,
+    "Gate Threshold": 0.4,
+    "New Confidence Threshold": 0.38042646646499634,
+    "New Margin Threshold": 0.12190985679626465,
+    "Valid Old Source Recall": 0.7380952380952381,
+    "Valid Discovery Reject": 0.7482993197278912,
+    "Valid Route Fraction": 0.6408163265306123
+  },
+  "diagnostic_upper_bound_stage73_iq1_7": {
+    "overall": 0.4695,
+    "old": 0.4488,
+    "new": 0.5524,
+    "forgetting": 0.0774
+  },
+  "deployable_stage48_seed7_reference": {
+    "overall": 0.281,
+    "old": 0.222,
+    "new": 0.5167,
+    "forgetting": 0.1726
+  },
+  "delta_vs_stage73_oracle_old_mask": {
+    "overall": -0.15569047619047616,
+    "old": -0.13689523809523807,
+    "new": -0.23097142857142855,
+    "forgetting": 0.11307619047619052
+  },
+  "delta_vs_stage48_seed7": {
+    "overall": 0.03280952380952379,
+    "old": 0.0899047619047619,
+    "new": -0.1952714285714286,
+    "forgetting": 0.017876190476190518
+  },
+  "gate": false,
+  "decision": "negative_or_diagnostic_only_do_not_expand"
+}
