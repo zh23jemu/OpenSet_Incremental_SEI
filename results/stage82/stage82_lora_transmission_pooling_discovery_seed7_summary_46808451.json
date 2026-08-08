@@ -1,0 +1,19 @@
+{
+  "schema_version": "stage82_lora_transmission_pooling_summary_v1",
+  "job_id": "46808451",
+  "mode": "discovery",
+  "baseline": {
+    "overall": 0.3005,
+    "old": 0.2429,
+    "new": 0.531,
+    "forgetting": 0.1155
+  },
+  "metrics": {
+    "hungarian": 0.6285714285714286,
+    "ari": 0.5208832820046368,
+    "purity": 0.6571428571428571,
+    "final_clusters": 5
+  },
+  "deltas": {},
+  "passed_gate": true
+}

@@ -1,0 +1,124 @@
+Stage82 raw-s28 NPZ missing, rebuilding from raw_dir=/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage44/raw_setup1_iq
+[range] 1/385 ranges complete
+[range] 10/385 ranges complete
+[range] 20/385 ranges complete
+[range] 30/385 ranges complete
+[range] 40/385 ranges complete
+[range] 50/385 ranges complete
+[range] 60/385 ranges complete
+[range] 70/385 ranges complete
+[range] 80/385 ranges complete
+[range] 90/385 ranges complete
+[range] 100/385 ranges complete
+[range] 110/385 ranges complete
+[range] 120/385 ranges complete
+[range] 130/385 ranges complete
+[range] 140/385 ranges complete
+[range] 150/385 ranges complete
+[range] 160/385 ranges complete
+[range] 170/385 ranges complete
+[range] 180/385 ranges complete
+[range] 190/385 ranges complete
+[range] 200/385 ranges complete
+[range] 210/385 ranges complete
+[range] 220/385 ranges complete
+[range] 230/385 ranges complete
+[range] 240/385 ranges complete
+[range] 250/385 ranges complete
+[range] 260/385 ranges complete
+[range] 270/385 ranges complete
+[range] 280/385 ranges complete
+[range] 290/385 ranges complete
+[range] 300/385 ranges complete
+[range] 310/385 ranges complete
+[range] 320/385 ranges complete
+[range] 330/385 ranges complete
+[range] 340/385 ranges complete
+[range] 350/385 ranges complete
+[range] 360/385 ranges complete
+[range] 370/385 ranges complete
+[range] 380/385 ranges complete
+[range] 385/385 ranges complete
+[stage] day1_known_train: X=(2100, 2, 1024), classes=10
+[stage] day1_initial_eval: X=(900, 2, 1024), classes=10
+[stage] day2_unknown_round1: X=(1050, 2, 1024), classes=5
+[stage] day2_eval_after_r1: X=(1350, 2, 1024), classes=15
+[stage] day3_unknown_round2: X=(1050, 2, 1024), classes=5
+[stage] day3_eval_after_r2: X=(1800, 2, 1024), classes=20
+[stage] day4_unknown_round3: X=(1050, 2, 1024), classes=5
+[stage] day4_eval_after_r3: X=(2250, 2, 1024), classes=25
+Saved compact dataset: results/stage82/lora25_raw_probe_s28_46808451.npz (48339342 bytes)
+Saved source manifest: results/stage82/lora25_source_manifest_raw_s28_46808451.json
+[stage] day1_known_train: X=(1960, 2, 1024), classes=10
+[stage] day1_initial_eval: X=(840, 2, 1024), classes=10
+[stage] day2_unknown_round1: X=(980, 2, 1024), classes=5
+[stage] day2_eval_after_r1: X=(1260, 2, 1024), classes=15
+[stage] day3_unknown_round2: X=(980, 2, 1024), classes=5
+[stage] day3_eval_after_r2: X=(1680, 2, 1024), classes=20
+[stage] day4_unknown_round3: X=(980, 2, 1024), classes=5
+[stage] day4_eval_after_r3: X=(2100, 2, 1024), classes=25
+Saved aligned compact dataset: results/stage82/lora25_diffdays_indoor_raw1024_s28_46808451.npz (72085725 bytes)
+Saved alignment manifest: results/stage82/lora25_alignment_manifest_raw1024_s28_46808451.json
+
+========== LoRa25 Different Days Indoor 10-Known 3-Round Incremental Experiment ==========
+Dataset: results/stage82/lora25_diffdays_indoor_raw1024_s28_46808451.npz
+Save dir: results/stage82/lora_tx_pool_discovery_seed7_46808451
+Device: cuda
+Protocol: 10 known + 5 unknown R1 + 5 unknown R2 + 5 unknown R3
+LoRa split: IQ_1-6 train | IQ_7 validation | IQ_8-10 held-out evaluation
+Old-class prototype bonus beta: 0.0
+Incremental dual-view consistency weight: 0.0
+Cross-day feature domain alignment weight: 0.0
+Old replay SupCon weight: 0.0
+Pseudo-label cluster reliability weighting: False (floor=0.2)
+Closed-set training loss: CE + 0.1 * SupCon(T=0.2)
+Sample-level protocol: 60% backbone train + 10% validation + 30% held-out evaluation
+Fusion: fixed alpha | alpha=0.7
+No-drop consolidation (ablation): rounds=5, threshold=0.78, coverage=100%
+MV-ACC: mcs_ratio=0.045, min_samples=5, merge_th=0.74, sub_prototypes=5, split_factor=1.75, split_sil=0.3, coverage=100%, strict_alignment=Hungarian
+
+[Splits]
+Day1 known train IQ_1-6 train: (1680, 2, 1024), classes=10, labels=0-9
+Initial eval 30%:     (840, 2, 1024), classes=10, labels=0-9, day=Day 1
+Unknown R1 IQ_1-7 discovery: (980, 2, 1024), classes=5, labels=10-14, day=Day 2
+After R1 IQ_8-10 eval: (1260, 2, 1024), classes=15, labels=0-14, day=Day 2
+Unknown R2 IQ_1-7 discovery: (980, 2, 1024), classes=5, labels=15-19, day=Day 3
+After R2 IQ_8-10 eval: (1680, 2, 1024), classes=20, labels=0-19, day=Day 3
+Unknown R3 IQ_1-7 discovery: (980, 2, 1024), classes=5, labels=20-24, day=Day 4
+After R3 IQ_8-10 eval: (2100, 2, 1024), classes=25, labels=0-24, day=Day 4
+
+[Train-v2] classes=10 | train=1680 | validation=280 | validation_fraction=0.142857
+[Train-v2] RF augmentation=True | SupCon projection=64
+Epoch 001/020 | train_loss=2.9381 | train_acc=0.1016 | val_acc=0.0929 | val_loss=2.3061
+Epoch 002/020 | train_loss=2.7523 | train_acc=0.1899 | val_acc=0.2286 | val_loss=2.0263
+Epoch 003/020 | train_loss=2.3958 | train_acc=0.2656 | val_acc=0.1107 | val_loss=1.9310
+Epoch 004/020 | train_loss=2.3727 | train_acc=0.2500 | val_acc=0.3179 | val_loss=1.7063
+Epoch 005/020 | train_loss=2.1406 | train_acc=0.3588 | val_acc=0.2893 | val_loss=1.5842
+Epoch 006/020 | train_loss=1.9839 | train_acc=0.4008 | val_acc=0.3071 | val_loss=1.6444
+Epoch 007/020 | train_loss=1.9247 | train_acc=0.4008 | val_acc=0.4000 | val_loss=1.4880
+Epoch 008/020 | train_loss=1.7845 | train_acc=0.5012 | val_acc=0.3571 | val_loss=1.6760
+Epoch 009/020 | train_loss=1.7202 | train_acc=0.5102 | val_acc=0.1571 | val_loss=2.4275
+Epoch 010/020 | train_loss=1.7285 | train_acc=0.4772 | val_acc=0.3964 | val_loss=1.4780
+Epoch 011/020 | train_loss=1.7111 | train_acc=0.4838 | val_acc=0.1857 | val_loss=1.9994
+Epoch 012/020 | train_loss=1.6134 | train_acc=0.5481 | val_acc=0.3429 | val_loss=1.6853
+Epoch 013/020 | train_loss=1.4954 | train_acc=0.5823 | val_acc=0.5179 | val_loss=1.2127
+Epoch 014/020 | train_loss=1.4205 | train_acc=0.6004 | val_acc=0.3536 | val_loss=1.4638
+Epoch 015/020 | train_loss=1.3027 | train_acc=0.6575 | val_acc=0.5393 | val_loss=1.0888
+Epoch 016/020 | train_loss=1.4258 | train_acc=0.5715 | val_acc=0.5357 | val_loss=1.1260
+Epoch 017/020 | train_loss=1.2552 | train_acc=0.6689 | val_acc=0.5893 | val_loss=1.1206
+Epoch 018/020 | train_loss=1.1901 | train_acc=0.6953 | val_acc=0.4643 | val_loss=1.2521
+Epoch 019/020 | train_loss=1.1695 | train_acc=0.6803 | val_acc=0.5321 | val_loss=1.2378
+Epoch 020/020 | train_loss=1.2960 | train_acc=0.6208 | val_acc=0.3536 | val_loss=1.7304
+[Train-v2] best_val_acc=0.5893 | best_val_loss=1.1206 | saved=results/stage82/lora_tx_pool_discovery_seed7_46808451/closedset_lora25_lora_chirp_10known.pth
+[Load] checkpoint=results/stage82/lora_tx_pool_discovery_seed7_46808451/closedset_lora25_lora_chirp_10known.pth
+
+[Extract] Deep embeddings
+[CF-LCG] view=all24_base | purity=0.359 | gate_open=False
+[CF-LCG] global binary gate closed; Local CF-LCG remains sample-adaptive.
+[MV-ACC calibration] Day1 validation only: ratio=0.03, merge_threshold=0.74
+
+[discovery_only] Strict GPCC/MV-ACC front-end evaluation
+[discovery_only] Saved strict discovery outputs; skipped held-out eval feature extraction and CIL training.
+Saved: results/stage82/lora_tx_pool_discovery_seed7_46808451/clustering_results.csv
+Stage82 报告：results/stage82/STAGE82_LORA_TRANSMISSION_POOLING_DISCOVERY_SEED7_REPORT_46808451.md
+Stage82 LoRa transmission pooling discovery-only seed7 完成。
