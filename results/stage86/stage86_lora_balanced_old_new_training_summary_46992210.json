@@ -1,0 +1,60 @@
+{
+  "schema_version": "stage86_lora_balanced_old_new_training_seed7_summary_v1",
+  "job_id": "46992210",
+  "save_dir": "results/stage86/lora_balanced_old_new_training_seed7_46992210",
+  "weights": {
+    "old_day_ce_weight": 0.25,
+    "old_day_feature_weight": 0.1,
+    "margin_weight": 0.1,
+    "margin": 0.5
+  },
+  "stage46_seed7_baseline": {
+    "overall": 0.3005,
+    "old": 0.2429,
+    "new": 0.531,
+    "forgetting": 0.1155
+  },
+  "stage76_single_sided_old": {
+    "overall": 0.2886,
+    "old": 0.2601,
+    "new": 0.4024,
+    "forgetting": 0.1631
+  },
+  "stage85_single_sided_new": {
+    "overall": 0.2676,
+    "old": 0.1911,
+    "new": 0.5738,
+    "forgetting": 0.2321
+  },
+  "metrics": {
+    "overall": 0.2885714285714286,
+    "old": 0.2303571428571428,
+    "new": 0.5214285714285715,
+    "forgetting": 0.1797619047619047,
+    "macro_f1": 0.2337299307356662
+  },
+  "recording_metrics": {
+    "recording_overall": 0.3333333333333333,
+    "recording_old": 0.25,
+    "recording_new": 0.6666666666666666
+  },
+  "delta_vs_stage46_seed7": {
+    "overall": -0.0119285714285714,
+    "old": -0.012542857142857217,
+    "new": -0.009571428571428564,
+    "forgetting": 0.0642619047619047
+  },
+  "delta_vs_stage76": {
+    "overall": -2.8571428571433355e-05,
+    "old": -0.02974285714285721,
+    "new": 0.11902857142857148,
+    "forgetting": 0.01666190476190471
+  },
+  "delta_vs_stage85": {
+    "overall": 0.020971428571428585,
+    "old": 0.039257142857142796,
+    "new": -0.05237142857142851,
+    "forgetting": -0.052338095238095295
+  },
+  "passed_seed7_gate": false
+}
