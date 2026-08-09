@@ -202,6 +202,7 @@
 - Stage87 LoRa 同日旧类 support 上限诊断已完成：Job `46993170` 正常完成。每个旧类抽 1 条同日 held-out recording 做 support 且 support 不计入评估时，logreg 校准 R3 Overall/Old/New=`0.4266/0.3795/0.5524`；每个旧类抽 2 条 recording 时达到 `0.5133/0.4839/0.5524`，Forgetting `0.0917`。该结果使用 held-out 旧类真值抽 support，只能作为数据需求/上限诊断，但证明 LoRa 50% 缺口可由额外同日旧类标注 support 打开。
 - Stage88 LoRa support 原始类比例复核已完成：Job `46996086` 正常完成。Stage87 observed best `0.5133` 在 support 剔除后的剩余 held-out 分母上过 50，但按 R3 原始 20 旧类 + 5 新类比例重加权后为 `0.4976/0.4839/0.5524`（Adjusted Overall/Old/New），仍低于 50，Old 距所需 `0.4869` 仅差 `0.0030`。当前应表述为“2 条同日旧类 support 已把 LoRa 拉到原始类比例 49.76%，非常接近 50，但不能严格声称已过 50”。
 - Stage89 LoRa support=2 校准器扫描已完成：Job `46997268` 正常完成。保持 Stage87 同口径的原始 logits + lbfgs 旧类 logreg，仅调整正则强度后，`logreg_c0p3` 将 R3 原始类比例 Adjusted Overall/Old/New 推到 `0.5105/0.5000/0.5524`，Old gap to 50 为 `+0.0131`。该结果仍使用 held-out 旧类真值抽取同日 support，是额外同日旧类标注的数据需求/上限诊断，不是无 support strict 正式成绩。
+- Stage90 LoRa support=2 repeat 稳定性诊断已完成：Job `46999322` 正常完成。固定 Stage89 最佳 `logreg_c0p3` 后，5 个 support 抽样种子 R3 Adjusted Overall mean/std/min/max 为 `0.4650/0.0379/0.3976/0.5105`，pass rate 仅 `1/5`；最差 support_seed `13` 为 `0.3976/0.3589/0.5524`。结论是 Stage89 过 50 依赖 support 抽样质量，不稳定，不能作为可靠客户承诺；后续若继续攻，应设计 support 选择/质量控制，而不是只调校准器 C。
 
 ## Recent Changes
 
@@ -214,6 +215,7 @@
 - 当前会话：Stage87 已完成并同步小型结果。新增 `tools/stage87_lora_same_day_support_upper_bound.py` 和 CPU shortjobs 入口；support 从 held-out 旧类 recording 抽取并从评估分母剔除。2 条同日旧类 recording / old class 的 logreg support 校准将剩余 held-out R3 Overall/Old/New 推到 `0.5133/0.4839/0.5524`，证明 LoRa 若要过 50，需要客户侧额外同日旧类 support，而不是继续无 support strict 小机制。
 - 当前会话：Stage88 已完成并同步小型结果。新增 `tools/stage88_lora_support_adjusted_mix_report.py` 和 CPU shortjobs 入口；按原始 R3 类比例复核 Stage87 后，best adjusted R3 Overall/Old/New=`0.4976/0.4839/0.5524`，说明 observed 过 50 有分母变化因素，但真实缺口只剩 `0.0030` Old Acc。
 - 当前会话：Stage89 已完成并同步小型结果。新增 `tools/stage89_lora_support_calibrator_sweep.py` 与 `slurm/stage89_lora_support_calibrator_sweep_seed7.sbatch`；修复了 initial 空 support、R3 字段判断和多类校准口径问题，最终 Job `46997268` 在同口径 lbfgs logreg 下用 `C=0.3` 达到 adjusted R3 Overall/Old/New=`0.5105/0.5000/0.5524`。
+- 当前会话：Stage90 已完成并同步小型结果。新增 `tools/stage90_lora_support_repeat.py` 与 `slurm/stage90_lora_support_repeat_seed7.sbatch`；固定 `support=2 + logreg_c0p3` 后做 5 个 support 抽样 repeat，仅 seed7 repeat 过 50，均值 `0.4650`、最差 `0.3976`，证明 support 抽样质量是当前主要风险。
 - 2026-08-07：Stage80 LoRa raw-s28 + 物理域预训练 seed7 已完成，Job `46695207` 的 R3 Overall/Old/New/Forgetting=`0.2829/0.2286/0.5000/0.1726`，相对 Stage46 seed7 `-0.0176/-0.0143/-0.0310/+0.0571`，未过门槛，归档为负消融，不扩三种子。
 - 2026-08-07：Stage79 LoRa 主模型旧类预测保守修正 seed7 已完成，job `46641707` 的 R3 Overall/Old/New/Forgetting=`0.2724/0.2839/0.2262/0.2179`；相对 Stage78 把 New 保住了，但 Old 和 Overall 没有真正赢，未过门槛，归档为负消融。
 - 2026-07-26：新增 `tools/stage0_env_data_check.py`，检查 Python 依赖、CUDA、GPU 张量计算、大数据 SHA-256、ZIP 目录和紧凑 NPZ 元信息。
@@ -386,7 +388,7 @@
 ## Next TODO
 
 - Stage84 已完成：提高 discovery reject 目标后，最佳 R3 Overall/Old/New 只有 `0.2976/0.2929/0.3167`，低于 Stage83；旧类路由/新类保护阈值小改正式停止。下一步若继续攻 LoRa，应转向训练期联合目标或客户口径收口，不再继续同类后处理阈值矩阵。
-- Stage89 已完成：support_count=2 下更稳的旧类 logreg 校准器已经把原始 20旧/5新类比例 adjusted Overall 推过 50，最佳为 `0.5105/0.5000/0.5524`。下一步若继续攻，应验证该 support 诊断在 seed13/31 或 support 抽样 repeat 上是否稳定；客户口径必须明确这是额外同日旧类 support 条件下的上限/数据需求结果，不是无 support strict 正式成绩。
+- Stage90 已完成：Stage89 的 `0.5105` 过线结果不稳定，5 个 support 抽样 repeat 只有 `1/5` 过 50，均值仅 `0.4650`。下一步若继续攻，应做 support 质量选择/代表性筛选诊断，例如按 recording 置信度、类内中心性或多候选 support bank 选择，而不是继续无条件随机 support repeat 或校准器 C 网格。
 - Stage83 已完成：可部署门控只能把 LoRa R3 Overall 拉到 `0.3138`，但 New 降到 `0.3214`，说明 Stage73 约 `0.4695` 主要仍依赖 oracle old-mask 诊断上限；不扩 seed13/31。
 - Stage82 已完成：discovery-only 过门槛，但完整 CIL R3 Overall `0.2671` 低于 Stage46 seed7 门槛 `0.3005`，因此归档为负消融，不扩 seed13/31；recording-level 仅保留诊断用途。
 - Stage81 已完成且未过门槛；transmission robust prototype 虽然能固定 5 簇，但没有把聚类收益传到 CIL，后续不再沿该聚合形式继续小改。
@@ -448,6 +450,7 @@
 - Stage84 进一步确认保守阈值不能修复 Stage83 的 New 下滑；当前 LoRa 主要风险不再是阈值选择，而是 symbol-level 新类表征和旧类跨天校准之间的结构冲突。
 - Stage88 进一步确认 Stage87 的过 50 结论需要谨慎：support 剔除改变了旧/新分母，原始类比例 adjusted Overall 为 `0.4976` 而非 `0.5133`；不过缺口已经收缩到 `0.0030` Old Acc。当前关键风险是能否用更稳的同日 support 校准或更多 support recording 把原始类比例口径稳定推过 50。
 - Stage89 已把 support=2 的原始类比例 adjusted Overall 推到 `0.5105`，但该结果依赖 held-out 旧类真值抽同日 support，仍不能包装为无额外标注 strict 主结果；当前风险转为 support 抽样/种子稳定性和客户是否接受“需要少量同日旧设备标注”的应用条件。
+- Stage90 证明 support 抽样/代表性是硬风险：同样 support=2、同样 logreg C=0.3，抽样 repeat 的 adjusted Overall 从 `0.3976` 到 `0.5105` 波动很大。当前不能向客户承诺“任意 2 条同日 support 都能过 50”，只能说“选到代表性较好的 support 时可过 50，随机 support 不稳定”。
 - Stage 10 当前只有本地工程验证，尚无真实 ADS-B/LoRa 结果；适配器可能改善无标签局部结构但也可能放大错误近邻，必须以 discovery-only Slurm 结果判定，不能提前宣称有效。
 - Stage 10 真实 seed7 已证明局部近邻平滑和已知类原型排斥不能稳定改善聚类；当前根因仍是跨天表征漂移与 discovery 伪标签纯度，不再继续做相邻小参数搜索。
 - Stage 11 尚无真实 Slurm 结果；训练期跨天适配可能改善跨日统计，也可能破坏已知类判别，不能在实验完成前声称能解决 ADS-B/LoRa 低分。
