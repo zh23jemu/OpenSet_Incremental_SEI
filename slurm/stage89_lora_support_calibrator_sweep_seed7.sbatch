@@ -48,7 +48,7 @@ RUN_LOG="${LOG_DIR}/stage89_lora_support_calibrator_sweep_seed7_${JOB_ID}.log"
         --save-dir "${SAVE_DIR}" \
         --job-id "${JOB_ID}" \
         --support-count 2 \
-        --c-values 0.03,0.1,0.3,1.0,3.0,10.0 \
+        --c-values 0.3,1.0,3.0 \
         --seed 7 \
         --output "${ROOT}/STAGE89_LORA_SUPPORT_CALIBRATOR_SWEEP_SEED7_REPORT_${JOB_ID}.md" \
         --summary-json "${ROOT}/stage89_lora_support_calibrator_sweep_summary_${JOB_ID}.json"
