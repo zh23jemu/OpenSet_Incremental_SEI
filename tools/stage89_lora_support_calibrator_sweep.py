@@ -237,7 +237,9 @@ def _collect(save_dir: Path, support_count: int, seed: int, c_values: list[float
                 "support_samples": int(np.sum(support_mask)),
                 "eval_samples": int(np.sum(eval_mask)),
             }
-            if stage == "After R3":
+            # _evaluate 返回的人类可读阶段名是 "After R3"，循环变量仍是内部键
+            # "after_r3"；这里用指标行里的 stage 字段判断，避免漏写 adjusted 指标。
+            if row["stage"] == "After R3":
                 row["adjusted_original_mix_overall"] = _adjusted_overall(row, old_classes=20, new_classes=5)
                 row["required_old_for_50"] = _required_old_for_target(0.50, row["new"], old_classes=20, new_classes=5)
                 row["old_gap_to_50"] = float(row["old"]) - float(row["required_old_for_50"])
