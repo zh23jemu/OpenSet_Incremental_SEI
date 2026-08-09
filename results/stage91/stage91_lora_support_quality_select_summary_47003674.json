@@ -1,0 +1,4908 @@
+{
+  "schema_version": "stage91_lora_support_quality_select_v1",
+  "job_id": "47003674",
+  "save_dir": "/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage68-worktree/results/stage68/lora_s68_stage48_dump_seed7_46450782",
+  "support_count": 2,
+  "c_value": 0.3,
+  "strategies": [
+    "top_true_logit",
+    "top_true_margin",
+    "low_entropy",
+    "centroid_medoid",
+    "centroid_diverse",
+    "hard_low_margin"
+  ],
+  "results": [
+    {
+      "strategy": "top_true_logit",
+      "rows": [
+        {
+          "strategy": "top_true_logit",
+          "support_recordings_per_old_class": 2,
+          "variant": "top_true_logit_logreg_c0p3",
+          "stage": "Initial",
+          "overall": 0.5773809523809523,
+          "old": 0.5773809523809523,
+          "new": NaN,
+          "initial_known": 0.5773809523809523,
+          "forgetting": 0.0,
+          "macro_f1": 0.5248029818857789,
+          "support_samples": 0,
+          "eval_samples": 840
+        },
+        {
+          "strategy": "top_true_logit",
+          "support_recordings_per_old_class": 2,
+          "variant": "top_true_logit_logreg_c0p3",
+          "stage": "After R1",
+          "overall": 0.29285714285714287,
+          "old": 0.4035714285714286,
+          "new": 0.21904761904761905,
+          "initial_known": 0.4035714285714286,
+          "forgetting": 0.17380952380952375,
+          "macro_f1": 0.28236792769834246,
+          "support_samples": 560,
+          "eval_samples": 700
+        },
+        {
+          "strategy": "top_true_logit",
+          "support_recordings_per_old_class": 2,
+          "variant": "top_true_logit_logreg_c0p3",
+          "stage": "After R2",
+          "overall": 0.40476190476190477,
+          "old": 0.49523809523809526,
+          "new": 0.3142857142857143,
+          "initial_known": 0.5357142857142857,
+          "forgetting": 0.04166666666666663,
+          "macro_f1": 0.40071349126807404,
+          "support_samples": 840,
+          "eval_samples": 840
+        },
+        {
+          "strategy": "top_true_logit",
+          "support_recordings_per_old_class": 2,
+          "variant": "top_true_logit_logreg_c0p3",
+          "stage": "After R3",
+          "overall": 0.5061224489795918,
+          "old": 0.4714285714285714,
+          "new": 0.5523809523809524,
+          "initial_known": 0.4392857142857143,
+          "forgetting": 0.13809523809523805,
+          "macro_f1": 0.4497909383361251,
+          "support_samples": 1120,
+          "eval_samples": 980,
+          "adjusted_original_mix_overall": 0.4876190476190477,
+          "required_old_for_50": 0.48690476190476184,
+          "old_gap_to_50": -0.015476190476190421,
+          "passes_adjusted_50": false
+        }
+      ],
+      "r3": {
+        "strategy": "top_true_logit",
+        "support_recordings_per_old_class": 2,
+        "variant": "top_true_logit_logreg_c0p3",
+        "stage": "After R3",
+        "overall": 0.5061224489795918,
+        "old": 0.4714285714285714,
+        "new": 0.5523809523809524,
+        "initial_known": 0.4392857142857143,
+        "forgetting": 0.13809523809523805,
+        "macro_f1": 0.4497909383361251,
+        "support_samples": 1120,
+        "eval_samples": 980,
+        "adjusted_original_mix_overall": 0.4876190476190477,
+        "required_old_for_50": 0.48690476190476184,
+        "old_gap_to_50": -0.015476190476190421,
+        "passes_adjusted_50": false
+      },
+      "support_audit": {
+        "initial": [],
+        "after_r1": [
+          {
+            "class_id": 0,
+            "recording": 0,
+            "true_logit": 4.505767822265625,
+            "true_margin": -0.20901535238538482,
+            "entropy": 1.475487942390173,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 2,
+            "true_logit": 4.356215936797006,
+            "true_margin": -0.28830954858234925,
+            "entropy": 1.52594352702378,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 4,
+            "true_logit": 7.052598416805267,
+            "true_margin": 2.925584012642503,
+            "entropy": 0.6406181289993421,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 5,
+            "true_logit": 4.903309974819422,
+            "true_margin": -0.747638164354222,
+            "entropy": 1.3433101404757959,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 8,
+            "true_logit": 4.815282089369638,
+            "true_margin": -0.013781973293848893,
+            "entropy": 1.2851954033025155,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 7,
+            "true_logit": 3.385356522032193,
+            "true_margin": -2.385697869317872,
+            "entropy": 1.1399833005656579,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 10,
+            "true_logit": 6.245511072022574,
+            "true_margin": 0.34532755613327026,
+            "entropy": 1.0643320944580623,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 11,
+            "true_logit": 6.1569806677954535,
+            "true_margin": 0.45413576705115144,
+            "entropy": 1.109175676169586,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 12,
+            "true_logit": 7.257868732724871,
+            "true_margin": 2.915978968143463,
+            "entropy": 1.2204306015264155,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 13,
+            "true_logit": 6.984574538256441,
+            "true_margin": 2.3474301514880995,
+            "entropy": 1.2734290443512346,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 15,
+            "true_logit": 4.765243396162987,
+            "true_margin": 1.0197565662009374,
+            "entropy": 1.3836528967961936,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 16,
+            "true_logit": 3.261335982808045,
+            "true_margin": -1.553700135222503,
+            "entropy": 1.578255861289426,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 20,
+            "true_logit": 5.578547673566001,
+            "true_margin": 2.025222464331559,
+            "entropy": 1.0098906652897317,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 18,
+            "true_logit": 4.061096163732665,
+            "true_margin": 0.3480580555541173,
+            "entropy": 1.714697084775719,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 23,
+            "true_logit": 6.467095375061035,
+            "true_margin": 0.3724978566169739,
+            "entropy": 1.764226973556343,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 21,
+            "true_logit": 6.25833162026746,
+            "true_margin": 0.6074500275509704,
+            "entropy": 1.7866054067203856,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 24,
+            "true_logit": 3.4114355125597546,
+            "true_margin": -0.9603080047028403,
+            "entropy": 1.6643642354641182,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 26,
+            "true_logit": 3.4080408295350417,
+            "true_margin": 0.5843414967613563,
+            "entropy": 1.893462935948833,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 28,
+            "true_logit": 6.425399695123945,
+            "true_margin": 1.708756336144038,
+            "entropy": 1.3611802968340636,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 29,
+            "true_logit": 5.573468799037593,
+            "true_margin": 0.019195410822119285,
+            "entropy": 1.936464424661196,
+            "samples": 28
+          }
+        ],
+        "after_r2": [
+          {
+            "class_id": 0,
+            "recording": 1,
+            "true_logit": 5.328119209834507,
+            "true_margin": 0.3166381631578714,
+            "entropy": 1.0747938975249376,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 0,
+            "true_logit": 5.038222840854099,
+            "true_margin": -0.17418244055339294,
+            "entropy": 1.4713601136429462,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 5,
+            "true_logit": 6.124724958624158,
+            "true_margin": -0.26249813182013426,
+            "entropy": 1.0296719090341249,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 4,
+            "true_logit": 5.828564601285117,
+            "true_margin": -0.2653636591775079,
+            "entropy": 1.239868696731694,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 6,
+            "true_logit": 5.23947765145983,
+            "true_margin": 0.047014406749180004,
+            "entropy": 1.263638764366354,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 8,
+            "true_logit": 5.229890150683267,
+            "true_margin": 0.46192806107657347,
+            "entropy": 1.4587807714090282,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 10,
+            "true_logit": 5.585141863141741,
+            "true_margin": 1.417849851506097,
+            "entropy": 1.5261934411424225,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 11,
+            "true_logit": 5.21924459987453,
+            "true_margin": 1.1015251965395043,
+            "entropy": 1.6132337628176021,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 13,
+            "true_logit": 7.147875070571899,
+            "true_margin": 0.49622847352709076,
+            "entropy": 1.0729135630021358,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 12,
+            "true_logit": 7.099151577268328,
+            "true_margin": 0.4587315831865588,
+            "entropy": 1.1033950166275803,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 17,
+            "true_logit": 5.204190705503736,
+            "true_margin": 1.255805547748293,
+            "entropy": 1.5097444206403163,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 16,
+            "true_logit": 3.0665310344525745,
+            "true_margin": -2.83596268934863,
+            "entropy": 1.732942868837171,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 19,
+            "true_logit": 6.625701631818499,
+            "true_margin": 2.9348942022770648,
+            "entropy": 0.7359165815520468,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 20,
+            "true_logit": 5.474476712090628,
+            "true_margin": 0.4843217304774692,
+            "entropy": 1.466379206722108,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 21,
+            "true_logit": 4.920984227077237,
+            "true_margin": -0.03751429476376167,
+            "entropy": 2.5964184941058157,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 23,
+            "true_logit": 2.2075206392577718,
+            "true_margin": -3.0205000032271654,
+            "entropy": 2.11564853319193,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 26,
+            "true_logit": 5.130176646368844,
+            "true_margin": 0.43383330958230193,
+            "entropy": 1.5490407307028349,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 24,
+            "true_logit": 5.066603468997138,
+            "true_margin": 1.3209600831781114,
+            "entropy": 1.6044111998476065,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 27,
+            "true_logit": 5.271535613707134,
+            "true_margin": 0.452631389456136,
+            "entropy": 2.4602488510388216,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 29,
+            "true_logit": 5.132958439843995,
+            "true_margin": -1.5106869914702008,
+            "entropy": 2.1374842387851487,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 31,
+            "true_logit": 5.100020996161869,
+            "true_margin": -1.6771055587700436,
+            "entropy": 1.9320574607871948,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 32,
+            "true_logit": 4.980797861303602,
+            "true_margin": -1.7052413565771927,
+            "entropy": 1.9814942009835639,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 34,
+            "true_logit": 5.586185976862907,
+            "true_margin": 0.07208608676280281,
+            "entropy": 1.6607356208740043,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 33,
+            "true_logit": 5.174330819930349,
+            "true_margin": -0.051594409027270416,
+            "entropy": 1.7915355456462936,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 36,
+            "true_logit": 4.2880464281354636,
+            "true_margin": -2.3360422253608704,
+            "entropy": 2.2315846828771315,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 37,
+            "true_logit": 3.924664165292467,
+            "true_margin": -2.306483335793019,
+            "entropy": 2.3048412035076886,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 41,
+            "true_logit": 5.418901149715696,
+            "true_margin": -1.054708246673857,
+            "entropy": 2.2493891598900633,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 39,
+            "true_logit": 3.4830720786537444,
+            "true_margin": -2.588823556900024,
+            "entropy": 2.3726595890691855,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 44,
+            "true_logit": 6.080868703978402,
+            "true_margin": -0.6442639827728271,
+            "entropy": 1.4724872505156459,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 43,
+            "true_logit": 5.474797297468675,
+            "true_margin": -0.5111146519359728,
+            "entropy": 1.7994987210531392,
+            "samples": 28
+          }
+        ],
+        "after_r3": [
+          {
+            "class_id": 0,
+            "recording": 2,
+            "true_logit": 5.606902020318167,
+            "true_margin": -0.20888105460575623,
+            "entropy": 1.5743937453354269,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 0,
+            "true_logit": 5.476604095527104,
+            "true_margin": -0.024638848645347267,
+            "entropy": 1.7084985247460347,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 4,
+            "true_logit": 5.492168392453875,
+            "true_margin": -0.5395870379039218,
+            "entropy": 1.3144728146656928,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 3,
+            "true_logit": 5.311602469001498,
+            "true_margin": -0.6934395560196469,
+            "entropy": 1.480630114805302,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 6,
+            "true_logit": 5.95311575276511,
+            "true_margin": 0.14530716623578677,
+            "entropy": 1.4955347653288518,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 8,
+            "true_logit": 5.889746478625706,
+            "true_margin": 0.24620766299111452,
+            "entropy": 1.553206007406783,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 11,
+            "true_logit": 6.350172766617367,
+            "true_margin": 0.7787749831165591,
+            "entropy": 1.2012814190526264,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 9,
+            "true_logit": 6.205196763787951,
+            "true_margin": 0.8905320891312192,
+            "entropy": 1.3510813558474204,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 12,
+            "true_logit": 7.0528578247342795,
+            "true_margin": 0.4691793237413684,
+            "entropy": 1.1199564354474403,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 14,
+            "true_logit": 6.5908496763025015,
+            "true_margin": 0.3200472593307495,
+            "entropy": 1.485798927048954,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 15,
+            "true_logit": 2.5058628373912404,
+            "true_margin": -1.303353425647531,
+            "entropy": 2.5287769609667525,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 17,
+            "true_logit": 2.217672130891255,
+            "true_margin": -5.256519764661789,
+            "entropy": 1.1277036656737727,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 18,
+            "true_logit": 7.029877645628793,
+            "true_margin": 2.125956727990083,
+            "entropy": 1.3148093213832788,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 19,
+            "true_logit": 6.18324259349278,
+            "true_margin": 0.7758910077224881,
+            "entropy": 1.9097492876233448,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 23,
+            "true_logit": 6.364626594952175,
+            "true_margin": -0.43226193317345185,
+            "entropy": 2.2910839750607632,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 21,
+            "true_logit": 4.670708098581859,
+            "true_margin": -1.2222954588276993,
+            "entropy": 2.246687447118358,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 24,
+            "true_logit": 5.5797352237360816,
+            "true_margin": -0.7879661023616791,
+            "entropy": 1.3887827794783965,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 25,
+            "true_logit": 4.9237905357565195,
+            "true_margin": 1.1659948272364478,
+            "entropy": 2.051460630089517,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 29,
+            "true_logit": 6.310485256569726,
+            "true_margin": -0.465200624295643,
+            "entropy": 2.0756748775549103,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 27,
+            "true_logit": 4.875613669199603,
+            "true_margin": -1.626039146312646,
+            "entropy": 2.090691937154448,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 30,
+            "true_logit": 5.253247618675232,
+            "true_margin": -1.6113131131444662,
+            "entropy": 1.9809243528310905,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 32,
+            "true_logit": 4.140749764495662,
+            "true_margin": -1.03121694895838,
+            "entropy": 2.3318224012680133,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 33,
+            "true_logit": 6.700621673039028,
+            "true_margin": -0.3134726456233432,
+            "entropy": 1.1923154824386994,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 34,
+            "true_logit": 6.6985010760171075,
+            "true_margin": -0.373569505555289,
+            "entropy": 1.202497286534691,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 36,
+            "true_logit": 4.539442769118717,
+            "true_margin": -1.9785096922091077,
+            "entropy": 2.4228147850722355,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 38,
+            "true_logit": 4.382811116320746,
+            "true_margin": 0.3574016956346373,
+            "entropy": 2.7366675950743176,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 39,
+            "true_logit": 4.7739998277808935,
+            "true_margin": -1.8404790753764768,
+            "entropy": 2.547383350760682,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 40,
+            "true_logit": 3.1597736477851868,
+            "true_margin": -3.4677596858569553,
+            "entropy": 2.22382060047377,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 43,
+            "true_logit": 7.148233754294259,
+            "true_margin": 0.7982115404946466,
+            "entropy": 1.7549615875003426,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 42,
+            "true_logit": 6.869676602738244,
+            "true_margin": 0.693441778421402,
+            "entropy": 1.960831854908871,
+            "samples": 28
+          },
+          {
+            "class_id": 15,
+            "recording": 47,
+            "true_logit": 7.239703331674848,
+            "true_margin": 1.0050549038818906,
+            "entropy": 2.0876274817681577,
+            "samples": 28
+          },
+          {
+            "class_id": 15,
+            "recording": 45,
+            "true_logit": 7.200887139354434,
+            "true_margin": 1.0571498189653674,
+            "entropy": 2.0531930855414444,
+            "samples": 28
+          },
+          {
+            "class_id": 16,
+            "recording": 49,
+            "true_logit": 3.550813826067107,
+            "true_margin": -2.0038299624409,
+            "entropy": 2.5559205016427207,
+            "samples": 28
+          },
+          {
+            "class_id": 16,
+            "recording": 50,
+            "true_logit": 3.3709780403545926,
+            "true_margin": -3.141491511038371,
+            "entropy": 2.445751462193133,
+            "samples": 28
+          },
+          {
+            "class_id": 17,
+            "recording": 52,
+            "true_logit": 6.51199735062463,
+            "true_margin": -0.9691749726022989,
+            "entropy": 1.9838412866981532,
+            "samples": 28
+          },
+          {
+            "class_id": 17,
+            "recording": 53,
+            "true_logit": 6.471025773457119,
+            "true_margin": 1.326944700309209,
+            "entropy": 1.9895460114584511,
+            "samples": 28
+          },
+          {
+            "class_id": 18,
+            "recording": 54,
+            "true_logit": 6.820822656154633,
+            "true_margin": -0.10341095072882478,
+            "entropy": 1.975477180801846,
+            "samples": 28
+          },
+          {
+            "class_id": 18,
+            "recording": 55,
+            "true_logit": 6.624158297266279,
+            "true_margin": -0.01184902446610625,
+            "entropy": 1.9492140658089363,
+            "samples": 28
+          },
+          {
+            "class_id": 19,
+            "recording": 59,
+            "true_logit": 1.6017049444573266,
+            "true_margin": -5.3833999910524915,
+            "entropy": 1.5463655606439988,
+            "samples": 28
+          },
+          {
+            "class_id": 19,
+            "recording": 57,
+            "true_logit": 1.1680317494486059,
+            "true_margin": -5.0013247754957,
+            "entropy": 2.0001740635431613,
+            "samples": 28
+          }
+        ]
+      }
+    },
+    {
+      "strategy": "top_true_margin",
+      "rows": [
+        {
+          "strategy": "top_true_margin",
+          "support_recordings_per_old_class": 2,
+          "variant": "top_true_margin_logreg_c0p3",
+          "stage": "Initial",
+          "overall": 0.5773809523809523,
+          "old": 0.5773809523809523,
+          "new": NaN,
+          "initial_known": 0.5773809523809523,
+          "forgetting": 0.0,
+          "macro_f1": 0.5248029818857789,
+          "support_samples": 0,
+          "eval_samples": 840
+        },
+        {
+          "strategy": "top_true_margin",
+          "support_recordings_per_old_class": 2,
+          "variant": "top_true_margin_logreg_c0p3",
+          "stage": "After R1",
+          "overall": 0.2842857142857143,
+          "old": 0.3821428571428571,
+          "new": 0.21904761904761905,
+          "initial_known": 0.3821428571428571,
+          "forgetting": 0.1952380952380952,
+          "macro_f1": 0.2804320908417806,
+          "support_samples": 560,
+          "eval_samples": 700
+        },
+        {
+          "strategy": "top_true_margin",
+          "support_recordings_per_old_class": 2,
+          "variant": "top_true_margin_logreg_c0p3",
+          "stage": "After R2",
+          "overall": 0.4107142857142857,
+          "old": 0.5071428571428571,
+          "new": 0.3142857142857143,
+          "initial_known": 0.5035714285714286,
+          "forgetting": 0.07380952380952377,
+          "macro_f1": 0.40155352548520085,
+          "support_samples": 840,
+          "eval_samples": 840
+        },
+        {
+          "strategy": "top_true_margin",
+          "support_recordings_per_old_class": 2,
+          "variant": "top_true_margin_logreg_c0p3",
+          "stage": "After R3",
+          "overall": 0.4387755102040816,
+          "old": 0.3535714285714286,
+          "new": 0.5523809523809524,
+          "initial_known": 0.29285714285714287,
+          "forgetting": 0.28452380952380946,
+          "macro_f1": 0.3449890221516845,
+          "support_samples": 1120,
+          "eval_samples": 980,
+          "adjusted_original_mix_overall": 0.39333333333333337,
+          "required_old_for_50": 0.48690476190476184,
+          "old_gap_to_50": -0.13333333333333325,
+          "passes_adjusted_50": false
+        }
+      ],
+      "r3": {
+        "strategy": "top_true_margin",
+        "support_recordings_per_old_class": 2,
+        "variant": "top_true_margin_logreg_c0p3",
+        "stage": "After R3",
+        "overall": 0.4387755102040816,
+        "old": 0.3535714285714286,
+        "new": 0.5523809523809524,
+        "initial_known": 0.29285714285714287,
+        "forgetting": 0.28452380952380946,
+        "macro_f1": 0.3449890221516845,
+        "support_samples": 1120,
+        "eval_samples": 980,
+        "adjusted_original_mix_overall": 0.39333333333333337,
+        "required_old_for_50": 0.48690476190476184,
+        "old_gap_to_50": -0.13333333333333325,
+        "passes_adjusted_50": false
+      },
+      "support_audit": {
+        "initial": [],
+        "after_r1": [
+          {
+            "class_id": 0,
+            "recording": 0,
+            "true_logit": 4.505767822265625,
+            "true_margin": -0.20901535238538482,
+            "entropy": 1.475487942390173,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 2,
+            "true_logit": 4.356215936797006,
+            "true_margin": -0.28830954858234925,
+            "entropy": 1.52594352702378,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 4,
+            "true_logit": 7.052598416805267,
+            "true_margin": 2.925584012642503,
+            "entropy": 0.6406181289993421,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 5,
+            "true_logit": 4.903309974819422,
+            "true_margin": -0.747638164354222,
+            "entropy": 1.3433101404757959,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 8,
+            "true_logit": 4.815282089369638,
+            "true_margin": -0.013781973293848893,
+            "entropy": 1.2851954033025155,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 7,
+            "true_logit": 3.385356522032193,
+            "true_margin": -2.385697869317872,
+            "entropy": 1.1399833005656579,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 11,
+            "true_logit": 6.1569806677954535,
+            "true_margin": 0.45413576705115144,
+            "entropy": 1.109175676169586,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 10,
+            "true_logit": 6.245511072022574,
+            "true_margin": 0.34532755613327026,
+            "entropy": 1.0643320944580623,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 12,
+            "true_logit": 7.257868732724871,
+            "true_margin": 2.915978968143463,
+            "entropy": 1.2204306015264155,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 13,
+            "true_logit": 6.984574538256441,
+            "true_margin": 2.3474301514880995,
+            "entropy": 1.2734290443512346,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 15,
+            "true_logit": 4.765243396162987,
+            "true_margin": 1.0197565662009374,
+            "entropy": 1.3836528967961936,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 16,
+            "true_logit": 3.261335982808045,
+            "true_margin": -1.553700135222503,
+            "entropy": 1.578255861289426,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 20,
+            "true_logit": 5.578547673566001,
+            "true_margin": 2.025222464331559,
+            "entropy": 1.0098906652897317,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 18,
+            "true_logit": 4.061096163732665,
+            "true_margin": 0.3480580555541173,
+            "entropy": 1.714697084775719,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 21,
+            "true_logit": 6.25833162026746,
+            "true_margin": 0.6074500275509704,
+            "entropy": 1.7866054067203856,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 23,
+            "true_logit": 6.467095375061035,
+            "true_margin": 0.3724978566169739,
+            "entropy": 1.764226973556343,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 26,
+            "true_logit": 3.4080408295350417,
+            "true_margin": 0.5843414967613563,
+            "entropy": 1.893462935948833,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 24,
+            "true_logit": 3.4114355125597546,
+            "true_margin": -0.9603080047028403,
+            "entropy": 1.6643642354641182,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 28,
+            "true_logit": 6.425399695123945,
+            "true_margin": 1.708756336144038,
+            "entropy": 1.3611802968340636,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 27,
+            "true_logit": 4.669657969049045,
+            "true_margin": 0.9301417725426813,
+            "entropy": 2.3111025628282076,
+            "samples": 28
+          }
+        ],
+        "after_r2": [
+          {
+            "class_id": 0,
+            "recording": 1,
+            "true_logit": 5.328119209834507,
+            "true_margin": 0.3166381631578714,
+            "entropy": 1.0747938975249376,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 0,
+            "true_logit": 5.038222840854099,
+            "true_margin": -0.17418244055339294,
+            "entropy": 1.4713601136429462,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 5,
+            "true_logit": 6.124724958624158,
+            "true_margin": -0.26249813182013426,
+            "entropy": 1.0296719090341249,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 4,
+            "true_logit": 5.828564601285117,
+            "true_margin": -0.2653636591775079,
+            "entropy": 1.239868696731694,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 8,
+            "true_logit": 5.229890150683267,
+            "true_margin": 0.46192806107657347,
+            "entropy": 1.4587807714090282,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 6,
+            "true_logit": 5.23947765145983,
+            "true_margin": 0.047014406749180004,
+            "entropy": 1.263638764366354,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 10,
+            "true_logit": 5.585141863141741,
+            "true_margin": 1.417849851506097,
+            "entropy": 1.5261934411424225,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 11,
+            "true_logit": 5.21924459987453,
+            "true_margin": 1.1015251965395043,
+            "entropy": 1.6132337628176021,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 13,
+            "true_logit": 7.147875070571899,
+            "true_margin": 0.49622847352709076,
+            "entropy": 1.0729135630021358,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 12,
+            "true_logit": 7.099151577268328,
+            "true_margin": 0.4587315831865588,
+            "entropy": 1.1033950166275803,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 17,
+            "true_logit": 5.204190705503736,
+            "true_margin": 1.255805547748293,
+            "entropy": 1.5097444206403163,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 15,
+            "true_logit": 2.5317343369658505,
+            "true_margin": -0.9511838180146048,
+            "entropy": 2.231187368347616,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 19,
+            "true_logit": 6.625701631818499,
+            "true_margin": 2.9348942022770648,
+            "entropy": 0.7359165815520468,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 20,
+            "true_logit": 5.474476712090628,
+            "true_margin": 0.4843217304774692,
+            "entropy": 1.466379206722108,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 21,
+            "true_logit": 4.920984227077237,
+            "true_margin": -0.03751429476376167,
+            "entropy": 2.5964184941058157,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 23,
+            "true_logit": 2.2075206392577718,
+            "true_margin": -3.0205000032271654,
+            "entropy": 2.11564853319193,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 24,
+            "true_logit": 5.066603468997138,
+            "true_margin": 1.3209600831781114,
+            "entropy": 1.6044111998476065,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 26,
+            "true_logit": 5.130176646368844,
+            "true_margin": 0.43383330958230193,
+            "entropy": 1.5490407307028349,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 27,
+            "true_logit": 5.271535613707134,
+            "true_margin": 0.452631389456136,
+            "entropy": 2.4602488510388216,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 28,
+            "true_logit": 4.914538770914078,
+            "true_margin": 0.3610470962843726,
+            "entropy": 2.5005662546882887,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 30,
+            "true_logit": 4.774401873350143,
+            "true_margin": -1.660636505910328,
+            "entropy": 1.9823191732872618,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 31,
+            "true_logit": 5.100020996161869,
+            "true_margin": -1.6771055587700436,
+            "entropy": 1.9320574607871948,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 34,
+            "true_logit": 5.586185976862907,
+            "true_margin": 0.07208608676280281,
+            "entropy": 1.6607356208740043,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 33,
+            "true_logit": 5.174330819930349,
+            "true_margin": -0.051594409027270416,
+            "entropy": 1.7915355456462936,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 37,
+            "true_logit": 3.924664165292467,
+            "true_margin": -2.306483335793019,
+            "entropy": 2.3048412035076886,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 36,
+            "true_logit": 4.2880464281354636,
+            "true_margin": -2.3360422253608704,
+            "entropy": 2.2315846828771315,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 41,
+            "true_logit": 5.418901149715696,
+            "true_margin": -1.054708246673857,
+            "entropy": 2.2493891598900633,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 40,
+            "true_logit": 2.8651422465087046,
+            "true_margin": -1.9714078572578728,
+            "entropy": 2.457533620744753,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 42,
+            "true_logit": 4.323893934155682,
+            "true_margin": 0.513039228839002,
+            "entropy": 2.41519752437523,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 43,
+            "true_logit": 5.474797297468675,
+            "true_margin": -0.5111146519359728,
+            "entropy": 1.7994987210531392,
+            "samples": 28
+          }
+        ],
+        "after_r3": [
+          {
+            "class_id": 0,
+            "recording": 1,
+            "true_logit": 4.702340157968657,
+            "true_margin": 0.321144462430051,
+            "entropy": 2.076587215231066,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 0,
+            "true_logit": 5.476604095527104,
+            "true_margin": -0.024638848645347267,
+            "entropy": 1.7084985247460347,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 5,
+            "true_logit": 4.279216754383275,
+            "true_margin": -0.4958976823836565,
+            "entropy": 1.948919854562175,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 4,
+            "true_logit": 5.492168392453875,
+            "true_margin": -0.5395870379039218,
+            "entropy": 1.3144728146656928,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 8,
+            "true_logit": 5.889746478625706,
+            "true_margin": 0.24620766299111452,
+            "entropy": 1.553206007406783,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 6,
+            "true_logit": 5.95311575276511,
+            "true_margin": 0.14530716623578677,
+            "entropy": 1.4955347653288518,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 9,
+            "true_logit": 6.205196763787951,
+            "true_margin": 0.8905320891312192,
+            "entropy": 1.3510813558474204,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 10,
+            "true_logit": 6.0821540994303565,
+            "true_margin": 0.7857855302946906,
+            "entropy": 1.3249630127101555,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 12,
+            "true_logit": 7.0528578247342795,
+            "true_margin": 0.4691793237413684,
+            "entropy": 1.1199564354474403,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 13,
+            "true_logit": 6.416171744465828,
+            "true_margin": 0.38572784087487655,
+            "entropy": 1.5823091818344999,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 15,
+            "true_logit": 2.5058628373912404,
+            "true_margin": -1.303353425647531,
+            "entropy": 2.5287769609667525,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 17,
+            "true_logit": 2.217672130891255,
+            "true_margin": -5.256519764661789,
+            "entropy": 1.1277036656737727,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 18,
+            "true_logit": 7.029877645628793,
+            "true_margin": 2.125956727990083,
+            "entropy": 1.3148093213832788,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 19,
+            "true_logit": 6.18324259349278,
+            "true_margin": 0.7758910077224881,
+            "entropy": 1.9097492876233448,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 23,
+            "true_logit": 6.364626594952175,
+            "true_margin": -0.43226193317345185,
+            "entropy": 2.2910839750607632,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 21,
+            "true_logit": 4.670708098581859,
+            "true_margin": -1.2222954588276993,
+            "entropy": 2.246687447118358,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 25,
+            "true_logit": 4.9237905357565195,
+            "true_margin": 1.1659948272364478,
+            "entropy": 2.051460630089517,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 26,
+            "true_logit": 3.955701228763376,
+            "true_margin": -0.6056249780314311,
+            "entropy": 2.247586058562084,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 29,
+            "true_logit": 6.310485256569726,
+            "true_margin": -0.465200624295643,
+            "entropy": 2.0756748775549103,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 27,
+            "true_logit": 4.875613669199603,
+            "true_margin": -1.626039146312646,
+            "entropy": 2.090691937154448,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 31,
+            "true_logit": 3.3649128718035564,
+            "true_margin": -0.7809008157679007,
+            "entropy": 2.455208652327892,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 32,
+            "true_logit": 4.140749764495662,
+            "true_margin": -1.03121694895838,
+            "entropy": 2.3318224012680133,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 35,
+            "true_logit": 6.390707749341216,
+            "true_margin": -0.22704285276787584,
+            "entropy": 1.3506200242088215,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 33,
+            "true_logit": 6.700621673039028,
+            "true_margin": -0.3134726456233432,
+            "entropy": 1.1923154824386994,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 38,
+            "true_logit": 4.382811116320746,
+            "true_margin": 0.3574016956346373,
+            "entropy": 2.7366675950743176,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 37,
+            "true_logit": 3.9960712364741733,
+            "true_margin": -1.9536303622382025,
+            "entropy": 2.5063104983707403,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 39,
+            "true_logit": 4.7739998277808935,
+            "true_margin": -1.8404790753764768,
+            "entropy": 2.547383350760682,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 40,
+            "true_logit": 3.1597736477851868,
+            "true_margin": -3.4677596858569553,
+            "entropy": 2.22382060047377,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 43,
+            "true_logit": 7.148233754294259,
+            "true_margin": 0.7982115404946466,
+            "entropy": 1.7549615875003426,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 44,
+            "true_logit": 6.588116937450001,
+            "true_margin": 0.7256710635764261,
+            "entropy": 2.0187078766125297,
+            "samples": 28
+          },
+          {
+            "class_id": 15,
+            "recording": 46,
+            "true_logit": 6.845207469803946,
+            "true_margin": 1.2934938328606744,
+            "entropy": 2.1567010261873154,
+            "samples": 28
+          },
+          {
+            "class_id": 15,
+            "recording": 45,
+            "true_logit": 7.200887139354434,
+            "true_margin": 1.0571498189653674,
+            "entropy": 2.0531930855414444,
+            "samples": 28
+          },
+          {
+            "class_id": 16,
+            "recording": 48,
+            "true_logit": 3.356405794620514,
+            "true_margin": -1.4254620993243794,
+            "entropy": 2.5571429391391534,
+            "samples": 28
+          },
+          {
+            "class_id": 16,
+            "recording": 49,
+            "true_logit": 3.550813826067107,
+            "true_margin": -2.0038299624409,
+            "entropy": 2.5559205016427207,
+            "samples": 28
+          },
+          {
+            "class_id": 17,
+            "recording": 53,
+            "true_logit": 6.471025773457119,
+            "true_margin": 1.326944700309209,
+            "entropy": 1.9895460114584511,
+            "samples": 28
+          },
+          {
+            "class_id": 17,
+            "recording": 51,
+            "true_logit": 6.449932745524815,
+            "true_margin": 0.49205317348241806,
+            "entropy": 2.133088673701513,
+            "samples": 28
+          },
+          {
+            "class_id": 18,
+            "recording": 56,
+            "true_logit": 5.556675544806889,
+            "true_margin": -0.0076396167278289795,
+            "entropy": 2.333524863158731,
+            "samples": 28
+          },
+          {
+            "class_id": 18,
+            "recording": 55,
+            "true_logit": 6.624158297266279,
+            "true_margin": -0.01184902446610625,
+            "entropy": 1.9492140658089363,
+            "samples": 28
+          },
+          {
+            "class_id": 19,
+            "recording": 57,
+            "true_logit": 1.1680317494486059,
+            "true_margin": -5.0013247754957,
+            "entropy": 2.0001740635431613,
+            "samples": 28
+          },
+          {
+            "class_id": 19,
+            "recording": 59,
+            "true_logit": 1.6017049444573266,
+            "true_margin": -5.3833999910524915,
+            "entropy": 1.5463655606439988,
+            "samples": 28
+          }
+        ]
+      }
+    },
+    {
+      "strategy": "low_entropy",
+      "rows": [
+        {
+          "strategy": "low_entropy",
+          "support_recordings_per_old_class": 2,
+          "variant": "low_entropy_logreg_c0p3",
+          "stage": "Initial",
+          "overall": 0.5773809523809523,
+          "old": 0.5773809523809523,
+          "new": NaN,
+          "initial_known": 0.5773809523809523,
+          "forgetting": 0.0,
+          "macro_f1": 0.5248029818857789,
+          "support_samples": 0,
+          "eval_samples": 840
+        },
+        {
+          "strategy": "low_entropy",
+          "support_recordings_per_old_class": 2,
+          "variant": "low_entropy_logreg_c0p3",
+          "stage": "After R1",
+          "overall": 0.3171428571428571,
+          "old": 0.4642857142857143,
+          "new": 0.21904761904761905,
+          "initial_known": 0.4642857142857143,
+          "forgetting": 0.11309523809523803,
+          "macro_f1": 0.28218339360650896,
+          "support_samples": 560,
+          "eval_samples": 700
+        },
+        {
+          "strategy": "low_entropy",
+          "support_recordings_per_old_class": 2,
+          "variant": "low_entropy_logreg_c0p3",
+          "stage": "After R2",
+          "overall": 0.37976190476190474,
+          "old": 0.4452380952380952,
+          "new": 0.3142857142857143,
+          "initial_known": 0.42857142857142855,
+          "forgetting": 0.14880952380952378,
+          "macro_f1": 0.375791556344686,
+          "support_samples": 840,
+          "eval_samples": 840
+        },
+        {
+          "strategy": "low_entropy",
+          "support_recordings_per_old_class": 2,
+          "variant": "low_entropy_logreg_c0p3",
+          "stage": "After R3",
+          "overall": 0.4887755102040816,
+          "old": 0.44107142857142856,
+          "new": 0.5523809523809524,
+          "initial_known": 0.3892857142857143,
+          "forgetting": 0.18809523809523804,
+          "macro_f1": 0.4218571963645596,
+          "support_samples": 1120,
+          "eval_samples": 980,
+          "adjusted_original_mix_overall": 0.4633333333333334,
+          "required_old_for_50": 0.48690476190476184,
+          "old_gap_to_50": -0.04583333333333328,
+          "passes_adjusted_50": false
+        }
+      ],
+      "r3": {
+        "strategy": "low_entropy",
+        "support_recordings_per_old_class": 2,
+        "variant": "low_entropy_logreg_c0p3",
+        "stage": "After R3",
+        "overall": 0.4887755102040816,
+        "old": 0.44107142857142856,
+        "new": 0.5523809523809524,
+        "initial_known": 0.3892857142857143,
+        "forgetting": 0.18809523809523804,
+        "macro_f1": 0.4218571963645596,
+        "support_samples": 1120,
+        "eval_samples": 980,
+        "adjusted_original_mix_overall": 0.4633333333333334,
+        "required_old_for_50": 0.48690476190476184,
+        "old_gap_to_50": -0.04583333333333328,
+        "passes_adjusted_50": false
+      },
+      "support_audit": {
+        "initial": [],
+        "after_r1": [
+          {
+            "class_id": 0,
+            "recording": 0,
+            "true_logit": 4.505767822265625,
+            "true_margin": -0.20901535238538482,
+            "entropy": 1.475487942390173,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 2,
+            "true_logit": 4.356215936797006,
+            "true_margin": -0.28830954858234925,
+            "entropy": 1.52594352702378,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 4,
+            "true_logit": 7.052598416805267,
+            "true_margin": 2.925584012642503,
+            "entropy": 0.6406181289993421,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 3,
+            "true_logit": 4.363939844071865,
+            "true_margin": -1.711507374686854,
+            "entropy": 1.0299603372948336,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 6,
+            "true_logit": 1.6158092628632272,
+            "true_margin": -4.983047612011433,
+            "entropy": 0.48784764956116405,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 7,
+            "true_logit": 3.385356522032193,
+            "true_margin": -2.385697869317872,
+            "entropy": 1.1399833005656579,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 10,
+            "true_logit": 6.245511072022574,
+            "true_margin": 0.34532755613327026,
+            "entropy": 1.0643320944580623,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 9,
+            "true_logit": 6.109133198857307,
+            "true_margin": 0.18183197506836457,
+            "entropy": 1.07616166608739,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 12,
+            "true_logit": 7.257868732724871,
+            "true_margin": 2.915978968143463,
+            "entropy": 1.2204306015264155,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 13,
+            "true_logit": 6.984574538256441,
+            "true_margin": 2.3474301514880995,
+            "entropy": 1.2734290443512346,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 17,
+            "true_logit": 2.4517426107610976,
+            "true_margin": -3.0041056403091972,
+            "entropy": 1.2446585231974057,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 15,
+            "true_logit": 4.765243396162987,
+            "true_margin": 1.0197565662009374,
+            "entropy": 1.3836528967961936,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 20,
+            "true_logit": 5.578547673566001,
+            "true_margin": 2.025222464331559,
+            "entropy": 1.0098906652897317,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 18,
+            "true_logit": 4.061096163732665,
+            "true_margin": 0.3480580555541173,
+            "entropy": 1.714697084775719,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 22,
+            "true_logit": 3.8214287321482385,
+            "true_margin": -2.001891545951367,
+            "entropy": 1.4327582911689631,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 23,
+            "true_logit": 6.467095375061035,
+            "true_margin": 0.3724978566169739,
+            "entropy": 1.764226973556343,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 25,
+            "true_logit": 2.9332124079976762,
+            "true_margin": -2.2476391792297368,
+            "entropy": 0.910224846034714,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 24,
+            "true_logit": 3.4114355125597546,
+            "true_margin": -0.9603080047028403,
+            "entropy": 1.6643642354641182,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 28,
+            "true_logit": 6.425399695123945,
+            "true_margin": 1.708756336144038,
+            "entropy": 1.3611802968340636,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 29,
+            "true_logit": 5.573468799037593,
+            "true_margin": 0.019195410822119285,
+            "entropy": 1.936464424661196,
+            "samples": 28
+          }
+        ],
+        "after_r2": [
+          {
+            "class_id": 0,
+            "recording": 1,
+            "true_logit": 5.328119209834507,
+            "true_margin": 0.3166381631578714,
+            "entropy": 1.0747938975249376,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 0,
+            "true_logit": 5.038222840854099,
+            "true_margin": -0.17418244055339294,
+            "entropy": 1.4713601136429462,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 5,
+            "true_logit": 6.124724958624158,
+            "true_margin": -0.26249813182013426,
+            "entropy": 1.0296719090341249,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 4,
+            "true_logit": 5.828564601285117,
+            "true_margin": -0.2653636591775079,
+            "entropy": 1.239868696731694,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 6,
+            "true_logit": 5.23947765145983,
+            "true_margin": 0.047014406749180004,
+            "entropy": 1.263638764366354,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 8,
+            "true_logit": 5.229890150683267,
+            "true_margin": 0.46192806107657347,
+            "entropy": 1.4587807714090282,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 10,
+            "true_logit": 5.585141863141741,
+            "true_margin": 1.417849851506097,
+            "entropy": 1.5261934411424225,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 11,
+            "true_logit": 5.21924459987453,
+            "true_margin": 1.1015251965395043,
+            "entropy": 1.6132337628176021,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 13,
+            "true_logit": 7.147875070571899,
+            "true_margin": 0.49622847352709076,
+            "entropy": 1.0729135630021358,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 12,
+            "true_logit": 7.099151577268328,
+            "true_margin": 0.4587315831865588,
+            "entropy": 1.1033950166275803,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 17,
+            "true_logit": 5.204190705503736,
+            "true_margin": 1.255805547748293,
+            "entropy": 1.5097444206403163,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 16,
+            "true_logit": 3.0665310344525745,
+            "true_margin": -2.83596268934863,
+            "entropy": 1.732942868837171,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 19,
+            "true_logit": 6.625701631818499,
+            "true_margin": 2.9348942022770648,
+            "entropy": 0.7359165815520468,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 20,
+            "true_logit": 5.474476712090628,
+            "true_margin": 0.4843217304774692,
+            "entropy": 1.466379206722108,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 22,
+            "true_logit": 1.769666304545743,
+            "true_margin": -3.2057876980730464,
+            "entropy": 2.0798265214957037,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 23,
+            "true_logit": 2.2075206392577718,
+            "true_margin": -3.0205000032271654,
+            "entropy": 2.11564853319193,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 26,
+            "true_logit": 5.130176646368844,
+            "true_margin": 0.43383330958230193,
+            "entropy": 1.5490407307028349,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 24,
+            "true_logit": 5.066603468997138,
+            "true_margin": 1.3209600831781114,
+            "entropy": 1.6044111998476065,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 29,
+            "true_logit": 5.132958439843995,
+            "true_margin": -1.5106869914702008,
+            "entropy": 2.1374842387851487,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 27,
+            "true_logit": 5.271535613707134,
+            "true_margin": 0.452631389456136,
+            "entropy": 2.4602488510388216,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 31,
+            "true_logit": 5.100020996161869,
+            "true_margin": -1.6771055587700436,
+            "entropy": 1.9320574607871948,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 32,
+            "true_logit": 4.980797861303602,
+            "true_margin": -1.7052413565771927,
+            "entropy": 1.9814942009835639,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 35,
+            "true_logit": 4.922819050295012,
+            "true_margin": -0.6491357790572305,
+            "entropy": 1.6376830974329413,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 34,
+            "true_logit": 5.586185976862907,
+            "true_margin": 0.07208608676280281,
+            "entropy": 1.6607356208740043,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 38,
+            "true_logit": 3.7675571058477675,
+            "true_margin": -2.7618663353579387,
+            "entropy": 2.1909567571872697,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 36,
+            "true_logit": 4.2880464281354636,
+            "true_margin": -2.3360422253608704,
+            "entropy": 2.2315846828771315,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 41,
+            "true_logit": 5.418901149715696,
+            "true_margin": -1.054708246673857,
+            "entropy": 2.2493891598900633,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 39,
+            "true_logit": 3.4830720786537444,
+            "true_margin": -2.588823556900024,
+            "entropy": 2.3726595890691855,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 44,
+            "true_logit": 6.080868703978402,
+            "true_margin": -0.6442639827728271,
+            "entropy": 1.4724872505156459,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 43,
+            "true_logit": 5.474797297468675,
+            "true_margin": -0.5111146519359728,
+            "entropy": 1.7994987210531392,
+            "samples": 28
+          }
+        ],
+        "after_r3": [
+          {
+            "class_id": 0,
+            "recording": 2,
+            "true_logit": 5.606902020318167,
+            "true_margin": -0.20888105460575623,
+            "entropy": 1.5743937453354269,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 0,
+            "true_logit": 5.476604095527104,
+            "true_margin": -0.024638848645347267,
+            "entropy": 1.7084985247460347,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 4,
+            "true_logit": 5.492168392453875,
+            "true_margin": -0.5395870379039218,
+            "entropy": 1.3144728146656928,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 3,
+            "true_logit": 5.311602469001498,
+            "true_margin": -0.6934395560196469,
+            "entropy": 1.480630114805302,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 7,
+            "true_logit": 5.559939844267709,
+            "true_margin": -0.6007643597466608,
+            "entropy": 1.265560385781212,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 6,
+            "true_logit": 5.95311575276511,
+            "true_margin": 0.14530716623578677,
+            "entropy": 1.4955347653288518,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 11,
+            "true_logit": 6.350172766617367,
+            "true_margin": 0.7787749831165591,
+            "entropy": 1.2012814190526264,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 10,
+            "true_logit": 6.0821540994303565,
+            "true_margin": 0.7857855302946906,
+            "entropy": 1.3249630127101555,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 12,
+            "true_logit": 7.0528578247342795,
+            "true_margin": 0.4691793237413684,
+            "entropy": 1.1199564354474403,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 14,
+            "true_logit": 6.5908496763025015,
+            "true_margin": 0.3200472593307495,
+            "entropy": 1.485798927048954,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 17,
+            "true_logit": 2.217672130891255,
+            "true_margin": -5.256519764661789,
+            "entropy": 1.1277036656737727,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 16,
+            "true_logit": -1.0356541347822972,
+            "true_margin": -6.500763823677387,
+            "entropy": 1.4699750568941894,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 18,
+            "true_logit": 7.029877645628793,
+            "true_margin": 2.125956727990083,
+            "entropy": 1.3148093213832788,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 19,
+            "true_logit": 6.18324259349278,
+            "true_margin": 0.7758910077224881,
+            "entropy": 1.9097492876233448,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 22,
+            "true_logit": -0.8541281235271266,
+            "true_margin": -7.2702998679929545,
+            "entropy": 1.5823091818344999,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 21,
+            "true_logit": 4.670708098581859,
+            "true_margin": -1.2222954588276993,
+            "entropy": 2.246687447118358,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 24,
+            "true_logit": 5.5797352237360816,
+            "true_margin": -0.7879661023616791,
+            "entropy": 1.3887827794783965,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 25,
+            "true_logit": 4.9237905357565195,
+            "true_margin": 1.1659948272364478,
+            "entropy": 2.051460630089517,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 29,
+            "true_logit": 6.310485256569726,
+            "true_margin": -0.465200624295643,
+            "entropy": 2.0756748775549103,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 27,
+            "true_logit": 4.875613669199603,
+            "true_margin": -1.626039146312646,
+            "entropy": 2.090691937154448,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 30,
+            "true_logit": 5.253247618675232,
+            "true_margin": -1.6113131131444662,
+            "entropy": 1.9809243528310905,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 32,
+            "true_logit": 4.140749764495662,
+            "true_margin": -1.03121694895838,
+            "entropy": 2.3318224012680133,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 33,
+            "true_logit": 6.700621673039028,
+            "true_margin": -0.3134726456233432,
+            "entropy": 1.1923154824386994,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 34,
+            "true_logit": 6.6985010760171075,
+            "true_margin": -0.373569505555289,
+            "entropy": 1.202497286534691,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 36,
+            "true_logit": 4.539442769118717,
+            "true_margin": -1.9785096922091077,
+            "entropy": 2.4228147850722355,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 37,
+            "true_logit": 3.9960712364741733,
+            "true_margin": -1.9536303622382025,
+            "entropy": 2.5063104983707403,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 40,
+            "true_logit": 3.1597736477851868,
+            "true_margin": -3.4677596858569553,
+            "entropy": 2.22382060047377,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 41,
+            "true_logit": 0.3495539187320641,
+            "true_margin": -5.244290120367493,
+            "entropy": 2.444355597434589,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 43,
+            "true_logit": 7.148233754294259,
+            "true_margin": 0.7982115404946466,
+            "entropy": 1.7549615875003426,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 42,
+            "true_logit": 6.869676602738244,
+            "true_margin": 0.693441778421402,
+            "entropy": 1.960831854908871,
+            "samples": 28
+          },
+          {
+            "class_id": 15,
+            "recording": 45,
+            "true_logit": 7.200887139354434,
+            "true_margin": 1.0571498189653674,
+            "entropy": 2.0531930855414444,
+            "samples": 28
+          },
+          {
+            "class_id": 15,
+            "recording": 47,
+            "true_logit": 7.239703331674848,
+            "true_margin": 1.0050549038818906,
+            "entropy": 2.0876274817681577,
+            "samples": 28
+          },
+          {
+            "class_id": 16,
+            "recording": 50,
+            "true_logit": 3.3709780403545926,
+            "true_margin": -3.141491511038371,
+            "entropy": 2.445751462193133,
+            "samples": 28
+          },
+          {
+            "class_id": 16,
+            "recording": 49,
+            "true_logit": 3.550813826067107,
+            "true_margin": -2.0038299624409,
+            "entropy": 2.5559205016427207,
+            "samples": 28
+          },
+          {
+            "class_id": 17,
+            "recording": 52,
+            "true_logit": 6.51199735062463,
+            "true_margin": -0.9691749726022989,
+            "entropy": 1.9838412866981532,
+            "samples": 28
+          },
+          {
+            "class_id": 17,
+            "recording": 53,
+            "true_logit": 6.471025773457119,
+            "true_margin": 1.326944700309209,
+            "entropy": 1.9895460114584511,
+            "samples": 28
+          },
+          {
+            "class_id": 18,
+            "recording": 55,
+            "true_logit": 6.624158297266279,
+            "true_margin": -0.01184902446610625,
+            "entropy": 1.9492140658089363,
+            "samples": 28
+          },
+          {
+            "class_id": 18,
+            "recording": 54,
+            "true_logit": 6.820822656154633,
+            "true_margin": -0.10341095072882478,
+            "entropy": 1.975477180801846,
+            "samples": 28
+          },
+          {
+            "class_id": 19,
+            "recording": 59,
+            "true_logit": 1.6017049444573266,
+            "true_margin": -5.3833999910524915,
+            "entropy": 1.5463655606439988,
+            "samples": 28
+          },
+          {
+            "class_id": 19,
+            "recording": 58,
+            "true_logit": 0.7294469928102834,
+            "true_margin": -5.581706410540002,
+            "entropy": 1.81337126975073,
+            "samples": 28
+          }
+        ]
+      }
+    },
+    {
+      "strategy": "centroid_medoid",
+      "rows": [
+        {
+          "strategy": "centroid_medoid",
+          "support_recordings_per_old_class": 2,
+          "variant": "centroid_medoid_logreg_c0p3",
+          "stage": "Initial",
+          "overall": 0.5773809523809523,
+          "old": 0.5773809523809523,
+          "new": NaN,
+          "initial_known": 0.5773809523809523,
+          "forgetting": 0.0,
+          "macro_f1": 0.5248029818857789,
+          "support_samples": 0,
+          "eval_samples": 840
+        },
+        {
+          "strategy": "centroid_medoid",
+          "support_recordings_per_old_class": 2,
+          "variant": "centroid_medoid_logreg_c0p3",
+          "stage": "After R1",
+          "overall": 0.27714285714285714,
+          "old": 0.36428571428571427,
+          "new": 0.21904761904761905,
+          "initial_known": 0.36428571428571427,
+          "forgetting": 0.21309523809523806,
+          "macro_f1": 0.2363595746435395,
+          "support_samples": 560,
+          "eval_samples": 700
+        },
+        {
+          "strategy": "centroid_medoid",
+          "support_recordings_per_old_class": 2,
+          "variant": "centroid_medoid_logreg_c0p3",
+          "stage": "After R2",
+          "overall": 0.325,
+          "old": 0.3357142857142857,
+          "new": 0.3142857142857143,
+          "initial_known": 0.2785714285714286,
+          "forgetting": 0.29880952380952375,
+          "macro_f1": 0.3020930449452105,
+          "support_samples": 840,
+          "eval_samples": 840
+        },
+        {
+          "strategy": "centroid_medoid",
+          "support_recordings_per_old_class": 2,
+          "variant": "centroid_medoid_logreg_c0p3",
+          "stage": "After R3",
+          "overall": 0.4316326530612245,
+          "old": 0.3410714285714286,
+          "new": 0.5523809523809524,
+          "initial_known": 0.2892857142857143,
+          "forgetting": 0.288095238095238,
+          "macro_f1": 0.3620633297636816,
+          "support_samples": 1120,
+          "eval_samples": 980,
+          "adjusted_original_mix_overall": 0.38333333333333336,
+          "required_old_for_50": 0.48690476190476184,
+          "old_gap_to_50": -0.14583333333333326,
+          "passes_adjusted_50": false
+        }
+      ],
+      "r3": {
+        "strategy": "centroid_medoid",
+        "support_recordings_per_old_class": 2,
+        "variant": "centroid_medoid_logreg_c0p3",
+        "stage": "After R3",
+        "overall": 0.4316326530612245,
+        "old": 0.3410714285714286,
+        "new": 0.5523809523809524,
+        "initial_known": 0.2892857142857143,
+        "forgetting": 0.288095238095238,
+        "macro_f1": 0.3620633297636816,
+        "support_samples": 1120,
+        "eval_samples": 980,
+        "adjusted_original_mix_overall": 0.38333333333333336,
+        "required_old_for_50": 0.48690476190476184,
+        "old_gap_to_50": -0.14583333333333326,
+        "passes_adjusted_50": false
+      },
+      "support_audit": {
+        "initial": [],
+        "after_r1": [
+          {
+            "class_id": 0,
+            "recording": 2,
+            "true_logit": 4.356215936797006,
+            "true_margin": -0.28830954858234925,
+            "entropy": 1.52594352702378,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 0,
+            "true_logit": 4.505767822265625,
+            "true_margin": -0.20901535238538482,
+            "entropy": 1.475487942390173,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 5,
+            "true_logit": 4.903309974819422,
+            "true_margin": -0.747638164354222,
+            "entropy": 1.3433101404757959,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 3,
+            "true_logit": 4.363939844071865,
+            "true_margin": -1.711507374686854,
+            "entropy": 1.0299603372948336,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 7,
+            "true_logit": 3.385356522032193,
+            "true_margin": -2.385697869317872,
+            "entropy": 1.1399833005656579,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 6,
+            "true_logit": 1.6158092628632272,
+            "true_margin": -4.983047612011433,
+            "entropy": 0.48784764956116405,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 10,
+            "true_logit": 6.245511072022574,
+            "true_margin": 0.34532755613327026,
+            "entropy": 1.0643320944580623,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 11,
+            "true_logit": 6.1569806677954535,
+            "true_margin": 0.45413576705115144,
+            "entropy": 1.109175676169586,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 13,
+            "true_logit": 6.984574538256441,
+            "true_margin": 2.3474301514880995,
+            "entropy": 1.2734290443512346,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 14,
+            "true_logit": 6.771305646215167,
+            "true_margin": 2.2430514948708673,
+            "entropy": 1.433060362100888,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 16,
+            "true_logit": 3.261335982808045,
+            "true_margin": -1.553700135222503,
+            "entropy": 1.578255861289426,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 17,
+            "true_logit": 2.4517426107610976,
+            "true_margin": -3.0041056403091972,
+            "entropy": 1.2446585231974057,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 18,
+            "true_logit": 4.061096163732665,
+            "true_margin": 0.3480580555541173,
+            "entropy": 1.714697084775719,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 19,
+            "true_logit": 1.9484351490225111,
+            "true_margin": -1.7407238313129971,
+            "entropy": 1.785545917056896,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 23,
+            "true_logit": 6.467095375061035,
+            "true_margin": 0.3724978566169739,
+            "entropy": 1.764226973556343,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 21,
+            "true_logit": 6.25833162026746,
+            "true_margin": 0.6074500275509704,
+            "entropy": 1.7866054067203856,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 24,
+            "true_logit": 3.4114355125597546,
+            "true_margin": -0.9603080047028403,
+            "entropy": 1.6643642354641182,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 25,
+            "true_logit": 2.9332124079976762,
+            "true_margin": -2.2476391792297368,
+            "entropy": 0.910224846034714,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 27,
+            "true_logit": 4.669657969049045,
+            "true_margin": 0.9301417725426813,
+            "entropy": 2.3111025628282076,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 29,
+            "true_logit": 5.573468799037593,
+            "true_margin": 0.019195410822119285,
+            "entropy": 1.936464424661196,
+            "samples": 28
+          }
+        ],
+        "after_r2": [
+          {
+            "class_id": 0,
+            "recording": 0,
+            "true_logit": 5.038222840854099,
+            "true_margin": -0.17418244055339294,
+            "entropy": 1.4713601136429462,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 2,
+            "true_logit": 4.815964937210083,
+            "true_margin": -0.33131159203393157,
+            "entropy": 1.4921652729726518,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 4,
+            "true_logit": 5.828564601285117,
+            "true_margin": -0.2653636591775079,
+            "entropy": 1.239868696731694,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 5,
+            "true_logit": 6.124724958624158,
+            "true_margin": -0.26249813182013426,
+            "entropy": 1.0296719090341249,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 6,
+            "true_logit": 5.23947765145983,
+            "true_margin": 0.047014406749180004,
+            "entropy": 1.263638764366354,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 7,
+            "true_logit": 4.027832163098667,
+            "true_margin": -0.15077637255723975,
+            "entropy": 1.8803284934570168,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 11,
+            "true_logit": 5.21924459987453,
+            "true_margin": 1.1015251965395043,
+            "entropy": 1.6132337628176021,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 10,
+            "true_logit": 5.585141863141741,
+            "true_margin": 1.417849851506097,
+            "entropy": 1.5261934411424225,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 12,
+            "true_logit": 7.099151577268328,
+            "true_margin": 0.4587315831865588,
+            "entropy": 1.1033950166275803,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 13,
+            "true_logit": 7.147875070571899,
+            "true_margin": 0.49622847352709076,
+            "entropy": 1.0729135630021358,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 15,
+            "true_logit": 2.5317343369658505,
+            "true_margin": -0.9511838180146048,
+            "entropy": 2.231187368347616,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 16,
+            "true_logit": 3.0665310344525745,
+            "true_margin": -2.83596268934863,
+            "entropy": 1.732942868837171,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 20,
+            "true_logit": 5.474476712090628,
+            "true_margin": 0.4843217304774692,
+            "entropy": 1.466379206722108,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 18,
+            "true_logit": 5.059451707771847,
+            "true_margin": 0.07827324526650603,
+            "entropy": 1.7020768261860706,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 23,
+            "true_logit": 2.2075206392577718,
+            "true_margin": -3.0205000032271654,
+            "entropy": 2.11564853319193,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 22,
+            "true_logit": 1.769666304545743,
+            "true_margin": -3.2057876980730464,
+            "entropy": 2.0798265214957037,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 26,
+            "true_logit": 5.130176646368844,
+            "true_margin": 0.43383330958230193,
+            "entropy": 1.5490407307028349,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 25,
+            "true_logit": 4.015772242631231,
+            "true_margin": 0.08396769820579442,
+            "entropy": 1.9509271860692687,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 27,
+            "true_logit": 5.271535613707134,
+            "true_margin": 0.452631389456136,
+            "entropy": 2.4602488510388216,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 28,
+            "true_logit": 4.914538770914078,
+            "true_margin": 0.3610470962843726,
+            "entropy": 2.5005662546882887,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 31,
+            "true_logit": 5.100020996161869,
+            "true_margin": -1.6771055587700436,
+            "entropy": 1.9320574607871948,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 30,
+            "true_logit": 4.774401873350143,
+            "true_margin": -1.660636505910328,
+            "entropy": 1.9823191732872618,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 33,
+            "true_logit": 5.174330819930349,
+            "true_margin": -0.051594409027270416,
+            "entropy": 1.7915355456462936,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 34,
+            "true_logit": 5.586185976862907,
+            "true_margin": 0.07208608676280281,
+            "entropy": 1.6607356208740043,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 38,
+            "true_logit": 3.7675571058477675,
+            "true_margin": -2.7618663353579387,
+            "entropy": 2.1909567571872697,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 37,
+            "true_logit": 3.924664165292467,
+            "true_margin": -2.306483335793019,
+            "entropy": 2.3048412035076886,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 40,
+            "true_logit": 2.8651422465087046,
+            "true_margin": -1.9714078572578728,
+            "entropy": 2.457533620744753,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 39,
+            "true_logit": 3.4830720786537444,
+            "true_margin": -2.588823556900024,
+            "entropy": 2.3726595890691855,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 43,
+            "true_logit": 5.474797297468675,
+            "true_margin": -0.5111146519359728,
+            "entropy": 1.7994987210531392,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 44,
+            "true_logit": 6.080868703978402,
+            "true_margin": -0.6442639827728271,
+            "entropy": 1.4724872505156459,
+            "samples": 28
+          }
+        ],
+        "after_r3": [
+          {
+            "class_id": 0,
+            "recording": 0,
+            "true_logit": 5.476604095527104,
+            "true_margin": -0.024638848645347267,
+            "entropy": 1.7084985247460347,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 2,
+            "true_logit": 5.606902020318167,
+            "true_margin": -0.20888105460575623,
+            "entropy": 1.5743937453354269,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 4,
+            "true_logit": 5.492168392453875,
+            "true_margin": -0.5395870379039218,
+            "entropy": 1.3144728146656928,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 3,
+            "true_logit": 5.311602469001498,
+            "true_margin": -0.6934395560196469,
+            "entropy": 1.480630114805302,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 6,
+            "true_logit": 5.95311575276511,
+            "true_margin": 0.14530716623578677,
+            "entropy": 1.4955347653288518,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 8,
+            "true_logit": 5.889746478625706,
+            "true_margin": 0.24620766299111452,
+            "entropy": 1.553206007406783,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 11,
+            "true_logit": 6.350172766617367,
+            "true_margin": 0.7787749831165591,
+            "entropy": 1.2012814190526264,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 9,
+            "true_logit": 6.205196763787951,
+            "true_margin": 0.8905320891312192,
+            "entropy": 1.3510813558474204,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 14,
+            "true_logit": 6.5908496763025015,
+            "true_margin": 0.3200472593307495,
+            "entropy": 1.485798927048954,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 13,
+            "true_logit": 6.416171744465828,
+            "true_margin": 0.38572784087487655,
+            "entropy": 1.5823091818344999,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 17,
+            "true_logit": 2.217672130891255,
+            "true_margin": -5.256519764661789,
+            "entropy": 1.1277036656737727,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 16,
+            "true_logit": -1.0356541347822972,
+            "true_margin": -6.500763823677387,
+            "entropy": 1.4699750568941894,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 19,
+            "true_logit": 6.18324259349278,
+            "true_margin": 0.7758910077224881,
+            "entropy": 1.9097492876233448,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 20,
+            "true_logit": 4.828587714582682,
+            "true_margin": 0.027700754015573814,
+            "entropy": 2.2043965653866215,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 21,
+            "true_logit": 4.670708098581859,
+            "true_margin": -1.2222954588276993,
+            "entropy": 2.246687447118358,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 23,
+            "true_logit": 6.364626594952175,
+            "true_margin": -0.43226193317345185,
+            "entropy": 2.2910839750607632,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 26,
+            "true_logit": 3.955701228763376,
+            "true_margin": -0.6056249780314311,
+            "entropy": 2.247586058562084,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 25,
+            "true_logit": 4.9237905357565195,
+            "true_margin": 1.1659948272364478,
+            "entropy": 2.051460630089517,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 27,
+            "true_logit": 4.875613669199603,
+            "true_margin": -1.626039146312646,
+            "entropy": 2.090691937154448,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 28,
+            "true_logit": 4.460093140602112,
+            "true_margin": -1.6369216058935434,
+            "entropy": 2.2706418460161713,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 31,
+            "true_logit": 3.3649128718035564,
+            "true_margin": -0.7809008157679007,
+            "entropy": 2.455208652327892,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 30,
+            "true_logit": 5.253247618675232,
+            "true_margin": -1.6113131131444662,
+            "entropy": 1.9809243528310905,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 33,
+            "true_logit": 6.700621673039028,
+            "true_margin": -0.3134726456233432,
+            "entropy": 1.1923154824386994,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 35,
+            "true_logit": 6.390707749341216,
+            "true_margin": -0.22704285276787584,
+            "entropy": 1.3506200242088215,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 36,
+            "true_logit": 4.539442769118717,
+            "true_margin": -1.9785096922091077,
+            "entropy": 2.4228147850722355,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 37,
+            "true_logit": 3.9960712364741733,
+            "true_margin": -1.9536303622382025,
+            "entropy": 2.5063104983707403,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 40,
+            "true_logit": 3.1597736477851868,
+            "true_margin": -3.4677596858569553,
+            "entropy": 2.22382060047377,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 41,
+            "true_logit": 0.3495539187320641,
+            "true_margin": -5.244290120367493,
+            "entropy": 2.444355597434589,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 42,
+            "true_logit": 6.869676602738244,
+            "true_margin": 0.693441778421402,
+            "entropy": 1.960831854908871,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 44,
+            "true_logit": 6.588116937450001,
+            "true_margin": 0.7256710635764261,
+            "entropy": 2.0187078766125297,
+            "samples": 28
+          },
+          {
+            "class_id": 15,
+            "recording": 47,
+            "true_logit": 7.239703331674848,
+            "true_margin": 1.0050549038818906,
+            "entropy": 2.0876274817681577,
+            "samples": 28
+          },
+          {
+            "class_id": 15,
+            "recording": 45,
+            "true_logit": 7.200887139354434,
+            "true_margin": 1.0571498189653674,
+            "entropy": 2.0531930855414444,
+            "samples": 28
+          },
+          {
+            "class_id": 16,
+            "recording": 50,
+            "true_logit": 3.3709780403545926,
+            "true_margin": -3.141491511038371,
+            "entropy": 2.445751462193133,
+            "samples": 28
+          },
+          {
+            "class_id": 16,
+            "recording": 49,
+            "true_logit": 3.550813826067107,
+            "true_margin": -2.0038299624409,
+            "entropy": 2.5559205016427207,
+            "samples": 28
+          },
+          {
+            "class_id": 17,
+            "recording": 51,
+            "true_logit": 6.449932745524815,
+            "true_margin": 0.49205317348241806,
+            "entropy": 2.133088673701513,
+            "samples": 28
+          },
+          {
+            "class_id": 17,
+            "recording": 52,
+            "true_logit": 6.51199735062463,
+            "true_margin": -0.9691749726022989,
+            "entropy": 1.9838412866981532,
+            "samples": 28
+          },
+          {
+            "class_id": 18,
+            "recording": 55,
+            "true_logit": 6.624158297266279,
+            "true_margin": -0.01184902446610625,
+            "entropy": 1.9492140658089363,
+            "samples": 28
+          },
+          {
+            "class_id": 18,
+            "recording": 54,
+            "true_logit": 6.820822656154633,
+            "true_margin": -0.10341095072882478,
+            "entropy": 1.975477180801846,
+            "samples": 28
+          },
+          {
+            "class_id": 19,
+            "recording": 57,
+            "true_logit": 1.1680317494486059,
+            "true_margin": -5.0013247754957,
+            "entropy": 2.0001740635431613,
+            "samples": 28
+          },
+          {
+            "class_id": 19,
+            "recording": 58,
+            "true_logit": 0.7294469928102834,
+            "true_margin": -5.581706410540002,
+            "entropy": 1.81337126975073,
+            "samples": 28
+          }
+        ]
+      }
+    },
+    {
+      "strategy": "centroid_diverse",
+      "rows": [
+        {
+          "strategy": "centroid_diverse",
+          "support_recordings_per_old_class": 2,
+          "variant": "centroid_diverse_logreg_c0p3",
+          "stage": "Initial",
+          "overall": 0.5773809523809523,
+          "old": 0.5773809523809523,
+          "new": NaN,
+          "initial_known": 0.5773809523809523,
+          "forgetting": 0.0,
+          "macro_f1": 0.5248029818857789,
+          "support_samples": 0,
+          "eval_samples": 840
+        },
+        {
+          "strategy": "centroid_diverse",
+          "support_recordings_per_old_class": 2,
+          "variant": "centroid_diverse_logreg_c0p3",
+          "stage": "After R1",
+          "overall": 0.27714285714285714,
+          "old": 0.36428571428571427,
+          "new": 0.21904761904761905,
+          "initial_known": 0.36428571428571427,
+          "forgetting": 0.21309523809523806,
+          "macro_f1": 0.2363595746435395,
+          "support_samples": 560,
+          "eval_samples": 700
+        },
+        {
+          "strategy": "centroid_diverse",
+          "support_recordings_per_old_class": 2,
+          "variant": "centroid_diverse_logreg_c0p3",
+          "stage": "After R2",
+          "overall": 0.325,
+          "old": 0.3357142857142857,
+          "new": 0.3142857142857143,
+          "initial_known": 0.2785714285714286,
+          "forgetting": 0.29880952380952375,
+          "macro_f1": 0.3020930449452105,
+          "support_samples": 840,
+          "eval_samples": 840
+        },
+        {
+          "strategy": "centroid_diverse",
+          "support_recordings_per_old_class": 2,
+          "variant": "centroid_diverse_logreg_c0p3",
+          "stage": "After R3",
+          "overall": 0.4316326530612245,
+          "old": 0.3410714285714286,
+          "new": 0.5523809523809524,
+          "initial_known": 0.2892857142857143,
+          "forgetting": 0.288095238095238,
+          "macro_f1": 0.3620633297636816,
+          "support_samples": 1120,
+          "eval_samples": 980,
+          "adjusted_original_mix_overall": 0.38333333333333336,
+          "required_old_for_50": 0.48690476190476184,
+          "old_gap_to_50": -0.14583333333333326,
+          "passes_adjusted_50": false
+        }
+      ],
+      "r3": {
+        "strategy": "centroid_diverse",
+        "support_recordings_per_old_class": 2,
+        "variant": "centroid_diverse_logreg_c0p3",
+        "stage": "After R3",
+        "overall": 0.4316326530612245,
+        "old": 0.3410714285714286,
+        "new": 0.5523809523809524,
+        "initial_known": 0.2892857142857143,
+        "forgetting": 0.288095238095238,
+        "macro_f1": 0.3620633297636816,
+        "support_samples": 1120,
+        "eval_samples": 980,
+        "adjusted_original_mix_overall": 0.38333333333333336,
+        "required_old_for_50": 0.48690476190476184,
+        "old_gap_to_50": -0.14583333333333326,
+        "passes_adjusted_50": false
+      },
+      "support_audit": {
+        "initial": [],
+        "after_r1": [
+          {
+            "class_id": 0,
+            "recording": 2,
+            "true_logit": 4.356215936797006,
+            "true_margin": -0.28830954858234925,
+            "entropy": 1.52594352702378,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 0,
+            "true_logit": 4.505767822265625,
+            "true_margin": -0.20901535238538482,
+            "entropy": 1.475487942390173,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 5,
+            "true_logit": 4.903309974819422,
+            "true_margin": -0.747638164354222,
+            "entropy": 1.3433101404757959,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 3,
+            "true_logit": 4.363939844071865,
+            "true_margin": -1.711507374686854,
+            "entropy": 1.0299603372948336,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 7,
+            "true_logit": 3.385356522032193,
+            "true_margin": -2.385697869317872,
+            "entropy": 1.1399833005656579,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 6,
+            "true_logit": 1.6158092628632272,
+            "true_margin": -4.983047612011433,
+            "entropy": 0.48784764956116405,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 10,
+            "true_logit": 6.245511072022574,
+            "true_margin": 0.34532755613327026,
+            "entropy": 1.0643320944580623,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 11,
+            "true_logit": 6.1569806677954535,
+            "true_margin": 0.45413576705115144,
+            "entropy": 1.109175676169586,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 13,
+            "true_logit": 6.984574538256441,
+            "true_margin": 2.3474301514880995,
+            "entropy": 1.2734290443512346,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 14,
+            "true_logit": 6.771305646215167,
+            "true_margin": 2.2430514948708673,
+            "entropy": 1.433060362100888,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 16,
+            "true_logit": 3.261335982808045,
+            "true_margin": -1.553700135222503,
+            "entropy": 1.578255861289426,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 17,
+            "true_logit": 2.4517426107610976,
+            "true_margin": -3.0041056403091972,
+            "entropy": 1.2446585231974057,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 18,
+            "true_logit": 4.061096163732665,
+            "true_margin": 0.3480580555541173,
+            "entropy": 1.714697084775719,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 19,
+            "true_logit": 1.9484351490225111,
+            "true_margin": -1.7407238313129971,
+            "entropy": 1.785545917056896,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 23,
+            "true_logit": 6.467095375061035,
+            "true_margin": 0.3724978566169739,
+            "entropy": 1.764226973556343,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 21,
+            "true_logit": 6.25833162026746,
+            "true_margin": 0.6074500275509704,
+            "entropy": 1.7866054067203856,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 24,
+            "true_logit": 3.4114355125597546,
+            "true_margin": -0.9603080047028403,
+            "entropy": 1.6643642354641182,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 25,
+            "true_logit": 2.9332124079976762,
+            "true_margin": -2.2476391792297368,
+            "entropy": 0.910224846034714,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 27,
+            "true_logit": 4.669657969049045,
+            "true_margin": 0.9301417725426813,
+            "entropy": 2.3111025628282076,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 29,
+            "true_logit": 5.573468799037593,
+            "true_margin": 0.019195410822119285,
+            "entropy": 1.936464424661196,
+            "samples": 28
+          }
+        ],
+        "after_r2": [
+          {
+            "class_id": 0,
+            "recording": 0,
+            "true_logit": 5.038222840854099,
+            "true_margin": -0.17418244055339294,
+            "entropy": 1.4713601136429462,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 2,
+            "true_logit": 4.815964937210083,
+            "true_margin": -0.33131159203393157,
+            "entropy": 1.4921652729726518,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 4,
+            "true_logit": 5.828564601285117,
+            "true_margin": -0.2653636591775079,
+            "entropy": 1.239868696731694,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 5,
+            "true_logit": 6.124724958624158,
+            "true_margin": -0.26249813182013426,
+            "entropy": 1.0296719090341249,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 6,
+            "true_logit": 5.23947765145983,
+            "true_margin": 0.047014406749180004,
+            "entropy": 1.263638764366354,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 7,
+            "true_logit": 4.027832163098667,
+            "true_margin": -0.15077637255723975,
+            "entropy": 1.8803284934570168,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 11,
+            "true_logit": 5.21924459987453,
+            "true_margin": 1.1015251965395043,
+            "entropy": 1.6132337628176021,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 10,
+            "true_logit": 5.585141863141741,
+            "true_margin": 1.417849851506097,
+            "entropy": 1.5261934411424225,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 12,
+            "true_logit": 7.099151577268328,
+            "true_margin": 0.4587315831865588,
+            "entropy": 1.1033950166275803,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 13,
+            "true_logit": 7.147875070571899,
+            "true_margin": 0.49622847352709076,
+            "entropy": 1.0729135630021358,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 15,
+            "true_logit": 2.5317343369658505,
+            "true_margin": -0.9511838180146048,
+            "entropy": 2.231187368347616,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 16,
+            "true_logit": 3.0665310344525745,
+            "true_margin": -2.83596268934863,
+            "entropy": 1.732942868837171,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 20,
+            "true_logit": 5.474476712090628,
+            "true_margin": 0.4843217304774692,
+            "entropy": 1.466379206722108,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 18,
+            "true_logit": 5.059451707771847,
+            "true_margin": 0.07827324526650603,
+            "entropy": 1.7020768261860706,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 23,
+            "true_logit": 2.2075206392577718,
+            "true_margin": -3.0205000032271654,
+            "entropy": 2.11564853319193,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 22,
+            "true_logit": 1.769666304545743,
+            "true_margin": -3.2057876980730464,
+            "entropy": 2.0798265214957037,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 26,
+            "true_logit": 5.130176646368844,
+            "true_margin": 0.43383330958230193,
+            "entropy": 1.5490407307028349,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 25,
+            "true_logit": 4.015772242631231,
+            "true_margin": 0.08396769820579442,
+            "entropy": 1.9509271860692687,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 27,
+            "true_logit": 5.271535613707134,
+            "true_margin": 0.452631389456136,
+            "entropy": 2.4602488510388216,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 28,
+            "true_logit": 4.914538770914078,
+            "true_margin": 0.3610470962843726,
+            "entropy": 2.5005662546882887,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 31,
+            "true_logit": 5.100020996161869,
+            "true_margin": -1.6771055587700436,
+            "entropy": 1.9320574607871948,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 30,
+            "true_logit": 4.774401873350143,
+            "true_margin": -1.660636505910328,
+            "entropy": 1.9823191732872618,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 33,
+            "true_logit": 5.174330819930349,
+            "true_margin": -0.051594409027270416,
+            "entropy": 1.7915355456462936,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 34,
+            "true_logit": 5.586185976862907,
+            "true_margin": 0.07208608676280281,
+            "entropy": 1.6607356208740043,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 38,
+            "true_logit": 3.7675571058477675,
+            "true_margin": -2.7618663353579387,
+            "entropy": 2.1909567571872697,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 37,
+            "true_logit": 3.924664165292467,
+            "true_margin": -2.306483335793019,
+            "entropy": 2.3048412035076886,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 40,
+            "true_logit": 2.8651422465087046,
+            "true_margin": -1.9714078572578728,
+            "entropy": 2.457533620744753,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 39,
+            "true_logit": 3.4830720786537444,
+            "true_margin": -2.588823556900024,
+            "entropy": 2.3726595890691855,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 43,
+            "true_logit": 5.474797297468675,
+            "true_margin": -0.5111146519359728,
+            "entropy": 1.7994987210531392,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 44,
+            "true_logit": 6.080868703978402,
+            "true_margin": -0.6442639827728271,
+            "entropy": 1.4724872505156459,
+            "samples": 28
+          }
+        ],
+        "after_r3": [
+          {
+            "class_id": 0,
+            "recording": 0,
+            "true_logit": 5.476604095527104,
+            "true_margin": -0.024638848645347267,
+            "entropy": 1.7084985247460347,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 2,
+            "true_logit": 5.606902020318167,
+            "true_margin": -0.20888105460575623,
+            "entropy": 1.5743937453354269,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 4,
+            "true_logit": 5.492168392453875,
+            "true_margin": -0.5395870379039218,
+            "entropy": 1.3144728146656928,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 3,
+            "true_logit": 5.311602469001498,
+            "true_margin": -0.6934395560196469,
+            "entropy": 1.480630114805302,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 6,
+            "true_logit": 5.95311575276511,
+            "true_margin": 0.14530716623578677,
+            "entropy": 1.4955347653288518,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 8,
+            "true_logit": 5.889746478625706,
+            "true_margin": 0.24620766299111452,
+            "entropy": 1.553206007406783,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 11,
+            "true_logit": 6.350172766617367,
+            "true_margin": 0.7787749831165591,
+            "entropy": 1.2012814190526264,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 9,
+            "true_logit": 6.205196763787951,
+            "true_margin": 0.8905320891312192,
+            "entropy": 1.3510813558474204,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 14,
+            "true_logit": 6.5908496763025015,
+            "true_margin": 0.3200472593307495,
+            "entropy": 1.485798927048954,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 13,
+            "true_logit": 6.416171744465828,
+            "true_margin": 0.38572784087487655,
+            "entropy": 1.5823091818344999,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 17,
+            "true_logit": 2.217672130891255,
+            "true_margin": -5.256519764661789,
+            "entropy": 1.1277036656737727,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 16,
+            "true_logit": -1.0356541347822972,
+            "true_margin": -6.500763823677387,
+            "entropy": 1.4699750568941894,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 19,
+            "true_logit": 6.18324259349278,
+            "true_margin": 0.7758910077224881,
+            "entropy": 1.9097492876233448,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 20,
+            "true_logit": 4.828587714582682,
+            "true_margin": 0.027700754015573814,
+            "entropy": 2.2043965653866215,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 21,
+            "true_logit": 4.670708098581859,
+            "true_margin": -1.2222954588276993,
+            "entropy": 2.246687447118358,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 23,
+            "true_logit": 6.364626594952175,
+            "true_margin": -0.43226193317345185,
+            "entropy": 2.2910839750607632,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 26,
+            "true_logit": 3.955701228763376,
+            "true_margin": -0.6056249780314311,
+            "entropy": 2.247586058562084,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 25,
+            "true_logit": 4.9237905357565195,
+            "true_margin": 1.1659948272364478,
+            "entropy": 2.051460630089517,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 27,
+            "true_logit": 4.875613669199603,
+            "true_margin": -1.626039146312646,
+            "entropy": 2.090691937154448,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 28,
+            "true_logit": 4.460093140602112,
+            "true_margin": -1.6369216058935434,
+            "entropy": 2.2706418460161713,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 31,
+            "true_logit": 3.3649128718035564,
+            "true_margin": -0.7809008157679007,
+            "entropy": 2.455208652327892,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 30,
+            "true_logit": 5.253247618675232,
+            "true_margin": -1.6113131131444662,
+            "entropy": 1.9809243528310905,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 33,
+            "true_logit": 6.700621673039028,
+            "true_margin": -0.3134726456233432,
+            "entropy": 1.1923154824386994,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 35,
+            "true_logit": 6.390707749341216,
+            "true_margin": -0.22704285276787584,
+            "entropy": 1.3506200242088215,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 36,
+            "true_logit": 4.539442769118717,
+            "true_margin": -1.9785096922091077,
+            "entropy": 2.4228147850722355,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 37,
+            "true_logit": 3.9960712364741733,
+            "true_margin": -1.9536303622382025,
+            "entropy": 2.5063104983707403,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 40,
+            "true_logit": 3.1597736477851868,
+            "true_margin": -3.4677596858569553,
+            "entropy": 2.22382060047377,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 41,
+            "true_logit": 0.3495539187320641,
+            "true_margin": -5.244290120367493,
+            "entropy": 2.444355597434589,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 42,
+            "true_logit": 6.869676602738244,
+            "true_margin": 0.693441778421402,
+            "entropy": 1.960831854908871,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 44,
+            "true_logit": 6.588116937450001,
+            "true_margin": 0.7256710635764261,
+            "entropy": 2.0187078766125297,
+            "samples": 28
+          },
+          {
+            "class_id": 15,
+            "recording": 47,
+            "true_logit": 7.239703331674848,
+            "true_margin": 1.0050549038818906,
+            "entropy": 2.0876274817681577,
+            "samples": 28
+          },
+          {
+            "class_id": 15,
+            "recording": 45,
+            "true_logit": 7.200887139354434,
+            "true_margin": 1.0571498189653674,
+            "entropy": 2.0531930855414444,
+            "samples": 28
+          },
+          {
+            "class_id": 16,
+            "recording": 50,
+            "true_logit": 3.3709780403545926,
+            "true_margin": -3.141491511038371,
+            "entropy": 2.445751462193133,
+            "samples": 28
+          },
+          {
+            "class_id": 16,
+            "recording": 49,
+            "true_logit": 3.550813826067107,
+            "true_margin": -2.0038299624409,
+            "entropy": 2.5559205016427207,
+            "samples": 28
+          },
+          {
+            "class_id": 17,
+            "recording": 51,
+            "true_logit": 6.449932745524815,
+            "true_margin": 0.49205317348241806,
+            "entropy": 2.133088673701513,
+            "samples": 28
+          },
+          {
+            "class_id": 17,
+            "recording": 52,
+            "true_logit": 6.51199735062463,
+            "true_margin": -0.9691749726022989,
+            "entropy": 1.9838412866981532,
+            "samples": 28
+          },
+          {
+            "class_id": 18,
+            "recording": 55,
+            "true_logit": 6.624158297266279,
+            "true_margin": -0.01184902446610625,
+            "entropy": 1.9492140658089363,
+            "samples": 28
+          },
+          {
+            "class_id": 18,
+            "recording": 54,
+            "true_logit": 6.820822656154633,
+            "true_margin": -0.10341095072882478,
+            "entropy": 1.975477180801846,
+            "samples": 28
+          },
+          {
+            "class_id": 19,
+            "recording": 57,
+            "true_logit": 1.1680317494486059,
+            "true_margin": -5.0013247754957,
+            "entropy": 2.0001740635431613,
+            "samples": 28
+          },
+          {
+            "class_id": 19,
+            "recording": 58,
+            "true_logit": 0.7294469928102834,
+            "true_margin": -5.581706410540002,
+            "entropy": 1.81337126975073,
+            "samples": 28
+          }
+        ]
+      }
+    },
+    {
+      "strategy": "hard_low_margin",
+      "rows": [
+        {
+          "strategy": "hard_low_margin",
+          "support_recordings_per_old_class": 2,
+          "variant": "hard_low_margin_logreg_c0p3",
+          "stage": "Initial",
+          "overall": 0.5773809523809523,
+          "old": 0.5773809523809523,
+          "new": NaN,
+          "initial_known": 0.5773809523809523,
+          "forgetting": 0.0,
+          "macro_f1": 0.5248029818857789,
+          "support_samples": 0,
+          "eval_samples": 840
+        },
+        {
+          "strategy": "hard_low_margin",
+          "support_recordings_per_old_class": 2,
+          "variant": "hard_low_margin_logreg_c0p3",
+          "stage": "After R1",
+          "overall": 0.27285714285714285,
+          "old": 0.3535714285714286,
+          "new": 0.21904761904761905,
+          "initial_known": 0.3535714285714286,
+          "forgetting": 0.22380952380952374,
+          "macro_f1": 0.23935544156587268,
+          "support_samples": 560,
+          "eval_samples": 700
+        },
+        {
+          "strategy": "hard_low_margin",
+          "support_recordings_per_old_class": 2,
+          "variant": "hard_low_margin_logreg_c0p3",
+          "stage": "After R2",
+          "overall": 0.34285714285714286,
+          "old": 0.37142857142857144,
+          "new": 0.3142857142857143,
+          "initial_known": 0.38571428571428573,
+          "forgetting": 0.1916666666666666,
+          "macro_f1": 0.31995253883290964,
+          "support_samples": 840,
+          "eval_samples": 840
+        },
+        {
+          "strategy": "hard_low_margin",
+          "support_recordings_per_old_class": 2,
+          "variant": "hard_low_margin_logreg_c0p3",
+          "stage": "After R3",
+          "overall": 0.4275510204081633,
+          "old": 0.3339285714285714,
+          "new": 0.5523809523809524,
+          "initial_known": 0.2357142857142857,
+          "forgetting": 0.3416666666666666,
+          "macro_f1": 0.3413973453788634,
+          "support_samples": 1120,
+          "eval_samples": 980,
+          "adjusted_original_mix_overall": 0.37761904761904763,
+          "required_old_for_50": 0.48690476190476184,
+          "old_gap_to_50": -0.15297619047619043,
+          "passes_adjusted_50": false
+        }
+      ],
+      "r3": {
+        "strategy": "hard_low_margin",
+        "support_recordings_per_old_class": 2,
+        "variant": "hard_low_margin_logreg_c0p3",
+        "stage": "After R3",
+        "overall": 0.4275510204081633,
+        "old": 0.3339285714285714,
+        "new": 0.5523809523809524,
+        "initial_known": 0.2357142857142857,
+        "forgetting": 0.3416666666666666,
+        "macro_f1": 0.3413973453788634,
+        "support_samples": 1120,
+        "eval_samples": 980,
+        "adjusted_original_mix_overall": 0.37761904761904763,
+        "required_old_for_50": 0.48690476190476184,
+        "old_gap_to_50": -0.15297619047619043,
+        "passes_adjusted_50": false
+      },
+      "support_audit": {
+        "initial": [],
+        "after_r1": [
+          {
+            "class_id": 0,
+            "recording": 1,
+            "true_logit": 2.904911228056465,
+            "true_margin": -0.9055089998458112,
+            "entropy": 1.929252039762016,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 2,
+            "true_logit": 4.356215936797006,
+            "true_margin": -0.28830954858234925,
+            "entropy": 1.52594352702378,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 3,
+            "true_logit": 4.363939844071865,
+            "true_margin": -1.711507374686854,
+            "entropy": 1.0299603372948336,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 5,
+            "true_logit": 4.903309974819422,
+            "true_margin": -0.747638164354222,
+            "entropy": 1.3433101404757959,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 6,
+            "true_logit": 1.6158092628632272,
+            "true_margin": -4.983047612011433,
+            "entropy": 0.48784764956116405,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 7,
+            "true_logit": 3.385356522032193,
+            "true_margin": -2.385697869317872,
+            "entropy": 1.1399833005656579,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 9,
+            "true_logit": 6.109133198857307,
+            "true_margin": 0.18183197506836457,
+            "entropy": 1.07616166608739,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 10,
+            "true_logit": 6.245511072022574,
+            "true_margin": 0.34532755613327026,
+            "entropy": 1.0643320944580623,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 14,
+            "true_logit": 6.771305646215167,
+            "true_margin": 2.2430514948708673,
+            "entropy": 1.433060362100888,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 13,
+            "true_logit": 6.984574538256441,
+            "true_margin": 2.3474301514880995,
+            "entropy": 1.2734290443512346,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 17,
+            "true_logit": 2.4517426107610976,
+            "true_margin": -3.0041056403091972,
+            "entropy": 1.2446585231974057,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 16,
+            "true_logit": 3.261335982808045,
+            "true_margin": -1.553700135222503,
+            "entropy": 1.578255861289426,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 19,
+            "true_logit": 1.9484351490225111,
+            "true_margin": -1.7407238313129971,
+            "entropy": 1.785545917056896,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 18,
+            "true_logit": 4.061096163732665,
+            "true_margin": 0.3480580555541173,
+            "entropy": 1.714697084775719,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 22,
+            "true_logit": 3.8214287321482385,
+            "true_margin": -2.001891545951367,
+            "entropy": 1.4327582911689631,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 23,
+            "true_logit": 6.467095375061035,
+            "true_margin": 0.3724978566169739,
+            "entropy": 1.764226973556343,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 25,
+            "true_logit": 2.9332124079976762,
+            "true_margin": -2.2476391792297368,
+            "entropy": 0.910224846034714,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 24,
+            "true_logit": 3.4114355125597546,
+            "true_margin": -0.9603080047028403,
+            "entropy": 1.6643642354641182,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 29,
+            "true_logit": 5.573468799037593,
+            "true_margin": 0.019195410822119285,
+            "entropy": 1.936464424661196,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 27,
+            "true_logit": 4.669657969049045,
+            "true_margin": 0.9301417725426813,
+            "entropy": 2.3111025628282076,
+            "samples": 28
+          }
+        ],
+        "after_r2": [
+          {
+            "class_id": 0,
+            "recording": 2,
+            "true_logit": 4.815964937210083,
+            "true_margin": -0.33131159203393157,
+            "entropy": 1.4921652729726518,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 0,
+            "true_logit": 5.038222840854099,
+            "true_margin": -0.17418244055339294,
+            "entropy": 1.4713601136429462,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 3,
+            "true_logit": 5.049046533448355,
+            "true_margin": -0.8320024056094031,
+            "entropy": 1.379719604512362,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 4,
+            "true_logit": 5.828564601285117,
+            "true_margin": -0.2653636591775079,
+            "entropy": 1.239868696731694,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 7,
+            "true_logit": 4.027832163098667,
+            "true_margin": -0.15077637255723975,
+            "entropy": 1.8803284934570168,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 6,
+            "true_logit": 5.23947765145983,
+            "true_margin": 0.047014406749180004,
+            "entropy": 1.263638764366354,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 9,
+            "true_logit": 4.844817629882267,
+            "true_margin": 0.3383924641779483,
+            "entropy": 1.7955964636549242,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 11,
+            "true_logit": 5.21924459987453,
+            "true_margin": 1.1015251965395043,
+            "entropy": 1.6132337628176021,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 14,
+            "true_logit": 6.174125790596008,
+            "true_margin": 0.2295696905681064,
+            "entropy": 1.39539414114638,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 12,
+            "true_logit": 7.099151577268328,
+            "true_margin": 0.4587315831865588,
+            "entropy": 1.1033950166275803,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 16,
+            "true_logit": 3.0665310344525745,
+            "true_margin": -2.83596268934863,
+            "entropy": 1.732942868837171,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 15,
+            "true_logit": 2.5317343369658505,
+            "true_margin": -0.9511838180146048,
+            "entropy": 2.231187368347616,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 18,
+            "true_logit": 5.059451707771847,
+            "true_margin": 0.07827324526650603,
+            "entropy": 1.7020768261860706,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 20,
+            "true_logit": 5.474476712090628,
+            "true_margin": 0.4843217304774692,
+            "entropy": 1.466379206722108,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 22,
+            "true_logit": 1.769666304545743,
+            "true_margin": -3.2057876980730464,
+            "entropy": 2.0798265214957037,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 23,
+            "true_logit": 2.2075206392577718,
+            "true_margin": -3.0205000032271654,
+            "entropy": 2.11564853319193,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 25,
+            "true_logit": 4.015772242631231,
+            "true_margin": 0.08396769820579442,
+            "entropy": 1.9509271860692687,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 26,
+            "true_logit": 5.130176646368844,
+            "true_margin": 0.43383330958230193,
+            "entropy": 1.5490407307028349,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 29,
+            "true_logit": 5.132958439843995,
+            "true_margin": -1.5106869914702008,
+            "entropy": 2.1374842387851487,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 28,
+            "true_logit": 4.914538770914078,
+            "true_margin": 0.3610470962843726,
+            "entropy": 2.5005662546882887,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 32,
+            "true_logit": 4.980797861303602,
+            "true_margin": -1.7052413565771927,
+            "entropy": 1.9814942009835639,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 31,
+            "true_logit": 5.100020996161869,
+            "true_margin": -1.6771055587700436,
+            "entropy": 1.9320574607871948,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 35,
+            "true_logit": 4.922819050295012,
+            "true_margin": -0.6491357790572305,
+            "entropy": 1.6376830974329413,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 33,
+            "true_logit": 5.174330819930349,
+            "true_margin": -0.051594409027270416,
+            "entropy": 1.7915355456462936,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 38,
+            "true_logit": 3.7675571058477675,
+            "true_margin": -2.7618663353579387,
+            "entropy": 2.1909567571872697,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 36,
+            "true_logit": 4.2880464281354636,
+            "true_margin": -2.3360422253608704,
+            "entropy": 2.2315846828771315,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 39,
+            "true_logit": 3.4830720786537444,
+            "true_margin": -2.588823556900024,
+            "entropy": 2.3726595890691855,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 40,
+            "true_logit": 2.8651422465087046,
+            "true_margin": -1.9714078572578728,
+            "entropy": 2.457533620744753,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 44,
+            "true_logit": 6.080868703978402,
+            "true_margin": -0.6442639827728271,
+            "entropy": 1.4724872505156459,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 43,
+            "true_logit": 5.474797297468675,
+            "true_margin": -0.5111146519359728,
+            "entropy": 1.7994987210531392,
+            "samples": 28
+          }
+        ],
+        "after_r3": [
+          {
+            "class_id": 0,
+            "recording": 2,
+            "true_logit": 5.606902020318167,
+            "true_margin": -0.20888105460575623,
+            "entropy": 1.5743937453354269,
+            "samples": 28
+          },
+          {
+            "class_id": 0,
+            "recording": 0,
+            "true_logit": 5.476604095527104,
+            "true_margin": -0.024638848645347267,
+            "entropy": 1.7084985247460347,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 3,
+            "true_logit": 5.311602469001498,
+            "true_margin": -0.6934395560196469,
+            "entropy": 1.480630114805302,
+            "samples": 28
+          },
+          {
+            "class_id": 1,
+            "recording": 4,
+            "true_logit": 5.492168392453875,
+            "true_margin": -0.5395870379039218,
+            "entropy": 1.3144728146656928,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 7,
+            "true_logit": 5.559939844267709,
+            "true_margin": -0.6007643597466608,
+            "entropy": 1.265560385781212,
+            "samples": 28
+          },
+          {
+            "class_id": 2,
+            "recording": 6,
+            "true_logit": 5.95311575276511,
+            "true_margin": 0.14530716623578677,
+            "entropy": 1.4955347653288518,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 11,
+            "true_logit": 6.350172766617367,
+            "true_margin": 0.7787749831165591,
+            "entropy": 1.2012814190526264,
+            "samples": 28
+          },
+          {
+            "class_id": 3,
+            "recording": 10,
+            "true_logit": 6.0821540994303565,
+            "true_margin": 0.7857855302946906,
+            "entropy": 1.3249630127101555,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 14,
+            "true_logit": 6.5908496763025015,
+            "true_margin": 0.3200472593307495,
+            "entropy": 1.485798927048954,
+            "samples": 28
+          },
+          {
+            "class_id": 4,
+            "recording": 13,
+            "true_logit": 6.416171744465828,
+            "true_margin": 0.38572784087487655,
+            "entropy": 1.5823091818344999,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 16,
+            "true_logit": -1.0356541347822972,
+            "true_margin": -6.500763823677387,
+            "entropy": 1.4699750568941894,
+            "samples": 28
+          },
+          {
+            "class_id": 5,
+            "recording": 17,
+            "true_logit": 2.217672130891255,
+            "true_margin": -5.256519764661789,
+            "entropy": 1.1277036656737727,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 20,
+            "true_logit": 4.828587714582682,
+            "true_margin": 0.027700754015573814,
+            "entropy": 2.2043965653866215,
+            "samples": 28
+          },
+          {
+            "class_id": 6,
+            "recording": 19,
+            "true_logit": 6.18324259349278,
+            "true_margin": 0.7758910077224881,
+            "entropy": 1.9097492876233448,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 22,
+            "true_logit": -0.8541281235271266,
+            "true_margin": -7.2702998679929545,
+            "entropy": 1.5823091818344999,
+            "samples": 28
+          },
+          {
+            "class_id": 7,
+            "recording": 21,
+            "true_logit": 4.670708098581859,
+            "true_margin": -1.2222954588276993,
+            "entropy": 2.246687447118358,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 24,
+            "true_logit": 5.5797352237360816,
+            "true_margin": -0.7879661023616791,
+            "entropy": 1.3887827794783965,
+            "samples": 28
+          },
+          {
+            "class_id": 8,
+            "recording": 26,
+            "true_logit": 3.955701228763376,
+            "true_margin": -0.6056249780314311,
+            "entropy": 2.247586058562084,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 28,
+            "true_logit": 4.460093140602112,
+            "true_margin": -1.6369216058935434,
+            "entropy": 2.2706418460161713,
+            "samples": 28
+          },
+          {
+            "class_id": 9,
+            "recording": 27,
+            "true_logit": 4.875613669199603,
+            "true_margin": -1.626039146312646,
+            "entropy": 2.090691937154448,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 30,
+            "true_logit": 5.253247618675232,
+            "true_margin": -1.6113131131444662,
+            "entropy": 1.9809243528310905,
+            "samples": 28
+          },
+          {
+            "class_id": 10,
+            "recording": 32,
+            "true_logit": 4.140749764495662,
+            "true_margin": -1.03121694895838,
+            "entropy": 2.3318224012680133,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 34,
+            "true_logit": 6.6985010760171075,
+            "true_margin": -0.373569505555289,
+            "entropy": 1.202497286534691,
+            "samples": 28
+          },
+          {
+            "class_id": 11,
+            "recording": 33,
+            "true_logit": 6.700621673039028,
+            "true_margin": -0.3134726456233432,
+            "entropy": 1.1923154824386994,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 36,
+            "true_logit": 4.539442769118717,
+            "true_margin": -1.9785096922091077,
+            "entropy": 2.4228147850722355,
+            "samples": 28
+          },
+          {
+            "class_id": 12,
+            "recording": 37,
+            "true_logit": 3.9960712364741733,
+            "true_margin": -1.9536303622382025,
+            "entropy": 2.5063104983707403,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 41,
+            "true_logit": 0.3495539187320641,
+            "true_margin": -5.244290120367493,
+            "entropy": 2.444355597434589,
+            "samples": 28
+          },
+          {
+            "class_id": 13,
+            "recording": 40,
+            "true_logit": 3.1597736477851868,
+            "true_margin": -3.4677596858569553,
+            "entropy": 2.22382060047377,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 42,
+            "true_logit": 6.869676602738244,
+            "true_margin": 0.693441778421402,
+            "entropy": 1.960831854908871,
+            "samples": 28
+          },
+          {
+            "class_id": 14,
+            "recording": 44,
+            "true_logit": 6.588116937450001,
+            "true_margin": 0.7256710635764261,
+            "entropy": 2.0187078766125297,
+            "samples": 28
+          },
+          {
+            "class_id": 15,
+            "recording": 47,
+            "true_logit": 7.239703331674848,
+            "true_margin": 1.0050549038818906,
+            "entropy": 2.0876274817681577,
+            "samples": 28
+          },
+          {
+            "class_id": 15,
+            "recording": 45,
+            "true_logit": 7.200887139354434,
+            "true_margin": 1.0571498189653674,
+            "entropy": 2.0531930855414444,
+            "samples": 28
+          },
+          {
+            "class_id": 16,
+            "recording": 50,
+            "true_logit": 3.3709780403545926,
+            "true_margin": -3.141491511038371,
+            "entropy": 2.445751462193133,
+            "samples": 28
+          },
+          {
+            "class_id": 16,
+            "recording": 49,
+            "true_logit": 3.550813826067107,
+            "true_margin": -2.0038299624409,
+            "entropy": 2.5559205016427207,
+            "samples": 28
+          },
+          {
+            "class_id": 17,
+            "recording": 52,
+            "true_logit": 6.51199735062463,
+            "true_margin": -0.9691749726022989,
+            "entropy": 1.9838412866981532,
+            "samples": 28
+          },
+          {
+            "class_id": 17,
+            "recording": 51,
+            "true_logit": 6.449932745524815,
+            "true_margin": 0.49205317348241806,
+            "entropy": 2.133088673701513,
+            "samples": 28
+          },
+          {
+            "class_id": 18,
+            "recording": 54,
+            "true_logit": 6.820822656154633,
+            "true_margin": -0.10341095072882478,
+            "entropy": 1.975477180801846,
+            "samples": 28
+          },
+          {
+            "class_id": 18,
+            "recording": 55,
+            "true_logit": 6.624158297266279,
+            "true_margin": -0.01184902446610625,
+            "entropy": 1.9492140658089363,
+            "samples": 28
+          },
+          {
+            "class_id": 19,
+            "recording": 58,
+            "true_logit": 0.7294469928102834,
+            "true_margin": -5.581706410540002,
+            "entropy": 1.81337126975073,
+            "samples": 28
+          },
+          {
+            "class_id": 19,
+            "recording": 59,
+            "true_logit": 1.6017049444573266,
+            "true_margin": -5.3833999910524915,
+            "entropy": 1.5463655606439988,
+            "samples": 28
+          }
+        ]
+      }
+    }
+  ],
+  "best_r3": {
+    "strategy": "top_true_logit",
+    "support_recordings_per_old_class": 2,
+    "variant": "top_true_logit_logreg_c0p3",
+    "stage": "After R3",
+    "overall": 0.5061224489795918,
+    "old": 0.4714285714285714,
+    "new": 0.5523809523809524,
+    "initial_known": 0.4392857142857143,
+    "forgetting": 0.13809523809523805,
+    "macro_f1": 0.4497909383361251,
+    "support_samples": 1120,
+    "eval_samples": 980,
+    "adjusted_original_mix_overall": 0.4876190476190477,
+    "required_old_for_50": 0.48690476190476184,
+    "old_gap_to_50": -0.015476190476190421,
+    "passes_adjusted_50": false
+  },
+  "pass_count": 0
+}
