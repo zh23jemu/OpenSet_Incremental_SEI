@@ -120,12 +120,14 @@ def _fit_predict_logreg(
     pred = np.asarray(base_pred, dtype=np.int64).copy()
     if len(np.unique(train_y)) < 2:
         return pred
+    # support=2 时每个旧类只有极少量样本，训练集很小但类别数较多。
+    # liblinear 的 one-vs-rest 形式比 lbfgs 多分类在这种小样本 support 校准场景更稳，
+    # 也能避免长时间慢收敛；这里只重判真实旧类 eval 样本，不影响新类预测边界。
     clf = LogisticRegression(
-        max_iter=4000,
-        solver="lbfgs",
+        max_iter=1000,
+        solver="liblinear",
         C=float(c_value),
         class_weight=class_weight,
-        n_jobs=1,
     )
     clf.fit(np.asarray(train_x, dtype=np.float32), np.asarray(train_y, dtype=np.int64))
     if np.any(old_eval):
@@ -152,6 +154,10 @@ def _variant_predictions(
         "prototype_shrink0p10": _prototype_pred(logits, y_true, base_pred, support_mask, eval_mask, old_end, shrink=0.10),
         "prototype_shrink0p25": _prototype_pred(logits, y_true, base_pred, support_mask, eval_mask, old_end, shrink=0.25),
     }
+    # initial 阶段没有 support 样本，所有校准器都应退化成基线预测；
+    # 这里直接返回，避免空数组标准化 warning 和无意义的 logreg 拟合。
+    if len(np.unique(support_y)) < 2:
+        return variants
 
     raw_train = logits[support_mask].astype(np.float32)
     raw_eval = logits.astype(np.float32)
