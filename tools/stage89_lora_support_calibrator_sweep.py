@@ -24,6 +24,7 @@ from typing import Any
 
 import numpy as np
 from sklearn.linear_model import LogisticRegression
+from sklearn.multiclass import OneVsRestClassifier
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
@@ -123,11 +124,13 @@ def _fit_predict_logreg(
     # support=2 时每个旧类只有极少量样本，训练集很小但类别数较多。
     # liblinear 的 one-vs-rest 形式比 lbfgs 多分类在这种小样本 support 校准场景更稳，
     # 也能避免长时间慢收敛；这里只重判真实旧类 eval 样本，不影响新类预测边界。
-    clf = LogisticRegression(
-        max_iter=1000,
-        solver="liblinear",
-        C=float(c_value),
-        class_weight=class_weight,
+    clf = OneVsRestClassifier(
+        LogisticRegression(
+            max_iter=1000,
+            solver="liblinear",
+            C=float(c_value),
+            class_weight=class_weight,
+        )
     )
     clf.fit(np.asarray(train_x, dtype=np.float32), np.asarray(train_y, dtype=np.int64))
     if np.any(old_eval):
