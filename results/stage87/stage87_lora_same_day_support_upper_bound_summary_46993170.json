@@ -1,0 +1,524 @@
+{
+  "schema_version": "stage87_lora_same_day_support_upper_bound_v1",
+  "job_id": "46993170",
+  "save_dir": "/mnt/usmidet/billy_test/OpenSet_Incremental_SEI/stage68-worktree/results/stage68/lora_s68_stage48_dump_seed7_46450782",
+  "support_counts": [
+    1,
+    2
+  ],
+  "results": [
+    {
+      "support_recordings_per_old_class": 1,
+      "rows": [
+        {
+          "support_recordings_per_old_class": 1,
+          "variant": "baseline_support_excluded",
+          "stage": "Initial",
+          "overall": 0.5773809523809523,
+          "old": 0.5773809523809523,
+          "new": NaN,
+          "initial_known": 0.5773809523809523,
+          "forgetting": 0.0,
+          "macro_f1": 0.5248029818857789,
+          "support_samples": 0,
+          "eval_samples": 840
+        },
+        {
+          "support_recordings_per_old_class": 1,
+          "variant": "prototype_support_excluded",
+          "stage": "Initial",
+          "overall": 0.5773809523809523,
+          "old": 0.5773809523809523,
+          "new": NaN,
+          "initial_known": 0.5773809523809523,
+          "forgetting": 0.0,
+          "macro_f1": 0.5248029818857789,
+          "support_samples": 0,
+          "eval_samples": 840
+        },
+        {
+          "support_recordings_per_old_class": 1,
+          "variant": "logreg_support_excluded",
+          "stage": "Initial",
+          "overall": 0.5773809523809523,
+          "old": 0.5773809523809523,
+          "new": NaN,
+          "initial_known": 0.5773809523809523,
+          "forgetting": 0.0,
+          "macro_f1": 0.5248029818857789,
+          "support_samples": 0,
+          "eval_samples": 840
+        },
+        {
+          "support_recordings_per_old_class": 1,
+          "variant": "baseline_support_excluded",
+          "stage": "After R1",
+          "overall": 0.3306122448979592,
+          "old": 0.4142857142857143,
+          "new": 0.21904761904761905,
+          "initial_known": 0.4142857142857143,
+          "forgetting": 0.16309523809523802,
+          "macro_f1": 0.3020584755147416,
+          "support_samples": 280,
+          "eval_samples": 980
+        },
+        {
+          "support_recordings_per_old_class": 1,
+          "variant": "prototype_support_excluded",
+          "stage": "After R1",
+          "overall": 0.3438775510204082,
+          "old": 0.4375,
+          "new": 0.21904761904761905,
+          "initial_known": 0.4375,
+          "forgetting": 0.13988095238095233,
+          "macro_f1": 0.2988247277921524,
+          "support_samples": 280,
+          "eval_samples": 980
+        },
+        {
+          "support_recordings_per_old_class": 1,
+          "variant": "logreg_support_excluded",
+          "stage": "After R1",
+          "overall": 0.3489795918367347,
+          "old": 0.44642857142857145,
+          "new": 0.21904761904761905,
+          "initial_known": 0.44642857142857145,
+          "forgetting": 0.13095238095238088,
+          "macro_f1": 0.3009163357309308,
+          "support_samples": 280,
+          "eval_samples": 980
+        },
+        {
+          "support_recordings_per_old_class": 1,
+          "variant": "baseline_support_excluded",
+          "stage": "After R2",
+          "overall": 0.32142857142857145,
+          "old": 0.325,
+          "new": 0.3142857142857143,
+          "initial_known": 0.44285714285714284,
+          "forgetting": 0.1345238095238095,
+          "macro_f1": 0.2873711282926899,
+          "support_samples": 420,
+          "eval_samples": 1260
+        },
+        {
+          "support_recordings_per_old_class": 1,
+          "variant": "prototype_support_excluded",
+          "stage": "After R2",
+          "overall": 0.430952380952381,
+          "old": 0.48928571428571427,
+          "new": 0.3142857142857143,
+          "initial_known": 0.5160714285714286,
+          "forgetting": 0.0613095238095237,
+          "macro_f1": 0.395642886761228,
+          "support_samples": 420,
+          "eval_samples": 1260
+        },
+        {
+          "support_recordings_per_old_class": 1,
+          "variant": "logreg_support_excluded",
+          "stage": "After R2",
+          "overall": 0.4357142857142857,
+          "old": 0.49642857142857144,
+          "new": 0.3142857142857143,
+          "initial_known": 0.48035714285714287,
+          "forgetting": 0.09702380952380946,
+          "macro_f1": 0.4191626056682388,
+          "support_samples": 420,
+          "eval_samples": 1260
+        },
+        {
+          "support_recordings_per_old_class": 1,
+          "variant": "baseline_support_excluded",
+          "stage": "After R3",
+          "overall": 0.3077922077922078,
+          "old": 0.21607142857142858,
+          "new": 0.5523809523809524,
+          "initial_known": 0.3767857142857143,
+          "forgetting": 0.20059523809523805,
+          "macro_f1": 0.23243858456541852,
+          "support_samples": 560,
+          "eval_samples": 1540
+        },
+        {
+          "support_recordings_per_old_class": 1,
+          "variant": "prototype_support_excluded",
+          "stage": "After R3",
+          "overall": 0.42207792207792205,
+          "old": 0.3732142857142857,
+          "new": 0.5523809523809524,
+          "initial_known": 0.35535714285714287,
+          "forgetting": 0.22202380952380946,
+          "macro_f1": 0.3775850367823348,
+          "support_samples": 560,
+          "eval_samples": 1540
+        },
+        {
+          "support_recordings_per_old_class": 1,
+          "variant": "logreg_support_excluded",
+          "stage": "After R3",
+          "overall": 0.4266233766233766,
+          "old": 0.3794642857142857,
+          "new": 0.5523809523809524,
+          "initial_known": 0.39464285714285713,
+          "forgetting": 0.1827380952380952,
+          "macro_f1": 0.3805535527285329,
+          "support_samples": 560,
+          "eval_samples": 1540
+        }
+      ],
+      "r3_rows": [
+        {
+          "support_recordings_per_old_class": 1,
+          "variant": "baseline_support_excluded",
+          "stage": "After R3",
+          "overall": 0.3077922077922078,
+          "old": 0.21607142857142858,
+          "new": 0.5523809523809524,
+          "initial_known": 0.3767857142857143,
+          "forgetting": 0.20059523809523805,
+          "macro_f1": 0.23243858456541852,
+          "support_samples": 560,
+          "eval_samples": 1540
+        },
+        {
+          "support_recordings_per_old_class": 1,
+          "variant": "prototype_support_excluded",
+          "stage": "After R3",
+          "overall": 0.42207792207792205,
+          "old": 0.3732142857142857,
+          "new": 0.5523809523809524,
+          "initial_known": 0.35535714285714287,
+          "forgetting": 0.22202380952380946,
+          "macro_f1": 0.3775850367823348,
+          "support_samples": 560,
+          "eval_samples": 1540
+        },
+        {
+          "support_recordings_per_old_class": 1,
+          "variant": "logreg_support_excluded",
+          "stage": "After R3",
+          "overall": 0.4266233766233766,
+          "old": 0.3794642857142857,
+          "new": 0.5523809523809524,
+          "initial_known": 0.39464285714285713,
+          "forgetting": 0.1827380952380952,
+          "macro_f1": 0.3805535527285329,
+          "support_samples": 560,
+          "eval_samples": 1540
+        }
+      ],
+      "selected_r3": {
+        "support_recordings_per_old_class": 1,
+        "variant": "logreg_support_excluded",
+        "stage": "After R3",
+        "overall": 0.4266233766233766,
+        "old": 0.3794642857142857,
+        "new": 0.5523809523809524,
+        "initial_known": 0.39464285714285713,
+        "forgetting": 0.1827380952380952,
+        "macro_f1": 0.3805535527285329,
+        "support_samples": 560,
+        "eval_samples": 1540
+      },
+      "support_stats": [
+        {
+          "stage": "initial",
+          "old_end": 10,
+          "support_samples": 0,
+          "support_old_classes": 0,
+          "eval_samples": 840,
+          "recording_id_available": true
+        },
+        {
+          "stage": "after_r1",
+          "old_end": 10,
+          "support_samples": 280,
+          "support_old_classes": 10,
+          "eval_samples": 980,
+          "recording_id_available": true
+        },
+        {
+          "stage": "after_r2",
+          "old_end": 15,
+          "support_samples": 420,
+          "support_old_classes": 15,
+          "eval_samples": 1260,
+          "recording_id_available": true
+        },
+        {
+          "stage": "after_r3",
+          "old_end": 20,
+          "support_samples": 560,
+          "support_old_classes": 20,
+          "eval_samples": 1540,
+          "recording_id_available": true
+        }
+      ]
+    },
+    {
+      "support_recordings_per_old_class": 2,
+      "rows": [
+        {
+          "support_recordings_per_old_class": 2,
+          "variant": "baseline_support_excluded",
+          "stage": "Initial",
+          "overall": 0.5773809523809523,
+          "old": 0.5773809523809523,
+          "new": NaN,
+          "initial_known": 0.5773809523809523,
+          "forgetting": 0.0,
+          "macro_f1": 0.5248029818857789,
+          "support_samples": 0,
+          "eval_samples": 840
+        },
+        {
+          "support_recordings_per_old_class": 2,
+          "variant": "prototype_support_excluded",
+          "stage": "Initial",
+          "overall": 0.5773809523809523,
+          "old": 0.5773809523809523,
+          "new": NaN,
+          "initial_known": 0.5773809523809523,
+          "forgetting": 0.0,
+          "macro_f1": 0.5248029818857789,
+          "support_samples": 0,
+          "eval_samples": 840
+        },
+        {
+          "support_recordings_per_old_class": 2,
+          "variant": "logreg_support_excluded",
+          "stage": "Initial",
+          "overall": 0.5773809523809523,
+          "old": 0.5773809523809523,
+          "new": NaN,
+          "initial_known": 0.5773809523809523,
+          "forgetting": 0.0,
+          "macro_f1": 0.5248029818857789,
+          "support_samples": 0,
+          "eval_samples": 840
+        },
+        {
+          "support_recordings_per_old_class": 2,
+          "variant": "baseline_support_excluded",
+          "stage": "After R1",
+          "overall": 0.2914285714285714,
+          "old": 0.4,
+          "new": 0.21904761904761905,
+          "initial_known": 0.4,
+          "forgetting": 0.1773809523809523,
+          "macro_f1": 0.2882833209185794,
+          "support_samples": 560,
+          "eval_samples": 700
+        },
+        {
+          "support_recordings_per_old_class": 2,
+          "variant": "prototype_support_excluded",
+          "stage": "After R1",
+          "overall": 0.33,
+          "old": 0.49642857142857144,
+          "new": 0.21904761904761905,
+          "initial_known": 0.49642857142857144,
+          "forgetting": 0.08095238095238089,
+          "macro_f1": 0.3261503674695962,
+          "support_samples": 560,
+          "eval_samples": 700
+        },
+        {
+          "support_recordings_per_old_class": 2,
+          "variant": "logreg_support_excluded",
+          "stage": "After R1",
+          "overall": 0.34285714285714286,
+          "old": 0.5285714285714286,
+          "new": 0.21904761904761905,
+          "initial_known": 0.5285714285714286,
+          "forgetting": 0.04880952380952375,
+          "macro_f1": 0.31252681843416846,
+          "support_samples": 560,
+          "eval_samples": 700
+        },
+        {
+          "support_recordings_per_old_class": 2,
+          "variant": "baseline_support_excluded",
+          "stage": "After R2",
+          "overall": 0.3,
+          "old": 0.2857142857142857,
+          "new": 0.3142857142857143,
+          "initial_known": 0.37857142857142856,
+          "forgetting": 0.19880952380952377,
+          "macro_f1": 0.2544271971936327,
+          "support_samples": 840,
+          "eval_samples": 840
+        },
+        {
+          "support_recordings_per_old_class": 2,
+          "variant": "prototype_support_excluded",
+          "stage": "After R2",
+          "overall": 0.37142857142857144,
+          "old": 0.42857142857142855,
+          "new": 0.3142857142857143,
+          "initial_known": 0.45,
+          "forgetting": 0.12738095238095232,
+          "macro_f1": 0.34042303808973173,
+          "support_samples": 840,
+          "eval_samples": 840
+        },
+        {
+          "support_recordings_per_old_class": 2,
+          "variant": "logreg_support_excluded",
+          "stage": "After R2",
+          "overall": 0.39880952380952384,
+          "old": 0.48333333333333334,
+          "new": 0.3142857142857143,
+          "initial_known": 0.4857142857142857,
+          "forgetting": 0.09166666666666662,
+          "macro_f1": 0.38961402753321195,
+          "support_samples": 840,
+          "eval_samples": 840
+        },
+        {
+          "support_recordings_per_old_class": 2,
+          "variant": "baseline_support_excluded",
+          "stage": "After R3",
+          "overall": 0.3693877551020408,
+          "old": 0.23214285714285715,
+          "new": 0.5523809523809524,
+          "initial_known": 0.39285714285714285,
+          "forgetting": 0.18452380952380948,
+          "macro_f1": 0.24893016327402015,
+          "support_samples": 1120,
+          "eval_samples": 980
+        },
+        {
+          "support_recordings_per_old_class": 2,
+          "variant": "prototype_support_excluded",
+          "stage": "After R3",
+          "overall": 0.5071428571428571,
+          "old": 0.4732142857142857,
+          "new": 0.5523809523809524,
+          "initial_known": 0.4642857142857143,
+          "forgetting": 0.11309523809523803,
+          "macro_f1": 0.44597445534629615,
+          "support_samples": 1120,
+          "eval_samples": 980
+        },
+        {
+          "support_recordings_per_old_class": 2,
+          "variant": "logreg_support_excluded",
+          "stage": "After R3",
+          "overall": 0.513265306122449,
+          "old": 0.48392857142857143,
+          "new": 0.5523809523809524,
+          "initial_known": 0.4857142857142857,
+          "forgetting": 0.09166666666666662,
+          "macro_f1": 0.46180984410086867,
+          "support_samples": 1120,
+          "eval_samples": 980
+        }
+      ],
+      "r3_rows": [
+        {
+          "support_recordings_per_old_class": 2,
+          "variant": "baseline_support_excluded",
+          "stage": "After R3",
+          "overall": 0.3693877551020408,
+          "old": 0.23214285714285715,
+          "new": 0.5523809523809524,
+          "initial_known": 0.39285714285714285,
+          "forgetting": 0.18452380952380948,
+          "macro_f1": 0.24893016327402015,
+          "support_samples": 1120,
+          "eval_samples": 980
+        },
+        {
+          "support_recordings_per_old_class": 2,
+          "variant": "prototype_support_excluded",
+          "stage": "After R3",
+          "overall": 0.5071428571428571,
+          "old": 0.4732142857142857,
+          "new": 0.5523809523809524,
+          "initial_known": 0.4642857142857143,
+          "forgetting": 0.11309523809523803,
+          "macro_f1": 0.44597445534629615,
+          "support_samples": 1120,
+          "eval_samples": 980
+        },
+        {
+          "support_recordings_per_old_class": 2,
+          "variant": "logreg_support_excluded",
+          "stage": "After R3",
+          "overall": 0.513265306122449,
+          "old": 0.48392857142857143,
+          "new": 0.5523809523809524,
+          "initial_known": 0.4857142857142857,
+          "forgetting": 0.09166666666666662,
+          "macro_f1": 0.46180984410086867,
+          "support_samples": 1120,
+          "eval_samples": 980
+        }
+      ],
+      "selected_r3": {
+        "support_recordings_per_old_class": 2,
+        "variant": "logreg_support_excluded",
+        "stage": "After R3",
+        "overall": 0.513265306122449,
+        "old": 0.48392857142857143,
+        "new": 0.5523809523809524,
+        "initial_known": 0.4857142857142857,
+        "forgetting": 0.09166666666666662,
+        "macro_f1": 0.46180984410086867,
+        "support_samples": 1120,
+        "eval_samples": 980
+      },
+      "support_stats": [
+        {
+          "stage": "initial",
+          "old_end": 10,
+          "support_samples": 0,
+          "support_old_classes": 0,
+          "eval_samples": 840,
+          "recording_id_available": true
+        },
+        {
+          "stage": "after_r1",
+          "old_end": 10,
+          "support_samples": 560,
+          "support_old_classes": 10,
+          "eval_samples": 700,
+          "recording_id_available": true
+        },
+        {
+          "stage": "after_r2",
+          "old_end": 15,
+          "support_samples": 840,
+          "support_old_classes": 15,
+          "eval_samples": 840,
+          "recording_id_available": true
+        },
+        {
+          "stage": "after_r3",
+          "old_end": 20,
+          "support_samples": 1120,
+          "support_old_classes": 20,
+          "eval_samples": 980,
+          "recording_id_available": true
+        }
+      ]
+    }
+  ],
+  "best_r3": {
+    "support_recordings_per_old_class": 2,
+    "variant": "logreg_support_excluded",
+    "stage": "After R3",
+    "overall": 0.513265306122449,
+    "old": 0.48392857142857143,
+    "new": 0.5523809523809524,
+    "initial_known": 0.4857142857142857,
+    "forgetting": 0.09166666666666662,
+    "macro_f1": 0.46180984410086867,
+    "support_samples": 1120,
+    "eval_samples": 980
+  },
+  "passes_50_overall": true,
+  "diagnostic_warning": "uses held-out old labels to select same-day support; support samples are excluded from evaluation; diagnostic upper-bound only"
+}
